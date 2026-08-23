@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: 'Nunito', system-ui, sans-serif;
+    background-color: #FBF7F0;
+    color: #4A4038;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Comfortaa', 'Quicksand', system-ui, sans-serif;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .btn-press {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  }
+  .btn-press:active {
+    transform: scale(0.96);
+  }
+  .card-hover {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+@layer utilities {
+  .scrollbar-warm::-webkit-scrollbar {
+    width: 8px;
+  }
+  .scrollbar-warm::-webkit-scrollbar-track {
+    background: #F7F0E4;
+    border-radius: 8px;
+  }
+  .scrollbar-warm::-webkit-scrollbar-thumb {
+    background: #CFD9C4;
+    border-radius: 8px;
+  }
+  .scrollbar-warm::-webkit-scrollbar-thumb:hover {
+    background: #A7B897;
+  }
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #97AEB7;
+}

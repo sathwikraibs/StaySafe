@@ -1,0 +1,9 @@
+flask
+requests
+python-whois
+pytesseract
+pillow
+opencv-python
+pyzbar
+numpy
+flask-cors
