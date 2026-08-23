@@ -2,9 +2,9 @@
 
 **A digital safety checkup tool for non-technical, first-time internet users.**
 
-StaySafe helps everyday people especially those unfamiliar with online scams check whether a link, message, QR code, file, password, network, or email is safe, in plain, non-technical language. Built as a final-year Cyber Security project.
+StaySafe helps everyday people — especially those unfamiliar with online scams — check whether a link, message, QR code, file, password, network, or email is safe, in plain, non-technical language. Built as a final-year Cyber Security project.
 
-🔗 **Live demo:** [staysafe-tool.vercel.app](staysafe-tool.vercel.app)
+🔗 **Live demo:** [staysafe-tool.vercel.app](https://staysafe-tool.vercel.app)
 
 ---
 
@@ -66,6 +66,6 @@ Set `API_BASE` in `src/config.ts` to your backend URL before running.
 
 ## Notes
 
-- The risk engine uses deterministic rules and weighted scoring, not AI/ML  this keeps verdicts explainable and auditable, which matters for a security tool.
+- The risk engine uses deterministic rules and weighted scoring, not AI/ML — this keeps verdicts explainable and auditable, which matters for a security tool.
 - The scam knowledge base is manually curated content, not sourced from an external threat-intel framework (e.g. MITRE ATT&CK, which is enterprise/network-intrusion focused and not suited to consumer scam education).
-- Password breach checks use k-anonymity (only a hash prefix is sent) the real password never leaves the server.
+- Password breach checks use k-anonymity (only a hash prefix is sent) — the real password never leaves the server.
