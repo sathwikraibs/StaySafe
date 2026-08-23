@@ -4,7 +4,7 @@
 
 StaySafe helps everyday people especially those unfamiliar with online scams check whether a link, message, QR code, file, password, network, or email is safe, in plain, non-technical language. Built as a final-year Cyber Security project.
 
-🔗 **Live demo:** [staysafe-beryl.vercel.app](https://staysafe-beryl.vercel.app)
+🔗 **Live demo:** [staysafe-tool.vercel.app](staysafe-tool.vercel.app)
 
 ---
 
