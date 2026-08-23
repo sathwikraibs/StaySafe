@@ -29,3 +29,43 @@ StaySafe helps everyday people — especially those unfamiliar with online scams
 - **Backend:** Python Flask, modular scanner architecture → deployed on Render
 
 ## Project structure
+
+    staysafe-full/
+    ├── backend/          Flask API — see backend/README.md
+    │   ├── app.py
+    │   ├── requirements.txt
+    │   └── scanners/      one module per feature
+    └── frontend/         React app — see frontend/README.md
+        └── src/
+            ├── pages/      one page per feature
+            ├── components/
+            └── config.ts   ← backend URL is set here
+
+## Running locally
+
+**Backend:**
+
+    cd staysafe-full/backend
+    python -m venv venv && source venv/bin/activate
+    pip install -r requirements.txt
+    cp .env.example .env   # optional: add GSB_API_KEY / VT_API_KEY
+    python app.py
+
+**Frontend:**
+
+    cd staysafe-full/frontend
+    npm install
+    npm run dev
+
+Set `API_BASE` in `src/config.ts` to your backend URL before running.
+
+## Deployment
+
+- **Backend → Render:** Root Directory `staysafe-full/backend`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn app:app`
+- **Frontend → Vercel:** Root Directory `staysafe-full/frontend`, framework auto-detected as Vite
+
+## Notes
+
+- The risk engine uses deterministic rules and weighted scoring, not AI/ML — this keeps verdicts explainable and auditable, which matters for a security tool.
+- The scam knowledge base is manually curated content, not sourced from an external threat-intel framework (e.g. MITRE ATT&CK, which is enterprise/network-intrusion focused and not suited to consumer scam education).
+- Password breach checks use k-anonymity (only a hash prefix is sent) — the real password never leaves the server.
