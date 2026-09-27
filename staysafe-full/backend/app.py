@@ -6,7 +6,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
 from scanners.url_scanner import url_scanner_bp
-from scanners.message_scanner import message_scanner_bp, ocr_status
+from scanners.message_scanner import message_scanner_bp, ocr_status, ocr_languages
 from scanners.risk_engine import risk_engine_bp
 from scanners.qr_scanner import qr_scanner_bp, qr_status
 from scanners.incident_wizard import incident_wizard_bp
@@ -40,6 +40,7 @@ def home():
     return {
         "status": "StaySafe API running",
         "ocr": ocr_status(),
+        "ocr_languages": ocr_languages() if ocr_status() else "",
         "qr": qr_status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }

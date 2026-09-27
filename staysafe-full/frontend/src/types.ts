@@ -1,6 +1,6 @@
 export type Verdict =
   | "SAFE" | "CAUTION" | "DANGEROUS"
-  | "LIKELY_SAFE" | "SUSPICIOUS" | "SCAM_LIKELY";
+  | "LIKELY_SAFE" | "SUSPICIOUS" | "SCAM_LIKELY" | "UNCERTAIN";
 
 export interface ScanUrlResponse {
   url: string;
@@ -16,6 +16,8 @@ export interface ScanMessageResponse {
   safe_signals?: string[];
   text_analyzed?: string;
   links_checked?: LinkCheck[];
+  /** extra information: language coverage, hidden-link tip */
+  notes?: string[];
 }
 
 export interface LinkCheck {

@@ -5,11 +5,11 @@ Flask API with one module per checker in `scanners/`.
 | Module | What it checks |
 |---|---|
 | `url_scanner.py` | Link structure, brand look-alikes (e.g. `amaz0n-offers.com`, `sbi-kyc-update.in`), risky words and endings, free-hosting pages, domain age (WHOIS), Google Safe Browsing, VirusTotal |
-| `message_scanner.py` | Scam patterns in English and Hinglish (KYC, OTP requests, electricity cut-off, courier / digital arrest, task jobs, lottery, investment, remote-access apps, "new number" family scams), plus genuine-message signals. Up to 3 links in the message get the full link check (rules, Google Safe Browsing, VirusTotal). Screenshots are read with Tesseract OCR first |
+| `message_scanner.py` | Scam patterns in English, Hinglish, Kannada (also much Tulu) and Hindi script (KYC, OTP requests, electricity cut-off, courier / digital arrest, task jobs, lottery, investment, remote-access apps, "new number" family scams), plus genuine-message signals. Up to 3 links in the message get the full link check (rules, Google Safe Browsing, VirusTotal). Screenshots are read with Tesseract OCR (English + Kannada + Hindi) first. Messages in other scripts get "couldn't fully check" instead of "safe"; "click here" messages with no visible link get a copy-the-link tip |
 | `qr_scanner.py` | Decodes QR codes (zbar, falling back to OpenCV) and checks the link or UPI payment request |
 | `file_scanner.py` | File name tricks, what the file *really* is from its contents, macros, programs hidden in ZIPs, risky PDFs, VirusTotal hash lookup |
 | `password_checker.py` | Strength rules (common words, leetspeak, years, sequences) and HIBP k-anonymity breach check |
-| `email_analyzer.py` | SPF/DKIM/DMARC, Reply-To mismatch, body text and links |
+| `email_analyzer.py` | SPF/DKIM/DMARC, Reply-To mismatch, body text, and links — including links hidden behind "Click here" buttons in the HTML part |
 | `network_checker.py` | VPN / proxy / datacenter IP detection |
 | `risk_engine.py` | Per-visitor scan history and safety score |
 | `incident_wizard.py`, `knowledge_base.py` | Recovery plans and scam library |
@@ -24,7 +24,9 @@ cp .env.example .env          # optional API keys
 python app.py
 ```
 
-Open http://localhost:5000 — `"ocr": true` and `"qr": true` mean image checks are ready.
+For Kannada/Hindi screenshots locally, also install `tesseract-ocr-kan tesseract-ocr-hin`.
+
+Open http://localhost:5000 — `"ocr": true` and `"qr": true` mean image checks are ready; `"ocr_languages"` shows which scripts screenshots can be read in.
 
 ## Deploy (Render, Docker)
 Root Directory `staysafe-full/backend`, Runtime `Docker`. The `Dockerfile` installs Tesseract and zbar.

@@ -56,7 +56,7 @@ export function clearHistory(): void {
 }
 
 const DANGER = ["DANGEROUS", "SCAM_LIKELY"];
-const CAUTION = ["CAUTION", "SUSPICIOUS"];
+const CAUTION = ["CAUTION", "SUSPICIOUS", "UNCERTAIN"];
 
 // Same scoring as the backend: start at 100, deduct for risky finds in the last 50 checks.
 export function computeDashboard(history: ScanHistoryItem[]) {

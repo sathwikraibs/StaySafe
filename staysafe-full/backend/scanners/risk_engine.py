@@ -31,7 +31,7 @@ _HISTORY: "OrderedDict[str, list]" = OrderedDict()
 _LOCK = threading.Lock()
 
 DANGER = ("DANGEROUS", "SCAM_LIKELY")
-CAUTION = ("CAUTION", "SUSPICIOUS")
+CAUTION = ("CAUTION", "SUSPICIOUS", "UNCERTAIN")
 
 
 def current_client_id() -> str:

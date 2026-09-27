@@ -11,7 +11,7 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
 | Feature | Description |
 |---|---|
 | 🔗 Link Checker | Scans URLs for phishing/malware risk using structure analysis, domain age, Google Safe Browsing, and VirusTotal |
-| 💬 Message Checker | Detects scam patterns (urgency, OTP requests, fake refunds, etc.) in pasted text or screenshots (OCR) |
+| 💬 Message Checker | Detects scam patterns (urgency, OTP requests, fake refunds, etc.) in English, Hinglish, Kannada and Hindi — pasted text or screenshots (OCR). Explains how to check links hidden behind "Click here" |
 | 📱 QR Code Checker | Decodes QR codes and checks the destination URL or UPI payment request before you scan |
 | 📄 File Checker | Checks file hashes against VirusTotal and flags risky extensions and double-extension disguises |
 | 🔒 Password Checker | Rates password strength and checks breach exposure via HIBP's privacy-safe k-anonymity API |

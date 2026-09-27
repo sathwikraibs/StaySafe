@@ -70,6 +70,14 @@ export const knContent: LangContent = {
     "We couldn't open this image. Please upload a PNG or JPG screenshot.": "ಈ ಚಿತ್ರ ತೆರೆಯಲಾಗಲಿಲ್ಲ. PNG ಅಥವಾ JPG ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.",
     "We couldn't find readable text in this image. Try a clearer, uncropped screenshot, or paste the message text instead.": "ಈ ಚಿತ್ರದಲ್ಲಿ ಓದಬಹುದಾದ ಪಠ್ಯ ಸಿಗಲಿಲ್ಲ. ಸ್ಪಷ್ಟವಾದ, ಪೂರ್ತಿ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಕಳುಹಿಸಿ ಅಥವಾ ಮೆಸೇಜ್ ಪಠ್ಯವನ್ನು ಪೇಸ್ಟ್ ಮಾಡಿ.",
 
+    // language coverage + hidden-link tip
+    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, Kannada and Hindi). We couldn't fully check it — be careful, and never share OTPs, PINs or passwords.":
+      "ಈ ಮೆಸೇಜ್ ಹೆಚ್ಚಾಗಿ ನಮ್ಮ ಪರಿಶೀಲನೆಗೆ ಇನ್ನೂ ಓದಲಾಗದ ಭಾಷೆಯಲ್ಲಿದೆ (ನಾವು ಇಂಗ್ಲಿಷ್, ಹಿಂಗ್ಲಿಷ್, ಕನ್ನಡ ಮತ್ತು ಹಿಂದಿ ಪರಿಶೀಲಿಸುತ್ತೇವೆ). ಇದನ್ನು ಪೂರ್ತಿಯಾಗಿ ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ — ಎಚ್ಚರವಾಗಿರಿ, OTP, PIN ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಎಂದಿಗೂ ಹೇಳಬೇಡಿ.",
+    "Our checks for messages written in Kannada or Hindi script are new and may miss some scams — stay careful.":
+      "ಕನ್ನಡ ಅಥವಾ ಹಿಂದಿ ಲಿಪಿಯ ಮೆಸೇಜ್‌ಗಳ ನಮ್ಮ ಪರಿಶೀಲನೆ ಹೊಸದು, ಕೆಲವು ಸ್ಕ್ಯಾಮ್‌ಗಳು ತಪ್ಪಿಹೋಗಬಹುದು — ಎಚ್ಚರವಾಗಿರಿ.",
+    "This message asks you to click a link, but the link itself isn't visible here — it may be hidden behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link.":
+      "ಈ ಮೆಸೇಜ್ ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಾಡಲು ಹೇಳುತ್ತದೆ, ಆದರೆ ಲಿಂಕ್ ಇಲ್ಲಿ ಕಾಣುತ್ತಿಲ್ಲ — 'ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ' ತರಹದ ಪದಗಳ ಹಿಂದೆ ಮರೆಯಾಗಿರಬಹುದು. ಲಿಂಕ್ ಮೇಲೆ ಒತ್ತಿ ಹಿಡಿದು 'Copy link' ಆಯ್ಕೆಮಾಡಿ, 'ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ' ನಲ್ಲಿ ಪೇಸ್ಟ್ ಮಾಡಿ.",
+
     // ---- link checker
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಸುತ್ತಿಲ್ಲ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿಲ್ಲ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನ ಬದಲು ಕೇವಲ IP ನಂಬರ್ ಇದೆ",

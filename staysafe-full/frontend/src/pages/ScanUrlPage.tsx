@@ -7,8 +7,9 @@ import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanUrlResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 
-export function ScanUrlPage() {
+export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,6 +49,10 @@ export function ScanUrlPage() {
             {loading ? t("common.checking") : t("url.button")}
           </Button>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <HiddenLinkGuide onNavigate={onNavigate} showLinkButton={false} />
       </div>
 
       {loading && <LoadingBreath label={t("url.loading")} />}

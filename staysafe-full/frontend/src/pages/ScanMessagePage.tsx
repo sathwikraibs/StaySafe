@@ -9,10 +9,12 @@ import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanMessageResponse } from "@/types";
 import { verdictTone, toneClasses, toneTagKey } from "@/verdict";
+import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
+import { IconInfo } from "@/icons";
 import { useI18n } from "@/i18n";
 
-export function ScanMessagePage() {
-  const { t, lang } = useI18n();
+export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
+  const { t, ts } = useI18n();
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,11 @@ export function ScanMessagePage() {
         )}
       </div>
 
+      {/* Links hidden behind "Click here" can't be checked from a screenshot or copied text */}
+      <div className="mt-4">
+        <HiddenLinkGuide onNavigate={onNavigate} />
+      </div>
+
       {loading && <LoadingBreath label={t("message.loading")} />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
@@ -95,6 +102,16 @@ export function ScanMessagePage() {
       {result && (
         <div className="mt-4 space-y-4">
           <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
+          {result.notes && result.notes.length > 0 && (
+            <div className="space-y-2 rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100 p-4">
+              <p className="flex items-center gap-2 font-heading text-base font-semibold text-ink-800">
+                <IconInfo className="h-5 w-5 text-dustyblue-500" /> {t("message.notesTitle")}
+              </p>
+              {result.notes.map((n) => (
+                <p key={n} className="font-body text-sm text-ink-700">{ts(n)}</p>
+              ))}
+            </div>
+          )}
           {result.patterns_detected.length > 0 ? (
             <FindingsList items={result.patterns_detected} title={t("message.warningSigns")} />
           ) : (
@@ -129,7 +146,7 @@ export function ScanMessagePage() {
             <Card className="p-4">
               <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("message.ocrTitle")}</p>
               <p className="mt-2 whitespace-pre-wrap break-words font-body text-sm text-ink-800">{result.text_analyzed}</p>
-              {lang !== "en" && <p className="mt-2 font-body text-xs text-dustyblue-600">{t("message.ocrNote")}</p>}
+              <p className="mt-2 font-body text-xs text-dustyblue-600">{t("message.ocrNote")}</p>
             </Card>
           )}
         </div>

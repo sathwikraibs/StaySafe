@@ -23,6 +23,7 @@ export const en = {
     caution: "Be careful with this",
     danger: "This looks risky",
     unknown: "Hmm, we could not tell",
+    uncertain: "We couldn't fully check this language",
   },
 
   nav: {
@@ -87,7 +88,8 @@ export const en = {
     linksTitle: "Links in this message",
     linksNote: "Each link was checked with our link rules, Google Safe Browsing and VirusTotal.",
     ocrTitle: "Text we read from your screenshot",
-    ocrNote: "Screenshots are read in English. For messages in other scripts, paste the text instead.",
+    ocrNote: "Screenshots can be read in English, Kannada and Hindi. For other languages, paste the text instead.",
+    notesTitle: "Please note",
   },
 
   qr: {
@@ -295,6 +297,23 @@ export const en = {
     never: "Ask for your OTP, UPI PIN, passwords, card or bank details. Sell or share your data. Show ads.",
     contactTitle: "Questions?",
     contact: "Use the Need Help page to chat with us.",
+  },
+
+  hiddenLink: {
+    title: "Link hidden behind “Click here”?",
+    summary: "We can't see links hidden behind words or buttons in a screenshot or copied text. Tap to see how to check them.",
+    why: "Many scam messages and emails hide the real web address behind words like “Click here”, “Verify now”, “Claim reward” or a button. A screenshot — or text you copy — only shows those words, not the link underneath, so StaySafe can't check where it really goes.",
+    warning: "Don't tap the link to find out where it goes. Copying a link is safe — opening it is not.",
+    stepsTitle: "How to check a hidden link safely:",
+    steps: [
+      "On a phone: press and hold the words or button (don't tap) until a menu appears, then choose “Copy link” or “Copy link address”.",
+      "On a computer: right-click the words or button and choose “Copy link address”.",
+      "In an email app, you can also paste the full email into Check an Email — we check the links hidden inside it too.",
+      "Paste the copied link into Check a Link and tap “Check this link”.",
+      "If you can't copy it, don't open it. When in doubt, ask us in chat.",
+    ],
+    goLink: "Go to Check a Link",
+    goEmail: "Check an Email instead",
   },
 
   upload: { choose: "Choose a different file" },

@@ -70,6 +70,14 @@ export const hiContent: LangContent = {
     "We couldn't open this image. Please upload a PNG or JPG screenshot.": "यह फ़ोटो नहीं खुली। PNG या JPG स्क्रीनशॉट अपलोड करें।",
     "We couldn't find readable text in this image. Try a clearer, uncropped screenshot, or paste the message text instead.": "इस फ़ोटो में पढ़ने लायक टेक्स्ट नहीं मिला। साफ़, पूरा स्क्रीनशॉट भेजें या मैसेज का टेक्स्ट पेस्ट करें।",
 
+    // language coverage + hidden-link tip
+    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, Kannada and Hindi). We couldn't fully check it — be careful, and never share OTPs, PINs or passwords.":
+      "यह मैसेज ज़्यादातर ऐसी भाषा में है जिसे हमारी जाँच अभी नहीं पढ़ पाती (हम अंग्रेज़ी, हिंग्लिश, कन्नड़ और हिंदी जाँचते हैं)। हम इसे पूरी तरह नहीं जाँच पाए — सावधान रहें, और कभी भी OTP, PIN या पासवर्ड न बताएँ।",
+    "Our checks for messages written in Kannada or Hindi script are new and may miss some scams — stay careful.":
+      "कन्नड़ या हिंदी लिपि में लिखे मैसेज की हमारी जाँच नई है और कुछ स्कैम छूट सकते हैं — सावधान रहें।",
+    "This message asks you to click a link, but the link itself isn't visible here — it may be hidden behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link.":
+      "यह मैसेज लिंक पर क्लिक करने को कहता है, लेकिन असली लिंक यहाँ नहीं दिख रहा — शायद 'यहाँ क्लिक करें' जैसे शब्दों के पीछे छिपा है। लिंक को दबाकर रखें, 'Copy link' चुनें और उसे 'लिंक जाँचें' में पेस्ट करें।",
+
     // ---- link checker
     "Link does not use HTTPS (the connection is not encrypted)": "लिंक HTTPS इस्तेमाल नहीं करता (कनेक्शन सुरक्षित/एन्क्रिप्टेड नहीं है)",
     "Link uses a raw IP address instead of a real website name": "लिंक में वेबसाइट के नाम की जगह सिर्फ़ IP नंबर है",

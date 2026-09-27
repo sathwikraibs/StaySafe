@@ -212,15 +212,157 @@ RULES = [
     ),
 ]
 
+
+# ---------------------------------------------------------------------------
+# KANNADA (also covers much Tulu, which uses Kannada script) and HINDI rules.
+# Same scam types as above, written in the native scripts. No \b here: word
+# boundaries don't work reliably inside Indian scripts. Text is normalised first
+# (zero-width joiners and Hindi nukta dots removed), so patterns omit them.
+# ---------------------------------------------------------------------------
+KN_ASK = r"(ಹ(ೇ|ೆ)?ಳಿ|ಹೇಳು|ಕಳುಹಿಸಿ|ಕಳಿಸಿ|ಕಳ್ಸಿ|ಶೇರ್ ಮಾಡಿ|ಕೊಡಿ|ತಿಳಿಸಿ|ಹಂಚಿಕೊಳ್ಳಿ|ಪನ್ಲೆ|ಕೊರ್ಲೆ|ಕಡಪುಡ್ಲೆ)"
+HI_ASK = r"(बताएं|बताइए|बताओ|बता दो|बता दें|भेजें|भेजो|भेजिए|भेज दो|शेयर करें|शेयर करो|दें|दीजिए|दे दो)"
+MONEY = r"(₹|rs\.?|ರೂ\.?|ರೂಪಾಯಿ|रु\.?|रुपये|रुपए)"
+NUM = r"(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}"
+
+NATIVE_PATTERNS = {
+    "Asks you to share an OTP, PIN, CVV or password": [
+        r"(otp|ಒಟಿಪಿ|ಓಟಿಪಿ|pin|ಪಿನ್|cvv|ಪಾಸ್ವರ್ಡ್|ಕೋಡ್)[^.\n]{0,40}" + KN_ASK,
+        r"(ಬಂದ|ಬಂದಿರುವ|ಬತ್ತಿನ)[^.\n]{0,12}(otp|ಒಟಿಪಿ|ಕೋಡ್)",
+        r"(otp|ओटीपी|pin|पिन|cvv|पासवर्ड|कोड)[^।.\n]{0,40}" + HI_ASK,
+        r"(आया|आए|आई|आया हुआ)[^।\n]{0,12}(otp|ओटीपी|कोड)",
+    ],
+    "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": [
+        r"(upi pin|ಯುಪಿಐ ಪಿನ್|यूपीआई पिन|upi पिन)[^.\n]{0,40}(ಪಡೆಯ|ಸ್ವೀಕರಿಸ|ಕ್ಯಾಶ್ಬ್ಯಾಕ್|ರಿಫಂಡ್|ಬರುತ್ತ|प्राप्त|पाने|मिलेगा|मिलेंगे|कैशबैक|रिफंड)",
+        r"(ಪಡೆಯಲು|ಸ್ವೀಕರಿಸಲು|पाने के लिए|प्राप्त करने के लिए)[^.\n]{0,30}(ಪಿನ್|pin|पिन)",
+    ],
+    "Bank / KYC / PAN impersonation": [
+        r"(ಖಾತೆ|ಅಕೌಂಟ್|ಕಾರ್ಡ್|ಬ್ಯಾಂಕ್)[^.\n]{0,40}(ಬ್ಲಾಕ್|ಬಂದ್ ಆಗ|ಸ್ಥಗಿತ|ನಿಷ್ಕ್ರಿಯ|ಫ್ರೀಜ್)",
+        r"(kyc|ಕೆವೈಸಿ)[^.\n]{0,40}(ಅಪ್ಡೇಟ್|ಬಾಕಿ|ಪರಿಶೀಲ|ಪೂರ್ಣ|ಮಾಡಿ)",
+        r"(ಪ್ಯಾನ್|pan|ಆಧಾರ್)[^.\n]{0,20}(ಲಿಂಕ್|ಅಪ್ಡೇಟ್|ಜೋಡಿಸ)",
+        r"(खाता|खाते|अकाउंट|कार्ड|बैंक)[^।\n]{0,40}(बंद हो|बंद कर|ब्लॉक|निलंबित|फ्रीज)",
+        r"(kyc|केवाईसी)[^।\n]{0,40}(अपडेट|लंबित|पूरा|करें|कराएं)",
+        r"(पैन|pan|आधार)[^।\n]{0,20}(लिंक|अपडेट)",
+    ],
+    "Electricity disconnection threat": [
+        r"(ಕರೆಂಟ್|ವಿದ್ಯುತ್|ಲೈಟ್|ಬೆಸ್ಕಾಂ|ಮೆಸ್ಕಾಂ|ಹೆಸ್ಕಾಂ|ಚೆಸ್ಕಾಂ|ಜೆಸ್ಕಾಂ)[^.\n]{0,60}(ಕಟ್|ಸ್ಥಗಿತ|ಕಡಿತ|ನಿಲ್ಲಿಸ)",
+        r"(ಕರೆಂಟ್ ಬಿಲ್|ವಿದ್ಯುತ್ ಬಿಲ್)[^.\n]{0,50}(ಅಪ್ಡೇಟ್ ಆಗಿಲ್ಲ|ಬಾಕಿ|ಪಾವತಿಸಿಲ್ಲ)",
+        r"(बिजली|लाइट|विद्युत)[^।\n]{0,60}(कट|काट|बंद कर|बंद हो)",
+        r"(बिजली बिल|बिल)[^।\n]{0,50}(अपडेट नहीं|बकाया|जमा नहीं)",
+    ],
+    "Courier / customs / 'digital arrest' scam": [
+        r"(ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್|डिजिटल अरेस्ट|डिजिटल गिरफ्तारी)",
+        r"(ಪಾರ್ಸೆಲ್|ಕೊರಿಯರ್|पार्सल|कूरियर|कुरियर)[^\n]{0,100}(ಡ್ರಗ್ಸ್|ಮಾದಕ|ಪೊಲೀಸ್|ಅಕ್ರಮ|ವಶಪಡಿಸ|ड्रग्स|नशीले|पुलिस|अवैध|गैरकानूनी|जब्त)",
+        r"(ಪೊಲೀಸ್|ಸಿಬಿಐ|cbi|ಕ್ರೈಂ ಬ್ರಾಂಚ್|पुलिस|सीबीआई|क्राइम ब्रांच|साइबर क्राइम)[^\n]{0,80}(ಅರೆಸ್ಟ್|ಬಂಧನ|ಬಂಧಿಸ|ವಾರಂಟ್|ವೀಡಿಯೊ ಕಾಲ್|ವಿಡಿಯೋ ಕಾಲ್|गिरफ्तार|वारंट|वीडियो कॉल|अरेस्ट)",
+    ],
+    "Impersonating government, police or tax department": [
+        r"(ಆದಾಯ ತೆರಿಗೆ|ಇನ್ಕಮ್ ಟ್ಯಾಕ್ಸ್|आयकर|इनकम टैक्स)[^.\n]{0,40}(ರಿಫಂಡ್|ನೋಟಿಸ್|ದಂಡ|रिफंड|नोटिस|जुर्माना)",
+        r"(ಸಿಮ್|ಮೊಬೈಲ್ ನಂಬರ್|ನಿಮ್ಮ ನಂಬರ್|सिम|मोबाइल नंबर|आपका नंबर)[^.\n]{0,40}(ಬ್ಲಾಕ್|ಸ್ಥಗಿತ|ಬಂದ್|बंद|ब्लॉक)",
+    ],
+    "Promises easy fixed daily/hourly earnings": [
+        r"(ದಿನಕ್ಕೆ|ಪ್ರತಿದಿನ|ಗಂಟೆಗೆ|रोज|प्रतिदिन|रोजाना|प्रति दिन|हर दिन|घंटे)[^.\n]{0,30}" + MONEY + r"\s?\d",
+        MONEY + r"\s?\d[\d,]*[^.\n]{0,25}(ದಿನಕ್ಕೆ|ಪ್ರತಿದಿನ|ಗಂಟೆಗೆ|रोज|प्रतिदिन|रोजाना|प्रति दिन)",
+    ],
+    "Task-based or fake job offer": [
+        r"(ಲೈಕ್|ರಿವ್ಯೂ|ರೇಟಿಂಗ್|ಸಬ್ಸ್ಕ್ರೈಬ್|लाइक|रिव्यू|रेटिंग|सब्सक्राइब)[^.\n]{0,40}(ವೀಡಿಯೊ|ವಿಡಿಯೋ|ಯೂಟ್ಯೂಬ್|youtube|ಹೋಟೆಲ್|वीडियो|यूट्यूब|होटल)",
+        r"(ನೋಂದಣಿ|ರಿಜಿಸ್ಟ್ರೇಶನ್|ತರಬೇತಿ|ಟ್ರೇನಿಂಗ್|ಸೆಕ್ಯುರಿಟಿ) ?(ಶುಲ್ಕ|ಫೀ|ಫೀಸ್|ಠೇವಣಿ)",
+        r"(रजिस्ट्रेशन|पंजीकरण|ट्रेनिंग|सिक्योरिटी) ?(फीस|शुल्क|डिपॉजिट)",
+        r"(ಮನೆಯಿಂದಲೇ|ಮನೆಯಲ್ಲೇ ಕುಳಿತು|ಪಾರ್ಟ್ ಟೈಮ್|घर बैठे|पार्ट टाइम)[^\n]{0,80}(ಗಳಿಸಿ|ಸಂಪಾದ|ಸಂಬಳ|ಆದಾಯ|कमाएं|कमाई|कमाइए|सैलरी|आय)",
+    ],
+    "Prize, lottery or 'you have won' offer": [
+        r"(ಲಾಟರಿ|ಲಕ್ಕಿ ಡ್ರಾ|ನೀವು ಗೆದ್ದಿದ್ದೀರಿ|ಬಹುಮಾನ ಗೆದ್ದ|ಬಹುಮಾನ ಸಿಕ್ಕ|लॉटरी|लकी ड्रॉ|आपने जीत|इनाम जीत|इनाम मिला|केबीसी)",
+        # "Congratulations ... ₹25 lakh" — also survives screenshot misreads of the prize words
+        r"(ಅಭಿನಂದನೆ|बधाई)[^\n]{0,80}" + MONEY + r"\s?\d[\d,]*\s?(ಲಕ್ಷ|ಕೋಟಿ|लाख|करोड)",
+    ],
+    "Asks you to pay a fee to receive money": [
+        r"(ಪ್ರೊ?ಸೆ?ಸಿಂಗ್|ಡೆಲಿವರಿ|ಕ್ಲಿಯರೆನ್ಸ್|ಜಿಎಸ್ಟಿ|ತೆರಿಗೆ|ಬಿಡುಗಡೆ) ?(ಶುಲ್ಕ|ಫೀ|ಫೀಸ್|ಚಾರ್ಜ್)",
+        r"(प्र(ो)?स(े)?सिंग|डिलीवरी|क्लियरेंस|जीएसटी|टैक्स|रिलीज) ?(फीस|शुल्क|चार्ज)",
+        r"(ಶುಲ್ಕ|ಫೀ|फीस|शुल्क|चार्ज)[^।.\n]{0,15}" + MONEY + r"\s?\d[^।.\n]{0,30}(ಕಳುಹಿಸಿ|ಕಳಿಸಿ|भेजें|भेजो|भेज दें|भेजिए)",
+    ],
+    "Investment or trading scheme with unrealistic returns": [
+        r"(ಖಚಿತ|ಗ್ಯಾರಂಟಿ|ಗ್ಯಾರಂಟೀಡ್)[^.\n]{0,15}(ಲಾಭ|ರಿಟರ್ನ್|ಆದಾಯ)",
+        r"(गारंटी|पक्का|निश्चित|गारंटीड)[^।\n]{0,15}(मुनाफा|रिटर्न|लाभ|कमाई)",
+        r"(ಹಣ ಡಬಲ್|ದುಡ್ಡು ಡಬಲ್|पैसा डबल|पैसे डबल|रकम दोगुनी)",
+        r"(ಕ್ರಿಪ್ಟೋ|ಟ್ರೇಡಿಂಗ್|ಷೇರು|क्रिप्टो|ट्रेडिंग|शेयर बाजार)[^.\n]{0,40}(ಲಾಭ|ಹೂಡಿಕೆ|ಟಿಪ್ಸ್|मुनाफ|निवेश|टिप्स)",
+    ],
+    "Asks you to install a remote access / screen sharing app": [
+        r"(ಎನಿಡೆಸ್ಕ್|ಟೀಮ್ವೀವರ್|ಸ್ಕ್ರೀನ್ ಶೇರ್|एनीडेस्क|टीमव्यूअर|स्क्रीन शेयर)",
+        r"(ಎಪಿಕೆ|एपीके)",
+    ],
+    "Family member 'new number' / emergency money request": [
+        r"(ಹೊಸ ನಂಬರ್|ಫೋನ್ ಕಳೆದು|ಫೋನ್ ಹಾಳಾ|ಪೊಸ ನಂಬರ್|नया नंबर|फोन खो|फोन खराब|फोन टूट)[^\n]{0,120}(ಹಣ|ದುಡ್ಡು|ಕಳುಹಿಸ|ಪೈಸೆ|पैसे|पैसा|भेज)",
+        r"(ಅಮ್ಮ|ಅಪ್ಪ|ಮಮ್ಮಿ|ಪಪ್ಪ|ಅಪ್ಪೆ|ಅಮ್ಮೆ|मम्मी|पापा|माँ|मां)[^\n]{0,60}(ಹೊಸ ನಂಬರ್|ಪೊಸ ನಂಬರ್|नया नंबर)",
+    ],
+    "Refund or cashback that needs you to click or fill a form": [
+        r"(ರಿಫಂಡ್|ಕ್ಯಾಶ್ಬ್ಯಾಕ್|ಹಣ ವಾಪಸ್|रिफंड|कैशबैक|पैसे वापस)[^.\n]{0,60}(ಕ್ಲಿಕ್|ಲಿಂಕ್|ಫಾರ್ಮ್|क्लिक|लिंक|फॉर्म)",
+    ],
+    "Pressure / urgency language": [
+        r"(ತಕ್ಷಣ|ಕೂಡಲೇ|ಇಂದೇ|ಇವತ್ತೇ|ಇಂದು ರಾತ್ರಿ|ಇವತ್ತು ರಾತ್ರಿ|ಕೊನೆಯ ಅವಕಾಶ|ಕೊನೆಯ ಎಚ್ಚರಿಕೆ|ತುರ್ತು|ತುರ್ತಾಗಿ|ಇತ್ತೆನೇ|ಬೇಗನೇ)",
+        r"(तुरंत|फौरन|आज ही|आज रात|अंतिम चेतावनी|आखिरी मौका|जल्द से जल्द|घंटे के भीतर|घंटों में)",
+    ],
+    "Asks you to call or message an unknown number": [
+        r"(ಕರೆ ಮಾಡಿ|ಸಂಪರ್ಕಿಸಿ|ವಾಟ್ಸಾಪ್|ಕಾಲ್ ಮಲ್ಪುಲೆ|कॉल करें|फोन करें|संपर्क करें|व्हाट्सएप)[^\n]{0,40}" + NUM,
+        NUM + r"[^\n]{0,30}(ಗೆ ಕರೆ|ಕರೆ ಮಾಡಿ|ಸಂಪರ್ಕಿಸಿ|ಕಾಲ್ ಮಲ್ಪುಲೆ|पर कॉल|पर फोन|पर संपर्क)",
+    ],
+}
+for _label, _patterns, _w in RULES:
+    _patterns.extend(NATIVE_PATTERNS.get(_label, []))
+
 # Signals that a message is a genuine notification, not a scam
 SAFE_SIGNALS = [
     r"\b(do not|don't|dont|never)\s+share\b",
     r"\bnever (ask|asks) for (your )?(otp|pin|password|cvv)\b",
     r"\bkisi (ke saath|se bhi|ko bhi)\b[^.\n]{0,30}\b(share na|mat)\b",
     r"\bif (this was )?not (done by )?you\b",
+    # Kannada / Tulu: "don't tell/share with anyone"
+    r"ಯಾರಿಗೂ[^.\n]{0,15}(ಹೇಳಬೇಡಿ|ಹಂಚಿಕೊಳ್ಳಬೇಡಿ|ಕೊಡಬೇಡಿ|ಶೇರ್ ಮಾಡಬೇಡಿ|ತಿಳಿಸಬೇಡಿ)",
+    r"(ಹಂಚಿಕೊಳ್ಳಬೇಡಿ|ಶೇರ್ ಮಾಡಬೇಡಿ|ಕೊರೊಡ್ಚಿ|ಪನೊಡ್ಚಿ)",
+    r"(ನೀವು ಮಾಡಿಲ್ಲದಿದ್ದರೆ|ನೀವು ಮಾಡದಿದ್ದರೆ)",
+    # Hindi: "don't share with anyone"
+    r"(किसी को भी|किसी के साथ|किसी से)[^।\n]{0,20}(न|ना|मत) ",
+    r"(न|ना|मत) (बताएं|बताइए|बताओ|शेयर करें|शेयर करो|दें)",
+    r"(यदि|अगर) (यह )?(आपने नहीं|आपके द्वारा नहीं)",
 ]
 
 HIGH_RISK_LABELS = {r[0] for r in RULES if r[2] >= 30}
+
+
+# ---------------------------------------------------------------------------
+# LANGUAGE COVERAGE — be honest when a message is in a script we can't check well
+# ---------------------------------------------------------------------------
+NOTE_OTHER_SCRIPT = (
+    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, "
+    "Kannada and Hindi). We couldn't fully check it — be careful, and never share OTPs, PINs or passwords."
+)
+NOTE_NEW_SCRIPT = (
+    "Our checks for messages written in Kannada or Hindi script are new and may miss some scams — stay careful."
+)
+NOTE_HIDDEN_LINK = (
+    "This message asks you to click a link, but the link itself isn't visible here — it may be hidden "
+    "behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link."
+)
+
+HIDDEN_LINK_PHRASES = re.compile(
+    r"(click here|tap here|click (on )?(the )?(below |above )?link|tap (on )?(the )?link|click (the |this )?button|"
+    r"click below|link below|ಇಲ್ಲಿ ಕ್ಲಿಕ್|ಇಲ್ಲಿ ಒತ್ತಿ|ಕೆಳಗಿನ ಲಿಂಕ್|ಲಿಂಕ್ ಕ್ಲಿಕ್|ಲಿಂಕ್ ಒತ್ತಿ|ಮುಲ್ಪ ಕ್ಲಿಕ್|"
+    r"यहाँ क्लिक|यहां क्लिक|यहाँ टैप|यहां टैप|नीचे दिए (गए )?लिंक|लिंक पर क्लिक|इस लिंक)",
+)
+
+
+def script_mix(text: str) -> dict:
+    """Share of letters in: latin, supported Indian scripts (Kannada, Devanagari), other scripts."""
+    counts = {"latin": 0, "supported": 0, "other": 0}
+    for ch in text:
+        if not ch.isalpha():
+            continue
+        code = ord(ch)
+        if ch.isascii():
+            counts["latin"] += 1
+        elif 0x0900 <= code <= 0x097F or 0x0C80 <= code <= 0x0CFF:
+            counts["supported"] += 1
+        else:
+            counts["other"] += 1
+    total = sum(counts.values()) or 1
+    return {k: v / total for k, v in counts.items()}
 
 
 def verdict_from_score(score: int) -> str:
@@ -233,6 +375,8 @@ def verdict_from_score(score: int) -> str:
 
 def _normalise(text: str) -> str:
     text = text.lower()
+    # zero-width joiners (common in Kannada words like ಅಪ್‌ಡೇಟ್) and Hindi nukta dots
+    text = text.replace("\u200c", "").replace("\u200d", "").replace("\u093c", "")
     text = text.replace("’", "'").replace("₹", "₹")
     text = re.sub(r"[ \t]+", " ", text)
     return text
@@ -278,13 +422,24 @@ def analyze_text(text: str) -> dict:
         notes.append("Contains a genuine-looking safety warning (e.g. 'do not share your OTP')")
 
     score = max(0, min(100, score))
+    verdict = verdict_from_score(score)
+
+    info = []
+    mix = script_mix(text)
+    if not findings:
+        if mix["other"] > 0.4:
+            verdict = "UNCERTAIN"  # don't tell people it's safe when we couldn't read it
+            info.append(NOTE_OTHER_SCRIPT)
+        elif mix["supported"] > 0.4:
+            info.append(NOTE_NEW_SCRIPT)
 
     return {
         "text_analyzed": text,
         "risk_score": score,
-        "verdict": verdict_from_score(score),
+        "verdict": verdict,
         "patterns_detected": findings,
         "safe_signals": notes,
+        "notes": info,
     }
 
 
@@ -353,9 +508,13 @@ def check_links_in_result(result: dict) -> dict:
             f"This message has {len(links)} links; we checked the first {MAX_LINKS_CHECKED}"
         )
 
+    if not links and HIDDEN_LINK_PHRASES.search(_normalise(result.get("text_analyzed", ""))):
+        result.setdefault("notes", []).append(NOTE_HIDDEN_LINK)
+
     result["links_checked"] = checked
     result["risk_score"] = min(100, result["risk_score"] + extra_score)
-    result["verdict"] = verdict_from_score(result["risk_score"])
+    if extra_score or result.get("verdict") != "UNCERTAIN":
+        result["verdict"] = verdict_from_score(result["risk_score"])
     return result
 
 # ---------------------------------------------------------------------------
@@ -380,13 +539,29 @@ def _prepare_for_ocr(img):
     return ImageOps.autocontrast(img)
 
 
+_OCR_LANGS = None
+
+
+def ocr_languages() -> str:
+    """English plus Kannada and Hindi when their language packs are installed (see Dockerfile)."""
+    global _OCR_LANGS
+    if _OCR_LANGS is None:
+        try:
+            installed = set(pytesseract.get_languages(config=""))
+        except Exception:
+            installed = {"eng"}
+        _OCR_LANGS = "+".join(l for l in ("eng", "kan", "hin") if l in installed) or "eng"
+    return _OCR_LANGS
+
+
 def extract_text_from_image(image_bytes: bytes) -> str:
     img = Image.open(io.BytesIO(image_bytes))
     prepared = _prepare_for_ocr(img)
-    text = pytesseract.image_to_string(prepared, config="--psm 6", timeout=40)
+    langs = ocr_languages()
+    text = pytesseract.image_to_string(prepared, lang=langs, config="--psm 6", timeout=60)
     if len(text.strip()) < 10:
         # try automatic page layout as a fallback
-        text = pytesseract.image_to_string(prepared, timeout=40)
+        text = pytesseract.image_to_string(prepared, lang=langs, timeout=60)
     return text.strip()
 
 

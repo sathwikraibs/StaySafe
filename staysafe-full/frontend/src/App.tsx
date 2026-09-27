@@ -56,8 +56,8 @@ export default function App() {
 function renderPage(path: string, navigate: (p: string) => void) {
   switch (path) {
     case "/": return <HomePage onNavigate={navigate} />;
-    case "/scan-url": return <ScanUrlPage />;
-    case "/scan-message": return <ScanMessagePage />;
+    case "/scan-url": return <ScanUrlPage onNavigate={navigate} />;
+    case "/scan-message": return <ScanMessagePage onNavigate={navigate} />;
     case "/scan-qr": return <ScanQrPage />;
     case "/scan-file": return <ScanFilePage />;
     case "/check-password": return <CheckPasswordPage />;

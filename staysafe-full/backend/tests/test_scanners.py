@@ -74,6 +74,60 @@ def test_genuine_messages_not_flagged():
         assert result["verdict"] == "LIKELY_SAFE", (name, result)
 
 
+KANNADA_HINDI_SCAMS = {
+    "kn bank block": "ಆತ್ಮೀಯ ಗ್ರಾಹಕರೇ, ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ತಕ್ಷಣ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ",
+    "kn OTP ask": "ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ",
+    "kn electricity": "ನಿಮ್ಮ ಕರೆಂಟ್ ಇಂದು ರಾತ್ರಿ 9:30 ಕ್ಕೆ ಕಟ್ ಆಗುತ್ತದೆ. ಈ ನಂಬರ್‌ಗೆ ಕರೆ ಮಾಡಿ 9876543210",
+    "kn lottery": "ಅಭಿನಂದನೆಗಳು! ನೀವು ಲಕ್ಕಿ ಡ್ರಾದಲ್ಲಿ ₹25 ಲಕ್ಷ ಗೆದ್ದಿದ್ದೀರಿ. ಪ್ರೊಸೆಸಿಂಗ್ ಶುಲ್ಕ ₹5000 ಕಟ್ಟಿ",
+    "kn digital arrest": "ನಿಮ್ಮ ಪಾರ್ಸೆಲ್‌ನಲ್ಲಿ ಡ್ರಗ್ಸ್ ಸಿಕ್ಕಿದೆ. ಮುಂಬೈ ಪೊಲೀಸ್ ನಿಮ್ಮನ್ನು ಅರೆಸ್ಟ್ ಮಾಡುತ್ತಾರೆ. ವೀಡಿಯೊ ಕಾಲ್‌ಗೆ ಬನ್ನಿ",
+    "kn task job": "ಮನೆಯಿಂದಲೇ ದಿನಕ್ಕೆ ₹3000 ಗಳಿಸಿ. ಯೂಟ್ಯೂಬ್ ವೀಡಿಯೊ ಲೈಕ್ ಮಾಡಿ. ನೋಂದಣಿ ಶುಲ್ಕ ₹500",
+    "kn UPI PIN": "ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್ ಪಡೆಯಲು ನಿಮ್ಮ UPI PIN ಹಾಕಿ",
+    "kn new number": "ಅಮ್ಮಾ ಇದು ನನ್ನ ಹೊಸ ನಂಬರ್, ಫೋನ್ ಕಳೆದುಹೋಯಿತು. ತುರ್ತಾಗಿ 10000 ಹಣ ಕಳುಹಿಸಿ",
+    "tulu bank + OTP": "ಈರೆನ ಖಾತೆ ಇನಿ ಬ್ಲಾಕ್ ಆಪುಂಡು. ಬೇಗನೇ OTP ಪನ್ಲೆ",
+    "hi bank block": "आपका बैंक खाता आज बंद हो जाएगा। तुरंत KYC अपडेट करें",
+    "hi OTP ask": "आपको आया हुआ OTP तुरंत बताइए",
+    "hi electricity": "आपकी बिजली आज रात 9:30 बजे काट दी जाएगी। तुरंत इस नंबर पर कॉल करें 9876543210",
+    "hi lottery": "बधाई हो! आपने लकी ड्रॉ में ₹25 लाख जीते हैं। प्रोसेसिंग फीस ₹5000 भेजें",
+    "hi digital arrest": "आपके पार्सल में ड्रग्स मिले हैं। मुंबई पुलिस आपको गिरफ्तार करेगी। वीडियो कॉल पर आइए",
+    "hi task job": "घर बैठे रोज ₹3000 कमाएं। यूट्यूब वीडियो लाइक करें। रजिस्ट्रेशन फीस ₹500",
+    "hi new number": "मम्मी यह मेरा नया नंबर है, फोन खो गया। तुरंत 10000 पैसे भेज दो",
+}
+
+KANNADA_HINDI_GENUINE = {
+    "kn bank OTP": "ನಿಮ್ಮ OTP 482913. ಇದನ್ನು ಯಾರಿಗೂ ಹೇಳಬೇಡಿ - SBI",
+    "kn debit alert": "ನಿಮ್ಮ ಖಾತೆಯಿಂದ ₹250 ಕಡಿತವಾಗಿದೆ. ನೀವು ಮಾಡದಿದ್ದರೆ 1800111109 ಗೆ ಕರೆ ಮಾಡಿ",
+    "kn family": "ಅಮ್ಮ, ಸಂಜೆ ಬರುವಾಗ ಹಾಲು ತನ್ನಿ",
+    "kn bill": "ನಿಮ್ಮ ಕರೆಂಟ್ ಬಿಲ್ ₹450. ದಯವಿಟ್ಟು ಪಾವತಿಸಿ - ಮೆಸ್ಕಾಂ",
+    "tulu OTP": "ಈರೆನ OTP 4829. ಏರೆಗ್‌ಲಾ ಕೊರೊಡ್ಚಿ",
+    "hi bank OTP": "आपका OTP 482913 है। इसे किसी के साथ भी शेयर न करें - HDFC",
+    "hi debit alert": "आपके खाते से ₹250 डेबिट हुए। अगर यह आपने नहीं किया तो 1800 पर कॉल करें",
+    "hi school fee": "आपकी स्कूल फीस ₹5000 जमा करें - अंतिम तिथि 30 सितंबर",
+    "hi family": "मम्मी, शाम को दूध ले आना",
+}
+
+
+def test_kannada_hindi_scams_detected():
+    for name, text in KANNADA_HINDI_SCAMS.items():
+        result = analyze_text(text)
+        assert result["verdict"] == "SCAM_LIKELY", (name, result)
+
+
+def test_kannada_hindi_genuine_not_flagged():
+    for name, text in KANNADA_HINDI_GENUINE.items():
+        result = analyze_text(text)
+        assert result["verdict"] == "LIKELY_SAFE", (name, result)
+
+
+def test_unsupported_language_is_not_called_safe():
+    result = analyze_text("உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்")  # Tamil
+    assert result["verdict"] == "UNCERTAIN", result
+
+
+def test_hidden_link_gets_a_tip():
+    result = check_links_in_result(analyze_text("Your KYC is pending. Click here to update now"))
+    assert any("Copy link" in n for n in result["notes"]), result
+
+
 def test_links_found_in_messages():
     links = extract_links("Track at amazon.in/track or www.sbi-kyc.xyz/login. Mail a@b.com at 9.30pm (http://bit.ly/x)")
     assert links == ["https://amazon.in/track", "https://www.sbi-kyc.xyz/login", "http://bit.ly/x"], links

@@ -5,7 +5,7 @@ export type Tone = "safe" | "caution" | "danger";
 export function verdictTone(v: Verdict | string | undefined): Tone {
   const s = (v || "").toUpperCase();
   if (s === "SAFE" || s === "LIKELY_SAFE") return "safe";
-  if (s === "CAUTION" || s === "SUSPICIOUS") return "caution";
+  if (s === "CAUTION" || s === "SUSPICIOUS" || s === "UNCERTAIN") return "caution";
   return "danger";
 }
 
@@ -15,6 +15,7 @@ export function verdictLabelKey(v: Verdict | string | undefined): string {
   if (s === "SAFE" || s === "LIKELY_SAFE") return "verdict.safe";
   if (s === "CAUTION" || s === "SUSPICIOUS") return "verdict.caution";
   if (s === "DANGEROUS" || s === "SCAM_LIKELY") return "verdict.danger";
+  if (s === "UNCERTAIN") return "verdict.uncertain";
   return "verdict.unknown";
 }
 

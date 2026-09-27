@@ -94,6 +94,23 @@ def extract_body(msg) -> str:
         return str(msg.get_payload())
 
 
+def extract_html(msg) -> str:
+    """The formatted (HTML) part — where links hidden behind 'Click here' buttons live."""
+    parts = []
+    for part in msg.walk():
+        if part.get_content_type() == "text/html":
+            try:
+                parts.append(part.get_payload(decode=True).decode(errors="ignore"))
+            except Exception:
+                pass
+    return "\n".join(parts)
+
+
+def html_to_text(html: str) -> str:
+    html = re.sub(r"(?is)<(script|style).*?</\1>", " ", html)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html)).strip()
+
+
 def verdict_from_score(score: int) -> str:
     if score >= 50:
         return "DANGEROUS"
@@ -115,12 +132,21 @@ def scan_email_route():
 
     msg = message_from_string(raw_email)
     body = extract_body(msg)
+    html = extract_html(msg)
+    if not body.strip() and html:
+        body = html_to_text(html)  # HTML-only email: read its visible text
 
     auth_result = check_auth_results(raw_email)
     sender_result = check_sender_mismatch(msg)
     body_result = analyze_text(body)
 
-    urls = URL_PATTERN.findall(body)[:5]  # cap at 5 to keep it fast
+    # Links from the text AND from the HTML (including ones hidden behind "Click here" buttons)
+    urls = []
+    for u in URL_PATTERN.findall(body + "\n" + html):
+        u = u.rstrip(".,;:!?)]}'\"")
+        if u not in urls:
+            urls.append(u)
+    urls = urls[:5]  # cap at 5 to keep it fast
     url_findings = []
     url_score = 0
     for url in urls:

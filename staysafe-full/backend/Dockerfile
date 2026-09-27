@@ -1,11 +1,11 @@
 # StaySafe backend — Docker image for Render
 # Render's normal Python runtime can't install system programs, but screenshot
-# reading needs Tesseract OCR and QR decoding works best with the zbar library.
+# reading needs Tesseract OCR (with English, Kannada and Hindi language packs) and QR decoding works best with the zbar library.
 # This image installs both, so image uploads work in production.
 FROM python:3.11-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng libzbar0 libglib2.0-0 \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-kan tesseract-ocr-hin libzbar0 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
