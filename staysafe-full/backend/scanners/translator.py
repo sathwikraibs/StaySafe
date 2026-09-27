@@ -48,7 +48,9 @@ _problem = {"google": None, "mymemory": None}
 
 
 def _google_key() -> str:
-    return os.environ.get("TRANSLATE_API_KEY") or os.environ.get("GSB_API_KEY", "")
+    # Only a key added on purpose for translation. The Safe Browsing key is never reused here,
+    # so Google Translate can't be switched on by accident (keeps the site at ₹0).
+    return os.environ.get("TRANSLATE_API_KEY", "")
 
 
 def _pause(provider: str, seconds: float, reason: str) -> None:
