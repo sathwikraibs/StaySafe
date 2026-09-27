@@ -2,11 +2,29 @@ export type Verdict =
   | "SAFE" | "CAUTION" | "DANGEROUS"
   | "LIKELY_SAFE" | "SUSPICIOUS" | "SCAM_LIKELY" | "UNCERTAIN";
 
+export type CheckStatus = "pass" | "warn" | "fail" | "info" | "skip";
+
+/** One line of the "What we checked" list. Text comes from checks.<id>.<status> in the language files. */
+export interface Check {
+  id: string;
+  status: CheckStatus;
+  value?: string | number | null;
+}
+
 export interface ScanUrlResponse {
   url: string;
   risk_score: number;
   verdict: Verdict;
   findings: string[];
+  checks?: Check[];
+  details?: {
+    domain: string;
+    registered_domain: string;
+    final_url: string;
+    page_title: string;
+    age_days: number | null;
+    ip: string;
+  };
 }
 
 export interface ScanMessageResponse {
@@ -27,6 +45,7 @@ export interface LinkCheck {
   verdict: Verdict;
   risk_score: number;
   findings: string[];
+  checks?: Check[];
 }
 
 export interface ScanQrResponse {
@@ -35,12 +54,19 @@ export interface ScanQrResponse {
   findings: string[];
   qr_type: string;
   raw_data: string;
+  checks?: Check[];
+  details?: ScanUrlResponse["details"];
+  payee?: string;
+  payee_name?: string;
+  amount?: string;
 }
 
 export interface ScanFileResponse {
   filename: string;
   sha256: string;
   detected_type?: string;
+  size?: number;
+  checks?: Check[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];
@@ -50,9 +76,12 @@ export interface CheckPasswordResponse {
   risk_score: number;
   verdict: Verdict;
   strength_label: string;
-  breached: boolean;
+  breached: boolean | null;
   breach_count: number;
   findings: string[];
+  checks?: Check[];
+  strength_score?: number;
+  length?: number;
 }
 
 export interface CheckNetworkResponse {
@@ -62,6 +91,12 @@ export interface CheckNetworkResponse {
   ip: string;
   isp: string;
   location: string;
+  checks?: Check[];
+  ip_version?: string;
+  org?: string;
+  asn?: string;
+  country_code?: string;
+  timezone?: string;
 }
 
 export interface ScanEmailResponse {
@@ -69,6 +104,8 @@ export interface ScanEmailResponse {
   reply_to: string;
   links_found: string[];
   links: string[];
+  subject?: string;
+  checks?: Check[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];

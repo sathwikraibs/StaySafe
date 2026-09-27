@@ -23,7 +23,7 @@ SCAM_LIBRARY = [
         "title": "KYC / Account Suspension Scam",
         "how_it_works": "You get an SMS or call claiming your bank account will be blocked unless you 'update KYC' immediately, usually with a link or a request to install a remote-access app.",
         "red_flags": [
-            "Urgency — 'within 24 hours' or 'today'",
+            "Urgency, like 'within 24 hours' or 'today'",
             "Link doesn't go to your bank's real domain",
             "Asks you to install AnyDesk/TeamViewer",
             "Asks for OTP, PIN, or card details",
@@ -36,7 +36,7 @@ SCAM_LIBRARY = [
         "title": "Fake Refund / Delivery Scam",
         "how_it_works": "A message claims a refund, delivery fee, or customs charge is pending and asks you to 'accept' it by scanning a QR code or entering your UPI PIN.",
         "red_flags": [
-            "Asks you to enter UPI PIN to 'receive' money — you never need a PIN to receive",
+            "Asks you to enter UPI PIN to 'receive' money. You never need a PIN to receive",
             "Unexpected refund you didn't request",
             "Pressure to act immediately or lose the refund",
         ],

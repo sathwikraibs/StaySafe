@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingBreath } from "@/components/LoadingBreath";
+import { LoadingSteps } from "@/components/LoadingSteps";
 import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
 import { apiGet, apiPostJSON, errorMessage } from "@/api";
@@ -9,6 +9,47 @@ import type { IncidentOption, IncidentPlanResponse } from "@/types";
 import { IconArrowRight, IconCheck, IconAlert, IconPhone, IconGlobe } from "@/icons";
 import { ChatCard } from "@/components/ChatWidgets";
 import { useI18n } from "@/i18n";
+import { STEP_RESOURCES, type Resource } from "@/incidentResources";
+
+/** One official link under a recovery step: name, what it does, and a clear button. */
+function ResourceLink({ res }: { res: Resource }) {
+  const { t } = useI18n();
+  const button =
+    res.kind === "download" ? t("resources.download") :
+    res.kind === "call" ? t("resources.call") :
+    res.kind === "report" ? t("resources.report") :
+    res.kind === "guide" ? t("resources.guide") : t("resources.open");
+  const btnCls =
+    res.kind === "download" ? "bg-sage-500 hover:bg-sage-600 text-cream-50" :
+    res.kind === "call" || res.kind === "report" ? "bg-rust-500 hover:bg-rust-600 text-cream-50" :
+    "bg-dustyblue-500 hover:bg-dustyblue-600 text-cream-50";
+  const external = !res.url.startsWith("tel:");
+  return (
+    <a
+      href={res.url}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="btn-press card-hover flex items-center gap-3 rounded-xl border-2 border-cream-200 bg-cream-50 p-3 hover:border-sage-300"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-center gap-1.5 font-body text-sm font-bold text-ink-900">
+          <span className="break-words">{res.name}</span>
+          {res.platform && (
+            <span className="rounded-full bg-dustyblue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-dustyblue-600">
+              {t(`resources.${res.platform}`)}
+            </span>
+          )}
+          {res.govt && (
+            <span className="rounded-full bg-sage-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sage-700">
+              {t("resources.govt")}
+            </span>
+          )}
+        </p>
+        <p className="mt-0.5 font-body text-xs text-ink-700">{t(`resources.desc.${res.desc}`)}</p>
+      </div>
+      <span className={`shrink-0 rounded-xl px-3 py-2 font-body text-xs font-bold shadow-warm-sm ${btnCls}`}>{button}</span>
+    </a>
+  );
+}
 
 /** Always-visible emergency actions: 1930 helpline + national cyber crime portal. */
 function UrgentActions() {
@@ -106,7 +147,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
     <div>
       <PageHeader title={t("incident.title")} subtitle={t("incident.subtitlePick")} />
 
-      {(loadingOptions || loadingPlan) && <LoadingBreath label={t("incident.loading")} />}
+      {(loadingOptions || loadingPlan) && <LoadingSteps tool="incident" />}
       {error && <ErrorNotice>{error}</ErrorNotice>}
 
       {options && !loadingOptions && !plan && (
@@ -138,19 +179,30 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
           </Card>
 
           <div className="space-y-3">
-            {planSteps(plan).map((step, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-4 rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-200 text-sage-700">
-                  <span className="font-heading text-sm font-bold">{i + 1}</span>
+            {planSteps(plan).map((step, i) => {
+              const resources = STEP_RESOURCES[plan.incident_type]?.[i] ?? [];
+              return (
+                <div
+                  key={i}
+                  className="rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-200 text-sage-700">
+                      <span className="font-heading text-sm font-bold">{i + 1}</span>
+                    </div>
+                    <p className="flex-1 pt-1.5 font-body text-base text-ink-800">{step}</p>
+                  </div>
+                  {resources.length > 0 && (
+                    <div className="mt-4 space-y-2 sm:pl-[3.25rem]">
+                      {resources.map((res) => <ResourceLink key={res.url} res={res} />)}
+                    </div>
+                  )}
                 </div>
-                <p className="flex-1 pt-1.5 font-body text-base text-ink-800">{step}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          <p className="rounded-xl bg-dustyblue-100 px-4 py-3 font-body text-xs text-dustyblue-600">{t("resources.note")}</p>
 
           <div className="rounded-2xl bg-sage-100 p-5">
             <div className="flex items-center gap-2 text-sage-700">

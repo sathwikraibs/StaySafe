@@ -3,7 +3,7 @@ StaySafe - "I Already Clicked It" Incident Response Wizard
 --------------------------------------------------------------
 User selects what happened (clicked a link, entered password, shared OTP,
 installed an app, sent money, etc.) and gets an immediate, ordered
-action plan. No AI needed here -- this is a lookup table, which makes
+action plan. No AI needed here. This is a lookup table, which makes
 it fast, reliable, and easy to defend in a project viva.
 
 Register with:
@@ -24,7 +24,7 @@ INCIDENT_PLANS = {
         "steps": [
             "Don't enter any information if a page asks for login/payment details.",
             "Close the browser tab immediately.",
-            "Run a security scan on your device if you have antivirus installed.",
+            "Run a virus scan on your device. No antivirus app? Download a free, trusted one from the links below.",
             "Check your recent account activity for anything unusual.",
             "Avoid using that device for banking until you've scanned it.",
         ],
@@ -55,8 +55,8 @@ INCIDENT_PLANS = {
             "If this was for a payment, check immediately whether money was deducted.",
             "Call your bank's official helpline right now to flag possible fraud.",
             "Change your net-banking/UPI app password.",
-            "If money was lost, report it via India's Cyber Crime helpline: dial 1930 or visit cybercrime.gov.in immediately -- faster reporting increases the chance of recovery.",
-            "Do not respond to further calls/messages asking for more codes -- this is a common follow-up scam tactic.",
+            "If money was lost, report it via India's Cyber Crime helpline: dial 1930 or visit cybercrime.gov.in immediately. Faster reporting increases the chance of recovery.",
+            "Do not respond to further calls/messages asking for more codes. This is a common follow-up scam tactic.",
         ],
     },
     "installed_app": {
@@ -76,7 +76,7 @@ INCIDENT_PLANS = {
             "Uninstall the remote access app immediately.",
             "Turn off Wi-Fi/mobile data to end the session right now.",
             "Restart your device.",
-            "Change all important passwords from a different device -- assume anything typed during the session was seen.",
+            "Change all important passwords from a different device. Assume anything typed during the session was seen.",
             "Contact your bank if any banking app was open during the session.",
             "Report to Cyber Crime helpline 1930 / cybercrime.gov.in if this involved a 'bank support' or 'refund' call.",
         ],
@@ -85,7 +85,7 @@ INCIDENT_PLANS = {
         "label": "Money was already transferred/lost",
         "steps": [
             "Call your bank's fraud helpline immediately to request a transaction reversal/hold.",
-            "Report immediately at cybercrime.gov.in or call 1930 (India's national cyber fraud helpline) -- the first few hours matter most for recovery.",
+            "Report immediately at cybercrime.gov.in or call 1930 (India's national cyber fraud helpline). The first few hours matter most for recovery.",
             "Save all evidence: screenshots of messages, transaction ID, the scammer's number/UPI ID.",
             "File a complaint at your local police station if the portal advises it.",
             "Change all financial app passwords and enable MFA.",

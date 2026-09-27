@@ -1,7 +1,9 @@
-// English — the source language. Every other language file follows this shape.
+// English. The source language. Every other language file follows this shape.
 // Use {name} for values filled in at runtime.
 
-export const en = {
+import { reportEn, type ReportDict } from "./report-en";
+
+const enBase = {
   meta: { name: "English", native: "English" },
 
   common: {
@@ -47,7 +49,7 @@ export const en = {
 
 
   loading: {
-    slow: "This is taking a little longer — the server may be waking up. It can take up to a minute the first time.",
+    slow: "This is taking a little longer. The server may be waking up. It can take up to a minute the first time.",
   },
 
   home: {
@@ -92,7 +94,7 @@ export const en = {
     notesTitle: "Please note",
     meaningTitle: "What this message says",
     translatedFrom: "Automatically translated from {lang}",
-    meaningNote: "Automatic translation by {provider} — it may not be perfect.",
+    meaningNote: "Automatic translation by {provider}. It may not be perfect.",
     shownInKannada: "shown in Kannada (Tulu isn't available for translation yet)",
   },
 
@@ -214,7 +216,7 @@ export const en = {
     title: "Need Help?",
     subtitle: "You're not alone. Talk to a real person, or get urgent help if you've lost money.",
     urgentTitle: "Lost money in the last few hours?",
-    urgentText: "Act fast — the sooner you report it, the better the chance of stopping the money.",
+    urgentText: "Act fast. The sooner you report it, the better the chance of stopping the money.",
     call: "Call 1930 helpline",
     report: "Report at cybercrime.gov.in",
     bankNote: "Also call your bank's official number (from the back of your card or their official app) to block your card or account.",
@@ -226,7 +228,7 @@ export const en = {
       "You don't understand a result StaySafe showed you",
     ],
     promiseTitle: "Our promise",
-    promise: "StaySafe will never ask for your OTP, UPI PIN, password, card number or bank details — in chat, on a call, or anywhere else. If \"StaySafe support\" ever asks for these, it's a scam.",
+    promise: "StaySafe will never ask for your OTP, UPI PIN, password, card number or bank details, whether in chat, on a call or anywhere else. If \"StaySafe support\" ever asks for these, it's a scam.",
     clickedTitle: "I clicked a scam",
     clickedText: "Get a step-by-step recovery plan",
     learnTitle: "Learn about scams",
@@ -238,7 +240,7 @@ export const en = {
     title: "Chat with StaySafe Support",
     online: "We're online now",
     away: "We'll reply shortly",
-    offline: "Leave a message — we'll reply soon",
+    offline: "Leave a message. We'll reply soon",
     unknown: "Usually replies within a few hours",
     notReady: "Live chat is being set up. Please check back soon.",
     intro: "Tell us what happened in your own words. A real person will read it and help you work out what to do next. No sign-up needed.",
@@ -268,7 +270,7 @@ export const en = {
     subtitle: "Choose your language and manage your data on this device.",
     language: "Language",
     languageNote: "The whole website, including results, will switch to this language.",
-    betaNote: "Tulu translation is new — if something reads oddly, tell us in chat so we can fix it.",
+    betaNote: "Tulu translation is new. If something reads oddly, tell us in chat so we can fix it.",
     otherLangs: "Need another language?",
     otherLangsText: "Your browser can translate this page: in Chrome, tap ⋮ → Translate. Tell us in chat which language you'd like us to add next.",
     data: "Your data",
@@ -282,17 +284,17 @@ export const en = {
     title: "About & Privacy",
     subtitle: "What StaySafe is, how it works, and what happens to what you check.",
     whatTitle: "What is StaySafe?",
-    what: "StaySafe is a free tool that helps you check links, messages, QR codes, files, passwords and emails for signs of scams, and explains the result in plain language. It was built as a final-year cyber security student project.",
+    what: "StaySafe is a free tool that helps you check links, messages, QR codes, files, passwords and emails for signs of scams, and explains the result in plain language. It was built by a cybersecurity student to help friends, family and everyone else stay safe online.",
     howTitle: "How the checks work",
-    how: "StaySafe uses clear rules — like spotting fake bank website names, OTP requests or files pretending to be photos — and adds up warning signs into a risk score. It does not use AI, so every result can be traced back to the exact reason.",
+    how: "StaySafe uses clear rules, like spotting fake bank website names, OTP requests or files pretending to be photos, and adds up warning signs into a risk score. It does not use AI, so every result can be traced back to the exact reason.",
     notGuaranteeTitle: "A second opinion, not a guarantee",
     notGuarantee: "Scammers keep inventing new tricks, so a scam can sometimes look safe to our checks. If something still feels wrong, don't click it, don't pay, and ask someone you trust.",
     dataTitle: "What happens to what you check",
     dataItems: [
-      "Messages, screenshots and files are sent securely to our server to be checked. We don't keep them — only a short summary goes into your check history.",
+      "Messages, screenshots and files are sent securely to our server to be checked. We don't keep them. Only a short summary goes into your check history.",
       "Links (including links found in messages, QR codes and emails) are also checked with Google Safe Browsing and VirusTotal.",
-      "Messages that aren't in English letters, or that are in a different language from the website, are sent to a translation service (Google Translate, or the free MyMemory service when Google's free daily limit is used up) so we can understand and explain them. We don't store them.",
-      "Files are checked with VirusTotal using only their fingerprint (a hash) — the file itself is not uploaded to them.",
+      "Messages in a different language from the website may be sent to the free MyMemory translation service, so we can understand them and explain them in your language. We don't store them.",
+      "Files are checked with VirusTotal using only their fingerprint (a hash). The file itself is not uploaded to them.",
       "Passwords are never stored. Only a scrambled 5-character fragment is sent to the Have I Been Pwned leak database.",
       "The connection check looks up your internet address with ip-api.com.",
       "Your check history and safety score are saved only in your own browser. The server keeps a short-term copy in memory, which is wiped whenever it restarts.",
@@ -307,13 +309,13 @@ export const en = {
   hiddenLink: {
     title: "Link hidden behind “Click here”?",
     summary: "We can't see links hidden behind words or buttons in a screenshot or copied text. Tap to see how to check them.",
-    why: "Many scam messages and emails hide the real web address behind words like “Click here”, “Verify now”, “Claim reward” or a button. A screenshot — or text you copy — only shows those words, not the link underneath, so StaySafe can't check where it really goes.",
-    warning: "Don't tap the link to find out where it goes. Copying a link is safe — opening it is not.",
+    why: "Many scam messages and emails hide the real web address behind words like “Click here”, “Verify now”, “Claim reward” or a button. A screenshot, or text you copy, only shows those words, not the link underneath, so StaySafe can't check where it really goes.",
+    warning: "Don't tap the link to find out where it goes. Copying a link is safe. Opening it is not.",
     stepsTitle: "How to check a hidden link safely:",
     steps: [
       "On a phone: press and hold the words or button (don't tap) until a menu appears, then choose “Copy link” or “Copy link address”.",
       "On a computer: right-click the words or button and choose “Copy link address”.",
-      "In an email app, you can also paste the full email into Check an Email — we check the links hidden inside it too.",
+      "In an email app, you can also paste the full email into Check an Email. We check the links hidden inside it too.",
       "Paste the copied link into Check a Link and tap “Check this link”.",
       "If you can't copy it, don't open it. When in doubt, ask us in chat.",
     ],
@@ -324,4 +326,7 @@ export const en = {
   upload: { choose: "Choose a different file" },
 };
 
+export const en = { ...enBase, ...reportEn };
+
 export type Dict = typeof en;
+export type BaseDict = Omit<Dict, keyof ReportDict>;

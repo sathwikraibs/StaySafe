@@ -5,7 +5,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
-from scanners.url_scanner import url_scanner_bp
+from scanners.url_scanner import url_scanner_bp, link_check_status
 from scanners.message_scanner import message_scanner_bp, ocr_status, ocr_languages
 from scanners.risk_engine import risk_engine_bp
 from scanners.qr_scanner import qr_scanner_bp, qr_status
@@ -44,6 +44,7 @@ def home():
         "ocr_languages": ocr_languages() if ocr_status() else "",
         "qr": qr_status(),
         "translation": translation_status(),
+        "link_checks": link_check_status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }
 

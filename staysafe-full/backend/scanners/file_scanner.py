@@ -6,7 +6,7 @@ User uploads a file before opening it. We:
   2. Check that hash against VirusTotal's database
   3. Run local heuristics: double extensions, risky extensions, macro-enabled docs
 
-We do NOT execute or sandbox the file — that's out of scope for a
+We do NOT execute or sandbox the file. That's out of scope for a
 student project and genuinely risky to run server-side. Hash lookup +
 heuristics is the safe, defensible approach.
 
@@ -116,13 +116,13 @@ def get_extension(filename: str) -> str:
 
 
 def check_double_extension(filename: str) -> list:
-    """Detects e.g. 'invoice.pdf.exe' or 'invoice.pdf      .exe' — looks safe, isn't."""
+    """Detects e.g. 'invoice.pdf.exe' or 'invoice.pdf      .exe'. Looks safe, isn't."""
     parts = [p.strip() for p in filename.lower().rstrip(" .").split(".")]
     if len(parts) > 2:
         fake_ext = "." + parts[-2]
         real_ext = "." + parts[-1]
         if fake_ext in COMMONLY_TRUSTED and real_ext in DANGEROUS_EXTENSIONS:
-            return [f"This file pretends to be a {fake_ext} file but is really a {real_ext} program — a common disguise trick"]
+            return [f"This file pretends to be a {fake_ext} file but is really a {real_ext} program. A common disguise trick"]
     return []
 
 
@@ -138,7 +138,7 @@ def check_extension_risk(filename: str) -> tuple:
     ext = get_extension(filename)
 
     if ext in DANGEROUS_EXTENSIONS:
-        findings.append(f"File type '{ext}' can run code on your device — only open it if you fully trust the sender")
+        findings.append(f"File type '{ext}' can run code on your device. Only open it if you fully trust the sender")
         score += 30
 
     if ext in MACRO_RISK_EXTENSIONS:
@@ -161,7 +161,7 @@ def check_content(filename: str, data: bytes) -> tuple:
     real_type = detect_real_type(data)
 
     if real_type in EXECUTABLE_KINDS and ext not in DANGEROUS_EXTENSIONS:
-        findings.append(f"This file is named like a '{ext or 'no extension'}' file but is actually {_a(real_type)} — do NOT open it")
+        findings.append(f"This file is named like a '{ext or 'no extension'}' file but is actually {_a(real_type)}. Do NOT open it")
         score += 60
     elif ext in EXPECTED_TYPES and real_type != "unknown" and real_type not in EXPECTED_TYPES[ext]:
         findings.append(f"The file's name says '{ext}' but its contents are {_a(real_type)}")
@@ -176,7 +176,7 @@ def check_content(filename: str, data: bytes) -> tuple:
         ) if token in lowered]
         risky = sorted(set(risky))
         if risky:
-            findings.append("This PDF " + ", ".join(risky) + " — normal documents rarely need this")
+            findings.append("This PDF " + ", ".join(risky) + ". Normal documents rarely need this")
             score += 30
 
     if real_type in ("Word document", "Excel document", "PowerPoint document", "ZIP archive"):
@@ -211,7 +211,7 @@ def check_content(filename: str, data: bytes) -> tuple:
 
 def check_virustotal_hash(sha256: str) -> dict:
     if not VIRUSTOTAL_API_KEY:
-        return {"score": 0, "findings": [], "skipped": "No VirusTotal API key configured"}
+        return {"status": "skip", "score": 0, "findings": [], "skipped": "No VirusTotal API key configured"}
 
     endpoint = f"https://www.virustotal.com/api/v3/files/{sha256}"
     headers = {"x-apikey": VIRUSTOTAL_API_KEY}
@@ -220,8 +220,9 @@ def check_virustotal_hash(sha256: str) -> dict:
         resp = requests.get(endpoint, headers=headers, timeout=8)
         if resp.status_code == 404:
             return {
+                "status": "info",
                 "score": 5,
-                "findings": ["This exact file hasn't been seen by VirusTotal before — treat with normal caution"],
+                "findings": ["This exact file hasn't been seen by VirusTotal before. Treat with normal caution"],
             }
 
         stats = resp.json()["data"]["attributes"]["last_analysis_stats"]
@@ -229,12 +230,15 @@ def check_virustotal_hash(sha256: str) -> dict:
         suspicious = stats.get("suspicious", 0)
 
         if malicious > 0:
-            return {"score": 60, "findings": [f"{malicious} security engines flagged this exact file as malicious"]}
+            return {"status": "fail", "value": malicious, "score": 60,
+                    "findings": [f"{malicious} security engines flagged this exact file as malicious"]}
         if suspicious > 0:
-            return {"score": 25, "findings": [f"{suspicious} security engines flagged this file as suspicious"]}
-        return {"score": 0, "findings": ["No security engines flagged this file"]}
+            return {"status": "warn", "value": suspicious, "score": 25,
+                    "findings": [f"{suspicious} security engines flagged this file as suspicious"]}
+        return {"status": "pass", "value": sum(stats.values()) or None, "score": 0,
+                "findings": ["No security engines flagged this file"]}
     except Exception:
-        return {"score": 0, "findings": ["VirusTotal file check failed"], "error": True}
+        return {"status": "skip", "score": 0, "findings": [], "error": True}
 
 
 def verdict_from_score(score: int) -> str:
@@ -268,8 +272,21 @@ def scan_file_route():
     if not all_findings:
         all_findings = ["No warning signs found in this file's name or contents"]
 
+    type_bad = [f for f in content_findings if f.startswith(("This file is named like", "The file's name says"))]
+    hidden = [f for f in content_findings if f not in type_bad]
+    ext = get_extension(filename)
+    checks = [
+        {"id": "file_vt", "status": vt_result.get("status", "skip"), "value": vt_result.get("value")},
+        {"id": "file_type", "status": ("fail" if any("do NOT" in f for f in type_bad) else "warn") if type_bad else "pass",
+         "value": real_type if real_type != "unknown" else None},
+        {"id": "file_hidden", "status": "fail" if hidden else "pass", "value": len(hidden)},
+        {"id": "file_name", "status": "fail" if ext_score >= 35 else ("warn" if ext_score else "pass"), "value": ext or None},
+    ]
+
     result = {
         "filename": filename,
+        "size": len(file_bytes),
+        "checks": checks,
         "sha256": sha256,
         "detected_type": real_type,
         "risk_score": total_score,

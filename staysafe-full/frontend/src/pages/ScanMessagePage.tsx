@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { VerdictBanner } from "@/components/VerdictBanner";
-import { LoadingBreath } from "@/components/LoadingBreath";
+import { LoadingSteps } from "@/components/LoadingSteps";
+import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
+import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
 import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
-import type { ScanMessageResponse } from "@/types";
+import type { Check, ScanMessageResponse } from "@/types";
 import { verdictTone, toneClasses, toneTagKey } from "@/verdict";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 import { IconInfo, IconLanguage } from "@/icons";
@@ -23,6 +23,22 @@ function languageName(code: string, uiLang: string): string {
   }
 }
 
+/** The "What we checked" list for a message, worked out from the result. */
+function messageChecks(r: ScanMessageResponse): Check[] {
+  const checks: Check[] = [];
+  const signs = r.patterns_detected.filter((p) => !p.startsWith("The link ") && !p.startsWith("This message has "));
+  checks.push({ id: "msg_patterns", status: signs.length === 0 ? "pass" : signs.length >= 2 ? "fail" : "warn", value: signs.length });
+  const links = r.links_checked ?? [];
+  const risky = links.filter((l) => verdictTone(l.verdict) !== "safe").length;
+  checks.push(links.length === 0
+    ? { id: "msg_links", status: "info" }
+    : risky ? { id: "msg_links", status: "fail", value: risky } : { id: "msg_links", status: "pass", value: links.length });
+  checks.push({ id: "msg_safe", status: r.safe_signals && r.safe_signals.length ? "pass" : "info" });
+  if (r.verdict === "UNCERTAIN") checks.push({ id: "msg_language", status: "warn" });
+  else if (r.translation) checks.push({ id: "msg_language", status: "info" });
+  return checks;
+}
+
 export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, ts, lang } = useI18n();
   const [text, setText] = useState("");
@@ -31,9 +47,11 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
   const [result, setResult] = useState<ScanMessageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fromScreenshot, setFromScreenshot] = useState(false);
+  const [pendingTool, setPendingTool] = useState<"message" | "screenshot">("message");
 
   async function handleCheckText() {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
+    setPendingTool("message");
     setLoading(true); setError(null); setResult(null);
     try {
       const data = await apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim() });
@@ -42,7 +60,8 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
   }
 
   async function handleCheckScreenshot() {
-    if (!file) return;
+    if (!file || loading) return;
+    setPendingTool("screenshot");
     setLoading(true); setError(null); setResult(null);
     try {
       const fd = new FormData();
@@ -100,26 +119,27 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
         )}
       </div>
 
-      {/* Links hidden behind "Click here" can't be checked from a screenshot or copied text */}
-      <div className="mt-4">
-        <HiddenLinkGuide onNavigate={onNavigate} />
-      </div>
-
-      {loading && <LoadingBreath label={t("message.loading")} />}
+      {loading && <LoadingSteps tool={pendingTool} />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
       {result && (
-        <div className="mt-4 space-y-4">
-          <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
+        <ResultReport
+          tool="message"
+          verdict={result.verdict}
+          riskScore={result.risk_score}
+          checks={messageChecks(result)}
+          findings={result.patterns_detected}
+          onNavigate={onNavigate}
+        >
           {result.translation && (
-            <Card className="border-2 border-sage-200 p-4">
-              <p className="flex items-center gap-2 font-heading text-base font-semibold text-ink-800">
+            <Card className="border-2 border-sage-200 p-5">
+              <p className="flex items-center gap-2 font-heading text-lg font-semibold text-ink-900">
                 <IconLanguage className="h-5 w-5 text-sage-600" /> {t("message.meaningTitle")}
               </p>
               <p className="mt-0.5 font-body text-xs text-dustyblue-600">
                 {t("message.translatedFrom", { lang: languageName(result.translation.from, lang) })}
-                {lang === "tcy" && result.translation.to === "kn" ? ` · ${t("message.shownInKannada")}` : ""}
+                {lang === "tcy" && result.translation.to === "kn" ? `, ${t("message.shownInKannada")}` : ""}
               </p>
               <p className="mt-3 whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-base text-ink-800">
                 {result.translation.text}
@@ -128,8 +148,8 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
             </Card>
           )}
           {result.notes && result.notes.length > 0 && (
-            <div className="space-y-2 rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100 p-4">
-              <p className="flex items-center gap-2 font-heading text-base font-semibold text-ink-800">
+            <div className="space-y-2 rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100 p-5">
+              <p className="flex items-center gap-2 font-heading text-lg font-semibold text-ink-900">
                 <IconInfo className="h-5 w-5 text-dustyblue-500" /> {t("message.notesTitle")}
               </p>
               {result.notes.map((n) => (
@@ -137,45 +157,56 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
               ))}
             </div>
           )}
-          {result.patterns_detected.length > 0 ? (
-            <FindingsList items={result.patterns_detected} title={t("message.warningSigns")} />
-          ) : (
-            <FindingsList items={[t("message.noPatterns")]} />
-          )}
           {result.safe_signals && result.safe_signals.length > 0 && (
-            <FindingsList items={result.safe_signals} title={t("message.goodSigns")} />
+            <div className="rounded-2xl border-2 border-sage-200 bg-sage-100 p-5">
+              <p className="mb-2 font-heading text-lg font-semibold text-sage-700">{t("message.goodSigns")}</p>
+              <ul className="space-y-1.5">
+                {result.safe_signals.map((g) => (
+                  <li key={g} className="flex items-start gap-2 font-body text-sm text-ink-800">
+                    <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-sage-500" />{ts(g)}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
           {result.links_checked && result.links_checked.length > 0 && (
-            <Card className="p-4">
-              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("message.linksTitle")}</p>
-              <ul className="mt-2 space-y-2">
+            <Card className="p-5">
+              <p className="font-heading text-lg font-semibold text-ink-900">{t("message.linksTitle")}</p>
+              <ul className="mt-3 space-y-2.5">
                 {result.links_checked.map((link) => {
                   const tone = verdictTone(link.verdict);
                   const cls = toneClasses(tone);
+                  const reason = link.findings.find((f) => !f.startsWith("Could not"));
                   return (
-                    <li key={link.url} className="flex items-start gap-2">
-                      <span className={`shrink-0 rounded-lg px-2 py-0.5 font-body text-xs font-semibold ${cls.bg} ${cls.text}`}>
-                        {t(toneTagKey(tone))}
-                      </span>
-                      <span className="break-all font-body text-sm text-ink-800">{link.url}</span>
+                    <li key={link.url} className={`rounded-xl border-2 ${cls.border} ${cls.bg} p-3`}>
+                      <div className="flex items-start gap-2">
+                        <span className={`shrink-0 rounded-lg bg-cream-50 px-2 py-0.5 font-body text-xs font-bold ${cls.text}`}>
+                          {t(toneTagKey(tone))}
+                        </span>
+                        <span className="min-w-0 break-all font-body text-sm font-semibold text-ink-800">{link.url}</span>
+                      </div>
+                      {tone !== "safe" && reason && <p className="mt-1.5 font-body text-sm text-ink-700">{ts(reason)}</p>}
                     </li>
                   );
                 })}
               </ul>
-              <p className="mt-2 font-body text-xs text-dustyblue-600">
-                {t("message.linksNote")}
-              </p>
+              <p className="mt-3 font-body text-xs text-dustyblue-600">{t("message.linksNote")}</p>
             </Card>
           )}
           {fromScreenshot && result.text_analyzed && (
-            <Card className="p-4">
-              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("message.ocrTitle")}</p>
-              <p className="mt-2 whitespace-pre-wrap break-words font-body text-sm text-ink-800">{result.text_analyzed}</p>
+            <Card className="p-5">
+              <p className="font-heading text-lg font-semibold text-ink-900">{t("message.ocrTitle")}</p>
+              <p className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-cream-100 p-3 font-body text-sm text-ink-800">{result.text_analyzed}</p>
               <p className="mt-2 font-body text-xs text-dustyblue-600">{t("message.ocrNote")}</p>
             </Card>
           )}
-        </div>
+        </ResultReport>
       )}
+
+      {/* Links hidden behind "Click here" can't be checked from a screenshot or copied text */}
+      <div className="mt-5">
+        <HiddenLinkGuide onNavigate={onNavigate} />
+      </div>
     </div>
   );
 }

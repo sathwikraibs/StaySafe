@@ -14,8 +14,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import scanners.url_scanner as url_scanner  # noqa: E402
 
-# Keep tests offline and fast: skip the live WHOIS lookup
-url_scanner.analyze_domain_age = lambda host: {"score": 0, "findings": []}
+# Keep tests offline and fast: no DNS, WHOIS, page fetch, Safe Browsing or VirusTotal
+url_scanner.OFFLINE = True
 
 from scanners.message_scanner import analyze_text, check_links_in_result, extract_links  # noqa: E402
 from scanners.url_scanner import scan_url  # noqa: E402
@@ -201,6 +201,109 @@ def test_real_urls_safe():
     for url in REAL_URLS:
         result = scan_url(url)
         assert result["verdict"] == "SAFE", (url, result)
+
+
+# ---- Live-style link checks, with the internet lookups replaced by fakes
+def _online(dns=True, age=900, gsb=False, vt=None, page=None):
+    """Run scan_url as if online. page = dict of fetch_page fields to override."""
+    saved = {k: getattr(url_scanner, k) for k in
+             ("OFFLINE", "resolve_host", "whois_age_days", "check_safe_browsing", "check_virustotal", "fetch_page")}
+    base_page = {"ok": True, "final_url": None, "hops": [], "status": 200, "ssl_error": False, "title": "Welcome",
+                 "has_password": False, "text": "welcome to our shop", "download": None, "blocked": False, "error": None}
+
+    def fake_page(url):
+        out = dict(base_page, **(page or {}))
+        out["final_url"] = out["final_url"] or url
+        return out
+
+    url_scanner.OFFLINE = False
+    url_scanner.resolve_host = lambda host: {"exists": dns, "ips": ["93.184.216.34"] if dns else []}
+    url_scanner.whois_age_days = lambda domain: age
+    url_scanner.check_safe_browsing = lambda urls: {"listed": gsb, "threats": ["SOCIAL_ENGINEERING"] if gsb else []}
+    url_scanner.check_virustotal = lambda url, domain: vt or {"status": "ok", "malicious": 0, "suspicious": 0,
+                                                             "harmless": 60, "engines": 90, "domain_malicious": 0}
+    url_scanner.fetch_page = fake_page
+    try:
+        return lambda u: url_scanner.scan_url(u)
+    finally:
+        pass
+
+
+def _restore():
+    import importlib
+    importlib.reload(url_scanner)
+    url_scanner.OFFLINE = True
+
+
+def _scan_online(url, **kw):
+    try:
+        return _online(**kw)(url)
+    finally:
+        _restore()
+
+
+def test_website_that_does_not_exist_is_risky():
+    r = _scan_online("https://my-free-gift-card.com", dns=False, age=None, vt={"status": "not_found"},
+                     page={"ok": False, "error": "no_dns"})
+    assert r["verdict"] == "DANGEROUS", r
+    assert any(c["id"] == "exists" and c["status"] == "fail" for c in r["checks"]), r["checks"]
+
+
+def test_google_blocklist_hit_is_always_risky():
+    r = _scan_online("https://normal-looking-shop.com/offer", gsb=True)
+    assert r["verdict"] == "DANGEROUS" and r["risk_score"] >= 90, r
+
+
+def test_virustotal_hits_are_risky():
+    r = _scan_online("https://normal-looking-shop.com", vt={"status": "ok", "malicious": 7, "suspicious": 1,
+                                                          "harmless": 50, "engines": 90, "domain_malicious": 0})
+    assert r["verdict"] == "DANGEROUS", r
+
+
+def test_short_link_to_fake_bank_page_is_risky():
+    r = _scan_online("https://bit.ly/abc123", page={"final_url": "https://sbi-rewards-kyc.top/login",
+                                                   "hops": ["https://sbi-rewards-kyc.top/login"]})
+    assert r["verdict"] == "DANGEROUS", r
+    assert any(c["id"] == "redirect" and c["status"] == "warn" for c in r["checks"])
+
+
+def test_fake_login_page_is_risky():
+    r = _scan_online("https://secure-portal-7731.com/", page={"has_password": True, "title": "HDFC Bank NetBanking",
+                                                            "text": "hdfc bank login customer id password"})
+    assert r["verdict"] == "DANGEROUS", r
+
+
+def test_brand_new_website_is_not_called_safe():
+    r = _scan_online("https://best-deals-store.com", age=9)
+    assert r["verdict"] != "SAFE", r
+
+
+def test_misspelled_brand_names_are_risky():
+    for u in ("https://amazom.in", "https://flipkarrt.com", "https://whatsaap.com/join"):
+        r = _scan_online(u)
+        assert r["verdict"] == "DANGEROUS", (u, r)
+
+
+def test_words_that_look_like_brands_are_fine():
+    for u in ("https://tomato.com", "https://www.apply.com", "https://kodak.com", "https://japan-guide.com"):
+        r = _scan_online(u)
+        assert r["verdict"] == "SAFE", (u, r)
+
+
+def test_normal_old_website_is_safe():
+    r = _scan_online("https://www.example-bakery.in/menu", age=3000)
+    assert r["verdict"] == "SAFE", r
+    assert all(c["status"] in ("pass", "info") for c in r["checks"]), r["checks"]
+
+
+def test_broken_certificate_is_not_safe():
+    r = _scan_online("https://some-shop.com", page={"ok": False, "ssl_error": True, "error": "ssl"})
+    assert r["verdict"] != "SAFE", r
+
+
+def test_link_that_downloads_an_app_is_risky():
+    r = _scan_online("https://get-rewards.com/app", page={"download": "apk"})
+    assert r["verdict"] == "DANGEROUS", r
 
 
 def test_ip_address_no_fake_subdomain_warning():

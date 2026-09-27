@@ -42,23 +42,24 @@ def check_auth_results(raw_email: str) -> dict:
         auth_header = match.group(0).lower()
 
     if not auth_header:
-        findings.append("No authentication results found — could not verify sender (may be a stripped/forwarded email)")
-        return {"score": 5, "findings": findings}
+        findings.append("No authentication results found. Could not verify sender (may be a stripped/forwarded email)")
+        return {"score": 5, "findings": findings, "status": "skip"}
 
     if "spf=fail" in auth_header or "spf=softfail" in auth_header:
-        findings.append("SPF check failed — sender's server is not authorized to send from this domain")
+        findings.append("SPF check failed. Sender's server is not authorized to send from this domain")
         score += 25
     if "dkim=fail" in auth_header:
-        findings.append("DKIM check failed — email content may have been altered or forged")
+        findings.append("DKIM check failed. Email content may have been altered or forged")
         score += 25
     if "dmarc=fail" in auth_header:
-        findings.append("DMARC check failed — this email fails the domain's own authentication policy")
+        findings.append("DMARC check failed. This email fails the domain's own authentication policy")
         score += 25
 
+    failed = sum(f"{k}=fail" in auth_header for k in ("spf", "dkim", "dmarc")) + ("spf=softfail" in auth_header)
     if score == 0:
         findings.append("Email passed sender authentication checks (SPF/DKIM/DMARC)")
 
-    return {"score": score, "findings": findings}
+    return {"score": score, "findings": findings, "status": "pass" if score == 0 else "fail", "failed": failed}
 
 
 def check_sender_mismatch(msg) -> dict:
@@ -72,7 +73,7 @@ def check_sender_mismatch(msg) -> dict:
         from_domain = from_addr.split("@")[-1] if "@" in from_addr else ""
         reply_domain = reply_to.split("@")[-1] if "@" in reply_to else ""
         if from_domain != reply_domain:
-            findings.append(f"Reply-To address ({reply_to}) doesn't match the From address ({from_addr}) — replies go somewhere different than they appear to")
+            findings.append(f"Reply-To address ({reply_to}) doesn't match the From address ({from_addr}). Replies go somewhere different than they appear to")
             score += 25
 
     return {"score": score, "findings": findings, "from": from_addr, "reply_to": reply_to}
@@ -95,7 +96,7 @@ def extract_body(msg) -> str:
 
 
 def extract_html(msg) -> str:
-    """The formatted (HTML) part — where links hidden behind 'Click here' buttons live."""
+    """The formatted (HTML) part. Where links hidden behind 'Click here' buttons live."""
     parts = []
     for part in msg.walk():
         if part.get_content_type() == "text/html":
@@ -147,13 +148,22 @@ def scan_email_route():
         if u not in urls:
             urls.append(u)
     urls = urls[:5]  # cap at 5 to keep it fast
+    from scanners.url_scanner import LINK_POOL
+    futures = [(u, LINK_POOL.submit(scan_url, u)) for u in urls]
     url_findings = []
     url_score = 0
-    for url in urls:
-        result = scan_url(url)
+    risky_links = 0
+    for url, future in futures:
+        try:
+            result = future.result(timeout=25)
+        except Exception:
+            continue
         if result["verdict"] != "SAFE":
-            url_findings.append(f"Link found is risky ({result['verdict']}): {url}")
-            url_score = max(url_score, result["risk_score"] // 2)  # don't double-count fully
+            risky_links += 1
+            word = "dangerous" if result["verdict"] == "DANGEROUS" else "suspicious"
+            url_findings.append(f"This link in the email looks {word}: {url}")
+            # a link on a blocklist makes the whole email risky
+            url_score = max(url_score, result["risk_score"] if result["risk_score"] >= 90 else result["risk_score"] // 2)
 
     total_score = min(
         100,
@@ -163,18 +173,30 @@ def scan_email_route():
     all_findings = (
         auth_result["findings"]
         + sender_result["findings"]
-        + [f"Message body pattern: {p}" for p in body_result["patterns_detected"]]
+        + [f"In the email text: {p}" for p in body_result["patterns_detected"]]
         + url_findings
     )
+
+    patterns = len(body_result["patterns_detected"])
+    checks = [
+        {"id": "email_auth", "status": auth_result["status"], "value": auth_result.get("failed")},
+        {"id": "email_reply", "status": "warn" if sender_result["score"] else "pass",
+         "value": sender_result["reply_to"] or None},
+        {"id": "email_words", "status": "fail" if patterns >= 2 else ("warn" if patterns else "pass"), "value": patterns},
+        {"id": "email_links", "status": ("fail" if risky_links else "pass") if urls else "info",
+         "value": risky_links if risky_links else len(urls)},
+    ]
 
     result = {
         "from": sender_result["from"],
         "reply_to": sender_result["reply_to"],
+        "subject": (msg.get("Subject") or "")[:200],
         "links_found": urls,
         "links_found_count": len(urls),
         "risk_score": total_score,
         "verdict": verdict_from_score(total_score),
         "findings": all_findings or ["No strong risk indicators found"],
+        "checks": checks,
     }
 
     log_scan("email", result)

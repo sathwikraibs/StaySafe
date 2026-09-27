@@ -75,7 +75,7 @@ def analyze_strength(password: str) -> dict:
         findings.append("This is one of the most commonly used passwords in the world")
         score -= 60
     elif length >= 6 and (base in COMMON_BASE_WORDS or re.sub(r"[^a-z]", "", lower) in COMMON_BASE_WORDS):
-        findings.append("It's a very common word with numbers or symbols added (e.g. Password@123) — attackers try these first")
+        findings.append("It's a very common word with numbers or symbols added (e.g. Password@123). Attackers try these first")
         score -= 45
 
     # Missing character types matter less for long passphrases
@@ -100,7 +100,7 @@ def analyze_strength(password: str) -> dict:
         score -= 15
 
     if re.search(r"(19[5-9]\d|20[0-3]\d)[^0-9]*$", password):
-        findings.append("Ends with a year (like a birth year) — easy to guess if someone knows you")
+        findings.append("Ends with a year (like a birth year). Easy to guess if someone knows you")
         score -= 10
 
     if re.fullmatch(r"[A-Za-z]+[^A-Za-z0-9]?\d{1,4}[^A-Za-z0-9]?", password) and length < 14:
@@ -119,7 +119,16 @@ def analyze_strength(password: str) -> dict:
     if not findings:
         findings.append("No obvious weaknesses found")
 
-    return {"strength_score": score, "strength_label": strength, "findings": findings}
+    missing = sum(1 for pattern, _ in classes if not re.search(pattern, password))
+    common = lower in COMMON_PASSWORDS or any(f.startswith("It's a very common word") for f in findings)
+    patterns = sum(1 for f in findings if f.startswith(("Contains repeated", "Contains a predictable", "Ends with a year", "Follows the very common")))
+    checks = [
+        {"id": "pw_length", "status": "pass" if length >= 12 else ("warn" if length >= 8 else "fail"), "value": length},
+        {"id": "pw_common", "status": "fail" if common else "pass", "value": None},
+        {"id": "pw_variety", "status": "pass" if missing == 0 else ("warn" if missing <= 2 else "fail"), "value": 4 - missing},
+        {"id": "pw_patterns", "status": "pass" if patterns == 0 else ("warn" if patterns == 1 else "fail"), "value": patterns},
+    ]
+    return {"strength_score": score, "strength_label": strength, "findings": findings, "checks": checks}
 
 
 def check_breach(password: str) -> dict:
@@ -165,14 +174,20 @@ def check_password_route():
     risk_score = 100 - strength["strength_score"]
 
     if breach.get("breached") is True:
-        findings.insert(0, f"This password has appeared in {breach['count']:,} known data breaches — change it everywhere you use it")
+        findings.insert(0, f"This password has appeared in {breach['count']:,} known data breaches. Change it everywhere you use it")
         risk_score = max(risk_score, 70)
     elif breach.get("breached") is False:
         findings.append("Not found in any known breach database")
 
     verdict = "DANGEROUS" if risk_score >= 50 else ("CAUTION" if risk_score >= 20 else "SAFE")
+    leak = breach.get("breached")
+    checks = [{"id": "pw_leaks", "status": "fail" if leak else ("pass" if leak is False else "skip"),
+               "value": breach.get("count") or None}] + strength["checks"]
 
     return jsonify({
+        "checks": checks,
+        "strength_score": strength["strength_score"],
+        "length": len(password),
         "risk_score": min(100, risk_score),
         "verdict": verdict,
         "strength_label": strength["strength_label"],

@@ -14,8 +14,8 @@ with a focus on scams seen in India (English + Hinglish):
   - "Hi mum, new number" family impersonation
   - Fake refunds and UPI "collect" tricks
 
-It also recognises SAFE signals — e.g. a real bank OTP message that says
-"do not share this OTP with anyone" — so genuine messages are not flagged.
+It also recognises SAFE signals. E.g. a real bank OTP message that says
+"do not share this OTP with anyone". So genuine messages are not flagged.
 
 Screenshot support uses OCR (Tesseract via pytesseract) to extract the text,
 then runs it through the same rule engine as pasted text.
@@ -270,7 +270,7 @@ NATIVE_PATTERNS = {
     ],
     "Prize, lottery or 'you have won' offer": [
         r"(ಲಾಟರಿ|ಲಕ್ಕಿ ಡ್ರಾ|ನೀವು ಗೆದ್ದಿದ್ದೀರಿ|ಬಹುಮಾನ ಗೆದ್ದ|ಬಹುಮಾನ ಸಿಕ್ಕ|लॉटरी|लकी ड्रॉ|आपने जीत|इनाम जीत|इनाम मिला|केबीसी)",
-        # "Congratulations ... ₹25 lakh" — also survives screenshot misreads of the prize words
+        # "Congratulations ... ₹25 lakh"। Also survives screenshot misreads of the prize words
         r"(ಅಭಿನಂದನೆ|बधाई)[^\n]{0,80}" + MONEY + r"\s?\d[\d,]*\s?(ಲಕ್ಷ|ಕೋಟಿ|लाख|करोड)",
     ],
     "Asks you to pay a fee to receive money": [
@@ -309,7 +309,7 @@ for _label, _patterns, _w in RULES:
 
 
 # ---------------------------------------------------------------------------
-# TAMIL, TELUGU, MALAYALAM and MARATHI rules — so the most common scams are
+# TAMIL, TELUGU, MALAYALAM and MARATHI rules. So the most common scams are
 # caught even when no translation is available (the ₹0 fallback).
 # ---------------------------------------------------------------------------
 MORE_NATIVE_PATTERNS = {
@@ -453,21 +453,21 @@ HIGH_RISK_LABELS = {r[0] for r in RULES if r[2] >= 30}
 
 
 # ---------------------------------------------------------------------------
-# LANGUAGE COVERAGE — be honest when a message is in a script we can't check well
+# LANGUAGE COVERAGE. Be honest when a message is in a script we can't check well
 # ---------------------------------------------------------------------------
 NOTE_OTHER_SCRIPT = (
     "This message is mostly in a language our checks can't read yet (we check English, Hinglish, Kannada, "
-    "Hindi, Tamil, Telugu, Malayalam and Marathi). We couldn't fully check it — be careful, and never share "
+    "Hindi, Tamil, Telugu, Malayalam and Marathi). We couldn't fully check it. Be careful, and never share "
     "OTPs, PINs or passwords."
 )
 NOTE_NEW_SCRIPT = (
-    "Our checks for messages written in Indian-language scripts are new and may miss some scams — stay careful."
+    "Our checks for messages written in Indian-language scripts are new and may miss some scams. Stay careful."
 )
 NOTE_TRANSLATED_CHECK = (
-    "We also checked an automatic English translation of this message. Translations can miss details — stay careful."
+    "We also checked an automatic English translation of this message. Translations can miss details. Stay careful."
 )
 NOTE_HIDDEN_LINK = (
-    "This message asks you to click a link, but the link itself isn't visible here — it may be hidden "
+    "This message asks you to click a link, but the link itself isn't visible here. It may be hidden "
     "behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link."
 )
 
@@ -542,7 +542,7 @@ def analyze_text(text: str) -> dict:
     notes = []
     if safe_hits:
         otp_label = RULES[0][0]
-        # A genuine OTP SMS says "do not share this OTP" — that alone shouldn't count as asking for it
+        # A genuine OTP SMS says "do not share this OTP". That alone shouldn't count as asking for it
         asks_to_share_with_sender = re.search(
             r"\b(share|send|tell|forward|give)\b[^.\n]{0,40}\b(otp|code|pin)\b[^.\n]{0,20}\b(with (me|us)|to (me|us)|here)\b",
             text_norm,
@@ -577,7 +577,7 @@ def analyze_text(text: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# LINK CHECK — every link in the message gets the full link scanner
+# LINK CHECK. Every link in the message gets the full link scanner
 # (structure rules + domain age + Google Safe Browsing + VirusTotal)
 # ---------------------------------------------------------------------------
 MAX_LINKS_CHECKED = 3
@@ -609,12 +609,16 @@ def check_links_in_result(result: dict) -> dict:
     """Run the full link scanner on up to 3 links and fold the results into the verdict."""
     from scanners.url_scanner import scan_url
 
+    from scanners.url_scanner import LINK_POOL
+
     links = extract_links(result.get("text_analyzed", ""))
     checked = []
     extra_score = 0
-    for link in links[:MAX_LINKS_CHECKED]:
+    # Check the links at the same time, so three links take about as long as one
+    futures = [(link, LINK_POOL.submit(scan_url, link)) for link in links[:MAX_LINKS_CHECKED]]
+    for link, future in futures:
         try:
-            link_result = scan_url(link)
+            link_result = future.result(timeout=25)
         except Exception:
             continue
         checked.append({
@@ -622,6 +626,7 @@ def check_links_in_result(result: dict) -> dict:
             "verdict": link_result["verdict"],
             "risk_score": link_result["risk_score"],
             "findings": link_result["findings"],
+            "checks": link_result.get("checks", []),
         })
         reason = next((f for f in link_result["findings"] if "Could not" not in f), "")
         if link_result["verdict"] == "DANGEROUS":
@@ -650,7 +655,7 @@ def check_links_in_result(result: dict) -> dict:
     return result
 
 # ---------------------------------------------------------------------------
-# TRANSLATION — understand other languages, and explain in the visitor's language
+# TRANSLATION. Understand other languages, and explain in the visitor's language
 # ---------------------------------------------------------------------------
 def request_language() -> str:
     """The website language the visitor is using (sent by the frontend as X-Lang)."""
@@ -748,7 +753,7 @@ def extract_text_from_image(image_bytes: bytes) -> str:
 
 
 # ---------------------------------------------------------------------------
-# ROUTE 1 — paste text directly (SMS / WhatsApp / email body)
+# ROUTE 1. Paste text directly (SMS / WhatsApp / email body)
 # ---------------------------------------------------------------------------
 @message_scanner_bp.route("/api/scan-message", methods=["POST"])
 def scan_message_route():
@@ -768,7 +773,7 @@ def scan_message_route():
 
 
 # ---------------------------------------------------------------------------
-# ROUTE 2 — upload a screenshot (OCR extracts text, then same analysis)
+# ROUTE 2. Upload a screenshot (OCR extracts text, then same analysis)
 # ---------------------------------------------------------------------------
 @message_scanner_bp.route("/api/scan-screenshot", methods=["POST"])
 def scan_screenshot_route():

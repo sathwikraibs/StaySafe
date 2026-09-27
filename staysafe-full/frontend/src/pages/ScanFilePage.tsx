@@ -1,16 +1,23 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { VerdictBanner } from "@/components/VerdictBanner";
-import { LoadingBreath } from "@/components/LoadingBreath";
+import { LoadingSteps } from "@/components/LoadingSteps";
+import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
-import { Card } from "@/components/Card";
+import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { IconFile } from "@/icons";
 
-export function ScanFilePage() {
+function formatSize(bytes?: number): string {
+  if (bytes === undefined) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, ts } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -18,7 +25,7 @@ export function ScanFilePage() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleCheck() {
-    if (!file) return;
+    if (!file || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
       const fd = new FormData();
@@ -27,6 +34,9 @@ export function ScanFilePage() {
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
+
+  const label = "font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600";
+  const value = "-mt-1.5 font-body text-sm text-ink-800 sm:mt-0";
 
   return (
     <div>
@@ -48,23 +58,45 @@ export function ScanFilePage() {
         )}
       </div>
 
-      {loading && <LoadingBreath label={t("file.loading")} />}
+      {loading && <LoadingSteps tool="file" />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
       {result && (
-        <div className="mt-4 space-y-4">
-          <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
-          <Card className="p-4">
-            <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("file.details")}</p>
-            <p className="mt-1 font-body text-sm text-ink-800">{result.filename}</p>
-            {result.detected_type && result.detected_type !== "unknown" && (
-              <p className="mt-1 font-body text-xs text-dustyblue-600">{t("file.realType", { type: ts(result.detected_type) })}</p>
-            )}
-            <p className="mt-1 break-all font-body text-xs text-dustyblue-600">{t("file.id", { id: result.sha256 })}</p>
-          </Card>
-          <FindingsList items={result.findings} />
-        </div>
+        <ResultReport
+          tool="file"
+          verdict={result.verdict}
+          riskScore={result.risk_score}
+          subject={result.filename}
+          checks={result.checks}
+          findings={result.findings}
+          onNavigate={onNavigate}
+        >
+          <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
+            <div className="flex items-center gap-2">
+              <IconFile className="h-5 w-5 text-dustyblue-600" />
+              <h3 className="font-heading text-lg font-semibold text-ink-900">{t("file.details")}</h3>
+            </div>
+            <dl className="mt-3 grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
+              <dt className={label}>{t("fileInfo.name")}</dt>
+              <dd className={`${value} break-all`}>{result.filename}</dd>
+              {result.detected_type && result.detected_type !== "unknown" && (
+                <>
+                  <dt className={label}>{t("fileInfo.really")}</dt>
+                  <dd className={value}>{ts(result.detected_type)}</dd>
+                </>
+              )}
+              {typeof result.size === "number" && (
+                <>
+                  <dt className={label}>{t("fileInfo.size")}</dt>
+                  <dd className={value}>{formatSize(result.size)}</dd>
+                </>
+              )}
+              <dt className={label}>{t("fileInfo.fingerprint")}</dt>
+              <dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.sha256}</dd>
+            </dl>
+          </div>
+        </ResultReport>
       )}
     </div>
   );

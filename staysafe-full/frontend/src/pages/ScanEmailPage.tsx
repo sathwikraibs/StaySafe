@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { VerdictBanner } from "@/components/VerdictBanner";
-import { LoadingBreath } from "@/components/LoadingBreath";
-import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
-import { Card } from "@/components/Card";
+import { LoadingSteps } from "@/components/LoadingSteps";
+import { ResultReport } from "@/components/ResultReport";
+import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanEmailResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { IconEmail } from "@/icons";
 
-export function ScanEmailPage() {
+export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
   const [raw, setRaw] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,13 +17,16 @@ export function ScanEmailPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleCheck() {
-    if (!raw.trim()) return;
+    if (!raw.trim() || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
       const data = await apiPostJSON<ScanEmailResponse>(`${API_BASE}/api/scan-email`, { raw_email: raw.trim() });
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
+
+  const label = "font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600";
+  const value = "-mt-1.5 break-all font-body text-sm text-ink-800 sm:mt-0";
 
   return (
     <div>
@@ -47,30 +50,42 @@ export function ScanEmailPage() {
         </div>
       </div>
 
-      {loading && <LoadingBreath label={t("email.loading")} />}
+      {loading && <LoadingSteps tool="email" />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
       {result && (
-        <div className="mt-4 space-y-4">
-          <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
-          <Card className="p-4">
-            <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("email.details")}</p>
-            <div className="mt-2 space-y-1.5">
-              <p className="font-body text-sm text-ink-800"><span className="text-dustyblue-600">{t("email.from")}</span>{result.from || t("common.unknown")}</p>
-              <p className="font-body text-sm text-ink-800"><span className="text-dustyblue-600">{t("email.replyTo")}</span>{result.reply_to || t("common.unknown")}</p>
-              <p className="font-body text-sm text-ink-800"><span className="text-dustyblue-600">{t("email.links")}</span>{result.links_found?.length || 0}</p>
+        <ResultReport
+          tool="email"
+          verdict={result.verdict}
+          riskScore={result.risk_score}
+          subject={result.subject || undefined}
+          checks={result.checks}
+          findings={result.findings}
+          onNavigate={onNavigate}
+        >
+          <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
+            <div className="flex items-center gap-2">
+              <IconEmail className="h-5 w-5 text-dustyblue-600" />
+              <h3 className="font-heading text-lg font-semibold text-ink-900">{t("email.details")}</h3>
             </div>
+            <dl className="mt-3 grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
+              <dt className={label}>{t("emailInfo.from")}</dt>
+              <dd className={value}>{result.from || t("common.unknown")}</dd>
+              <dt className={label}>{t("emailInfo.replyTo")}</dt>
+              <dd className={value}>{result.reply_to || t("emailInfo.same")}</dd>
+              <dt className={label}>{t("emailInfo.links")}</dt>
+              <dd className={value}>{result.links_found?.length || 0}</dd>
+            </dl>
             {result.links_found && result.links_found.length > 0 && (
-              <div className="mt-3 rounded-xl bg-cream-100 p-3">
+              <div className="mt-3 space-y-1 rounded-xl bg-cream-50 p-3">
                 {result.links_found.map((link, i) => (
-                  <p key={i} className="break-all font-body text-xs text-dustyblue-600">{link}</p>
+                  <p key={i} className="break-all font-mono text-xs text-dustyblue-600">{link}</p>
                 ))}
               </div>
             )}
-          </Card>
-          <FindingsList items={result.findings} />
-        </div>
+          </div>
+        </ResultReport>
       )}
     </div>
   );

@@ -14,6 +14,7 @@ import { ScamLibraryPage } from "@/pages/ScamLibraryPage";
 import { HelpPage } from "@/pages/HelpPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { AboutPage } from "@/pages/AboutPage";
+import { API_BASE } from "@/config";
 
 const ROUTES = [
   "/", "/scan-url", "/scan-message", "/scan-qr", "/scan-file",
@@ -37,6 +38,11 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // Wake the free server up as soon as someone opens the site, so their first check is quicker
+  useEffect(() => {
+    fetch(`${API_BASE}/`).catch(() => { /* it's only a wake-up call */ });
+  }, []);
+
   useEffect(() => {
     const onHashChange = () => {
       const hash = window.location.hash.replace(/^#/, "");
@@ -58,11 +64,11 @@ function renderPage(path: string, navigate: (p: string) => void) {
     case "/": return <HomePage onNavigate={navigate} />;
     case "/scan-url": return <ScanUrlPage onNavigate={navigate} />;
     case "/scan-message": return <ScanMessagePage onNavigate={navigate} />;
-    case "/scan-qr": return <ScanQrPage />;
-    case "/scan-file": return <ScanFilePage />;
-    case "/check-password": return <CheckPasswordPage />;
-    case "/check-network": return <CheckNetworkPage />;
-    case "/scan-email": return <ScanEmailPage />;
+    case "/scan-qr": return <ScanQrPage onNavigate={navigate} />;
+    case "/scan-file": return <ScanFilePage onNavigate={navigate} />;
+    case "/check-password": return <CheckPasswordPage onNavigate={navigate} />;
+    case "/check-network": return <CheckNetworkPage onNavigate={navigate} />;
+    case "/scan-email": return <ScanEmailPage onNavigate={navigate} />;
     case "/dashboard": return <DashboardPage onNavigate={navigate} />;
     case "/incident": return <IncidentPage onNavigate={navigate} />;
     case "/help": return <HelpPage onNavigate={navigate} />;

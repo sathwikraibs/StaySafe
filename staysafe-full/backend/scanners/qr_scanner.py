@@ -121,24 +121,39 @@ def analyze_upi_string(upi_data: str) -> dict:
     if amount:
         try:
             value = float(amount)
-            findings.append(f"This QR will pre-fill an amount of ₹{value:,.2f} — check it matches what you expect to pay")
+            findings.append(f"This QR will pre-fill an amount of ₹{value:,.2f}. Check it matches what you expect to pay")
             score += 10
             if value >= 10000:
-                findings.append("That is a large amount for a QR payment — double-check before paying")
+                findings.append("That is a large amount for a QR payment. Double-check before paying")
                 score += 10
         except ValueError:
             findings.append("The amount in this QR is not a valid number")
             score += 15
 
     if note and SCAM_NOTE_WORDS.search(note):
-        findings.append(f"The payment note says “{note}” — scammers use notes like this to make you think you'll RECEIVE money")
+        findings.append(f"The payment note says “{note}”. Scammers use notes like this to make you think you'll RECEIVE money")
         score += 40
 
     findings.append("Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.")
 
     score = min(100, score)
     verdict = "DANGEROUS" if score >= 50 else ("CAUTION" if score >= 20 else "SAFE")
+    valid_id = bool(payee and re.fullmatch(r"[\w.\-]{2,256}@[A-Za-z][\w]{1,64}", payee))
+    try:
+        amount_value = float(amount) if amount else None
+    except ValueError:
+        amount_value = -1
+    checks = [
+        {"id": "upi_note", "status": "fail" if (note and SCAM_NOTE_WORDS.search(note)) else "pass", "value": note or None},
+        {"id": "upi_id", "status": ("warn" if re.match(r"^\d{10}@", payee or "") else "pass") if valid_id else "fail",
+         "value": payee or None},
+        {"id": "upi_name", "status": "pass" if payee_name else "warn", "value": payee_name or None},
+        {"id": "upi_amount", "status": "info" if amount_value is None else
+            ("fail" if amount_value < 0 else ("warn" if amount_value >= 10000 else "info")),
+         "value": f"{amount_value:,.2f}" if amount_value and amount_value > 0 else None},
+    ]
     return {
+        "checks": checks,
         "qr_type": "upi_payment",
         "payee": payee,
         "payee_name": payee_name,
@@ -197,6 +212,7 @@ def scan_qr_route():
         "risk_score": 0,
         "verdict": "SAFE",
         "findings": ["This QR contains plain text, not a link or payment request"],
+        "checks": [{"id": "qr_text", "status": "pass", "value": None}],
     }
     log_scan("qr_text", result)
     return jsonify(result)

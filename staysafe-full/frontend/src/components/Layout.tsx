@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ALL_NAV, HOME_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from "@/nav";
 import { IconShield, IconChevronRight, IconAlert, IconSettings } from "@/icons";
 import { useI18n, LANGUAGES } from "@/i18n";
@@ -13,10 +13,8 @@ interface LayoutProps {
 
 const MAIN_NAV: NavItem[] = [ALL_NAV[0], ...HOME_TOOLS];
 
-// Phone bottom menu: 5 fixed tabs that always fit on screen (no sideways scrolling).
-// Every other tool is on the Home page; "Clicked a scam?" is always in the top bar.
-const PHONE_NAV_PATHS = ["/", "/scan-url", "/scan-message", "/scan-qr", "/help"];
-const PHONE_NAV: NavItem[] = PHONE_NAV_PATHS.map((p) => ALL_NAV.find((n) => n.path === p)!).filter(Boolean);
+// Phone bottom menu: every tool, in a row you can swipe sideways.
+const PHONE_NAV: NavItem[] = ALL_NAV;
 
 export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
   const { t, lang } = useI18n();
@@ -146,35 +144,72 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
         </main>
       </div>
 
-      {/* ---------- Phone bottom menu ---------- */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-30 border-t border-cream-200 bg-cream-100/95 backdrop-blur-md lg:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="grid grid-cols-5">
+      {/* ---------- Phone bottom menu: all tools, swipe sideways ---------- */}
+      <PhoneMenu currentPath={currentPath} onNavigate={onNavigate} />
+
+      <FloatingHelpButton onNavigate={onNavigate} currentPath={currentPath} />
+    </div>
+  );
+}
+
+function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigate: (p: string) => void }) {
+  const { t } = useI18n();
+  const row = useRef<HTMLDivElement>(null);
+  const [moreLeft, setMoreLeft] = useState(false);
+  const [moreRight, setMoreRight] = useState(true);
+
+  const updateHints = () => {
+    const el = row.current;
+    if (!el) return;
+    setMoreLeft(el.scrollLeft > 8);
+    setMoreRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+  };
+
+  // Keep the current page's button in view
+  useEffect(() => {
+    const el = row.current?.querySelector<HTMLElement>(`[data-path="${currentPath}"]`);
+    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    const timer = setTimeout(updateHints, 400);
+    return () => clearTimeout(timer);
+  }, [currentPath]);
+
+  return (
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-30 border-t border-cream-200 bg-cream-100/95 backdrop-blur-md lg:hidden"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="relative">
+        <div ref={row} onScroll={updateHints} className="no-scrollbar flex snap-x overflow-x-auto">
           {PHONE_NAV.map((item) => {
             const active = currentPath === item.path;
             const color =
               item.tone === "urgent" ? (active ? "text-rust-600" : "text-rust-500") :
               item.tone === "help" ? (active ? "text-sage-700" : "text-sage-600") :
-              active ? "text-sage-600" : "text-dustyblue-500";
+              active ? "text-sage-700" : "text-dustyblue-500";
             return (
               <button
                 key={item.path}
+                data-path={item.path}
                 onClick={() => onNavigate(item.path)}
-                className={`btn-press flex flex-col items-center gap-1 px-1 py-2.5 ${color}
-                  ${active ? "bg-cream-200/70" : ""}`}
+                className={`btn-press relative flex min-w-[4.6rem] shrink-0 snap-start flex-col items-center gap-1 px-2 pb-2.5 pt-2.5 ${color}
+                  ${active ? "bg-cream-200/80" : ""}`}
               >
+                {active && <span className="absolute left-3 right-3 top-0 h-[3px] rounded-b-full bg-current" />}
                 <item.icon className="h-5 w-5" />
-                <span className="max-w-full truncate px-0.5 font-body text-[10px] font-semibold">{t(item.short)}</span>
+                <span className="whitespace-nowrap font-body text-[10px] font-semibold">{t(item.short)}</span>
               </button>
             );
           })}
         </div>
-      </nav>
-
-      <FloatingHelpButton onNavigate={onNavigate} currentPath={currentPath} />
-    </div>
+        {/* soft edges show there are more tools to swipe to */}
+        {moreLeft && <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-cream-100 to-transparent" />}
+        {moreRight && (
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-end bg-gradient-to-l from-cream-100 via-cream-100/80 to-transparent pr-1">
+            <IconChevronRight className="h-4 w-4 text-dustyblue-500" />
+          </div>
+        )}
+      </div>
+    </nav>
   );
 }
 

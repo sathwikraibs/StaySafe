@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { VerdictBanner } from "@/components/VerdictBanner";
-import { LoadingBreath } from "@/components/LoadingBreath";
+import { LoadingSteps } from "@/components/LoadingSteps";
+import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
-import { Card } from "@/components/Card";
+import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { LinkDetails } from "@/pages/ScanUrlPage";
+import { IconQr } from "@/icons";
 
-export function ScanQrPage() {
+export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export function ScanQrPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleCheck() {
-    if (!file) return;
+    if (!file || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
       const fd = new FormData();
@@ -27,6 +28,11 @@ export function ScanQrPage() {
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
+
+  const typeLabel = (type: string) => {
+    const key = `qr.types.${type}`;
+    return t(key) === key ? type : t(key);
+  };
 
   return (
     <div>
@@ -49,24 +55,35 @@ export function ScanQrPage() {
         )}
       </div>
 
-      {loading && <LoadingBreath label={t("qr.loading")} />}
+      {loading && <LoadingSteps tool="qr" />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
       {result && (
-        <div className="mt-4 space-y-4">
-          <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
+        <ResultReport
+          tool="qr"
+          verdict={result.verdict}
+          riskScore={result.risk_score}
+          checks={result.checks}
+          findings={result.findings}
+          onNavigate={onNavigate}
+        >
           {result.raw_data && (
-            <Card className="p-4">
-              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("qr.contains")}</p>
-              <p className="mt-1 break-words font-body text-sm text-ink-800">{result.raw_data}</p>
-              {result.qr_type && (
-                <p className="mt-2 font-body text-xs text-dustyblue-600">{t("qr.type", { type: t(`qr.types.${result.qr_type}`).startsWith("qr.") ? result.qr_type : t(`qr.types.${result.qr_type}`) })}</p>
-              )}
-            </Card>
+            <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
+              <div className="flex items-center gap-2">
+                <IconQr className="h-5 w-5 text-dustyblue-600" />
+                <h3 className="font-heading text-lg font-semibold text-ink-900">{t("qr.contains")}</h3>
+                {result.qr_type && (
+                  <span className="ml-auto rounded-full bg-cream-50 px-2.5 py-1 font-body text-xs font-bold text-dustyblue-600">
+                    {typeLabel(result.qr_type)}
+                  </span>
+                )}
+              </div>
+              <p className="mt-3 break-all rounded-xl bg-cream-50 p-3 font-mono text-xs text-ink-800 sm:text-sm">{result.raw_data}</p>
+            </div>
           )}
-          <FindingsList items={result.findings} />
-        </div>
+          {result.qr_type === "url" && <LinkDetails details={result.details} />}
+        </ResultReport>
       )}
     </div>
   );

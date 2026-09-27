@@ -7,13 +7,13 @@ Used for two things:
   2. EXPLAINING: "What this message says" in the visitor's language.
 
 Providers are tried in order, and each one switches itself off automatically
-when it runs out — nothing here can ever create a bill:
+when it runs out. Nothing here can ever create a bill:
 
-  1. Google Cloud Translation  (TRANSLATE_API_KEY) — best quality.
+  1. Google Cloud Translation  (TRANSLATE_API_KEY). Best quality.
      Keep the Google project on the free trial (never "Upgrade") and set a daily
      quota in Google Cloud; when Google refuses (quota reached, trial ended,
      billing off), we stop calling it for a while.
-  2. MyMemory (free, no card, no key) — 5,000 chars/day, or 50,000 with an email
+  2. MyMemory (free, no card, no key). 5,000 chars/day, or 50,000 with an email
      in MYMEMORY_EMAIL. When it says the daily quota is used, we stop for the day.
   3. Nothing left → the result falls back to StaySafe's own built-in rules
      (English, Hinglish, Kannada, Hindi, Tamil, Telugu, Malayalam, Marathi).
@@ -139,7 +139,7 @@ def _google(text: str, target: str):
         msg = f"HTTP {resp.status_code}"
     low = msg.lower()
     if resp.status_code == 429 or "quota" in low or "rate limit" in low:
-        _pause("google", 6 * 3600, "Daily limit reached — using the free fallback for now")
+        _pause("google", 6 * 3600, "Daily limit reached. Using the free fallback for now")
     elif resp.status_code in (401, 403) or "billing" in low or "api key" in low or "disabled" in low:
         # Trial ended / billing off / key wrong: stop calling Google, re-try occasionally
         _pause("google", 24 * 3600, msg[:200])
@@ -187,7 +187,7 @@ def _mymemory(text: str, target: str):
         translated = (data.get("responseData") or {}).get("translatedText") or ""
         status = str(data.get("responseStatus", resp.status_code))
         if status == "429" or data.get("quotaFinished") or "MYMEMORY WARNING" in translated.upper():
-            _pause("mymemory", 6 * 3600, "Free daily limit used — try again later")
+            _pause("mymemory", 6 * 3600, "Free daily limit used. Try again later")
             return None
         if status != "200" or not translated:
             return None

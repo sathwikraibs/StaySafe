@@ -1,15 +1,47 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { VerdictBanner } from "@/components/VerdictBanner";
-import { LoadingBreath } from "@/components/LoadingBreath";
-import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
-import { Card } from "@/components/Card";
+import { LoadingSteps } from "@/components/LoadingSteps";
+import { ResultReport } from "@/components/ResultReport";
+import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { CheckPasswordResponse } from "@/types";
 import { useI18n } from "@/i18n";
 
-export function CheckPasswordPage() {
+/** Big coloured strength bar: Weak / Moderate / Strong. */
+function StrengthBar({ result }: { result: CheckPasswordResponse }) {
+  const { t } = useI18n();
+  const score = result.strength_score ?? 100 - result.risk_score;
+  const label = result.strength_label;
+  const color = label === "Strong" ? "bg-sage-500" : label === "Moderate" ? "bg-terracotta-400" : "bg-rust-500";
+  const text = label === "Strong" ? "text-sage-700" : label === "Moderate" ? "text-terracotta-700" : "text-rust-600";
+  return (
+    <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600">{t("password.strength")}</p>
+          <p className={`mt-1 font-heading text-xl font-bold ${text}`}>{t(`password.labels.${label}`)}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600">{t("password.leaks")}</p>
+          <p className={`mt-1 font-heading text-xl font-bold ${result.breached ? "text-rust-600" : result.breached === false ? "text-sage-700" : "text-dustyblue-500"}`}>
+            {result.breached ? t("password.foundIn", { count: result.breach_count.toLocaleString("en-IN") })
+              : result.breached === false ? t("password.notFound") : t("pwInfo.leakUnknown")}
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-1.5">
+        {[0, 1, 2].map((i) => {
+          const filled = label === "Strong" ? 3 : label === "Moderate" ? 2 : 1;
+          return <div key={i} className={`h-2.5 rounded-full ${i < filled ? color : "bg-cream-200"}`} />;
+        })}
+      </div>
+      <p className="mt-2 font-body text-xs text-dustyblue-600">{t("pwInfo.score", { score })}</p>
+    </div>
+  );
+}
+
+export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -18,7 +50,7 @@ export function CheckPasswordPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleCheck() {
-    if (!password) return;
+    if (!password || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
       const data = await apiPostJSON<CheckPasswordResponse>(`${API_BASE}/api/check-password`, { password });
@@ -36,6 +68,7 @@ export function CheckPasswordPage() {
             type={show ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleCheck(); }}
             placeholder={t("password.placeholder")}
             autoComplete="off"
             className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3.5 pr-24 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400"
@@ -57,29 +90,21 @@ export function CheckPasswordPage() {
         </div>
       </div>
 
-      {loading && <LoadingBreath label={t("password.loading")} />}
+      {loading && <LoadingSteps tool="password" />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
       {result && (
-        <div className="mt-4 space-y-4">
-          <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("password.strength")}</p>
-                <p className="mt-1 font-heading text-base font-semibold text-ink-800">{t(`password.labels.${result.strength_label}`)}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("password.leaks")}</p>
-                <p className={`mt-1 font-heading text-base font-semibold ${result.breached ? "text-rust-600" : "text-sage-600"}`}>
-                  {result.breached ? t("password.foundIn", { count: result.breach_count.toLocaleString() }) : t("password.notFound")}
-                </p>
-              </div>
-            </div>
-          </Card>
-          <FindingsList items={result.findings} />
-        </div>
+        <ResultReport
+          tool="password"
+          verdict={result.verdict}
+          riskScore={result.risk_score}
+          checks={result.checks}
+          findings={result.findings}
+          onNavigate={onNavigate}
+        >
+          <StrengthBar result={result} />
+        </ResultReport>
       )}
     </div>
   );
