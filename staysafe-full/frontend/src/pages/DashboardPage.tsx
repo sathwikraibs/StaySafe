@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { PageHeader } from "@/components/PageBits";
+import { ToolHeader } from "@/components/ToolHeader";
 import { Card } from "@/components/Card";
 import type { ScanHistoryItem } from "@/types";
 import { verdictTone, toneClasses, riskBarColor, toneTagKey } from "@/verdict";
@@ -25,7 +25,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
   if (history.length === 0) {
     return (
       <div>
-        <PageHeader title={t("dashboard.title")} subtitle={t("dashboard.subtitleEmpty")} />
+        <ToolHeader path="/dashboard" title={t("dashboard.title")} subtitle={t("dashboard.subtitleEmpty")} />
         <div className="rounded-2xl bg-gradient-to-br from-sage-100 to-cream-100 p-8 text-center shadow-warm">
           <IconHistory className="mx-auto mb-3 h-10 w-10 text-dustyblue-400" />
           <p className="mb-5 font-body text-base text-ink-700/80">
@@ -39,7 +39,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
 
   return (
     <div>
-      <PageHeader title={t("dashboard.title")} subtitle={t("dashboard.subtitle")} />
+      <ToolHeader path="/dashboard" title={t("dashboard.title")} subtitle={t("dashboard.subtitle")} />
 
       <div>
           {/* Tabs */}

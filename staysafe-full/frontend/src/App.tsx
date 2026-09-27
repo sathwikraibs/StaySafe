@@ -74,7 +74,7 @@ function renderPage(path: string, navigate: (p: string) => void) {
     case "/help": return <HelpPage onNavigate={navigate} />;
     case "/settings": return <SettingsPage onNavigate={navigate} />;
     case "/about": return <AboutPage onNavigate={navigate} />;
-    case "/scam-library": return <ScamLibraryPage />;
+    case "/scam-library": return <ScamLibraryPage onNavigate={navigate} />;
     default: return <HomePage onNavigate={navigate} />;
   }
 }

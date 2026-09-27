@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { LoadingSteps } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
-import { PageHeader, ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice } from "@/components/PageBits";
+import { ToolHeader } from "@/components/ToolHeader";
 import { apiGet, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { Check, CheckNetworkResponse } from "@/types";
@@ -87,7 +88,7 @@ export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) =
 
   return (
     <div>
-      <PageHeader title={t("network.title")} subtitle={t("network.subtitle")} />
+      <ToolHeader path="/check-network" title={t("network.title")} subtitle={t("network.subtitle")} />
       <div className="rounded-2xl bg-gradient-to-br from-dustyblue-100 to-cream-100 p-8 text-center shadow-warm">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-dustyblue-200 text-dustyblue-600">
           <IconNetwork className="h-8 w-8" />

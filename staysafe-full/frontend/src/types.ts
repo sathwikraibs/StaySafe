@@ -24,6 +24,15 @@ export interface ScanUrlResponse {
     page_title: string;
     age_days: number | null;
     ip: string;
+    whois?: {
+      registrar?: string; org?: string; country?: string; created?: string; updated?: string;
+      expires?: string; age_days?: number | null; expires_in_days?: number | null; name_servers?: string[];
+    };
+    certificate?: {
+      valid?: boolean; problem?: string; issuer?: string; issued_to?: string; valid_from?: string;
+      valid_to?: string; days_left?: number; cert_age_days?: number;
+    };
+    server?: { country?: string; city?: string; company?: string };
   };
 }
 
@@ -46,6 +55,7 @@ export interface LinkCheck {
   risk_score: number;
   findings: string[];
   checks?: Check[];
+  details?: ScanUrlResponse["details"];
 }
 
 export interface ScanQrResponse {
@@ -104,7 +114,10 @@ export interface ScanEmailResponse {
   reply_to: string;
   links_found: string[];
   links: string[];
+  links_checked?: LinkCheck[];
   subject?: string;
+  from_name?: string;
+  mode?: "form" | "source";
   checks?: Check[];
   risk_score: number;
   verdict: Verdict;

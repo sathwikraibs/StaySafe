@@ -22,6 +22,7 @@ then runs it through the same rule engine as pasted text.
 """
 
 import io
+import time
 import re
 import shutil
 from flask import Blueprint, request, jsonify
@@ -60,6 +61,9 @@ RULES = [
             r"\b(share|send|tell|give)\b (me |us )?(your|the) (password|pin|login details|card details|card number)\b(?! (manager|tips|policy|rules))",
             r"\b(otp|verification code|cvv|mpin)\b[^.\n]{0,30}\b(share|send|tell|batao|bhejo|bhej do|forward)\b(?! (it )?with anyone)",
             r"\b(code|otp)\b[^.\n]{0,25}\b(you (just )?received|we (have )?sent|aaya hai|aya hai)\b",
+            # WhatsApp takeover: "I sent my code to you by mistake, please send it back"
+            r"(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(accidentally|by mistake|mistakenly|wrongly|galti se)\b[^\n]{0,50}\b(code|otp|6[- ]digit)\b",
+            r"(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(code|otp)\b[^\n]{0,50}\b(by mistake|accidentally|wrongly|galti se)\b",
         ],
         50,
     ),
@@ -109,6 +113,8 @@ RULES = [
             r"\btrai\b[^.\n]{0,60}\b(disconnect|block|suspend)\b",
             r"\bpress \d\b[^.\n]{0,40}\b(officer|executive|agent|speak)\b",
             r"\b(sim|mobile number|number)\b[^.\n]{0,40}\b(will be |is )?(blocked|disconnected|deactivated|band)\b",
+            # fake traffic fines / FASTag
+            r"\b(e-?challan|traffic challan|challan|fastag)\b[^\n]{0,60}\b(pending|unpaid|due|overdue|pay|blocked|expired?)\b",
         ],
         30,
     ),
@@ -116,6 +122,7 @@ RULES = [
         "Promises easy fixed daily/hourly earnings",
         [
             r"\b(earn|kamao|kamaye|income|salary)\b[^.\n]{0,40}(rs\.?|₹|inr)\s?\d[\d,]*\s*(/|per|a|daily|every)\s*(day|daily|hour|hr|task)",
+            r"\b(earn|kamao|kamaye)\b\s+(up ?to\s+)?(rs\.?|₹|inr)?\s?\d[\d,]{2,}(\s?(k|rs|rupees))?\s*(/|per|a|every)?\s*(day|daily|hour|hr|week|weekly)\b",
         ],
         15,
     ),
@@ -124,7 +131,7 @@ RULES = [
         [
             r"\b(lik(e|ing)|rat(e|ing)|review(ing)?|subscrib(e|ing))\b[^.\n]{0,40}\b(videos?|youtube|hotels?|products?|google maps)\b",
             r"\b(hiring|job offer|vacancy)\b[^\n]{0,120}\b(telegram|whatsapp)\b",
-            r"\b(part[- ]time|work from home|ghar baithe)\b[^.\n]{0,80}\b(earn|daily|salary|income|kamao)\b",
+            r"\b(part[- ]time|work from home|ghar baithe)\b[^\n]{0,80}\b(earn|daily|salary|income|kamao)\b",
             r"\b(registration|joining|security|training) (fee|deposit|charges?)\b",
         ],
         35,
@@ -627,6 +634,7 @@ def check_links_in_result(result: dict) -> dict:
             "risk_score": link_result["risk_score"],
             "findings": link_result["findings"],
             "checks": link_result.get("checks", []),
+            "details": link_result.get("details", {}),
         })
         reason = next((f for f in link_result["findings"] if "Could not" not in f), "")
         if link_result["verdict"] == "DANGEROUS":
@@ -708,16 +716,23 @@ def add_translation(result: dict, ui_lang: str) -> dict:
 # OCR helpers
 # ---------------------------------------------------------------------------
 def _prepare_for_ocr(img):
-    """Grayscale, fix phone photo rotation, upscale small screenshots, handle dark mode."""
+    """
+    Grayscale, fix phone photo rotation, bring the size into the range Tesseract reads
+    best AND fast, handle dark mode. Phone screenshots (e.g. 1080x2400) are scaled so the
+    width is about 1100px; huge photos are shrunk, tiny crops are enlarged.
+    """
     img = ImageOps.exif_transpose(img)
     img = img.convert("L")
     w, h = img.size
-    if max(w, h) < 1500:
-        scale = 1500 / max(w, h)
-        img = img.resize((int(w * scale), int(h * scale)))
-    elif max(w, h) > 4000:
-        scale = 4000 / max(w, h)
-        img = img.resize((int(w * scale), int(h * scale)))
+    target_w = 1100
+    scale = target_w / w
+    # never let the picture get too big in total (that is what makes reading slow)
+    max_pixels = 3_000_000
+    if (w * scale) * (h * scale) > max_pixels:
+        scale = (max_pixels / (w * h)) ** 0.5
+    scale = max(0.3, min(scale, 2.5))
+    if abs(scale - 1) > 0.08:
+        img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
     # Dark-mode chat screenshots: light text on dark background -> invert
     histogram = img.histogram()
     total_pixels = img.size[0] * img.size[1]
@@ -741,15 +756,62 @@ def ocr_languages() -> str:
     return _OCR_LANGS
 
 
+OCR_TIME_BUDGET = 75  # seconds for all reading passes together (gunicorn allows 120)
+
+
+def _looks_like_real_english(text: str) -> bool:
+    """True when the English pass produced mostly real words (not garbage from another script)."""
+    words = re.findall(r"[A-Za-z0-9@₹.:/'-]+", text)
+    if len(words) < 3:
+        return False
+    good = [w for w in words if re.fullmatch(r"[A-Za-z]{2,}", w) and re.search(r"[aeiouyAEIOUY]", w)
+            or re.fullmatch(r"[0-9₹.,:/-]{2,}", w) or "http" in w.lower() or "@" in w]
+    return len(good) / len(words) >= 0.55
+
+
 def extract_text_from_image(image_bytes: bytes) -> str:
+    """
+    Fast path first: read in English only (3x quicker). Only when the picture seems to hold
+    Kannada or Hindi do we read it again with those languages. Every pass has a time limit;
+    if a slower pass runs out of time we keep what the faster pass found.
+    """
+    started = time.time()
     img = Image.open(io.BytesIO(image_bytes))
+    img.load()
     prepared = _prepare_for_ocr(img)
     langs = ocr_languages()
-    text = pytesseract.image_to_string(prepared, lang=langs, config="--psm 6", timeout=60)
-    if len(text.strip()) < 10:
-        # try automatic page layout as a fallback
-        text = pytesseract.image_to_string(prepared, lang=langs, timeout=60)
-    return text.strip()
+
+    def left() -> int:
+        return max(5, int(OCR_TIME_BUDGET - (time.time() - started)))
+
+    english = ""
+    try:
+        english = pytesseract.image_to_string(prepared, lang="eng", config="--oem 1 --psm 6", timeout=min(35, left())).strip()
+    except RuntimeError:
+        english = ""
+
+    if langs == "eng":
+        if len(english) < 10 and left() > 15:
+            try:
+                english = pytesseract.image_to_string(prepared, lang="eng", config="--oem 1 --psm 3", timeout=left()).strip()
+            except RuntimeError:
+                pass
+        if not english:
+            raise RuntimeError("OCR timed out")
+        return english
+
+    if english and _looks_like_real_english(english):
+        return english
+
+    # Probably Kannada / Hindi (or mixed): read again with every language
+    try:
+        mixed = pytesseract.image_to_string(prepared, lang=langs, config="--oem 1 --psm 6", timeout=left()).strip()
+    except RuntimeError:
+        mixed = ""
+    best = mixed if len(mixed) >= len(english) * 0.6 else english
+    if not best:
+        raise RuntimeError("OCR timed out")
+    return best
 
 
 # ---------------------------------------------------------------------------

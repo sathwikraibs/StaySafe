@@ -3,12 +3,13 @@ import { Button } from "@/components/Button";
 import { LoadingSteps } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { PageHeader, ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice } from "@/components/PageBits";
+import { ToolHeader } from "@/components/ToolHeader";
 import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
 import { useI18n } from "@/i18n";
-import { LinkDetails } from "@/pages/ScanUrlPage";
+import { LinkDetails } from "@/components/WebsiteDetails";
 import { IconQr } from "@/icons";
 
 export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
@@ -36,11 +37,12 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
 
   return (
     <div>
-      <PageHeader title={t("qr.title")} subtitle={t("qr.subtitle")} />
+      <ToolHeader path="/scan-qr" title={t("qr.title")} subtitle={t("qr.subtitle")} />
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <UploadZone
           accept="image/*"
           label={t("qr.uploadLabel")}
+          compress
           hint={t("qr.uploadHint")}
           onFile={setFile}
           onClear={() => setFile(null)}

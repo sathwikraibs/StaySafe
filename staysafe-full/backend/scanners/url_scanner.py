@@ -121,6 +121,8 @@ BRANDS = {
     "bescom": {"bescom.co.in", "bescom.karnataka.gov.in"},
     "mahadiscom": {"mahadiscom.in"},
     "fastag": {"npci.org.in", "ihmcl.co.in"},
+    "parivahan": {"parivahan.gov.in"},
+    "echallan": {"parivahan.gov.in"},
 }
 
 BRAND_DISPLAY = {
@@ -134,7 +136,8 @@ BRAND_DISPLAY = {
     "incometax": "Income Tax Dept", "epfo": "EPFO", "npci": "NPCI", "airtel": "Airtel", "jio": "Jio",
     "bsnl": "BSNL", "indiapost": "India Post", "fedex": "FedEx", "dhl": "DHL", "bluedart": "Blue Dart",
     "delhivery": "Delhivery", "myntra": "Myntra", "swiggy": "Swiggy", "zomato": "Zomato",
-    "bescom": "BESCOM", "mahadiscom": "MSEDCL", "fastag": "FASTag",
+    "bescom": "BESCOM", "mahadiscom": "MSEDCL", "fastag": "FASTag", "parivahan": "Parivahan (Transport Dept)",
+    "echallan": "e-Challan (Transport Dept)",
 }
 
 
@@ -236,20 +239,43 @@ _CACHE_LOCK = threading.Lock()
 CACHE_SECONDS = 3600
 
 
+_INFLIGHT: dict = {}
+
+
 def _cached(key, fn):
+    """Remember slow lookups for an hour; if the same lookup is already running, wait for it."""
     now = time.time()
     with _CACHE_LOCK:
         hit = _CACHE.get(key)
         if hit and now - hit[0] < CACHE_SECONDS:
             return hit[1]
-    value = fn()
-    if not (isinstance(value, dict) and value.get("error")):
+        waiter = _INFLIGHT.get(key)
+        if waiter is None:
+            waiter = threading.Event()
+            _INFLIGHT[key] = waiter
+            owner = True
+        else:
+            owner = False
+    if not owner:
+        waiter.wait(timeout=15)
         with _CACHE_LOCK:
-            _CACHE[key] = (now, value)
-            if len(_CACHE) > 2000:
-                for k in list(_CACHE)[:500]:
-                    _CACHE.pop(k, None)
-    return value
+            hit = _CACHE.get(key)
+        if hit:
+            return hit[1]
+        return fn()
+    try:
+        value = fn()
+        if not (isinstance(value, dict) and value.get("error") and key[0] in ("gsb", "vt")):
+            with _CACHE_LOCK:
+                _CACHE[key] = (time.time(), value)
+                if len(_CACHE) > 2000:
+                    for k in list(_CACHE)[:500]:
+                        _CACHE.pop(k, None)
+        return value
+    finally:
+        with _CACHE_LOCK:
+            _INFLIGHT.pop(key, None)
+        waiter.set()
 
 
 _PROBLEMS = {"safe_browsing": None, "virustotal": None}
@@ -459,24 +485,130 @@ def _public_ip(ip: str) -> bool:
 # ---------------------------------------------------------------------------
 # 3. Website age
 # ---------------------------------------------------------------------------
+def _first(value):
+    if isinstance(value, (list, tuple)):
+        value = [v for v in value if v]
+        return value[0] if value else None
+    return value
+
+
+def _as_date(value):
+    value = value if not isinstance(value, (list, tuple)) else min((v for v in value if isinstance(v, datetime)), default=None)
+    if not isinstance(value, datetime):
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value
+
+
+PRIVACY_WORDS = ("privacy", "redacted", "withheld", "proxy", "protected", "not disclosed", "data protected", "gdpr")
+
+
+def whois_details(domain: str) -> dict:
+    """
+    Public registration record of a website (WHOIS): who registered it through which company,
+    when, when it was last changed and when it expires. {} when not available.
+    """
+    if OFFLINE or whois is None or not domain:
+        return {}
+
+    def call():
+        try:
+            w = whois.whois(domain)
+        except Exception:
+            return {"error": True}
+        created, updated, expires = _as_date(w.creation_date), _as_date(w.updated_date), _as_date(w.expiration_date)
+        now = datetime.now(timezone.utc)
+        org = _first(w.get("org")) or _first(w.get("registrant_organization")) or _first(w.get("name"))
+        if org and any(x in str(org).lower() for x in PRIVACY_WORDS):
+            org = "hidden"
+        ns = w.name_servers or []
+        if isinstance(ns, str):
+            ns = [ns]
+        ns = sorted({str(n).lower().rstrip(".") for n in ns if n})[:3]
+        out = {
+            "registrar": (_first(w.registrar) or "")[:80],
+            "org": (str(org)[:80] if org else ""),
+            "country": (str(_first(w.get("country")) or "")[:40]),
+            "created": created.date().isoformat() if created else "",
+            "updated": updated.date().isoformat() if updated else "",
+            "expires": expires.date().isoformat() if expires else "",
+            "age_days": max(0, (now - created).days) if created else None,
+            "expires_in_days": (expires - now).days if expires else None,
+            "name_servers": ns,
+        }
+        return out if any(v for k, v in out.items() if k != "name_servers") else {"error": True}
+
+    info = _cached(("whois", domain), call)
+    return {} if info.get("error") else info
+
+
 def whois_age_days(domain: str):
     """Days since the domain was registered, or None."""
-    if OFFLINE or whois is None:
-        return None
-    try:
-        w = whois.whois(domain)
-        creation = w.creation_date
-        if isinstance(creation, list):
-            creation = min(c for c in creation if c)
-        if not creation:
-            return None
-        if isinstance(creation, str):
-            return None
-        if creation.tzinfo is None:
-            creation = creation.replace(tzinfo=timezone.utc)
-        return max(0, (datetime.now(timezone.utc) - creation).days)
-    except Exception:
-        return None
+    return whois_details(domain).get("age_days")
+
+
+def cert_details(host: str) -> dict:
+    """The website's security certificate (its HTTPS 'licence'): who issued it and how long it is valid."""
+    if OFFLINE or not host or is_ip(host):
+        return {}
+
+    def call():
+        import ssl
+        ips = resolve_host(host).get("ips") or []
+        if not ips or not all(_public_ip(ip) for ip in ips):
+            return {"error": True}
+        ctx = ssl.create_default_context()
+        try:
+            with socket.create_connection((host, 443), timeout=5) as sock:
+                with ctx.wrap_socket(sock, server_hostname=host) as tls:
+                    cert = tls.getpeercert()
+        except ssl.SSLCertVerificationError as e:
+            return {"valid": False, "problem": str(getattr(e, "verify_message", "") or "not trusted")[:80]}
+        except Exception:
+            return {"error": True}
+
+        def name(parts, key):
+            for rdn in parts or ():
+                for k, v in rdn:
+                    if k == key:
+                        return v
+            return ""
+        not_after = datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc)
+        not_before = datetime.strptime(cert["notBefore"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        return {
+            "valid": True,
+            "issuer": name(cert.get("issuer"), "organizationName") or name(cert.get("issuer"), "commonName"),
+            "issued_to": name(cert.get("subject"), "organizationName") or name(cert.get("subject"), "commonName"),
+            "valid_from": not_before.date().isoformat(),
+            "valid_to": not_after.date().isoformat(),
+            "days_left": (not_after - now).days,
+            "cert_age_days": (now - not_before).days,
+        }
+
+    info = _cached(("cert", host), call)
+    return {} if info.get("error") else info
+
+
+def server_details(ip: str) -> dict:
+    """Where the website's computer is and which company hosts it (ip-api.com)."""
+    if OFFLINE or not ip or not _public_ip(ip):
+        return {}
+
+    def call():
+        try:
+            data = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,isp,org,hosting",
+                                timeout=5).json()
+        except Exception:
+            return {"error": True}
+        if data.get("status") != "success":
+            return {"error": True}
+        return {"country": data.get("country", ""), "city": data.get("city", ""),
+                "company": data.get("org") or data.get("isp") or ""}
+
+    info = _cached(("ipinfo", ip), call)
+    return {} if info.get("error") else info
 
 
 # ---------------------------------------------------------------------------
@@ -727,6 +859,9 @@ def scan_url(url: str) -> dict:
     # Slow lookups run at the same time so the whole check takes a few seconds
     dns_f = _POOL.submit(resolve_host, host)
     whois_f = None if (trusted or structure["hosting"] or is_ip(host)) else _POOL.submit(whois_age_days, reg)
+    # extra details for the "Website details" card (also for well-known sites)
+    who_f = None if (structure["hosting"] or is_ip(host)) else _POOL.submit(whois_details, reg)
+    cert_f = _POOL.submit(cert_details, host) if parsed.scheme == "https" else None
     vt_f = _POOL.submit(check_virustotal, url, reg)
     gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
@@ -912,6 +1047,9 @@ def scan_url(url: str) -> dict:
             "page_title": page.get("title", ""),
             "age_days": age_days,
             "ip": (dns.get("ips") or [""])[0],
+            "whois": result_of(who_f, {}, 6),
+            "certificate": result_of(cert_f, {}, 6),
+            "server": _run(server_details, (dns.get("ips") or [""])[0], timeout=6, default={}),
         },
     }
 

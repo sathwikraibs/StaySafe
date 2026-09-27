@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { LoadingSteps } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
-import { PageHeader, ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice } from "@/components/PageBits";
+import { ToolHeader } from "@/components/ToolHeader";
 import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { CheckPasswordResponse } from "@/types";
@@ -60,7 +61,7 @@ export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) 
 
   return (
     <div>
-      <PageHeader title={t("password.title")} subtitle={t("password.subtitle")} />
+      <ToolHeader path="/check-password" title={t("password.title")} subtitle={t("password.subtitle")} />
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <label className="mb-2 block font-body text-sm font-semibold text-ink-800">{t("password.label")}</label>
         <div className="relative">

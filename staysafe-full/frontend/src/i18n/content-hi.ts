@@ -217,6 +217,19 @@ export const hiContent: LangContent = {
     "This website doesn't exist or has been shut down. No server answers for this name. Scam links are often taken down after a few days": "यह वेबसाइट मौजूद नहीं है या बंद कर दी गई है। इस नाम पर कोई सर्वर जवाब नहीं देता। स्कैम लिंक अक्सर कुछ दिनों में हटा दिए जाते हैं",
     "Website name contains a long string of numbers, common in throwaway scam sites": "वेबसाइट के नाम में लंबी संख्या है, जो जल्दी फेंक दी जाने वाली स्कैम साइटों में आम है",
     "Your device's time zone ({tz}) is different from where your internet connection comes out ({iptz}). This usually means a VPN or proxy is in use": "आपके डिवाइस का टाइम ज़ोन ({tz}) उस जगह से अलग है जहाँ से आपका इंटरनेट कनेक्शन निकलता है ({iptz})। आमतौर पर इसका मतलब है कि VPN या प्रॉक्सी चल रहा है",
+
+    // ---- email form
+    "The sender calls themselves '{who}' but writes from a free {domain} address. Real companies use their own email address": "भेजने वाला खुद को '{who}' बताता है, लेकिन मुफ़्त {domain} पते से लिख रहा है। असली कंपनियाँ अपने खुद के ईमेल पते इस्तेमाल करती हैं",
+    "The sender's name says {brand}, but the email does not come from {brand2}'s real address ({domain})": "भेजने वाले का नाम {brand} है, लेकिन ईमेल {brand2} के असली पते से नहीं आया ({domain})",
+    "The sender's name shows a different email address ({other}) from the real one ({addr})": "भेजने वाले के नाम में अलग ईमेल पता ({other}) दिखाया गया है, असली पता ({addr}) है",
+    "Sender address: {reason}": "भेजने वाले का पता: {reason}",
+    "Please fill in the sender's email address and paste the message.": "भेजने वाले का ईमेल पता भरें और मैसेज पेस्ट करें।",
+    "That sender email address doesn't look right. It should look like name@example.com": "भेजने वाले का ईमेल पता सही नहीं लगता। यह name@example.com जैसा होना चाहिए",
+
+    // ---- connection messages
+    "We couldn't connect right now. Please check your internet and try again.": "अभी कनेक्ट नहीं हो पाया। अपना इंटरनेट देखें और दोबारा कोशिश करें।",
+    "This is taking longer than usual. Please try again in a moment.": "इसमें सामान्य से ज़्यादा समय लग रहा है। थोड़ी देर बाद दोबारा कोशिश करें।",
+    "Something went wrong. Please try again.": "कुछ गड़बड़ हुई। दोबारा कोशिश करें।",
   }),
 
   incidents: {

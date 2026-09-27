@@ -218,6 +218,19 @@ export const tcyContent: LangContent = {
     "This website doesn't exist or has been shut down. No server answers for this name. Scam links are often taken down after a few days": "ಈ ವೆಬ್‌ಸೈಟ್ ಇಜ್ಜಿ ಅತ್ತಂಡ ಬಂದ್ ಆತ್ಂಡ್. ಈ ಪುದರ್‌ಗ್ ಓವುಲಾ ಸರ್ವರ್ ಉತ್ತರ ಕೊರ್ಪುಜಿ. ಸ್ಕ್ಯಾಮ್ ಲಿಂಕ್‌ಲೆನ್ ಕೆಲವು ದಿನೊಡು ದೆಪ್ಪುವೆರ್",
     "Website name contains a long string of numbers, common in throwaway scam sites": "ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ಡ್ ಉದ್ದದ ಸಂಖ್ಯೆ ಉಂಡು, ಕೆಲವು ದಿನದ ಸ್ಕ್ಯಾಮ್ ಸೈಟ್‌ಲೆಡ್ ಉಂದು ಸಾಮಾನ್ಯ",
     "Your device's time zone ({tz}) is different from where your internet connection comes out ({iptz}). This usually means a VPN or proxy is in use": "ಈರೆನ ಸಾಧನದ ಟೈಮ್ ಝೋನ್ ({tz}) ಈರೆನ ಇಂಟರ್ನೆಟ್ ಕನೆಕ್ಷನ್ ಪಿದಾಯಿ ಬರ್ಪುನ ಜಾಗೆಡ್ದ್ ({iptz}) ಬೇತೆ. ಸಾಮಾನ್ಯವಾದ್ ಉಂದೆತ ಅರ್ಥ VPN ಅತ್ತಂಡ ಪ್ರಾಕ್ಸಿ ಬಳಕೆಡ್ ಉಂಡು",
+
+    // ---- email form
+    "The sender calls themselves '{who}' but writes from a free {domain} address. Real companies use their own email address": "ಕಡಪುಡಿನಾಕುಲು ತನನ್ '{who}' ಪನ್ಪೆರ್, ಆಂಡ ಉಚಿತ {domain} ವಿಳಾಸೊಡ್ದ್ ಬರೆಪೆರ್. ನಿಜವಾಯಿನ ಕಂಪನಿಲು ಅಕುಲೆನವೇ ಇಮೇಲ್ ವಿಳಾಸ ಬಳಕೆ ಮಲ್ಪುವ",
+    "The sender's name says {brand}, but the email does not come from {brand2}'s real address ({domain})": "ಕಡಪುಡಿನಾಕುಲೆನ ಪುದರ್ {brand}, ಆಂಡ ಇಮೇಲ್ {brand2} ದ ನಿಜವಾಯಿನ ವಿಳಾಸೊಡ್ದ್ ಬತ್ತಿಜಿ ({domain})",
+    "The sender's name shows a different email address ({other}) from the real one ({addr})": "ಕಡಪುಡಿನಾಕುಲೆನ ಪುದರ್‌ಡ್ ಬೇತೆ ಇಮೇಲ್ ವಿಳಾಸ ({other}) ತೋಜುಂಡು, ನಿಜವಾಯಿನ ವಿಳಾಸ ({addr})",
+    "Sender address: {reason}": "ಕಡಪುಡಿನಾಕುಲೆನ ವಿಳಾಸ: {reason}",
+    "Please fill in the sender's email address and paste the message.": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ವಿಳಾಸ ಬರೆಲೆ, ಮೆಸೇಜ್ ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
+    "That sender email address doesn't look right. It should look like name@example.com": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ವಿಳಾಸ ಸರಿ ಇಜ್ಜಿ. ಉಂದು name@example.com ಲೆಕ್ಕ ಇಪ್ಪೊಡು",
+
+    // ---- connection messages
+    "We couldn't connect right now. Please check your internet and try again.": "ಇತ್ತೆ ಸಂಪರ್ಕ ಆಯಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "This is taking longer than usual. Please try again in a moment.": "ಉಂದೆಕ್ ಸಾಮಾನ್ಯೊಡ್ದ್ ಜಾಸ್ತಿ ಪೊರ್ತು ಬೊಡ್ಡುಂಡು. ಎಲ್ಯ ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "Something went wrong. Please try again.": "ದಾದಾಂಡಲ ತಪ್ಪಾಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
   }),
 
   incidents: {

@@ -277,3 +277,30 @@ export function IconLanguage({ className, strokeWidth }: IconProps) {
     </svg>
   );
 }
+
+export function IconCamera({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      <circle cx="12" cy="12.5" r="3.5" />
+    </svg>
+  );
+}
+
+export function IconImage({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="m4 17 5-4.5 4 3.5 3-2.5 4 3.5" />
+    </svg>
+  );
+}
+
+export function IconFolder({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <path d="M3.5 7a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z" />
+    </svg>
+  );
+}

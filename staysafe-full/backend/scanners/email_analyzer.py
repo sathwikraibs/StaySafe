@@ -120,16 +120,79 @@ def verdict_from_score(score: int) -> str:
     return "SAFE"
 
 
+FREE_MAIL = {
+    "gmail.com", "googlemail.com", "yahoo.com", "yahoo.co.in", "ymail.com", "outlook.com", "hotmail.com",
+    "live.com", "rediffmail.com", "proton.me", "protonmail.com", "aol.com", "icloud.com", "zohomail.in",
+    "mail.com", "gmx.com", "yandex.com", "tutanota.com",
+}
+COMPANY_WORDS = re.compile(
+    r"\b(bank|support|customer care|helpdesk|service|kyc|income tax|police|cyber ?cell|courier|delivery|refund|"
+    r"security|team|official|government|govt|department|rbi|npci|uidai|trai|electricity|admin)\b", re.IGNORECASE)
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
+
+
+def check_sender_identity(from_name: str, from_addr: str) -> dict:
+    """Does the sender's name match the address it really comes from?"""
+    from scanners.url_scanner import analyze_structure, BRANDS, brand_name, registered_domain
+    findings, score, status, value = [], 0, "pass", None
+    domain = from_addr.split("@")[-1].lower() if "@" in from_addr else ""
+    if not domain:
+        return {"score": 0, "findings": [], "status": "skip", "value": None}
+    name_l = (from_name or "").lower()
+    brand = next((b for b in BRANDS if len(b) >= 3 and re.search(rf"\b{re.escape(b)}\b", name_l.replace(" ", "")) or
+                  (len(b) >= 4 and b in name_l.replace(" ", ""))), None)
+    reg = registered_domain(domain)
+    official = brand and any(reg == d or domain.endswith("." + d) for d in BRANDS[brand])
+
+    if domain in FREE_MAIL and (brand or COMPANY_WORDS.search(name_l)):
+        who = brand_name(brand) if brand else from_name.strip()
+        findings.append(f"The sender calls themselves '{who}' but writes from a free {domain} address. Real companies use their own email address")
+        score += 35
+        status, value = "fail", domain
+    elif brand and not official:
+        findings.append(f"The sender's name says {brand_name(brand)}, but the email does not come from {brand_name(brand)}'s real address ({domain})")
+        score += 35
+        status, value = "fail", domain
+    if re.search(r"[^@\s]+@[^@\s]+", from_name or ""):
+        other = re.search(r"[^@\s<>\"']+@[^@\s<>\"']+", from_name).group(0).lower()
+        if other != from_addr.lower():
+            findings.append(f"The sender's name shows a different email address ({other}) from the real one ({from_addr})")
+            score += 25
+            status, value = "fail", from_addr
+
+    structure = analyze_structure("https://" + domain)
+    risky = [f for f in structure["findings"] if not f.startswith("Page is hosted")]
+    if structure["score"] >= 20 and domain not in FREE_MAIL:
+        findings.extend(f"Sender address: {f}" for f in risky[:2])
+        score += min(40, structure["score"])
+        status, value = "fail", domain
+    if status == "pass":
+        value = domain
+    return {"score": score, "findings": findings, "status": status, "value": value}
+
+
 @email_analyzer_bp.route("/api/scan-email", methods=["POST"])
 def scan_email_route():
     data = request.get_json(silent=True) or {}
-    raw_email = data.get("raw_email", "").strip()
+    raw_email = (data.get("raw_email") or "").strip()
+    form_mode = False
 
     if not raw_email:
-        return jsonify({
-            "error": "Missing 'raw_email'. Paste the full email source "
-                     "(most mail apps: menu > 'Show original' / 'View source')."
-        }), 400
+        # The simple form: sender, subject and message typed or pasted into separate boxes
+        sender = (data.get("sender_email") or "").strip()
+        body_in = (data.get("body") or "").strip()
+        if not body_in and not sender:
+            return jsonify({"error": "Please fill in the sender's email address and paste the message."}), 400
+        if sender and not EMAIL_RE.match(sender):
+            return jsonify({"error": "That sender email address doesn't look right. It should look like name@example.com"}), 400
+        name = (data.get("sender_name") or "").strip().replace("\n", " ")[:120]
+        reply = (data.get("reply_to") or "").strip()[:200]
+        subject = (data.get("subject") or "").strip().replace("\n", " ")[:300]
+        raw_email = (f"From: {name} <{sender}>\n" if name else f"From: {sender}\n")
+        if reply:
+            raw_email += f"Reply-To: {reply}\n"
+        raw_email += f"Subject: {subject}\nContent-Type: text/plain; charset=utf-8\n\n{subject}\n{body_in}"
+        form_mode = True
 
     msg = message_from_string(raw_email)
     body = extract_body(msg)
@@ -138,7 +201,13 @@ def scan_email_route():
         body = html_to_text(html)  # HTML-only email: read its visible text
 
     auth_result = check_auth_results(raw_email)
+    if form_mode:
+        # the form has no technical headers, so this check simply isn't possible (not a warning sign)
+        auth_result = {"score": 0, "findings": [], "status": "info"}
     sender_result = check_sender_mismatch(msg)
+    from email.utils import parseaddr as _parse
+    from_name, from_addr = _parse(msg.get("From", ""))
+    identity = check_sender_identity(from_name, from_addr.lower())
     body_result = analyze_text(body)
 
     # Links from the text AND from the HTML (including ones hidden behind "Click here" buttons)
@@ -153,11 +222,15 @@ def scan_email_route():
     url_findings = []
     url_score = 0
     risky_links = 0
+    link_results = []
     for url, future in futures:
         try:
             result = future.result(timeout=25)
         except Exception:
             continue
+        link_results.append({"url": url, "verdict": result["verdict"], "risk_score": result["risk_score"],
+                             "findings": result["findings"], "checks": result.get("checks", []),
+                             "details": result.get("details", {})})
         if result["verdict"] != "SAFE":
             risky_links += 1
             word = "dangerous" if result["verdict"] == "DANGEROUS" else "suspicious"
@@ -167,11 +240,12 @@ def scan_email_route():
 
     total_score = min(
         100,
-        auth_result["score"] + sender_result["score"] + (body_result["risk_score"] // 2) + url_score,
+        auth_result["score"] + sender_result["score"] + identity["score"] + (body_result["risk_score"] // 2) + url_score,
     )
 
     all_findings = (
-        auth_result["findings"]
+        identity["findings"]
+        + auth_result["findings"]
         + sender_result["findings"]
         + [f"In the email text: {p}" for p in body_result["patterns_detected"]]
         + url_findings
@@ -179,6 +253,7 @@ def scan_email_route():
 
     patterns = len(body_result["patterns_detected"])
     checks = [
+        {"id": "email_sender", "status": identity["status"], "value": identity["value"]},
         {"id": "email_auth", "status": auth_result["status"], "value": auth_result.get("failed")},
         {"id": "email_reply", "status": "warn" if sender_result["score"] else "pass",
          "value": sender_result["reply_to"] or None},
@@ -189,10 +264,13 @@ def scan_email_route():
 
     result = {
         "from": sender_result["from"],
+        "from_name": from_name,
+        "mode": "form" if form_mode else "source",
         "reply_to": sender_result["reply_to"],
         "subject": (msg.get("Subject") or "")[:200],
         "links_found": urls,
         "links_found_count": len(urls),
+        "links_checked": link_results,
         "risk_score": total_score,
         "verdict": verdict_from_score(total_score),
         "findings": all_findings or ["No strong risk indicators found"],

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "@/i18n";
 import { verdictTone, verdictLabelKey, type Tone } from "@/verdict";
 import { IconCheck, IconWarning, IconAlert, IconArrowRight, IconChat } from "@/icons";
@@ -68,19 +68,37 @@ export function useCheckText() {
   };
 }
 
+/** Counts up from 0 so the number feels alive. */
+function useCountUp(target: number, ms = 900) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / ms);
+      setValue(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, ms]);
+  return value;
+}
+
 function RiskMeter({ score, tone }: { score: number; tone: Tone }) {
   const { t } = useI18n();
-  const pos = Math.max(2, Math.min(98, score));
+  const shown = useCountUp(score);
+  const pos = Math.max(2, Math.min(98, shown));
   const level = score >= 50 ? t("report.riskHigh") : score >= 20 ? t("report.riskMedium") : t("report.riskLow");
   return (
     <div className="mt-4">
       <div className="flex items-baseline justify-between gap-2 font-body text-sm text-cream-50">
         <span className="font-bold">{level}</span>
-        <span className="text-cream-50/85">{t("report.riskOf", { score })}</span>
+        <span className="text-cream-50/85">{t("report.riskOf", { score: shown })}</span>
       </div>
       <div className="relative mt-2 h-3 rounded-full bg-gradient-to-r from-[#9DB585] via-[#E7B266] to-[#D0634F] ring-2 ring-cream-50/40">
         <span
-          className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-cream-50 shadow-warm transition-[left] duration-700"
+          className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-cream-50 shadow-warm"
           style={{ left: `${pos}%`, background: TONE_STYLE[tone].ring }}
         />
       </div>
@@ -148,7 +166,7 @@ export function CheckList({ checks, title }: { checks: Check[]; title?: string }
       </div>
       <ul className="mt-4 space-y-2">
         {sorted.map((c, i) => (
-          <li key={`${c.id}-${i}`} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${ROW_BG[c.status]}`}>
+          <li key={`${c.id}-${i}`} className={`row-in flex items-center gap-3 rounded-xl px-3 py-2.5 ${ROW_BG[c.status]}`} style={{ animationDelay: `${150 + i * 70}ms` }}>
             <StatusIcon status={c.status} />
             <span className={`min-w-0 flex-1 break-words font-body text-sm sm:text-[15px] ${c.status === "fail" ? "font-semibold text-ink-900" : "text-ink-800"}`}>
               {text(c)}
@@ -231,7 +249,7 @@ export function ResultReport({ tool, verdict, riskScore, subject, checks, findin
     <div ref={top} className="mt-5 scroll-mt-20 space-y-4">
       <div className={`overflow-hidden rounded-2xl bg-gradient-to-br ${style.hero} p-5 text-cream-50 shadow-warm-lg animate-fade-up sm:p-6`}>
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20">
+          <div className="stamp flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20" style={{ animationDelay: "120ms" }}>
             <Icon className="h-8 w-8" />
           </div>
           <div className="min-w-0 flex-1">

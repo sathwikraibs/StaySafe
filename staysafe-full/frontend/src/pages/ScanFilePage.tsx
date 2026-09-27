@@ -3,7 +3,8 @@ import { Button } from "@/components/Button";
 import { LoadingSteps } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { PageHeader, ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice } from "@/components/PageBits";
+import { ToolHeader } from "@/components/ToolHeader";
 import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
@@ -40,7 +41,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
 
   return (
     <div>
-      <PageHeader title={t("file.title")} subtitle={t("file.subtitle")} />
+      <ToolHeader path="/scan-file" title={t("file.title")} subtitle={t("file.subtitle")} />
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <UploadZone
           label={t("file.uploadLabel")}

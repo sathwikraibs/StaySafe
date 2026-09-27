@@ -49,7 +49,7 @@ const enBase = {
 
 
   loading: {
-    slow: "This is taking a little longer. The server may be waking up. It can take up to a minute the first time.",
+    slow: "Almost there. Thanks for your patience.",
   },
 
   home: {
@@ -80,7 +80,7 @@ const enBase = {
     button: "Check this message",
     or: "or",
     uploadTitle: "Upload a screenshot",
-    uploadLabel: "Tap to choose a screenshot",
+    uploadLabel: "Add a screenshot of the message",
     uploadHint: "A photo of the message on your screen works too",
     uploadButton: "Check this screenshot",
     loading: "Reading the message carefully...",
@@ -101,7 +101,7 @@ const enBase = {
   qr: {
     title: "Check a QR Code",
     subtitle: "Upload a photo of a QR code and we will tell you what it leads to.",
-    uploadLabel: "Tap to choose a photo of the QR code",
+    uploadLabel: "Add a photo of the QR code",
     uploadHint: "Make sure the QR code is clear and centered",
     button: "Check this QR code",
     loading: "Scanning the QR code...",
@@ -113,7 +113,7 @@ const enBase = {
   file: {
     title: "Check a File",
     subtitle: "Upload a file and we will look it over for anything worrying.",
-    uploadLabel: "Tap to choose a file",
+    uploadLabel: "Add the file you want to check",
     uploadHint: "Documents, images, or any file you are unsure about (up to 20 MB)",
     button: "Check this file",
     loading: "Looking over this file...",
@@ -153,7 +153,7 @@ const enBase = {
 
   email: {
     title: "Check an Email",
-    subtitle: "Paste the full email (including all the header details at the top) and we will examine it.",
+    subtitle: "Fill in who sent the email and what it says, and we will check it for you.",
     label: "Paste the email source",
     placeholder: "Paste the raw email here, including all the technical details at the top...",
     tip: "Tip: In most email programs, you can find \"Show original\" or \"View source\" to get the full email with all details.",
@@ -284,20 +284,20 @@ const enBase = {
     title: "About & Privacy",
     subtitle: "What StaySafe is, how it works, and what happens to what you check.",
     whatTitle: "What is StaySafe?",
-    what: "StaySafe is a free tool that helps you check links, messages, QR codes, files, passwords and emails for signs of scams, and explains the result in plain language. It was built by a cybersecurity student to help friends, family and everyone else stay safe online.",
+    what: "StaySafe is a free tool that helps you check links, messages, QR codes, files, passwords and emails for signs of scams, and explains the result in plain language. It was built by a cybersecurity student.",
     howTitle: "How the checks work",
     how: "StaySafe uses clear rules, like spotting fake bank website names, OTP requests or files pretending to be photos, and adds up warning signs into a risk score. It does not use AI, so every result can be traced back to the exact reason.",
     notGuaranteeTitle: "A second opinion, not a guarantee",
     notGuarantee: "Scammers keep inventing new tricks, so a scam can sometimes look safe to our checks. If something still feels wrong, don't click it, don't pay, and ask someone you trust.",
     dataTitle: "What happens to what you check",
     dataItems: [
-      "Messages, screenshots and files are sent securely to our server to be checked. We don't keep them. Only a short summary goes into your check history.",
+      "Messages, screenshots and files are sent securely to StaySafe to be checked. We don't keep them. Only a short summary goes into your check history.",
       "Links (including links found in messages, QR codes and emails) are also checked with Google Safe Browsing and VirusTotal.",
-      "Messages in a different language from the website may be sent to the free MyMemory translation service, so we can understand them and explain them in your language. We don't store them.",
+      "Messages in a different language from the website may be sent to the MyMemory translation service, so we can understand them and explain them in your language. We don't store them.",
       "Files are checked with VirusTotal using only their fingerprint (a hash). The file itself is not uploaded to them.",
       "Passwords are never stored. Only a scrambled 5-character fragment is sent to the Have I Been Pwned leak database.",
       "The connection check looks up your internet address with ip-api.com.",
-      "Your check history and safety score are saved only in your own browser. The server keeps a short-term copy in memory, which is wiped whenever it restarts.",
+      "Your check history and safety score are saved in your own browser. We keep only a temporary copy, which is wiped automatically.",
       "Live chat is run by tawk.to. Only what you type in the chat is shared with us.",
     ],
     neverTitle: "We will never",
@@ -323,7 +323,7 @@ const enBase = {
     goEmail: "Check an Email instead",
   },
 
-  upload: { choose: "Choose a different file" },
+  upload: { choose: "Choose a different file", camera: "Take a photo", gallery: "Choose a photo", files: "Choose a file", drag: "or drag and drop it here", photo: "Photo" },
 };
 
 export const en = { ...enBase, ...reportEn };

@@ -44,6 +44,9 @@ SCAM_MESSAGES = {
     "Investment": "Join our VIP trading group, guaranteed returns of 30% monthly. Crypto investment tips daily",
     "TRAI": "TRAI notice: your mobile number will be blocked in 2 hours. Press 9 to speak to officer",
     "Tax refund": "Income tax refund of Rs 15,490 approved. Click http://bit.ly/itr-refund to update your account details",
+    "WhatsApp code": "Hi, I accidentally sent my WhatsApp code to you. Please send it back urgently",
+    "WFH job": "Work from home job. Earn 5000 daily. No experience. Message on WhatsApp",
+    "Challan": "You have a pending traffic challan of Rs 500. Pay now: echallan-parivahan.top",
 }
 
 GENUINE_MESSAGES = {
@@ -59,12 +62,15 @@ GENUINE_MESSAGES = {
     "Share code": "I will share the code on github tonight",
     "Customs delay": "My parcel from Amazon is delayed by customs",
     "Wifi": "Can you share the wifi password?",
+    "Challan paid": "Your e-challan payment of Rs 500 is successful. Thank you",
+    "Discount code": "Use code SAVE10, I sent the wrong code by mistake earlier",
 }
 
 
 def test_scam_messages_detected():
     for name, text in SCAM_MESSAGES.items():
-        result = analyze_text(text)
+        # the full check, including the links inside the message
+        result = check_links_in_result(analyze_text(text))
         assert result["verdict"] == "SCAM_LIKELY", (name, result)
 
 

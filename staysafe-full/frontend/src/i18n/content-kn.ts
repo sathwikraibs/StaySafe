@@ -217,6 +217,19 @@ export const knContent: LangContent = {
     "This website doesn't exist or has been shut down. No server answers for this name. Scam links are often taken down after a few days": "ಈ ವೆಬ್‌ಸೈಟ್ ಇಲ್ಲ ಅಥವಾ ಮುಚ್ಚಲಾಗಿದೆ. ಈ ಹೆಸರಿಗೆ ಯಾವ ಸರ್ವರ್ ಉತ್ತರಿಸುತ್ತಿಲ್ಲ. ಸ್ಕ್ಯಾಮ್ ಲಿಂಕ್‌ಗಳನ್ನು ಕೆಲವು ದಿನಗಳಲ್ಲಿ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ",
     "Website name contains a long string of numbers, common in throwaway scam sites": "ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನಲ್ಲಿ ಉದ್ದದ ಸಂಖ್ಯೆ ಇದೆ, ತಾತ್ಕಾಲಿಕ ಸ್ಕ್ಯಾಮ್ ಸೈಟ್‌ಗಳಲ್ಲಿ ಇದು ಸಾಮಾನ್ಯ",
     "Your device's time zone ({tz}) is different from where your internet connection comes out ({iptz}). This usually means a VPN or proxy is in use": "ನಿಮ್ಮ ಸಾಧನದ ಟೈಮ್ ಝೋನ್ ({tz}) ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಹೊರಬರುವ ಸ್ಥಳಕ್ಕಿಂತ ({iptz}) ಬೇರೆ. ಸಾಮಾನ್ಯವಾಗಿ ಇದರರ್ಥ VPN ಅಥವಾ ಪ್ರಾಕ್ಸಿ ಬಳಕೆಯಲ್ಲಿದೆ",
+
+    // ---- email form
+    "The sender calls themselves '{who}' but writes from a free {domain} address. Real companies use their own email address": "ಕಳುಹಿಸಿದವರು ತಮ್ಮನ್ನು '{who}' ಎನ್ನುತ್ತಾರೆ, ಆದರೆ ಉಚಿತ {domain} ವಿಳಾಸದಿಂದ ಬರೆಯುತ್ತಿದ್ದಾರೆ. ನಿಜವಾದ ಕಂಪನಿಗಳು ತಮ್ಮದೇ ಇಮೇಲ್ ವಿಳಾಸ ಬಳಸುತ್ತವೆ",
+    "The sender's name says {brand}, but the email does not come from {brand2}'s real address ({domain})": "ಕಳುಹಿಸಿದವರ ಹೆಸರು {brand}, ಆದರೆ ಇಮೇಲ್ {brand2} ನ ನಿಜವಾದ ವಿಳಾಸದಿಂದ ಬಂದಿಲ್ಲ ({domain})",
+    "The sender's name shows a different email address ({other}) from the real one ({addr})": "ಕಳುಹಿಸಿದವರ ಹೆಸರಿನಲ್ಲಿ ಬೇರೆ ಇಮೇಲ್ ವಿಳಾಸ ({other}) ತೋರಿಸಲಾಗಿದೆ, ನಿಜವಾದ ವಿಳಾಸ ({addr})",
+    "Sender address: {reason}": "ಕಳುಹಿಸಿದವರ ವಿಳಾಸ: {reason}",
+    "Please fill in the sender's email address and paste the message.": "ಕಳುಹಿಸಿದವರ ಇಮೇಲ್ ವಿಳಾಸ ತುಂಬಿ, ಮೆಸೇಜ್ ಪೇಸ್ಟ್ ಮಾಡಿ.",
+    "That sender email address doesn't look right. It should look like name@example.com": "ಕಳುಹಿಸಿದವರ ಇಮೇಲ್ ವಿಳಾಸ ಸರಿಯಿಲ್ಲ. ಅದು name@example.com ರೀತಿ ಇರಬೇಕು",
+
+    // ---- connection messages
+    "We couldn't connect right now. Please check your internet and try again.": "ಈಗ ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "This is taking longer than usual. Please try again in a moment.": "ಇದಕ್ಕೆ ಸಾಮಾನ್ಯಕ್ಕಿಂತ ಹೆಚ್ಚು ಸಮಯ ಬೇಕಾಗುತ್ತಿದೆ. ಸ್ವಲ್ಪ ಹೊತ್ತಿನ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "Something went wrong. Please try again.": "ಏನೋ ತಪ್ಪಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   }),
 
   incidents: {

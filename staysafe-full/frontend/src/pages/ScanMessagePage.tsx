@@ -3,13 +3,15 @@ import { Button } from "@/components/Button";
 import { LoadingSteps } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { PageHeader, ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice } from "@/components/PageBits";
+import { ToolHeader } from "@/components/ToolHeader";
 import { Card } from "@/components/Card";
 import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { Check, ScanMessageResponse } from "@/types";
-import { verdictTone, toneClasses, toneTagKey } from "@/verdict";
+import { verdictTone } from "@/verdict";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
+import { CheckedLinks } from "@/components/WebsiteDetails";
 import { IconInfo, IconLanguage } from "@/icons";
 import { useI18n } from "@/i18n";
 
@@ -73,7 +75,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
 
   return (
     <div>
-      <PageHeader title={t("message.title")} subtitle={t("message.subtitle")} />
+      <ToolHeader path="/scan-message" title={t("message.title")} subtitle={t("message.subtitle")} />
 
       {/* Text tab */}
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
@@ -105,6 +107,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
         <UploadZone
           accept="image/*"
           label={t("message.uploadLabel")}
+          compress
           hint={t("message.uploadHint")}
           onFile={setFile}
           onClear={() => setFile(null)}
@@ -170,28 +173,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
             </div>
           )}
           {result.links_checked && result.links_checked.length > 0 && (
-            <Card className="p-5">
-              <p className="font-heading text-lg font-semibold text-ink-900">{t("message.linksTitle")}</p>
-              <ul className="mt-3 space-y-2.5">
-                {result.links_checked.map((link) => {
-                  const tone = verdictTone(link.verdict);
-                  const cls = toneClasses(tone);
-                  const reason = link.findings.find((f) => !f.startsWith("Could not"));
-                  return (
-                    <li key={link.url} className={`rounded-xl border-2 ${cls.border} ${cls.bg} p-3`}>
-                      <div className="flex items-start gap-2">
-                        <span className={`shrink-0 rounded-lg bg-cream-50 px-2 py-0.5 font-body text-xs font-bold ${cls.text}`}>
-                          {t(toneTagKey(tone))}
-                        </span>
-                        <span className="min-w-0 break-all font-body text-sm font-semibold text-ink-800">{link.url}</span>
-                      </div>
-                      {tone !== "safe" && reason && <p className="mt-1.5 font-body text-sm text-ink-700">{ts(reason)}</p>}
-                    </li>
-                  );
-                })}
-              </ul>
-              <p className="mt-3 font-body text-xs text-dustyblue-600">{t("message.linksNote")}</p>
-            </Card>
+            <CheckedLinks links={result.links_checked} title={t("message.linksTitle")} note={t("message.linksNote")} />
           )}
           {fromScreenshot && result.text_analyzed && (
             <Card className="p-5">

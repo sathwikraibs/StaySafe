@@ -2,8 +2,7 @@ import { addHistory, getClientId } from "./history";
 import type { ScanHistoryItem } from "./types";
 
 export const NETWORK_ERROR_MSG =
-  "We couldn't reach the StaySafe server. Please check your internet and try again. " +
-  "(If the site has been idle, the server can take up to a minute to wake up.)";
+  "We couldn't connect right now. Please check your internet and try again.";
 
 const TIMEOUT_MS = 90_000; // Render free tier can take ~1 minute to wake up
 
@@ -20,7 +19,7 @@ export class ApiError extends Error {
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) return err.message;
   if (err instanceof DOMException && err.name === "AbortError") {
-    return "The server took too long to respond. Please try again in a moment.";
+    return "This is taking longer than usual. Please try again in a moment.";
   }
   return NETWORK_ERROR_MSG;
 }
@@ -49,7 +48,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const serverMsg = body && typeof body === "object" && "error" in body ? String((body as { error: unknown }).error) : "";
     const fallback =
       res.status === 413 ? "That file is too big to upload." :
-      res.status >= 500 ? "Something went wrong on the server. Please try again." :
+      res.status >= 500 ? "Something went wrong. Please try again." :
       `Request failed (${res.status}).`;
     throw new ApiError(serverMsg || fallback, res.status);
   }
