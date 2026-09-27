@@ -18,7 +18,8 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
 | 🌐 Network Checker | Flags VPN/proxy/datacenter IPs and insecure connections |
 | ✉️ Email Checker | Parses SPF/DKIM/DMARC results and sender spoofing from raw email source |
 | 📊 Safety Dashboard | A running safety score based on your recent checks |
-| 🆘 Incident Wizard | Step-by-step recovery plan for "I think I clicked a scam" |
+| 🆘 Incident Wizard | Step-by-step recovery plan for "I think I clicked a scam", with 1930 helpline and cybercrime.gov.in shortcuts |
+| 💬 Need Help (live chat) | Chat with a real person via tawk.to — no app or sign-up for users |
 | 📚 Scam Knowledge Base | Searchable library of common scam patterns (KYC scams, fake refunds, job scams, etc.) |
 
 ## Tech stack
@@ -75,6 +76,7 @@ Screenshot reading and QR decoding need system programs (Tesseract OCR, zbar) th
 
 - Root Directory `staysafe-full/frontend`, framework auto-detected as Vite.
 - Set the environment variable `VITE_API_BASE` to your Render backend URL (Project → Settings → Environment Variables), then redeploy. Without it, the frontend uses the URL in `src/config.ts`.
+- Live chat: set `VITE_TAWK_PROPERTY_ID` and `VITE_TAWK_WIDGET_ID` (from the tawk.to embed code `https://embed.tawk.to/PROPERTY_ID/WIDGET_ID`), then redeploy. Until they're set, the Help page shows "Live chat is being set up".
 
 ## Testing
 

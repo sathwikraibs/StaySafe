@@ -11,11 +11,12 @@ import { ScanEmailPage } from "@/pages/ScanEmailPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { IncidentPage } from "@/pages/IncidentPage";
 import { ScamLibraryPage } from "@/pages/ScamLibraryPage";
+import { HelpPage } from "@/pages/HelpPage";
 
 const ROUTES = [
   "/", "/scan-url", "/scan-message", "/scan-qr", "/scan-file",
   "/check-password", "/check-network", "/scan-email",
-  "/dashboard", "/incident", "/scam-library",
+  "/dashboard", "/incident", "/scam-library", "/help",
 ];
 
 function getInitialPath(): string {
@@ -61,7 +62,8 @@ function renderPage(path: string, navigate: (p: string) => void) {
     case "/check-network": return <CheckNetworkPage />;
     case "/scan-email": return <ScanEmailPage />;
     case "/dashboard": return <DashboardPage onNavigate={navigate} />;
-    case "/incident": return <IncidentPage />;
+    case "/incident": return <IncidentPage onNavigate={navigate} />;
+    case "/help": return <HelpPage onNavigate={navigate} />;
     case "/scam-library": return <ScamLibraryPage />;
     default: return <HomePage onNavigate={navigate} />;
   }

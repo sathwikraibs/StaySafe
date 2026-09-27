@@ -6,9 +6,32 @@ import { Card } from "@/components/Card";
 import { apiGet, apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { IncidentOption, IncidentPlanResponse } from "@/types";
-import { IconArrowRight, IconCheck, IconAlert } from "@/icons";
+import { IconArrowRight, IconCheck, IconAlert, IconPhone, IconGlobe } from "@/icons";
+import { ChatCard } from "@/components/ChatWidgets";
 
-export function IncidentPage() {
+/** Always-visible emergency actions: 1930 helpline + national cyber crime portal. */
+function UrgentActions() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <a
+        href="tel:1930"
+        className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-rust-500 px-4 py-3.5 font-body text-[15px] font-bold text-cream-50 sm:text-base shadow-warm hover:bg-rust-600"
+      >
+        <IconPhone className="h-5 w-5" /> Lost money? Call 1930
+      </a>
+      <a
+        href="https://cybercrime.gov.in"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-press flex items-center justify-center gap-2 rounded-2xl border-2 border-rust-400 bg-cream-50 px-4 py-3.5 font-body text-[15px] font-bold text-rust-600 sm:text-base hover:bg-rust-400/10"
+      >
+        <IconGlobe className="h-5 w-5" /> Report at cybercrime.gov.in
+      </a>
+    </div>
+  );
+}
+
+export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [options, setOptions] = useState<IncidentOption[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -35,18 +58,39 @@ export function IncidentPage() {
 
   if (!options && !loadingOptions && !error) {
     return (
-      <div>
-        <PageHeader title="I Clicked a Scam" subtitle="Don't worry. Let's make a plan to fix it together, step by step." />
-        <div className="rounded-2xl bg-gradient-to-br from-terracotta-300/30 to-cream-100 p-8 text-center shadow-warm">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-terracotta-300/40 text-terracotta-600">
-            <IconAlert className="h-8 w-8" />
+      <div className="space-y-5">
+        <PageHeader title="I Clicked a Scam" subtitle="Don't panic. Let's make a plan to fix it together, step by step." />
+        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rust-500 to-rust-600 p-6 text-cream-50 shadow-warm-lg animate-fade-up sm:p-8">
+          <div className="flex items-start gap-4">
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20">
+              <IconAlert className="h-8 w-8" />
+              <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cream-50 opacity-75" />
+                <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-cream-50" />
+              </span>
+            </div>
+            <div>
+              <p className="font-heading text-xl font-bold">It happens to the best of us</p>
+              <p className="mt-2 font-body text-base text-cream-50/90">
+                Clicked a link, shared an OTP, installed an app or paid someone you don't trust?
+                Acting in the next few minutes matters most.
+              </p>
+            </div>
           </div>
-          <p className="mb-2 font-heading text-lg font-semibold text-ink-800">It happens to the best of us</p>
-          <p className="mb-5 font-body text-base text-ink-700/80">
-            If you clicked something or gave information to someone you do not trust,
-            we can help. Tap below to see what kind of thing happened.
-          </p>
-          <Button onClick={loadOptions}>Let's make a plan</Button>
+          <button
+            onClick={loadOptions}
+            className="btn-press mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-cream-50 px-6 py-4 font-body text-lg font-bold text-rust-600 shadow-warm transition-colors hover:bg-cream-100"
+          >
+            Let's make a plan <IconArrowRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="animate-fade-up" style={{ animationDelay: "80ms" }}>
+          <UrgentActions />
+        </div>
+
+        <div className="animate-fade-up" style={{ animationDelay: "140ms" }}>
+          <ChatCard title="Scared or confused? Talk to us" compact />
         </div>
       </div>
     );
@@ -74,6 +118,9 @@ export function IncidentPage() {
               <IconArrowRight className="h-5 w-5 text-dustyblue-400" />
             </button>
           ))}
+          <div className="pt-3">
+            <ChatCard title="Not listed here? Tell us what happened" compact />
+          </div>
         </div>
       )}
 
@@ -109,9 +156,21 @@ export function IncidentPage() {
             </p>
           </div>
 
+          <UrgentActions />
+
+          <ChatCard title="Still worried? Talk to a real person" compact />
+
           <Button onClick={() => { setPlan(null); setSelected(null); }} variant="outline" fullWidth>
             Pick a different situation
           </Button>
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate("/help")}
+              className="w-full text-center font-body text-sm font-semibold text-sage-600 underline-offset-4 hover:underline"
+            >
+              More ways to get help
+            </button>
+          )}
         </div>
       )}
     </div>

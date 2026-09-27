@@ -205,3 +205,48 @@ export function IconHistory({ className, strokeWidth }: IconProps) {
     </svg>
   );
 }
+
+export function IconChat({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.1A8 8 0 1 1 20 12z" />
+      <path d="M8.5 11h.01M12 11h.01M15.5 11h.01" />
+    </svg>
+  );
+}
+
+export function IconPhone({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+    </svg>
+  );
+}
+
+export function IconHelp({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="m5.6 5.6 3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9" />
+    </svg>
+  );
+}
+
+export function IconLock({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+export function IconGlobe({ className, strokeWidth }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </svg>
+  );
+}

@@ -1,5 +1,5 @@
 import { HOME_TOOLS } from "@/nav";
-import { IconShield, IconArrowRight } from "@/icons";
+import { IconShield, IconArrowRight, IconAlert, IconChat } from "@/icons";
 
 export function HomePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
@@ -19,6 +19,39 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
           Not sure if a link, message, or file is safe? You are in the right place.
           Pick a tool below and we will take a careful look for you.
         </p>
+      </div>
+
+      {/* Urgent help — the first thing someone in trouble should see */}
+      <div className="mb-8 grid gap-3 sm:grid-cols-[1.6fr_1fr] animate-fade-up" style={{ animationDelay: "60ms" }}>
+        <button
+          onClick={() => onNavigate("/incident")}
+          className="btn-press card-hover group flex items-center gap-4 rounded-2xl bg-gradient-to-br from-rust-500 to-rust-600 p-5 text-left text-cream-50 shadow-warm-lg"
+        >
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20">
+            <IconAlert className="h-7 w-7" />
+            <span className="absolute -right-1 -top-1 flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cream-50 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-cream-50" />
+            </span>
+          </div>
+          <div className="flex-1">
+            <p className="font-heading text-base font-bold sm:text-lg">Clicked a scam or lost money?</p>
+            <p className="mt-0.5 font-body text-sm text-cream-50/90">Get a step-by-step recovery plan right now</p>
+          </div>
+          <IconArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+        </button>
+        <button
+          onClick={() => onNavigate("/help")}
+          className="btn-press card-hover group flex items-center gap-4 rounded-2xl border-2 border-sage-300 bg-cream-50 p-5 text-left shadow-warm"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sage-100 text-sage-600">
+            <IconChat className="h-7 w-7" />
+          </div>
+          <div className="flex-1">
+            <p className="font-heading text-base font-bold text-ink-900">Need help?</p>
+            <p className="mt-0.5 font-body text-sm text-dustyblue-600">Chat with a real person</p>
+          </div>
+        </button>
       </div>
 
       {/* Tool grid */}
