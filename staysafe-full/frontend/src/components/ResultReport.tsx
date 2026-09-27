@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "@/i18n";
 import { verdictTone, verdictLabelKey, type Tone } from "@/verdict";
-import { IconCheck, IconWarning, IconAlert, IconArrowRight, IconChat } from "@/icons";
+import { IconArrowRight, IconChat } from "@/icons";
 import type { Check, Verdict } from "@/types";
 import { useChat } from "@/chat";
 
@@ -85,23 +85,55 @@ function useCountUp(target: number, ms = 900) {
   return value;
 }
 
-function RiskMeter({ score, tone }: { score: number; tone: Tone }) {
+/** Shield badge: tick (safe), exclamation (careful) or cross (risky), with a gentle animation. */
+function VerdictBadge({ tone }: { tone: Tone }) {
+  return (
+    <div className="relative flex h-24 w-24 shrink-0 items-center justify-center sm:h-28 sm:w-28">
+      <span className={`absolute inset-0 rounded-full bg-cream-50/20 ${tone === "safe" ? "badge-glow" : "badge-pulse"}`} />
+      <span className="absolute inset-2 rounded-full bg-cream-50/15" />
+      <svg viewBox="0 0 64 64" className="stamp relative h-16 w-16 sm:h-20 sm:w-20" style={{ animationDelay: "150ms" }}>
+        <path d="M32 5 10 13v17c0 14 9.5 24.5 22 29 12.5-4.5 22-15 22-29V13z" fill="#FBF7F0" />
+        <path d="M32 5 10 13v17c0 14 9.5 24.5 22 29 12.5-4.5 22-15 22-29V13z" fill="none" stroke="#FBF7F0" strokeWidth="3" strokeLinejoin="round" />
+        {tone === "safe" && <path d="m21 32 7.5 7.5L44 24" fill="none" stroke={TONE_STYLE.safe.ring} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" className="draw-path" />}
+        {tone === "caution" && (<><path d="M32 19v16" stroke={TONE_STYLE.caution.ring} strokeWidth="6.5" strokeLinecap="round" /><circle cx="32" cy="44" r="3.8" fill={TONE_STYLE.caution.ring} /></>)}
+        {tone === "danger" && <path d="m23 23 18 18M41 23 23 41" stroke={TONE_STYLE.danger.ring} strokeWidth="6.5" strokeLinecap="round" className="draw-path" />}
+      </svg>
+      {tone === "safe" && (
+        <>
+          <span className="sparkle absolute right-1 top-2 h-2.5 w-2.5 rounded-full bg-cream-50" />
+          <span className="sparkle absolute bottom-3 left-0 h-2 w-2 rounded-full bg-cream-50" style={{ animationDelay: ".6s" }} />
+          <span className="sparkle absolute left-3 top-0 h-1.5 w-1.5 rounded-full bg-cream-50" style={{ animationDelay: "1.1s" }} />
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Half-circle gauge from green to red with a needle pointing at the risk score. */
+function RiskGauge({ score }: { score: number }) {
   const { t } = useI18n();
   const shown = useCountUp(score);
-  const pos = Math.max(2, Math.min(98, shown));
+  const angle = -90 + (Math.max(0, Math.min(100, shown)) / 100) * 180;
   const level = score >= 50 ? t("report.riskHigh") : score >= 20 ? t("report.riskMedium") : t("report.riskLow");
   return (
-    <div className="mt-4">
-      <div className="flex items-baseline justify-between gap-2 font-body text-sm text-cream-50">
-        <span className="font-bold">{level}</span>
-        <span className="text-cream-50/85">{t("report.riskOf", { score: shown })}</span>
-      </div>
-      <div className="relative mt-2 h-3 rounded-full bg-gradient-to-r from-[#9DB585] via-[#E7B266] to-[#D0634F] ring-2 ring-cream-50/40">
-        <span
-          className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-cream-50 shadow-warm"
-          style={{ left: `${pos}%`, background: TONE_STYLE[tone].ring }}
-        />
-      </div>
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 200 118" className="w-44 sm:w-52">
+        <defs>
+          <linearGradient id="gauge-grad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#9DB585" />
+            <stop offset="50%" stopColor="#E7B266" />
+            <stop offset="100%" stopColor="#D0634F" />
+          </linearGradient>
+        </defs>
+        <path d="M20 100a80 80 0 0 1 160 0" fill="none" stroke="rgba(251,247,240,.25)" strokeWidth="18" strokeLinecap="round" />
+        <path d="M20 100a80 80 0 0 1 160 0" fill="none" stroke="url(#gauge-grad)" strokeWidth="14" strokeLinecap="round" />
+        <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: "100px 100px", transition: "transform .2s linear" }}>
+          <path d="M100 100 L100 34" stroke="#FBF7F0" strokeWidth="5" strokeLinecap="round" />
+        </g>
+        <circle cx="100" cy="100" r="10" fill="#FBF7F0" />
+      </svg>
+      <p className="-mt-1 font-heading text-3xl font-bold leading-none text-cream-50">{shown}<span className="text-base font-semibold text-cream-50/75">/100</span></p>
+      <p className="mt-1 rounded-full bg-cream-50/20 px-3 py-0.5 font-body text-xs font-bold uppercase tracking-wide text-cream-50">{level}</p>
     </div>
   );
 }
@@ -238,7 +270,6 @@ export function ResultReport({ tool, verdict, riskScore, subject, checks, findin
   const { openChat } = useChat();
   const tone = verdictTone(verdict);
   const style = TONE_STYLE[tone];
-  const Icon = tone === "safe" ? IconCheck : tone === "caution" ? IconWarning : IconAlert;
   const top = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // bring the answer into view (on phones it would otherwise be below the form)
@@ -247,22 +278,37 @@ export function ResultReport({ tool, verdict, riskScore, subject, checks, findin
 
   return (
     <div ref={top} className="mt-5 scroll-mt-20 space-y-4">
-      <div className={`overflow-hidden rounded-2xl bg-gradient-to-br ${style.hero} p-5 text-cream-50 shadow-warm-lg animate-fade-up sm:p-6`}>
-        <div className="flex items-start gap-4">
-          <div className="stamp flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20" style={{ animationDelay: "120ms" }}>
-            <Icon className="h-8 w-8" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-heading text-xl font-bold sm:text-2xl">{t(verdictLabelKey(verdict))}</p>
-            <p className="mt-1.5 font-body text-[15px] leading-snug text-cream-50/95">{t(`report.meaning.${tool}.${tone}`)}</p>
+      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${style.hero} p-5 text-cream-50 shadow-warm-lg animate-fade-up sm:p-7`}>
+        {/* soft background shapes */}
+        <span className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cream-50/10" />
+        <span className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-cream-50/10" />
+        <span className="pointer-events-none absolute right-24 top-10 h-3 w-3 rounded-full bg-cream-50/30" />
+        <div className="relative flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-6 sm:text-left">
+          <VerdictBadge tone={tone} />
+          <div className="w-full min-w-0 flex-1">
+            <p className="font-heading text-2xl font-bold leading-tight sm:text-3xl">{t(verdictLabelKey(verdict))}</p>
+            <p className="mt-2 font-body text-[15px] leading-snug text-cream-50/95 sm:text-base">{t(`report.meaning.${tool}.${tone}`)}</p>
             {subject && (
-              <p className="mt-2 inline-block max-w-full truncate rounded-lg bg-cream-50/20 px-2.5 py-1 font-mono text-xs text-cream-50">
+              <p className="mx-auto mt-3 block max-w-full truncate rounded-lg bg-ink-900/20 px-3 py-1.5 font-mono text-xs text-cream-50 sm:mx-0 sm:inline-block">
                 {subject}
               </p>
             )}
           </div>
+          <div className="shrink-0"><RiskGauge score={riskScore} /></div>
         </div>
-        <RiskMeter score={riskScore} tone={tone} />
+        {checks && checks.length > 0 && (
+          <div className="relative mt-5 grid grid-cols-3 gap-2">
+            {([["pass", "report.statOk"], ["warn", "report.statWarn"], ["fail", "report.statFail"]] as const).map(([st, key]) => {
+              const n = checks.filter((c) => c.status === st).length;
+              return (
+                <div key={st} className="rounded-2xl bg-cream-50/15 px-2 py-2.5 text-center backdrop-blur-sm">
+                  <p className="font-heading text-2xl font-bold leading-none">{n}</p>
+                  <p className="mt-1 font-body text-[11px] font-bold uppercase tracking-wide text-cream-50/85">{t(key)}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {checks && checks.length > 0 && <CheckList checks={checks} />}

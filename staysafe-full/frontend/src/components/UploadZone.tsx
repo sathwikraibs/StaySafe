@@ -12,6 +12,8 @@ interface UploadZoneProps {
   disabled?: boolean;
   /** Shrink big photos before sending (screenshots and QR photos). Never used for files we fingerprint. */
   compress?: boolean;
+  /** show the "Take a photo" button (not needed for files) */
+  camera?: boolean;
 }
 
 /** Big phone photos (4000px, 5 MB) are shrunk so they upload and read quickly. */
@@ -40,7 +42,7 @@ async function shrinkImage(file: File, maxSide = 2000): Promise<File> {
   }
 }
 
-export function UploadZone({ accept, label, hint, onFile, onClear, selectedPreview, disabled, compress }: UploadZoneProps) {
+export function UploadZone({ accept, label, hint, onFile, onClear, selectedPreview, disabled, compress, camera = true }: UploadZoneProps) {
   const { t } = useI18n();
   const pickRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -98,15 +100,15 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
             <p className="font-body text-base font-semibold text-ink-800">{label}</p>
             {hint && <p className="font-body text-sm text-dustyblue-600">{hint}</p>}
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2.5">
-            <button
+          <div className={`mt-4 grid gap-2.5 ${camera ? "grid-cols-2" : "grid-cols-1"}`}>
+            {camera && <button
               type="button"
               disabled={disabled}
               onClick={() => cameraRef.current?.click()}
               className="btn-press flex flex-col items-center justify-center gap-1.5 rounded-xl bg-sage-500 px-3 py-3.5 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600 sm:flex-row"
             >
               <IconCamera className="h-5 w-5" /> {t("upload.camera")}
-            </button>
+            </button>}
             <button
               type="button"
               disabled={disabled}

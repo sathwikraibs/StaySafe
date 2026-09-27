@@ -230,6 +230,21 @@ export const knContent: LangContent = {
     "We couldn't connect right now. Please check your internet and try again.": "ಈಗ ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "This is taking longer than usual. Please try again in a moment.": "ಇದಕ್ಕೆ ಸಾಮಾನ್ಯಕ್ಕಿಂತ ಹೆಚ್ಚು ಸಮಯ ಬೇಕಾಗುತ್ತಿದೆ. ಸ್ವಲ್ಪ ಹೊತ್ತಿನ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "Something went wrong. Please try again.": "ಏನೋ ತಪ್ಪಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead.": "ಈಗ ಈ ಚಿತ್ರವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಸ್ವಲ್ಪ ಹೊತ್ತಿನ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಮೆಸೇಜ್ ಪಠ್ಯ ಪೇಸ್ಟ್ ಮಾಡಿ.",
+
+    // ---- new message rules and public lists
+    "Asks you to install an app from a link or file (APK)": "ಲಿಂಕ್ ಅಥವಾ ಫೈಲ್‌ನಿಂದ (APK) ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಹೇಳುತ್ತದೆ",
+    "Instant loan with no documents or checks": "ದಾಖಲೆ ಅಥವಾ ಪರಿಶೀಲನೆ ಇಲ್ಲದೆ ತಕ್ಷಣ ಸಾಲ",
+    "Fake government scheme, Aadhaar, PAN or gas update": "ನಕಲಿ ಸರ್ಕಾರಿ ಯೋಜನೆ, ಆಧಾರ್, PAN ಅಥವಾ ಗ್ಯಾಸ್ ಅಪ್‌ಡೇಟ್",
+    "Reward points or cashback that 'expire today'": "'ಇಂದು ಮುಗಿಯುವ' ರಿವಾರ್ಡ್ ಪಾಯಿಂಟ್ ಅಥವಾ ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್",
+    "Threatens to share your photos or videos (blackmail)": "ನಿಮ್ಮ ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊ ಹಂಚುವ ಬೆದರಿಕೆ (ಬ್ಲ್ಯಾಕ್‌ಮೇಲ್)",
+    "Asks for payment by gift card or crypto": "ಗಿಫ್ಟ್ ಕಾರ್ಡ್ ಅಥವಾ ಕ್ರಿಪ್ಟೋ ಮೂಲಕ ಹಣ ಕೇಳುತ್ತದೆ",
+    "Asks for your Aadhaar, PAN or bank account details": "ನಿಮ್ಮ ಆಧಾರ್, PAN ಅಥವಾ ಬ್ಯಾಂಕ್ ಖಾತೆ ವಿವರ ಕೇಳುತ್ತದೆ",
+    "Asks you to keep it secret": "ಇದನ್ನು ಗುಟ್ಟಾಗಿ ಇಡಲು ಹೇಳುತ್ತದೆ",
+    "Free recharge, data or gifts with a link": "ಲಿಂಕ್ ಜೊತೆ ಉಚಿತ ರೀಚಾರ್ಜ್, ಡೇಟಾ ಅಥವಾ ಉಡುಗೊರೆ",
+    "This link is on a public list of scam and malware links ({source})": "ಈ ಲಿಂಕ್ ವಂಚನೆ ಮತ್ತು ಮಾಲ್‌ವೇರ್ ಲಿಂಕ್‌ಗಳ ಸಾರ್ವಜನಿಕ ಪಟ್ಟಿಯಲ್ಲಿದೆ ({source})",
+    "Scam pages on this website were reported recently ({source})": "ಈ ವೆಬ್‌ಸೈಟ್‌ನ ವಂಚನೆ ಪುಟಗಳು ಇತ್ತೀಚೆಗೆ ವರದಿಯಾಗಿವೆ ({source})",
+    "We couldn't find a web address in what you pasted. Try something like example.com": "ನೀವು ಪೇಸ್ಟ್ ಮಾಡಿದುದರಲ್ಲಿ ವೆಬ್ ವಿಳಾಸ ಸಿಗಲಿಲ್ಲ. example.com ತರಹದ್ದನ್ನು ಹಾಕಿ ನೋಡಿ",
   }),
 
   incidents: {

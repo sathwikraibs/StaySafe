@@ -129,6 +129,24 @@ COMPANY_WORDS = re.compile(
     r"\b(bank|support|customer care|helpdesk|service|kyc|income tax|police|cyber ?cell|courier|delivery|refund|"
     r"security|team|official|government|govt|department|rbi|npci|uidai|trai|electricity|admin)\b", re.IGNORECASE)
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
+FIND_EMAIL = re.compile(r"[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+
+
+def split_sender(raw: str):
+    """
+    'ManageEngine <itom-promotions@itominfo.manageengine.com'  ->  ('ManageEngine', 'itom-promotions@...')
+    Works with missing brackets, quotes, 'From:' and 'mailto:' in front, extra spaces.
+    """
+    raw = (raw or "").strip()
+    m = FIND_EMAIL.search(raw)
+    if not m:
+        return "", ""
+    email = m.group(0).strip(".'").lower()
+    name = (raw[:m.start()] + " " + raw[m.end():])
+    name = re.sub(r"(?i)\b(from|sender|mailto)\s*:", " ", name)
+    name = re.sub(r"[<>\"'()\[\]]", " ", name)
+    name = re.sub(r"\s+", " ", name).strip(" ,;:.-")
+    return name[:120], email
 
 
 def check_sender_identity(from_name: str, from_addr: str) -> dict:
@@ -179,14 +197,14 @@ def scan_email_route():
 
     if not raw_email:
         # The simple form: sender, subject and message typed or pasted into separate boxes
-        sender = (data.get("sender_email") or "").strip()
+        name_in, sender = split_sender(data.get("sender_email") or "")
         body_in = (data.get("body") or "").strip()
         if not body_in and not sender:
             return jsonify({"error": "Please fill in the sender's email address and paste the message."}), 400
-        if sender and not EMAIL_RE.match(sender):
+        if (data.get("sender_email") or "").strip() and not sender:
             return jsonify({"error": "That sender email address doesn't look right. It should look like name@example.com"}), 400
-        name = (data.get("sender_name") or "").strip().replace("\n", " ")[:120]
-        reply = (data.get("reply_to") or "").strip()[:200]
+        name = ((data.get("sender_name") or "").strip() or name_in).replace("\n", " ")[:120]
+        reply = split_sender(data.get("reply_to") or "")[1]
         subject = (data.get("subject") or "").strip().replace("\n", " ")[:300]
         raw_email = (f"From: {name} <{sender}>\n" if name else f"From: {sender}\n")
         if reply:

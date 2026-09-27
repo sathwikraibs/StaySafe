@@ -10,6 +10,7 @@ import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { IconFile } from "@/icons";
+import { VirusTotalPanel } from "@/components/VirusTotalPanel";
 
 function formatSize(bytes?: number): string {
   if (bytes === undefined) return "";
@@ -24,6 +25,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanFileResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fullScan, setFullScan] = useState(false);
 
   async function handleCheck() {
     if (!file || loading) return;
@@ -31,6 +33,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
     try {
       const fd = new FormData();
       fd.append("file", file);
+      if (fullScan) fd.append("vt_upload", "1");
       const data = await apiPostForm<ScanFileResponse>(`${API_BASE}/api/scan-file`, fd);
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
@@ -49,7 +52,15 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           onFile={setFile}
           onClear={() => setFile(null)}
           disabled={loading}
+          camera={false}
         />
+        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-cream-100 p-3">
+          <input type="checkbox" checked={fullScan} onChange={(e) => setFullScan(e.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#647A4F]" />
+          <span className="font-body text-sm text-ink-800">
+            <b>{t("vt.uploadTitle")}</b>
+            <span className="mt-0.5 block text-xs text-dustyblue-600">{t("vt.uploadNote")}</span>
+          </span>
+        </label>
         {file && (
           <div className="mt-4">
             <Button onClick={handleCheck} disabled={loading} fullWidth>
@@ -73,6 +84,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           findings={result.findings}
           onNavigate={onNavigate}
         >
+          <VirusTotalPanel vt={result.virustotal} />
           <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
             <div className="flex items-center gap-2">
               <IconFile className="h-5 w-5 text-dustyblue-600" />
@@ -93,8 +105,10 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
                   <dd className={value}>{formatSize(result.size)}</dd>
                 </>
               )}
-              <dt className={label}>{t("fileInfo.fingerprint")}</dt>
+              <dt className={label}>SHA-256</dt>
               <dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.sha256}</dd>
+              {result.sha1 && (<><dt className={label}>SHA-1</dt><dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.sha1}</dd></>)}
+              {result.md5 && (<><dt className={label}>MD5</dt><dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.md5}</dd></>)}
             </dl>
           </div>
         </ResultReport>

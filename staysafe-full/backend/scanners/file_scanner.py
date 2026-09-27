@@ -209,36 +209,109 @@ def check_content(filename: str, data: bytes) -> tuple:
     return score, findings, real_type
 
 
-def check_virustotal_hash(sha256: str) -> dict:
-    if not VIRUSTOTAL_API_KEY:
-        return {"status": "skip", "score": 0, "findings": [], "skipped": "No VirusTotal API key configured"}
+VT_API = "https://www.virustotal.com/api/v3"
 
-    endpoint = f"https://www.virustotal.com/api/v3/files/{sha256}"
-    headers = {"x-apikey": VIRUSTOTAL_API_KEY}
 
+def _vt_date(ts):
     try:
-        resp = requests.get(endpoint, headers=headers, timeout=8)
-        if resp.status_code == 404:
-            return {
-                "status": "info",
-                "score": 5,
-                "findings": ["This exact file hasn't been seen by VirusTotal before. Treat with normal caution"],
-            }
-
-        stats = resp.json()["data"]["attributes"]["last_analysis_stats"]
-        malicious = stats.get("malicious", 0)
-        suspicious = stats.get("suspicious", 0)
-
-        if malicious > 0:
-            return {"status": "fail", "value": malicious, "score": 60,
-                    "findings": [f"{malicious} security engines flagged this exact file as malicious"]}
-        if suspicious > 0:
-            return {"status": "warn", "value": suspicious, "score": 25,
-                    "findings": [f"{suspicious} security engines flagged this file as suspicious"]}
-        return {"status": "pass", "value": sum(stats.values()) or None, "score": 0,
-                "findings": ["No security engines flagged this file"]}
+        from datetime import datetime, timezone
+        return datetime.fromtimestamp(int(ts), tz=timezone.utc).date().isoformat()
     except Exception:
-        return {"status": "skip", "score": 0, "findings": [], "error": True}
+        return ""
+
+
+def _engine_list(results: dict) -> list:
+    """Every security company's verdict, dangerous ones first (like VirusTotal's Detection tab)."""
+    order = {"malicious": 0, "suspicious": 1, "harmless": 2, "undetected": 3}
+    engines = [{"name": name, "category": (v or {}).get("category", ""), "result": (v or {}).get("result") or ""}
+               for name, v in (results or {}).items()]
+    engines = [e for e in engines if e["category"] in order]
+    engines.sort(key=lambda e: (order.get(e["category"], 9), e["name"].lower()))
+    return engines[:90]
+
+
+def _vt_summary(stats: dict, results: dict, attrs: dict, sha256: str) -> dict:
+    malicious, suspicious = stats.get("malicious", 0), stats.get("suspicious", 0)
+    total = sum(v for k, v in stats.items() if k in ("malicious", "suspicious", "undetected", "harmless"))
+    label = ((attrs or {}).get("popular_threat_classification") or {}).get("suggested_threat_label", "")
+    return {
+        "state": "found",
+        "malicious": malicious,
+        "suspicious": suspicious,
+        "undetected": stats.get("undetected", 0),
+        "harmless": stats.get("harmless", 0),
+        "total": total,
+        "engines": _engine_list(results),
+        "threat_label": label,
+        "type_description": (attrs or {}).get("type_description", ""),
+        "first_seen": _vt_date((attrs or {}).get("first_submission_date")),
+        "last_analysis": _vt_date((attrs or {}).get("last_analysis_date")),
+        "times_submitted": (attrs or {}).get("times_submitted"),
+        "names": ((attrs or {}).get("names") or [])[:5],
+        "tags": ((attrs or {}).get("tags") or [])[:6],
+        "reputation": (attrs or {}).get("reputation"),
+        "link": f"https://www.virustotal.com/gui/file/{sha256}",
+    }
+
+
+def _vt_scoring(vt: dict) -> dict:
+    """Turn a VirusTotal summary into score, findings and the check line."""
+    mal, sus = vt.get("malicious", 0), vt.get("suspicious", 0)
+    if mal > 0:
+        return {"status": "fail", "value": f"{mal}/{vt.get('total') or '?'}", "score": 60 if mal >= 2 else 40,
+                "findings": [f"{mal} security engines flagged this exact file as malicious"]}
+    if sus > 0:
+        return {"status": "warn", "value": f"{sus}/{vt.get('total') or '?'}", "score": 25,
+                "findings": [f"{sus} security engines flagged this file as suspicious"]}
+    return {"status": "pass", "value": vt.get("total") or None, "score": 0,
+            "findings": ["No security engines flagged this file"]}
+
+
+def check_virustotal_hash(sha256: str) -> dict:
+    """Look the file up on VirusTotal by its fingerprint only (the file itself is not sent)."""
+    if not VIRUSTOTAL_API_KEY:
+        return {"status": "skip", "score": 0, "findings": [], "vt": {"state": "off"}}
+    headers = {"x-apikey": VIRUSTOTAL_API_KEY}
+    try:
+        resp = requests.get(f"{VT_API}/files/{sha256}", headers=headers, timeout=8)
+        if resp.status_code == 404:
+            return {"status": "info", "score": 5,
+                    "findings": ["This exact file hasn't been seen by VirusTotal before. Treat with normal caution"],
+                    "vt": {"state": "not_found", "link": f"https://www.virustotal.com/gui/file/{sha256}"}}
+        if resp.status_code == 429:
+            return {"status": "skip", "score": 0, "findings": [], "vt": {"state": "busy"}}
+        attrs = resp.json()["data"]["attributes"]
+        vt = _vt_summary(attrs.get("last_analysis_stats", {}), attrs.get("last_analysis_results", {}), attrs, sha256)
+        return {**_vt_scoring(vt), "vt": vt}
+    except Exception:
+        return {"status": "skip", "score": 0, "findings": [], "error": True, "vt": {"state": "error"}}
+
+
+def upload_to_virustotal(filename: str, data: bytes, sha256: str) -> dict:
+    """
+    Only when the visitor ticks 'let VirusTotal scan the file itself'. Sends the file, then
+    checks back up to 3 times (15 s apart) so we stay inside the free 4-lookups-a-minute limit.
+    """
+    headers = {"x-apikey": VIRUSTOTAL_API_KEY}
+    if len(data) > 32 * 1024 * 1024:
+        return {"state": "too_big"}
+    try:
+        up = requests.post(f"{VT_API}/files", headers=headers, files={"file": (filename, data)}, timeout=60)
+        if up.status_code == 429:
+            return {"state": "busy"}
+        analysis_id = up.json()["data"]["id"]
+    except Exception:
+        return {"state": "error"}
+    import time as _t
+    for _ in range(3):
+        _t.sleep(15)
+        try:
+            a = requests.get(f"{VT_API}/analyses/{analysis_id}", headers=headers, timeout=10).json()["data"]["attributes"]
+        except Exception:
+            continue
+        if a.get("status") == "completed":
+            return _vt_summary(a.get("stats", {}), a.get("results", {}), {}, sha256)
+    return {"state": "queued", "link": f"https://www.virustotal.com/gui/file/{sha256}"}
 
 
 def verdict_from_score(score: int) -> str:
@@ -247,6 +320,15 @@ def verdict_from_score(score: int) -> str:
     if score >= 20:
         return "CAUTION"
     return "SAFE"
+
+
+@file_scanner_bp.route("/api/file-report/<sha256>", methods=["GET"])
+def file_report_route(sha256):
+    """'Check again' after a file was sent to VirusTotal."""
+    if not re.fullmatch(r"[0-9a-f]{64}", sha256 or ""):
+        return jsonify({"error": "Unknown file."}), 400
+    r = check_virustotal_hash(sha256)
+    return jsonify({"virustotal": r.get("vt", {}), "status": r.get("status"), "findings": r.get("findings", [])})
 
 
 @file_scanner_bp.route("/api/scan-file", methods=["POST"])
@@ -262,10 +344,19 @@ def scan_file_route():
         return jsonify({"error": "This file is empty."}), 400
 
     sha256 = hashlib.sha256(file_bytes).hexdigest()
+    md5 = hashlib.md5(file_bytes).hexdigest()
+    sha1 = hashlib.sha1(file_bytes).hexdigest()
 
     ext_score, ext_findings = check_extension_risk(filename)
     content_score, content_findings, real_type = check_content(filename, file_bytes)
     vt_result = check_virustotal_hash(sha256)
+    # The visitor agreed to let VirusTotal scan the file itself (only if it has never been seen)
+    if request.form.get("vt_upload") == "1" and vt_result.get("vt", {}).get("state") == "not_found":
+        uploaded = upload_to_virustotal(filename, file_bytes, sha256)
+        if uploaded.get("state") == "found":
+            vt_result = {**_vt_scoring(uploaded), "vt": uploaded}
+        else:
+            vt_result["vt"] = uploaded
 
     total_score = min(100, ext_score + content_score + vt_result["score"])
     all_findings = ext_findings + content_findings + vt_result["findings"]
@@ -277,7 +368,7 @@ def scan_file_route():
     ext = get_extension(filename)
     checks = [
         {"id": "file_vt", "status": vt_result.get("status", "skip"), "value": vt_result.get("value")},
-        {"id": "file_type", "status": ("fail" if any("do NOT" in f for f in type_bad) else "warn") if type_bad else "pass",
+        {"id": "file_type", "status": ("fail" if any("do not" in f.lower() for f in type_bad) else "warn") if type_bad else "pass",
          "value": real_type if real_type != "unknown" else None},
         {"id": "file_hidden", "status": "fail" if hidden else "pass", "value": len(hidden)},
         {"id": "file_name", "status": "fail" if ext_score >= 35 else ("warn" if ext_score else "pass"), "value": ext or None},
@@ -288,6 +379,9 @@ def scan_file_route():
         "size": len(file_bytes),
         "checks": checks,
         "sha256": sha256,
+        "md5": md5,
+        "sha1": sha1,
+        "virustotal": vt_result.get("vt", {}),
         "detected_type": real_type,
         "risk_score": total_score,
         "verdict": verdict_from_score(total_score),

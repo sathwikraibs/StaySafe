@@ -76,6 +76,9 @@ export interface ScanFileResponse {
   sha256: string;
   detected_type?: string;
   size?: number;
+  md5?: string;
+  sha1?: string;
+  virustotal?: VirusTotalInfo;
   checks?: Check[];
   risk_score: number;
   verdict: Verdict;
@@ -171,4 +174,22 @@ export interface ScamLibraryResponse {
 
 export interface CategoriesResponse {
   categories: string[];
+}
+
+export interface VirusTotalInfo {
+  state: "found" | "not_found" | "queued" | "busy" | "error" | "off" | "too_big";
+  malicious?: number;
+  suspicious?: number;
+  undetected?: number;
+  harmless?: number;
+  total?: number;
+  engines?: { name: string; category: string; result: string }[];
+  threat_label?: string;
+  type_description?: string;
+  first_seen?: string;
+  last_analysis?: string;
+  times_submitted?: number | null;
+  names?: string[];
+  tags?: string[];
+  link?: string;
 }

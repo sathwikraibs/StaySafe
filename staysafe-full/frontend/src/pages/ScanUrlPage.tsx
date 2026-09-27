@@ -17,6 +17,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanUrlResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [asked, setAsked] = useState("");
 
   async function handleCheck() {
     if (!url.trim() || loading) return;
@@ -24,8 +25,11 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
     setError(null);
     setResult(null);
     try {
+      setAsked(url.trim());
       const data = await apiPostJSON<ScanUrlResponse>(`${API_BASE}/api/scan-url`, { url: url.trim() });
       setResult(data);
+      // show the tidied address in the box so the person sees exactly what was checked
+      if (data.url && data.url !== url.trim()) setUrl(data.url);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -39,8 +43,11 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <label className="mb-2 block font-body text-sm font-semibold text-ink-800">{t("url.label")}</label>
         <input
-          type="url"
+          type="text"
           inputMode="url"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleCheck(); }}
@@ -57,6 +64,10 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
       {loading && <LoadingSteps tool="link" />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
+
+      {result && asked && !result.url.replace(/^https?:\/\//i, "").startsWith(asked.replace(/^https?:\/\//i, "").replace(/\/$/, "")) && (
+        <p className="mt-4 break-all rounded-xl bg-sage-100 px-4 py-2.5 font-body text-sm text-sage-700">{t("urlX.cleaned", { url: result.url })}</p>
+      )}
 
       {result && (
         <ResultReport

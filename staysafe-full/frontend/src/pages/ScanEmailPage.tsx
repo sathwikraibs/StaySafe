@@ -11,7 +11,20 @@ import type { ScanEmailResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { IconEmail, IconChevronRight } from "@/icons";
 
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
+const FIND_EMAIL = /[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
+
+/** "ManageEngine <itom@x.com" -> { name: "ManageEngine", email: "itom@x.com" } */
+function splitSender(raw: string): { name: string; email: string } {
+  const m = raw.match(FIND_EMAIL);
+  if (!m || m.index === undefined) return { name: "", email: "" };
+  const email = m[0].replace(/^[.']+|[.']+$/g, "").toLowerCase();
+  const name = (raw.slice(0, m.index) + " " + raw.slice(m.index + m[0].length))
+    .replace(/\b(from|sender|mailto)\s*:/gi, " ")
+    .replace(/[<>"'()[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[\s,;:.-]+|[\s,;:.-]+$/g, "");
+  return { name, email };
+}
 
 function Field({ label, need, hint, children }: { label: string; need: "required" | "optional"; hint?: string; children: ReactNode }) {
   const { t } = useI18n();
@@ -45,15 +58,29 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
   const [result, setResult] = useState<ScanEmailResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const senderBad = sender.trim() !== "" && !EMAIL_RE.test(sender.trim());
-  const canCheck = mode === "form" ? EMAIL_RE.test(sender.trim()) && body.trim().length > 0 : raw.trim().length > 0;
+  const [cleaned, setCleaned] = useState<string | null>(null);
+  const senderBad = sender.trim() !== "" && !FIND_EMAIL.test(sender);
+  const canCheck = mode === "form" ? FIND_EMAIL.test(sender) && body.trim().length > 0 : raw.trim().length > 0;
+
+  // Tidy up whatever was pasted into an email box, e.g. 'Name <address' or 'From: x@y.com'
+  function tidySender() {
+    const { name: n, email } = splitSender(sender);
+    if (!email || email === sender.trim()) { setCleaned(null); return; }
+    setSender(email);
+    if (n && !name.trim()) setName(n);
+    setCleaned(email);
+  }
+  function tidyReply() {
+    const { email } = splitSender(replyTo);
+    if (email && email !== replyTo.trim()) setReplyTo(email);
+  }
 
   async function handleCheck() {
     if (!canCheck || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
       const payload = mode === "form"
-        ? { sender_email: sender.trim(), sender_name: name.trim(), subject: subject.trim(), body: body.trim(), reply_to: replyTo.trim() }
+        ? { sender_email: splitSender(sender).email || sender.trim(), sender_name: name.trim() || splitSender(sender).name, subject: subject.trim(), body: body.trim(), reply_to: splitSender(replyTo).email }
         : { raw_email: raw.trim() };
       const data = await apiPostJSON<ScanEmailResponse>(`${API_BASE}/api/scan-email`, payload);
       setResult(data);
@@ -84,17 +111,22 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         {mode === "form" ? (
           <div className="space-y-4">
-            <Field label={t("emailForm.senderEmail")} need="required" hint={senderBad ? undefined : t("emailForm.senderEmailHint")}>
+            <Field label={t("emailForm.senderEmail")} need="required" hint={senderBad || cleaned ? undefined : t("emailForm.senderEmailHint")}>
               <input
-                type="email"
+                type="text"
                 inputMode="email"
                 autoComplete="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 value={sender}
-                onChange={(e) => setSender(e.target.value)}
+                onChange={(e) => { setSender(e.target.value); setCleaned(null); }}
+                onBlur={tidySender}
+                onPaste={() => setTimeout(tidySender, 0)}
                 placeholder="alerts@example.com"
                 className={`${inputCls} ${senderBad ? "border-rust-400" : ""}`}
               />
               {senderBad && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("emailForm.badEmail")}</span>}
+              {cleaned && <span className="mt-1 block font-body text-xs font-semibold text-sage-700">{t("emailForm.cleaned", { email: cleaned })}</span>}
             </Field>
             <Field label={t("emailForm.senderName")} need="optional">
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("emailForm.senderNamePh")} className={inputCls} />
@@ -120,7 +152,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
             </button>
             {showMore && (
               <Field label={t("emailForm.replyTo")} need="optional">
-                <input type="email" value={replyTo} onChange={(e) => setReplyTo(e.target.value)} placeholder="reply@example.com" className={inputCls} />
+                <input type="text" inputMode="email" autoCapitalize="off" value={replyTo} onChange={(e) => setReplyTo(e.target.value)} onBlur={tidyReply} placeholder="reply@example.com" className={inputCls} />
               </Field>
             )}
           </div>

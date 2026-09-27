@@ -34,6 +34,10 @@ app.register_blueprint(network_checker_bp)
 app.register_blueprint(email_analyzer_bp)
 app.register_blueprint(knowledge_base_bp)
 
+# Start downloading the free public scam-link lists in the background
+from scanners.url_scanner import ensure_feeds  # noqa: E402
+ensure_feeds()
+
 
 @app.route("/")
 def home():

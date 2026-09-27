@@ -22,6 +22,8 @@ then runs it through the same rule engine as pasted text.
 """
 
 import io
+import threading
+import os
 import time
 import re
 import shutil
@@ -216,6 +218,82 @@ RULES = [
             r"\b(contact|message|join)\b[^.\n]{0,20}\b(on |us on |me on )?telegram\b",
         ],
         10,
+    ),
+    (
+        "Asks you to install an app from a link or file (APK)",
+        [
+            r"\b[\w-]+\.apk\b",
+            r"\b(download|install)\b[^.\n]{0,30}\b(this |the |our |below )?(app|application|apk)\b[^.\n]{0,30}\b(link|below|here|file|attached)\b",
+            r"\b(install|download)\b[^.\n]{0,20}\b(from|using) (this|the|below) link\b",
+        ],
+        45,
+    ),
+    (
+        "Instant loan with no documents or checks",
+        [
+            r"\b(instant|quick|easy|pre-?approved)\s+(personal\s+)?loan\b[^\n]{0,80}\b(no|without)\s+(documents?|paperwork|cibil|credit check|income proof)\b",
+            r"\bloan\b[^\n]{0,60}\b(in|within) \d+ (minutes?|mins?)\b",
+            r"\bno cibil (check|score)?\b",
+        ],
+        30,
+    ),
+    (
+        "Fake government scheme, Aadhaar, PAN or gas update",
+        [
+            r"\b(pm[- ]?kisan|pm[- ]?yojana|pradhan mantri)\b[^\n]{0,80}\b(update|verify|link|claim|apply|kyc|blocked|stopped)\b",
+            r"\b(gas|lpg)\s+(connection|subsidy|kyc)\b[^\n]{0,60}\b(update|block|cancel|stop|verify)",
+            r"\b(aadhaa?r|pan)(\s+card)?\b[^\n]{0,40}\b(will be |is |has been )?(blocked|deactivated|suspended|cancelled|inactive)\b",
+            r"\b(pension|scholarship|subsidy)\b[^\n]{0,40}\b(stopped|blocked|pending)\b[^\n]{0,60}\b(update|link|click|call)\b",
+        ],
+        30,
+    ),
+    (
+        "Reward points or cashback that 'expire today'",
+        [
+            r"\breward points?\b[^\n]{0,80}\b(expir|redeem|claim|lapse)",
+            r"\b(redeem|claim)\b[^\n]{0,40}\b(points|rewards)\b[^\n]{0,40}\b(today|now|before|expir)",
+        ],
+        35,
+    ),
+    (
+        "Threatens to share your photos or videos (blackmail)",
+        [
+            r"\b(video|photos?|pics?|recording)\b[^\n]{0,60}\b(viral|leak|upload|send|share)\b[^\n]{0,40}\b(friends|family|contacts|relatives|everyone|social media|youtube)\b",
+            r"\b(pay|send)\b[^\n]{0,40}\b(or|otherwise|warna)\b[^\n]{0,40}\b(viral|leak|upload)\b",
+        ],
+        50,
+    ),
+    (
+        "Asks for payment by gift card or crypto",
+        [
+            r"\b(google play|amazon|apple|itunes|steam)\s+(gift\s+)?(card|voucher)s?\b[^\n]{0,60}\b(buy|send|code|purchase)",
+            r"\b(buy|send|purchase)\b[^\n]{0,40}\b(gift\s+card|voucher)s?\b",
+            r"\b(usdt|bitcoin|btc|crypto)\b[^\n]{0,40}\b(wallet|address|send|deposit|transfer)\b",
+        ],
+        35,
+    ),
+    (
+        "Asks for your Aadhaar, PAN or bank account details",
+        [
+            r"\b(send|share|provide|give|submit|upload)\b[^.\n]{0,40}\b(aadhaa?r|pan card|bank (account|a/c) (number|details)|debit card|atm card|card number|passbook)\b",
+        ],
+        35,
+    ),
+    (
+        "Asks you to keep it secret",
+        [
+            r"\b(don'?t|do not|never) (tell|inform|share this with) (anyone|anybody|your family|your parents|bank|police)\b",
+            r"\bkeep (this|it) (secret|confidential|between us)\b",
+            r"\b(kisi ko mat batana|kisi ko na batayein)\b",
+        ],
+        25,
+    ),
+    (
+        "Free recharge, data or gifts with a link",
+        [
+            r"\bfree\b[^\n]{0,30}\b(recharge|data|5g|mobile|iphone|smartphone|laptop|gift)\b[^\n]{0,80}(https?://|www\.|\b[a-z0-9-]+\.(xyz|top|site|online|in|com)\b)",
+        ],
+        30,
     ),
 ]
 
@@ -756,7 +834,10 @@ def ocr_languages() -> str:
     return _OCR_LANGS
 
 
-OCR_TIME_BUDGET = 75  # seconds for all reading passes together (gunicorn allows 120)
+OCR_TIME_BUDGET = 80  # seconds for all reading passes together (gunicorn allows 120)
+# One screenshot at a time: two readings in parallel on a small server make both slow
+_OCR_LOCK = threading.Semaphore(1)
+OCR_PROBLEM = {"last": None}
 
 
 def _looks_like_real_english(text: str) -> bool:
@@ -769,11 +850,51 @@ def _looks_like_real_english(text: str) -> bool:
     return len(good) / len(words) >= 0.55
 
 
+def _tesseract(img, lang: str, config: str, timeout: int) -> str:
+    """Run Tesseract; returns '' on time-out or error (and remembers the error for /api/ocr-check)."""
+    try:
+        return pytesseract.image_to_string(img, lang=lang, config=config, timeout=max(5, timeout)).strip()
+    except RuntimeError as e:  # time-out, or a Tesseract error (TesseractError is a RuntimeError)
+        OCR_PROBLEM["last"] = f"{lang} {config}: {str(e)[:160] or 'timed out'}"
+        return ""
+    except Exception as e:
+        OCR_PROBLEM["last"] = f"{lang}: {type(e).__name__}: {str(e)[:120]}"
+        return ""
+
+
+def _ocr_space(image_bytes_jpeg: bytes) -> str:
+    """
+    Optional free backup reader (OCR.space, 25,000 free reads a month, no card).
+    Used only when Tesseract fails. Needs OCRSPACE_API_KEY in Render's environment.
+    """
+    key = os.environ.get("OCRSPACE_API_KEY", "")
+    if not key:
+        return ""
+    try:
+        import requests
+        resp = requests.post(
+            "https://api.ocr.space/parse/image",
+            headers={"apikey": key},
+            files={"file": ("screenshot.jpg", image_bytes_jpeg, "image/jpeg")},
+            data={"OCREngine": "2", "language": "auto", "scale": "true", "detectOrientation": "true"},
+            timeout=25,
+        )
+        data = resp.json()
+        if data.get("IsErroredOnProcessing"):
+            OCR_PROBLEM["last"] = f"OCR.space: {str(data.get('ErrorMessage'))[:120]}"
+            return ""
+        return "\n".join(r.get("ParsedText", "") for r in data.get("ParsedResults") or []).strip()
+    except Exception as e:
+        OCR_PROBLEM["last"] = f"OCR.space: {type(e).__name__}"
+        return ""
+
+
 def extract_text_from_image(image_bytes: bytes) -> str:
     """
-    Fast path first: read in English only (3x quicker). Only when the picture seems to hold
-    Kannada or Hindi do we read it again with those languages. Every pass has a time limit;
-    if a slower pass runs out of time we keep what the faster pass found.
+    1. English only on a right-sized picture (fast).
+    2. If the text looks like Kannada/Hindi, read again with those languages.
+    3. If nothing worked, try a smaller picture, then the optional OCR.space backup.
+    Raises RuntimeError only when every way failed.
     """
     started = time.time()
     img = Image.open(io.BytesIO(image_bytes))
@@ -782,36 +903,59 @@ def extract_text_from_image(image_bytes: bytes) -> str:
     langs = ocr_languages()
 
     def left() -> int:
-        return max(5, int(OCR_TIME_BUDGET - (time.time() - started)))
+        return int(OCR_TIME_BUDGET - (time.time() - started))
 
-    english = ""
-    try:
-        english = pytesseract.image_to_string(prepared, lang="eng", config="--oem 1 --psm 6", timeout=min(35, left())).strip()
-    except RuntimeError:
-        english = ""
+    with _OCR_LOCK:
+        english = _tesseract(prepared, "eng", "--oem 1 --psm 6", min(40, left()))
+        if english and (_looks_like_real_english(english) or langs == "eng"):
+            return english
 
-    if langs == "eng":
-        if len(english) < 10 and left() > 15:
-            try:
-                english = pytesseract.image_to_string(prepared, lang="eng", config="--oem 1 --psm 3", timeout=left()).strip()
-            except RuntimeError:
-                pass
-        if not english:
-            raise RuntimeError("OCR timed out")
-        return english
+        best = english
+        if langs != "eng" and left() > 10:
+            mixed = _tesseract(prepared, langs, "--oem 1 --psm 6", left())
+            if len(mixed) >= len(english) * 0.6:
+                best = mixed or english
+        if best:
+            return best
 
-    if english and _looks_like_real_english(english):
-        return english
+        # Nothing yet: a smaller picture reads faster
+        if left() > 10:
+            small = prepared.copy()
+            small.thumbnail((800, 1800))
+            best = _tesseract(small, "eng" if langs == "eng" else langs, "--oem 1 --psm 3", left())
+            if best:
+                return best
 
-    # Probably Kannada / Hindi (or mixed): read again with every language
-    try:
-        mixed = pytesseract.image_to_string(prepared, lang=langs, config="--oem 1 --psm 6", timeout=left()).strip()
-    except RuntimeError:
-        mixed = ""
-    best = mixed if len(mixed) >= len(english) * 0.6 else english
-    if not best:
-        raise RuntimeError("OCR timed out")
-    return best
+    # Last try: the free OCR.space backup (if a key is set)
+    buf = io.BytesIO()
+    backup = prepared.copy()
+    backup.thumbnail((1400, 2400))
+    backup.convert("L").save(buf, "JPEG", quality=80)
+    text = _ocr_space(buf.getvalue())
+    if text:
+        return text
+    raise RuntimeError("could not read the image")
+
+
+def ocr_self_check() -> dict:
+    """Reads a small built-in test picture and reports how long it took (for /api/ocr-check)."""
+    from PIL import ImageDraw
+    img = Image.new("L", (900, 260), 255)
+    d = ImageDraw.Draw(img)
+    d.text((30, 60), "Your SBI account will be blocked today", fill=0)
+    d.text((30, 120), "Update KYC now 9876543210", fill=0)
+    img = img.resize((1800, 520))
+    t = time.time()
+    text = _tesseract(img, "eng", "--oem 1 --psm 6", 60)
+    return {
+        "ok": bool(text),
+        "seconds": round(time.time() - t, 1),
+        "read": text[:80],
+        "languages": ocr_languages(),
+        "omp_thread_limit": os.environ.get("OMP_THREAD_LIMIT", ""),
+        "ocr_space_backup": bool(os.environ.get("OCRSPACE_API_KEY")),
+        "last_problem": OCR_PROBLEM["last"],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -837,6 +981,14 @@ def scan_message_route():
 # ---------------------------------------------------------------------------
 # ROUTE 2. Upload a screenshot (OCR extracts text, then same analysis)
 # ---------------------------------------------------------------------------
+@message_scanner_bp.route("/api/ocr-check", methods=["GET"])
+def ocr_check_route():
+    """Open this in a browser to see if screenshot reading works on the server and how fast."""
+    if not ocr_status():
+        return jsonify({"ok": False, "error": "Tesseract is not installed"})
+    return jsonify(ocr_self_check())
+
+
 @message_scanner_bp.route("/api/scan-screenshot", methods=["POST"])
 def scan_screenshot_route():
     if not ocr_status():
@@ -855,7 +1007,7 @@ def scan_screenshot_route():
     try:
         extracted_text = extract_text_from_image(image_bytes)
     except RuntimeError:
-        return jsonify({"error": "Reading this image took too long. Try cropping it to just the message."}), 400
+        return jsonify({"error": "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead."}), 400
     except Exception:
         return jsonify({"error": "We couldn't open this image. Please upload a PNG or JPG screenshot."}), 400
 

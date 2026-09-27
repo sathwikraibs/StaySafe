@@ -11,6 +11,9 @@ export const reportEn = {
     chipOk: "Fine: {n}",
     chipWarn: "To watch: {n}",
     chipFail: "Problems: {n}",
+    statOk: "Fine",
+    statWarn: "To watch",
+    statFail: "Problems",
     chipSkip: "Not checked: {n}",
     noticed: "What we noticed",
     todo: "What you should do now",
@@ -175,6 +178,12 @@ export const reportEn = {
   },
 
   checks: {
+    feeds: {
+      pass: "Not on public lists of scam and malware links",
+      warn: "Scam pages on this website were reported recently",
+      fail: "On a public list of scam and malware links: {value}",
+      skip: "Public scam lists could not be checked this time",
+    },
     // links
     google: {
       pass: "Not on Google's list of dangerous sites",
@@ -554,6 +563,7 @@ export const reportEn = {
     advanced: "Paste full source (advanced)",
     advancedNote: "The full source also lets us check the technical sender checks (SPF, DKIM, DMARC).",
     badEmail: "Please enter a full email address, like name@example.com",
+    cleaned: "We used: {email}",
   },
 
   homeX: {
@@ -596,6 +606,55 @@ export const reportEn = {
     count: "{n} scams to know about",
     tipTitle: "The golden rule",
     tip: "If someone rushes you, asks for an OTP or PIN, or asks you to pay to receive money, it's a scam. Stop and check.",
+  },
+
+  vt: {
+    title: "Checked by 70+ antivirus companies",
+    notSeen: "None of the antivirus companies have seen this exact file before. That doesn't make it safe, so only open it if you trust where it came from.",
+    queued: "The file was sent for a full scan. It can take a few minutes. Open the full report to see the result.",
+    tooBig: "This file is too big to send for a full scan. We checked it with our own tests instead.",
+    busy: "The antivirus check is busy right now. Please try again in a minute.",
+    open: "See the full report",
+    flagged: "{n} of {total} security companies flagged this file",
+    clean: "No security company flagged this file ({total} checked)",
+    type: "File type",
+    firstSeen: "First seen",
+    lastScan: "Last scanned",
+    submitted: "Times checked",
+    engines: "What each company said",
+    showAll: "Show all {n}",
+    cat: {
+      malicious: "Dangerous",
+      suspicious: "Suspicious",
+      harmless: "Safe",
+      undetected: "Nothing found",
+    },
+    uploadTitle: "Also send the file for a full antivirus scan if it is new",
+    uploadNote: "Only do this for files that are not private. Anyone with the report link can see the file.",
+  },
+
+  qrCam: {
+    noCamera: "We couldn't open the camera. Please allow camera access, or upload a photo of the QR code instead.",
+    pointAuto: "Point at the QR code. It reads by itself.",
+    point: "Point at the QR code, then tap Take photo",
+    close: "Close camera",
+    capture: "Take photo",
+    open: "Scan with camera",
+    openHint: "Point your camera at the QR code",
+  },
+
+  incidentX: {
+    moreLinks: "{n} more places to get help",
+    done: "Done",
+    markDone: "Mark as done",
+    lostMoney: "Lost money in the last few hours?",
+    progress: "{done} of {total} done",
+    firstThis: "Do this first",
+    allDone: "All steps done. Well done.",
+  },
+
+  urlX: {
+    cleaned: "We found this link in what you pasted: {url}",
   },
 
   linkInfo: {

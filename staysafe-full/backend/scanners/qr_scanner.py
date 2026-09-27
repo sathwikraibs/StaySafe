@@ -189,6 +189,11 @@ def scan_qr_route():
             "error": "We couldn't find a QR code in this image. Try a clearer photo with the whole QR code visible."
         }), 400
 
+    return jsonify(analyze_qr_data(qr_data))
+
+
+def analyze_qr_data(qr_data: str) -> dict:
+    """Check what a QR code contains (a link, a UPI payment or plain text)."""
     qr_data = qr_data.strip()
     lowered = qr_data.lower()
 
@@ -196,7 +201,7 @@ def scan_qr_route():
         result = analyze_upi_string(qr_data)
         result["raw_data"] = qr_data
         log_scan("qr_upi", result)
-        return jsonify(result)
+        return result
 
     if lowered.startswith(("http://", "https://", "www.")):
         url = qr_data if lowered.startswith("http") else "https://" + qr_data
@@ -204,7 +209,7 @@ def scan_qr_route():
         result["qr_type"] = "url"
         result["raw_data"] = qr_data
         log_scan("qr_url", result)
-        return jsonify(result)
+        return result
 
     result = {
         "qr_type": "text",
@@ -215,4 +220,14 @@ def scan_qr_route():
         "checks": [{"id": "qr_text", "status": "pass", "value": None}],
     }
     log_scan("qr_text", result)
-    return jsonify(result)
+    return result
+
+
+@qr_scanner_bp.route("/api/scan-qr-text", methods=["POST"])
+def scan_qr_text_route():
+    """The phone's camera already read the QR code; we only check what's inside."""
+    data = request.get_json(silent=True) or {}
+    qr_data = (data.get("data") or "").strip()[:4000]
+    if not qr_data:
+        return jsonify({"error": "We couldn't find a QR code in this image. Try a clearer photo with the whole QR code visible."}), 400
+    return jsonify(analyze_qr_data(qr_data))

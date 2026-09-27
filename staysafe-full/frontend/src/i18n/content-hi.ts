@@ -230,6 +230,21 @@ export const hiContent: LangContent = {
     "We couldn't connect right now. Please check your internet and try again.": "अभी कनेक्ट नहीं हो पाया। अपना इंटरनेट देखें और दोबारा कोशिश करें।",
     "This is taking longer than usual. Please try again in a moment.": "इसमें सामान्य से ज़्यादा समय लग रहा है। थोड़ी देर बाद दोबारा कोशिश करें।",
     "Something went wrong. Please try again.": "कुछ गड़बड़ हुई। दोबारा कोशिश करें।",
+    "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead.": "अभी यह फ़ोटो पढ़ी नहीं जा सकी। थोड़ी देर बाद दोबारा कोशिश करें, या मैसेज का टेक्स्ट पेस्ट करें।",
+
+    // ---- new message rules and public lists
+    "Asks you to install an app from a link or file (APK)": "लिंक या फ़ाइल (APK) से ऐप इंस्टॉल करने को कहता है",
+    "Instant loan with no documents or checks": "बिना कागज़ात या जाँच के तुरंत लोन",
+    "Fake government scheme, Aadhaar, PAN or gas update": "नकली सरकारी योजना, आधार, PAN या गैस अपडेट",
+    "Reward points or cashback that 'expire today'": "रिवॉर्ड पॉइंट या कैशबैक जो 'आज खत्म' हो रहे हैं",
+    "Threatens to share your photos or videos (blackmail)": "आपकी फ़ोटो या वीडियो फैलाने की धमकी (ब्लैकमेल)",
+    "Asks for payment by gift card or crypto": "गिफ़्ट कार्ड या क्रिप्टो से पैसे माँगता है",
+    "Asks for your Aadhaar, PAN or bank account details": "आपका आधार, PAN या बैंक खाते का विवरण माँगता है",
+    "Asks you to keep it secret": "बात को गुप्त रखने को कहता है",
+    "Free recharge, data or gifts with a link": "लिंक के साथ मुफ़्त रिचार्ज, डेटा या उपहार",
+    "This link is on a public list of scam and malware links ({source})": "यह लिंक धोखाधड़ी और मैलवेयर लिंक की सार्वजनिक सूची में है ({source})",
+    "Scam pages on this website were reported recently ({source})": "इस वेबसाइट पर धोखाधड़ी वाले पेज हाल ही में रिपोर्ट हुए हैं ({source})",
+    "We couldn't find a web address in what you pasted. Try something like example.com": "आपने जो पेस्ट किया उसमें कोई वेब पता नहीं मिला। example.com जैसा कुछ डालकर देखें",
   }),
 
   incidents: {

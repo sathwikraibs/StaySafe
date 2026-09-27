@@ -286,6 +286,8 @@ def link_check_status() -> dict:
     return {
         "safe_browsing": {"configured": bool(GOOGLE_SAFE_BROWSING_API_KEY), "problem": _PROBLEMS["safe_browsing"]},
         "virustotal": {"configured": bool(VIRUSTOTAL_API_KEY), "problem": _PROBLEMS["virustotal"]},
+        "public_lists": {"links": sum(_FEEDS["counts"].values()), "counts": _FEEDS["counts"],
+                         "problem": _FEEDS["problem"]},
     }
 
 
@@ -661,6 +663,82 @@ THREAT_NAMES = {
 
 
 # ---------------------------------------------------------------------------
+# 4b. Free public lists of scam / malware links (no key needed)
+#     OpenPhish community feed (phishing) and URLhaus (malware links), refreshed every 3 hours.
+# ---------------------------------------------------------------------------
+FEED_SOURCES = {
+    "OpenPhish": "https://raw.githubusercontent.com/openphish/public_feed/main/feed.txt",
+    "URLhaus": "https://urlhaus.abuse.ch/downloads/text_online/",
+}
+FEED_REFRESH_SECONDS = 3 * 3600
+_FEEDS = {"urls": {}, "hosts": {}, "loaded_at": 0.0, "loading": False, "counts": {}, "problem": None}
+_FEED_LOCK = threading.Lock()
+
+
+def _feed_key(u: str) -> str:
+    u = u.strip().lower()
+    u = re.sub(r"^[a-z]+://", "", u)
+    u = re.sub(r"^www\.", "", u)
+    return u.rstrip("/")
+
+
+def refresh_feeds() -> None:
+    urls, hosts, counts, problems = {}, {}, {}, []
+    for name, src in FEED_SOURCES.items():
+        try:
+            resp = requests.get(src, timeout=25, headers={"User-Agent": "StaySafe/2.0"})
+            if resp.status_code != 200:
+                problems.append(f"{name}: HTTP {resp.status_code}")
+                continue
+            n = 0
+            for line in resp.text.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "." not in line:
+                    continue
+                key = _feed_key(line)
+                urls.setdefault(key, name)
+                host = key.split("/")[0].split(":")[0]
+                hosts.setdefault(host, name)
+                n += 1
+            counts[name] = n
+        except Exception as e:
+            problems.append(f"{name}: {type(e).__name__}")
+    with _FEED_LOCK:
+        if urls:
+            _FEEDS.update(urls=urls, hosts=hosts, counts=counts)
+        _FEEDS.update(loaded_at=time.time(), loading=False, problem="; ".join(problems) or None)
+
+
+def ensure_feeds() -> None:
+    """Start a background refresh when the lists are missing or older than 3 hours."""
+    if OFFLINE:
+        return
+    with _FEED_LOCK:
+        stale = time.time() - _FEEDS["loaded_at"] > FEED_REFRESH_SECONDS
+        if not stale or _FEEDS["loading"]:
+            return
+        _FEEDS["loading"] = True
+    threading.Thread(target=refresh_feeds, daemon=True).start()
+
+
+def feed_lookup(urls, host: str) -> dict:
+    """{'status': 'fail'|'warn'|'pass'|'skip', 'source': ...}"""
+    ensure_feeds()
+    if not _FEEDS["urls"]:
+        return {"status": "skip"}
+    for u in urls:
+        if not u:
+            continue
+        hit = _FEEDS["urls"].get(_feed_key(u))
+        if hit:
+            return {"status": "fail", "source": hit}
+    h = re.sub(r"^www\.", "", (host or "").lower())
+    if h and h in _FEEDS["hosts"]:
+        return {"status": "warn", "source": _FEEDS["hosts"][h]}
+    return {"status": "pass"}
+
+
+# ---------------------------------------------------------------------------
 # 5. VirusTotal
 # ---------------------------------------------------------------------------
 def _vt_get(path: str):
@@ -834,11 +912,51 @@ def _run(fn, *args, timeout=9, default=None):
         return default
 
 
+_URL_WITH_SCHEME = re.compile(r"(?:https?|hxxps?)://[^\s<>\"'`]+", re.IGNORECASE)
+_BARE_DOMAIN = re.compile(
+    r"(?<![@\w.-])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}(?::\d{2,5})?(?:/[^\s<>\"'`]*)?)",
+    re.IGNORECASE)
+
+
+def extract_url(raw: str) -> str:
+    """
+    Pull the web address out of whatever was pasted: a whole message, 'Link: <https://x>',
+    a markdown link, defanged 'hxxp://evil[.]com', text with quotes or brackets around it.
+    Returns '' when there is no web address at all.
+    """
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    # defanged addresses used in security reports
+    text = re.sub(r"\[\.\]|\(\.\)|\{\.\}|\s\[dot\]\s|\[dot\]", ".", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bhxxp", "http", text, flags=re.IGNORECASE)
+    md = re.search(r"\]\((\S+?)\)", text)  # [text](url)
+    if md and ("." in md.group(1) or "://" in md.group(1)):
+        text = md.group(1)
+    m = _URL_WITH_SCHEME.search(text)
+    if m:
+        found = m.group(0)
+    else:
+        candidates = [c for c in _BARE_DOMAIN.findall(text) if not re.fullmatch(r"[\d.]+", c.split("/")[0])]
+        # prefer something that looks like a website over a stray "e.g." or file name
+        candidates = [c for c in candidates if not re.search(r"\.(jpg|jpeg|png|pdf|txt|doc|docx)$", c, re.I) or "/" in c]
+        if not candidates:
+            ip = re.search(r"\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?(?:/\S*)?", text)
+            found = ip.group(0) if ip else ""
+        else:
+            found = candidates[0]
+    found = re.split(r"\]\(|\)\[", found)[0]  # stop at leftover markdown brackets
+    found = found.strip().rstrip(".,;:!?)]}>'\"”’").lstrip("(<[{'\"“‘")
+    # keep brackets that belong to the address itself, like ?id=[1] or /page(2)
+    for open_b, close_b in ("[]", "()"):
+        if found.count(open_b) > found.count(close_b):
+            found += close_b
+    return found
+
+
 def normalize_url(raw: str) -> str:
-    url = (raw or "").strip().strip("<>\"'").replace(" ", "")
-    if url.lower().startswith("hxxp"):
-        url = "http" + url[4:]
-    url = url.replace("[.]", ".").replace("(.)", ".")
+    url = extract_url(raw) or (raw or "").strip()
+    url = url.replace(" ", "")
     if not url.lower().startswith(("http://", "https://")):
         url = "https://" + url.lstrip("/")
     return url
@@ -1002,6 +1120,21 @@ def scan_url(url: str) -> dict:
     else:
         _check(checks, "google", "skip")
 
+    # --- Public scam-link lists (OpenPhish, URLhaus)
+    feed = feed_lookup([url, final_url], host) if not trusted else {"status": "pass"}
+    if feed["status"] == "fail":
+        findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
+        score = max(score + 50, 95)
+        _check(checks, "feeds", "fail", feed["source"])
+    elif feed["status"] == "warn" and not structure["hosting"]:
+        findings.append(f"Scam pages on this website were reported recently ({feed['source']})")
+        score += 25
+        _check(checks, "feeds", "warn", feed["source"])
+    elif feed["status"] == "skip":
+        _check(checks, "feeds", "skip")
+    else:
+        _check(checks, "feeds", "pass")
+
     # --- VirusTotal
     if vt.get("status") == "ok":
         mal, sus = vt.get("malicious", 0), vt.get("suspicious", 0)
@@ -1028,10 +1161,10 @@ def scan_url(url: str) -> dict:
 
     total = max(0, min(100, score))
     # Known-good sites keep a low score unless a blocklist says otherwise
-    if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3:
+    if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail":
         total = min(total, 15)
 
-    order = ["google", "virustotal", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
+    order = ["google", "feeds", "virustotal", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
 
     return {
@@ -1064,8 +1197,9 @@ def scan_url_route():
 
     if not raw:
         return jsonify({"error": "Please paste the link you want to check."}), 400
-    if len(raw) > 2000:
-        return jsonify({"error": "That link is too long to check."}), 400
+    raw = raw[:5000]
+    if not extract_url(raw):
+        return jsonify({"error": "We couldn't find a web address in what you pasted. Try something like example.com"}), 400
     url = normalize_url(raw)
     host = urlparse(url).hostname or ""
     if "." not in host and not is_ip(host):

@@ -231,6 +231,21 @@ export const tcyContent: LangContent = {
     "We couldn't connect right now. Please check your internet and try again.": "ಇತ್ತೆ ಸಂಪರ್ಕ ಆಯಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "This is taking longer than usual. Please try again in a moment.": "ಉಂದೆಕ್ ಸಾಮಾನ್ಯೊಡ್ದ್ ಜಾಸ್ತಿ ಪೊರ್ತು ಬೊಡ್ಡುಂಡು. ಎಲ್ಯ ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "Something went wrong. Please try again.": "ದಾದಾಂಡಲ ತಪ್ಪಾಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead.": "ಇತ್ತೆ ಈ ಚಿತ್ರನ್ ಓದೆರೆ ಆಯಿಜಿ. ಎಲ್ಯ ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಮೆಸೇಜ್‌ದ ಬರವು ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
+
+    // ---- new message rules and public lists
+    "Asks you to install an app from a link or file (APK)": "ಲಿಂಕ್ ಅತ್ತಂಡ ಫೈಲ್‌ಡ್ದ್ (APK) ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು",
+    "Instant loan with no documents or checks": "ದಾಖಲೆ ಅತ್ತಂಡ ಪರಿಶೀಲನೆ ಇಜ್ಜಂದೆ ಬೇಗ ಸಾಲ",
+    "Fake government scheme, Aadhaar, PAN or gas update": "ನಕಲಿ ಸರಕಾರಿ ಯೋಜನೆ, ಆಧಾರ್, PAN ಅತ್ತಂಡ ಗ್ಯಾಸ್ ಅಪ್‌ಡೇಟ್",
+    "Reward points or cashback that 'expire today'": "'ಇನಿ ಮುಗಿಪುನ' ರಿವಾರ್ಡ್ ಪಾಯಿಂಟ್ ಅತ್ತಂಡ ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್",
+    "Threatens to share your photos or videos (blackmail)": "ಈರೆನ ಫೋಟೋ ಅತ್ತಂಡ ವೀಡಿಯೊ ಪಟ್ಟುವೆ ಪನ್ಪಿನ ಬೆದರಿಕೆ (ಬ್ಲ್ಯಾಕ್‌ಮೇಲ್)",
+    "Asks for payment by gift card or crypto": "ಗಿಫ್ಟ್ ಕಾರ್ಡ್ ಅತ್ತಂಡ ಕ್ರಿಪ್ಟೋಡು ಪೈಸೆ ಕೇನುಂಡು",
+    "Asks for your Aadhaar, PAN or bank account details": "ಈರೆನ ಆಧಾರ್, PAN ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಖಾತೆದ ವಿವರ ಕೇನುಂಡು",
+    "Asks you to keep it secret": "ಉಂದೆನ್ ಗುಟ್ಟಾದ್ ದೀಲೆ ಪನ್ಪುಂಡು",
+    "Free recharge, data or gifts with a link": "ಲಿಂಕ್ ಒಟ್ಟುಗು ಪುಕ್ಕಟೆ ರೀಚಾರ್ಜ್, ಡೇಟಾ ಅತ್ತಂಡ ಉಡುಗೊರೆ",
+    "This link is on a public list of scam and malware links ({source})": "ಈ ಲಿಂಕ್ ಮೋಸ ಬೊಕ್ಕ ಮಾಲ್‌ವೇರ್ ಲಿಂಕ್‌ಲೆನ ಸಾರ್ವಜನಿಕ ಪಟ್ಟಿಡ್ ಉಂಡು ({source})",
+    "Scam pages on this website were reported recently ({source})": "ಈ ವೆಬ್‌ಸೈಟ್‌ದ ಮೋಸದ ಪುಟೊಕುಲು ಇಂಚಿಪ ವರದಿ ಆತ್ಂಡ್ ({source})",
+    "We couldn't find a web address in what you pasted. Try something like example.com": "ಈರ್ ಪೇಸ್ಟ್ ಮಲ್ತಿನೆಟ್ ವೆಬ್ ವಿಳಾಸ ತಿಕ್ಕಿಜಿ. example.com ಲೆಕ್ಕೊ ಬರೆದ್ ತೂಲೆ",
   }),
 
   incidents: {

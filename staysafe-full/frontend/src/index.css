@@ -125,3 +125,20 @@ textarea::placeholder {
   .anim-sweep, .anim-sweep-y, .anim-scan, .anim-dot, .anim-fill, .anim-shackle, .anim-wave, .anim-rise, .anim-spin-slow,
   .progress-shine::after, .pop-in, .hero-ring, .hero-float, .header-blob, .header-icon, .row-in, .stamp { animation: none !important; }
 }
+
+@keyframes ring-draw { from { stroke-dasharray: 0 999 } }
+.ring-draw { animation: ring-draw 1s cubic-bezier(.22,1,.36,1) both; }
+
+@keyframes qr-cam-line { 0%, 100% { top: 8% } 50% { top: 90% } }
+.qr-cam-line { animation: qr-cam-line 2.2s ease-in-out infinite; }
+
+/* verdict badge */
+@keyframes badge-glow { 0%, 100% { transform: scale(1); opacity: .9 } 50% { transform: scale(1.12); opacity: .5 } }
+.badge-glow { animation: badge-glow 2.6s ease-in-out infinite; }
+@keyframes badge-pulse { 0% { transform: scale(.9); opacity: .9 } 100% { transform: scale(1.35); opacity: 0 } }
+.badge-pulse { animation: badge-pulse 1.6s ease-out infinite; }
+@keyframes draw-path { from { stroke-dasharray: 60; stroke-dashoffset: 60 } to { stroke-dasharray: 60; stroke-dashoffset: 0 } }
+.draw-path { animation: draw-path .6s .45s ease-out both; }
+@keyframes sparkle { 0%, 100% { transform: scale(0); opacity: 0 } 50% { transform: scale(1); opacity: 1 } }
+.sparkle { animation: sparkle 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .badge-glow, .badge-pulse, .draw-path, .sparkle, .ring-draw, .qr-cam-line { animation: none !important; } }

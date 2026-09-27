@@ -80,6 +80,34 @@ def test_genuine_messages_not_flagged():
         assert result["verdict"] == "LIKELY_SAFE", (name, result)
 
 
+NEW_RULE_SAMPLES = {
+    "Asks you to install an app from a link or file (APK)": "Hello, you are invited to our wedding. Please see the invitation card: wedding-card.apk",
+    "Instant loan with no documents or checks": "Get instant loan of Rs 50,000 without documents. No CIBIL check",
+    "Fake government scheme, Aadhaar, PAN or gas update": "PM Kisan: your installment is stopped. Update your KYC here: http://pmkisan-kyc.xyz",
+    "Reward points or cashback that 'expire today'": "Your SBI credit card reward points worth Rs 7,850 expire today. Redeem now",
+    "Threatens to share your photos or videos (blackmail)": "I have your video. Pay 20000 or I will make it viral and send to your family",
+    "Asks for payment by gift card or crypto": "Buy 5 Google Play gift cards of Rs 2000 and send me the codes",
+    "Asks for your Aadhaar, PAN or bank account details": "Please share your Aadhaar card and bank account number to receive the amount",
+    "Asks you to keep it secret": "Do not tell anyone about this call, this is a confidential police matter",
+    "Free recharge, data or gifts with a link": "Free 3 months Jio recharge for all users. Claim now: jio-free.xyz",
+}
+NEW_RULE_GENUINE = [
+    "Download the Swiggy app from the Play Store to order",
+    "Your loan EMI of Rs 5,400 is due on 5th. Pay via the HDFC app",
+    "Please bring your Aadhaar card for the college admission tomorrow",
+    "I got free data with my new Airtel plan",
+]
+
+
+def test_new_rules():
+    for label, text in NEW_RULE_SAMPLES.items():
+        result = analyze_text(text)
+        assert label in result["patterns_detected"], (label, result["patterns_detected"])
+        assert result["verdict"] != "LIKELY_SAFE", (label, result)
+    for text in NEW_RULE_GENUINE:
+        assert analyze_text(text)["verdict"] == "LIKELY_SAFE", text
+
+
 KANNADA_HINDI_SCAMS = {
     "kn bank block": "ಆತ್ಮೀಯ ಗ್ರಾಹಕರೇ, ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ತಕ್ಷಣ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ",
     "kn OTP ask": "ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ",
@@ -229,6 +257,9 @@ def _online(dns=True, age=900, gsb=False, vt=None, page=None):
     url_scanner.check_virustotal = lambda url, domain: vt or {"status": "ok", "malicious": 0, "suspicious": 0,
                                                              "harmless": 60, "engines": 90, "domain_malicious": 0}
     url_scanner.fetch_page = fake_page
+    url_scanner.ensure_feeds = lambda: None  # no downloads in tests
+    if not url_scanner._FEEDS["urls"]:
+        url_scanner._FEEDS["urls"] = {"example.invalid/x": "test"}
     try:
         return lambda u: url_scanner.scan_url(u)
     finally:
@@ -310,6 +341,19 @@ def test_broken_certificate_is_not_safe():
 def test_link_that_downloads_an_app_is_risky():
     r = _scan_online("https://get-rewards.com/app", page={"download": "apk"})
     assert r["verdict"] == "DANGEROUS", r
+
+
+def test_public_scam_list_hit_is_risky():
+    try:
+        scan = _online(age=2000)
+        url_scanner._FEEDS["urls"] = {"normal-shop-offers.com/win": "OpenPhish"}
+        url_scanner._FEEDS["hosts"] = {"normal-shop-offers.com": "OpenPhish"}
+        r = scan("https://normal-shop-offers.com/win")
+        assert r["verdict"] == "DANGEROUS", r
+        r2 = scan("https://normal-shop-offers.com/other")
+        assert any(c["id"] == "feeds" and c["status"] == "warn" for c in r2["checks"]), r2
+    finally:
+        _restore()
 
 
 def test_ip_address_no_fake_subdomain_warning():
