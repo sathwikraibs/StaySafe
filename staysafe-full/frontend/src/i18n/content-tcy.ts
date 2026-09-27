@@ -72,10 +72,10 @@ export const tcyContent: LangContent = {
     "We couldn't find readable text in this image. Try a clearer, uncropped screenshot, or paste the message text instead.": "ಈ ಪಟೊಡು ಓದೊಲಿನ ಬರವು ತಿಕ್ಕಿಜಿ. ಸ್ಪಷ್ಟ, ಇಡೀ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಕಡಪುಡ್ಲೆ ಅತ್ತಂಡ ಮೆಸೇಜ್‌ದ ಬರವುನು ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
 
     // language coverage + hidden-link tip
-    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, Kannada and Hindi). We couldn't fully check it — be careful, and never share OTPs, PINs or passwords.":
-      "ಈ ಮೆಸೇಜ್ ಮಸ್ತ್ ಆದ್ ಎಂಕ್ಲೆನ ಪರಿಶೀಲನೆಗ್ ನನಲಾ ಓದೆರೆ ಆವಂದಿನ ಭಾಷೆಡ್ ಉಂಡು (ಎಂಕುಲು ಇಂಗ್ಲಿಷ್, ಹಿಂಗ್ಲಿಷ್, ಕನ್ನಡ ಬೊಕ್ಕ ಹಿಂದಿ ಪರಿಶೀಲನೆ ಮಲ್ಪುವ). ಉಂದೆನ್ ಪೂರ್ತಿ ಪರಿಶೀಲನೆ ಮಲ್ಪೆರೆ ಆಯಿಜಿ — ಜಾಗ್ರತೆಡ್ ಇಪ್ಪುಲೆ, OTP, PIN ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಒರಿಲಾ ಪನೊಡ್ಚಿ.",
-    "Our checks for messages written in Kannada or Hindi script are new and may miss some scams — stay careful.":
-      "ಕನ್ನಡ ಅತ್ತಂಡ ಹಿಂದಿ ಲಿಪಿದ ಮೆಸೇಜ್‌ಲೆನ ಎಂಕ್ಲೆನ ಪರಿಶೀಲನೆ ಪೊಸತ್, ಕೆಲವು ಸ್ಕ್ಯಾಮ್ ತಪ್ಪೊಲಿ — ಜಾಗ್ರತೆಡ್ ಇಪ್ಪುಲೆ.",
+    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, Kannada, Hindi, Tamil, Telugu, Malayalam and Marathi). We couldn't fully check it — be careful, and never share OTPs, PINs or passwords.":
+      "ಈ ಮೆಸೇಜ್ ಮಸ್ತ್ ಆದ್ ಎಂಕ್ಲೆನ ಪರಿಶೀಲನೆಗ್ ನನಲಾ ಓದೆರೆ ಆವಂದಿನ ಭಾಷೆಡ್ ಉಂಡು (ಎಂಕುಲು ಇಂಗ್ಲಿಷ್, ಹಿಂಗ್ಲಿಷ್, ಕನ್ನಡ, ಹಿಂದಿ, ತಮಿಳು, ತೆಲುಗು, ಮಲಯಾಳಂ ಬೊಕ್ಕ ಮರಾಠಿ ಪರಿಶೀಲನೆ ಮಲ್ಪುವ). ಉಂದೆನ್ ಪೂರ್ತಿ ಪರಿಶೀಲನೆ ಮಲ್ಪೆರೆ ಆಯಿಜಿ — ಜಾಗ್ರತೆಡ್ ಇಪ್ಪುಲೆ, OTP, PIN ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಒರಿಲಾ ಪನೊಡ್ಚಿ.",
+    "Our checks for messages written in Indian-language scripts are new and may miss some scams — stay careful.":
+      "ಭಾರತದ ಭಾಷೆಲೆನ ಲಿಪಿದ ಮೆಸೇಜ್‌ಲೆನ ಎಂಕ್ಲೆನ ಪರಿಶೀಲನೆ ಪೊಸತ್, ಕೆಲವು ಸ್ಕ್ಯಾಮ್ ತಪ್ಪೊಲಿ — ಜಾಗ್ರತೆಡ್ ಇಪ್ಪುಲೆ.",
     "This message asks you to click a link, but the link itself isn't visible here — it may be hidden behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link.":
       "ಈ ಮೆಸೇಜ್ ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡು ಪನ್ಪುಂಡು, ಆಂಡ ಲಿಂಕ್ ಮುಲ್ಪ ತೋಜುಜಿ — 'ಮುಲ್ಪ ಕ್ಲಿಕ್ ಮಲ್ಪುಲೆ' ಲೆಕ್ಕದ ಪದೊಲೆನ ಪಿರವು ದೆಂಗ್‌ದುಪ್ಪು. ಲಿಂಕ್‌ದ ಮಿತ್ತ್ ಒತ್ತುದು ಪತ್ತ್‌ದ್ 'Copy link' ಆಯ್ಕೆ ಮಲ್ತ್, 'ಲಿಂಕ್ ಪರಿಶೀಲನೆ' ಡ್ ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
 

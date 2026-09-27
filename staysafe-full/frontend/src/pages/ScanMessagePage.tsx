@@ -124,7 +124,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
               <p className="mt-3 whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-base text-ink-800">
                 {result.translation.text}
               </p>
-              <p className="mt-2 font-body text-xs text-dustyblue-500">{t("message.meaningNote")}</p>
+              <p className="mt-2 font-body text-xs text-dustyblue-500">{t("message.meaningNote", { provider: result.translation.provider === "mymemory" ? "MyMemory" : "Google" })}</p>
             </Card>
           )}
           {result.notes && result.notes.length > 0 && (

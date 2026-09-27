@@ -19,7 +19,7 @@ export interface ScanMessageResponse {
   /** extra information: language coverage, hidden-link tip */
   notes?: string[];
   /** "What this message says" — automatic translation into the website language */
-  translation?: { text: string; from: string; to: string };
+  translation?: { text: string; from: string; to: string; provider?: string };
 }
 
 export interface LinkCheck {

@@ -119,8 +119,33 @@ def test_kannada_hindi_genuine_not_flagged():
 
 
 def test_unsupported_language_is_not_called_safe():
-    result = analyze_text("உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்")  # Tamil
+    result = analyze_text("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন")  # Bengali — no built-in rules yet
     assert result["verdict"] == "UNCERTAIN", result
+
+
+MORE_LANGUAGE_SCAMS = {
+    "ta bank": "உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்",
+    "ta otp": "உங்களுக்கு வந்த OTP ஐ உடனே சொல்லுங்கள்",
+    "te bank": "మీ బ్యాంక్ ఖాతా ఈరోజు బ్లాక్ అవుతుంది. వెంటనే KYC అప్డేట్ చేయండి",
+    "te arrest": "మీ పార్సెల్‌లో డ్రగ్స్ ఉన్నాయి. పోలీస్ మిమ్మల్ని అరెస్ట్ చేస్తారు. వీడియో కాల్‌కు రండి",
+    "ml otp": "നിങ്ങൾക്ക് വന്ന OTP ഉടൻ പറയൂ",
+    "ml power": "നിങ്ങളുടെ വൈദ്യുതി ഇന്ന് രാത്രി വിച്ഛേദിക്കും. ഉടൻ 9876543210 വിളിക്കുക",
+    "mr bank": "तुमचे बँक खाते आज बंद होईल. ताबडतोब KYC अपडेट करा",
+    "mr otp": "तुम्हाला आलेला OTP लगेच सांगा",
+}
+MORE_LANGUAGE_GENUINE = {
+    "ta otp": "உங்கள் OTP 482913. இதை யாருடனும் பகிர வேண்டாம் - SBI",
+    "te otp": "మీ OTP 482913. దీన్ని ఎవరితోనూ షేర్ చేయవద్దు - SBI",
+    "ml otp": "നിങ്ങളുടെ OTP 482913. ഇത് ആരുമായും പങ്കിടരുത് - SBI",
+    "mr otp": "तुमचा OTP 482913 आहे. तो कोणालाही सांगू नका - SBI",
+}
+
+
+def test_tamil_telugu_malayalam_marathi_without_translation():
+    for name, text in MORE_LANGUAGE_SCAMS.items():
+        assert analyze_text(text)["verdict"] == "SCAM_LIKELY", name
+    for name, text in MORE_LANGUAGE_GENUINE.items():
+        assert analyze_text(text)["verdict"] == "LIKELY_SAFE", name
 
 
 def test_hidden_link_gets_a_tip():
@@ -263,8 +288,8 @@ import scanners.translator as translator  # noqa: E402
 from scanners.message_scanner import add_translation  # noqa: E402
 
 FAKE_TRANSLATIONS = {
-    ("உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்", "en"):
-        ("Your bank account will be blocked today. Update KYC immediately", "ta"),
+    ("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন", "en"):
+        ("Your bank account will be blocked today. Update KYC immediately", "bn"),
     ("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ", "en"): ("Tell me the OTP you received immediately", "kn"),
     ("Your SBI account will be blocked today. Update KYC now", "kn"):
         ("ನಿಮ್ಮ SBI ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ಈಗಲೇ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ", "en"),
@@ -283,30 +308,41 @@ class _FakeResponse:
             raise RuntimeError(self.status_code)
 
 
-def _use_fake_google(status=200):
+def _use_fake_google(status=200, mymemory="ok", google_message="Cloud Translation API has not been used in project"):
+    """Fake Google (POST) and MyMemory (GET). calls = list of (provider, text, target)."""
     calls = []
 
     def fake_post(url, params=None, json=None, timeout=None):
-        calls.append((json["q"], json["target"]))
+        calls.append(("google", json["q"], json["target"]))
         if status != 200:
-            return _FakeResponse(status, {"error": {"message": "Cloud Translation API has not been used in project"}})
+            return _FakeResponse(status, {"error": {"message": google_message}})
         text, src = FAKE_TRANSLATIONS.get((json["q"], json["target"]), (json["q"], "en"))
         return _FakeResponse(200, {"data": {"translations": [{"translatedText": text, "detectedSourceLanguage": src}]}})
 
+    def fake_get(url, params=None, timeout=None):
+        src, target = params["langpair"].split("|")
+        calls.append(("mymemory", params["q"], target))
+        if mymemory == "quota":
+            return _FakeResponse(200, {"responseStatus": 429, "responseData": {"translatedText":
+                "MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY"}})
+        text, _ = FAKE_TRANSLATIONS.get((params["q"], target), (params["q"], src))
+        return _FakeResponse(200, {"responseStatus": 200, "responseData": {"translatedText": text}})
+
     os.environ["TRANSLATE_API_KEY"] = "test-key"
     translator.requests.post = fake_post
+    translator.requests.get = fake_get
     translator._cache.clear()
-    translator._disabled_reason = None
+    translator._paused_until.update(google=0.0, mymemory=0.0)
+    translator._problem.update(google=None, mymemory=None)
     translator._usage["chars"] = 0
     return calls
 
 
 def test_translation_lets_us_check_other_languages():
     _use_fake_google()
-    text = "உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்"  # Tamil
-    result = add_translation(analyze_text(text), "en")
+    result = add_translation(analyze_text("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন"), "en")  # Bengali
     assert result["verdict"] == "SCAM_LIKELY", result
-    assert result["translation"]["from"] == "ta" and "blocked" in result["translation"]["text"]
+    assert result["translation"]["from"] == "bn" and "blocked" in result["translation"]["text"]
 
 
 def test_kannada_message_explained_in_english():
@@ -321,7 +357,7 @@ def test_english_message_explained_in_kannada_and_tulu():
         calls = _use_fake_google()
         result = add_translation(analyze_text("Your SBI account will be blocked today. Update KYC now"), ui)
         assert result["translation"]["to"] == "kn", (ui, result)
-        assert calls == [("Your SBI account will be blocked today. Update KYC now", "kn")]
+        assert calls == [("google", "Your SBI account will be blocked today. Update KYC now", "kn")]
 
 
 def test_english_message_on_english_site_costs_nothing():
@@ -330,20 +366,43 @@ def test_english_message_on_english_site_costs_nothing():
     assert calls == [] and "translation" not in result
 
 
-def test_without_key_or_when_google_refuses_we_stay_honest():
-    text = "உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்"
-    _use_fake_google(status=403)
-    assert add_translation(analyze_text(text), "en")["verdict"] == "UNCERTAIN"
+def test_google_quota_or_trial_end_falls_back_to_free_mymemory():
+    for status, message in ((429, "Quota exceeded for quota metric 'Characters per day'"),
+                            (403, "Billing account for project is disabled / trial ended")):
+        calls = _use_fake_google(status=status, google_message=message)
+        result = add_translation(analyze_text("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন"), "en")
+        assert result["verdict"] == "SCAM_LIKELY", (status, result)
+        assert result["translation"]["provider"] == "mymemory"
+        # Google is now paused: the next message goes straight to the free fallback
+        calls.clear()
+        translator._cache.clear()
+        add_translation(analyze_text("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন"), "en")
+        assert all(c[0] == "mymemory" for c in calls), calls
+
+
+def test_everything_used_up_falls_back_to_built_in_rules():
+    _use_fake_google(status=429, mymemory="quota", google_message="Quota exceeded")
+    bengali = add_translation(analyze_text("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন"), "en")
+    assert bengali["verdict"] == "UNCERTAIN" and "translation" not in bengali  # honest, not "safe"
+    translator._cache.clear()
+    tamil = add_translation(analyze_text(MORE_LANGUAGE_SCAMS["ta bank"]), "en")
+    assert tamil["verdict"] == "SCAM_LIKELY"  # built-in Tamil rules still work
+    assert translator._problem["mymemory"]  # MyMemory paused itself for the day
+
+
+def test_without_google_key_mymemory_still_translates():
+    _use_fake_google()
     os.environ.pop("TRANSLATE_API_KEY"); os.environ.pop("GSB_API_KEY", None)
-    translator._disabled_reason = None
-    assert add_translation(analyze_text(text), "en")["verdict"] == "UNCERTAIN"
+    result = add_translation(analyze_text("আপনার ব্যাংক অ্যাকাউন্ট আজ বন্ধ হয়ে যাবে। এখনই KYC আপডেট করুন"), "en")
+    assert result["translation"]["provider"] == "mymemory" and result["verdict"] == "SCAM_LIKELY"
 
 
 def test_daily_limit_protects_free_tier():
     calls = _use_fake_google()
-    translator._usage["chars"] = translator.DAILY_LIMIT  # pretend today's budget is used up
+    translator._usage["chars"] = translator.DAILY_LIMIT  # pretend today's Google budget is used up
     result = add_translation(analyze_text("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ"), "en")
-    assert calls == [] and result["verdict"] == "SCAM_LIKELY"  # native rules still work
+    assert not any(c[0] == "google" for c in calls)  # Google not called at all
+    assert result["verdict"] == "SCAM_LIKELY"  # native rules still work
 
 
 if __name__ == "__main__":

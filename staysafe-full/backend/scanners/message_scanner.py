@@ -307,6 +307,127 @@ NATIVE_PATTERNS = {
 for _label, _patterns, _w in RULES:
     _patterns.extend(NATIVE_PATTERNS.get(_label, []))
 
+
+# ---------------------------------------------------------------------------
+# TAMIL, TELUGU, MALAYALAM and MARATHI rules — so the most common scams are
+# caught even when no translation is available (the ₹0 fallback).
+# ---------------------------------------------------------------------------
+MORE_NATIVE_PATTERNS = {
+    "Asks you to share an OTP, PIN, CVV or password": [
+        r"(otp|ஓடிபி|pin|பின்|cvv|கடவுச்சொல்|குறியீடு)[^.\n]{0,40}(சொல்லுங்கள்|சொல்லுங்க|சொல்லவும்|அனுப்புங்கள்|அனுப்பவும்|பகிரவும்|பகிருங்கள்|கொடுங்கள்|தெரிவிக்கவும்)",
+        r"(வந்த|பெற்ற)[^.\n]{0,12}(otp|ஓடிபி|குறியீடு)",
+        r"(otp|ఓటీపీ|pin|పిన్|cvv|పాస్వర్డ్|కోడ్)[^.\n]{0,40}(చెప్పండి|చెప్పు|పంపండి|పంపు|షేర్ చేయండి|ఇవ్వండి|తెలియజేయండి)",
+        r"(వచ్చిన)[^.\n]{0,12}(otp|ఓటీపీ|కోడ్)",
+        r"(otp|ഒടിപി|pin|പിൻ|cvv|പാസ്വേഡ്|കോഡ്)[^.\n]{0,40}(പറയൂ|പറയുക|അയക്കൂ|അയയ്ക്കുക|ഷെയർ ചെയ്യൂ|നൽകൂ|നൽകുക)",
+        r"(വന്ന|ലഭിച്ച)[^.\n]{0,12}(otp|ഒടിപി|കോഡ്)",
+        r"(otp|ओटीपी|pin|पिन|cvv|पासवर्ड|कोड)[^।.\n]{0,40}(सांगा|पाठवा|शेअर करा|द्या)",
+        r"(आलेला|आलेले)[^।\n]{0,12}(otp|ओटीपी|कोड)",
+    ],
+    "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": [
+        r"(upi pin|யுபிஐ பின்)[^.\n]{0,40}(பெற|கேஷ்பேக்|ரீஃபண்ட்|பணம் வர)",
+        r"(upi pin|యూపీఐ పిన్)[^.\n]{0,40}(పొంద|క్యాష్బ్యాక్|రీఫండ్|డబ్బు వస్తుంది)",
+        r"(upi pin|യുപിഐ പിൻ)[^.\n]{0,40}(ലഭിക്ക|സ്വീകരി|ക്യാഷ്ബാക്ക്|റീഫണ്ട്)",
+    ],
+    "Bank / KYC / PAN impersonation": [
+        r"(கணக்கு|அக்கவுண்ட்|கார்டு|வங்கி)[^.\n]{0,40}(முடக்க|தடை|பிளாக்|நிறுத்த|மூடப்)",
+        r"(kyc|கேஒய்சி)[^.\n]{0,40}(புதுப்பி|அப்டேட்|நிலுவை|சரிபார்)",
+        r"(பான்|pan|ஆதார்)[^.\n]{0,20}(இணை|புதுப்பி|அப்டேட்|லிங்க்)",
+        r"(ఖాతా|అకౌంట్|కార్డ్|బ్యాంక్)[^.\n]{0,40}(బ్లాక్|నిలిపి|స్తంభింప|మూసివేయ|ఫ్రీజ్)",
+        r"(kyc|కేవైసీ)[^.\n]{0,40}(అప్డేట్|పెండింగ్|పూర్తి|ధృవీకరి)",
+        r"(పాన్|pan|ఆధార్)[^.\n]{0,20}(లింక్|అప్డేట్)",
+        r"(അക്കൗണ്ട്|കാർഡ്|ബാങ്ക്)[^.\n]{0,40}(ബ്ലോക്ക്|മരവിപ്പി|റദ്ദാക്ക|നിർത്ത)",
+        r"(kyc|കെവൈസി)[^.\n]{0,40}(അപ്ഡേറ്റ്|പുതുക്ക|പൂർത്തിയാക്ക)",
+        r"(പാൻ|pan|ആധാർ)[^.\n]{0,20}(ലിങ്ക്|അപ്ഡേറ്റ്)",
+        r"(खाते|अकाउंट|कार्ड|बँक)[^।\n]{0,40}(बंद होईल|बंद केले|ब्लॉक|गोठव)",
+    ],
+    "Electricity disconnection threat": [
+        r"(மின்சார|மின் இணைப்பு|கரண்ட்)[^.\n]{0,60}(துண்டிக்க|நிறுத்த|கட்)",
+        r"(కరెంట్|విద్యుత్|పవర్)[^.\n]{0,60}(కట్|నిలిపి|డిస్కనెక్ట్)",
+        r"(വൈദ്യുതി|കറന്റ്|കെഎസ്ഇബി)[^.\n]{0,60}(വിച്ഛേദി|കട്ട്|നിർത്ത)",
+        r"(वीज|लाईट|महावितरण)[^।\n]{0,60}(कापली|कापण्यात|कट|खंडित|बंद)",
+    ],
+    "Courier / customs / 'digital arrest' scam": [
+        r"(டிஜிட்டல் கைது|டிஜிட்டல் அரெஸ்ட்|డిజిటల్ అరెస్ట్|ഡിജിറ്റൽ അറസ്റ്റ്)",
+        r"(பார்சல்|கூரியர்)[^\n]{0,100}(போதை|போலீஸ்|காவல்|சட்டவிரோத)",
+        r"(போலீஸ்|காவல்துறை|சிபிஐ|cbi)[^\n]{0,80}(கைது|வாரண்ட்|வீடியோ கால்)",
+        r"(పార్సెల్|కొరియర్)[^\n]{0,100}(డ్రగ్స్|మత్తు|పోలీస్|అక్రమ)",
+        r"(పోలీస్|సీబీఐ|cbi)[^\n]{0,80}(అరెస్ట్|వారెంట్|వీడియో కాల్)",
+        r"(പാർസൽ|കൊറിയർ)[^\n]{0,100}(മയക്കുമരുന്ന്|ഡ്രഗ്സ്|പോലീസ്|നിയമവിരുദ്ധ)",
+        r"(പോലീസ്|സിബിഐ|cbi)[^\n]{0,80}(അറസ്റ്റ്|വാറണ്ട്|വീഡിയോ കോൾ)",
+    ],
+    "Prize, lottery or 'you have won' offer": [
+        r"(லாட்டரி|லக்கி டிரா|நீங்கள் வென்று|பரிசு வென்ற|பரிசு பெற்ற)",
+        r"(లాటరీ|లక్కీ డ్రా|మీరు గెలుచుకున్నారు|బహుమతి గెలుచ)",
+        r"(ലോട്ടറി|ലക്കി ഡ്രോ|നിങ്ങൾ നേടി|സമ്മാനം നേടി)",
+        r"(लॉटरी|तुम्ही जिंकला|बक्षीस जिंक)",
+    ],
+    "Asks you to pay a fee to receive money": [
+        r"(செயலாக்க|டெலிவரி|ஜிஎஸ்டி) ?(கட்டணம்|சார்ஜ்)",
+        r"(ప్రాసెసింగ్|డెలివరీ|జీఎస్టీ) ?(ఫీజు|రుసుము|చార్జ్)",
+        r"(പ്രോസസ്സിംഗ്|ഡെലിവറി|ജിഎസ്ടി) ?(ഫീസ്|ചാർജ്)",
+        r"(प्रोसेसिंग|डिलिव्हरी) ?(फी|शुल्क)",
+    ],
+    "Promises easy fixed daily/hourly earnings": [
+        r"(தினமும்|ஒரு நாளைக்கு|தினசரி|రోజుకు|ప్రతిరోజు|రోజూ|ദിവസവും|പ്രതിദിനം|दररोज|रोज)[^.\n]{0,30}" + MONEY + r"\s?\d",
+    ],
+    "Task-based or fake job offer": [
+        r"(வீட்டிலிருந்தே|பகுதி நேர)[^\n]{0,80}(சம்பாதி|வருமானம்|சம்பளம்)",
+        r"(லைக்|ரிவ்யூ|ரேட்டிங்)[^.\n]{0,40}(வீடியோ|யூடியூப்|youtube)",
+        r"(பதிவு|பயிற்சி) ?கட்டணம்",
+        r"(ఇంటి నుండే|పార్ట్ టైమ్)[^\n]{0,80}(సంపాదించ|జీతం|ఆదాయం)",
+        r"(లైక్|రివ్యూ|రేటింగ్)[^.\n]{0,40}(వీడియో|యూట్యూబ్|youtube)",
+        r"(రిజిస్ట్రేషన్|ట్రైనింగ్) ?(ఫీజు|రుసుము)",
+        r"(വീട്ടിലിരുന്ന്|പാർട്ട് ടൈം)[^\n]{0,80}(സമ്പാദി|ശമ്പളം|വരുമാനം)",
+        r"(ലൈക്ക്|റിവ്യൂ|റേറ്റിംഗ്)[^.\n]{0,40}(വീഡിയോ|യൂട്യൂബ്|youtube)",
+        r"(രജിസ്ട്രേഷൻ|ട്രെയിനിംഗ്) ?ഫീസ്",
+        r"(घरबसल्या|पार्ट टाइम)[^\n]{0,80}(कमवा|पगार|उत्पन्न)",
+    ],
+    "Investment or trading scheme with unrealistic returns": [
+        r"(உத்தரவாத|கியாரண்டி)[^.\n]{0,15}(லாபம்|வருமானம்)", r"பணம் இரட்டிப்பு",
+        r"(గ్యారంటీ|హామీ)[^.\n]{0,15}(లాభం|రాబడి)", r"డబ్బు రెట్టింపు",
+        r"(ഉറപ്പായ|ഗ്യാരണ്ടി)[^.\n]{0,15}(ലാഭം|റിട്ടേൺ)", r"പണം ഇരട്ടി",
+        r"(खात्रीशीर|हमखास)[^।\n]{0,15}(नफा|परतावा)",
+    ],
+    "Asks you to install a remote access / screen sharing app": [
+        r"(எனிடெஸ்க்|டீம்வியூவர்|ஸ்கிரீன் ஷேர்|ఎనీడెస్క్|టీమ్వ్యూయర్|స్క్రీన్ షేర్|എനിഡെസ്ക്|ടീംവ്യൂവർ|സ്ക്രീൻ ഷെയർ)",
+    ],
+    "Family member 'new number' / emergency money request": [
+        r"(புதிய எண்|போன் தொலை)[^\n]{0,120}(பணம்|அனுப்ப)",
+        r"(కొత్త నంబర్|ఫోన్ పోయింది)[^\n]{0,120}(డబ్బు|పంప)",
+        r"(പുതിയ നമ്പർ|ഫോൺ നഷ്ടപ്പെട്ടു)[^\n]{0,120}(പണം|അയക്ക)",
+        r"(नवीन नंबर|फोन हरवला)[^\n]{0,120}(पैसे|पाठव)",
+    ],
+    "Refund or cashback that needs you to click or fill a form": [
+        r"(ரீஃபண்ட்|கேஷ்பேக்|பணம் திரும்ப)[^.\n]{0,60}(கிளிக்|லிங்க்|இணைப்பை)",
+        r"(రీఫండ్|క్యాష్బ్యాక్)[^.\n]{0,60}(క్లిక్|లింక్)",
+        r"(റീഫണ്ട്|ക്യാഷ്ബാക്ക്)[^.\n]{0,60}(ക്ലിക്ക്|ലിങ്ക്)",
+    ],
+    "Pressure / urgency language": [
+        r"(உடனே|உடனடியாக|இன்றே|இன்று இரவு|கடைசி வாய்ப்பு|அவசர)",
+        r"(వెంటనే|తక్షణమే|ఈరోజే|ఈ రాత్రి|చివరి అవకాశం|అత్యవసర)",
+        r"(ഉടൻ|ഉടനടി|ഇന്ന് തന്നെ|ഇന്ന് രാത്രി|അവസാന അവസരം|അടിയന്തര)",
+        r"(ताबडतोब|लगेच|आजच|आज रात्री|शेवटची संधी)",
+    ],
+    "Asks you to call or message an unknown number": [
+        r"(அழைக்கவும்|தொடர்பு கொள்ளவும்|கால் செய்|కాల్ చేయండి|సంప్రదించండి|വിളിക്കുക|ബന്ധപ്പെടുക|कॉल करा|संपर्क करा)[^\n]{0,40}" + NUM,
+        NUM + r"[^\n]{0,30}(அழைக்கவும்|தொடர்பு|కి కాల్|కాల్ చేయండి|വിളിക്കുക|ബന്ധപ്പെടുക|वर कॉल करा|वर संपर्क)",
+    ],
+}
+
+# Malayalam "chillu" letters can be typed two ways; store both texts and patterns one way
+CHILLU = {"ൺ": "ണ്", "ൻ": "ന്", "ർ": "ര്", "ൽ": "ല്", "ൾ": "ള്"}
+
+
+def _unify_chillu(text: str) -> str:
+    for atomic, seq in CHILLU.items():
+        text = text.replace(atomic, seq)
+    return text
+
+
+for _label, _patterns, _w in RULES:
+    _patterns.extend(_unify_chillu(p).replace("‍", "").replace("‌", "")
+                     for p in MORE_NATIVE_PATTERNS.get(_label, []))
+
 # Signals that a message is a genuine notification, not a scam
 SAFE_SIGNALS = [
     r"\b(do not|don't|dont|never)\s+share\b",
@@ -321,6 +442,11 @@ SAFE_SIGNALS = [
     r"(किसी को भी|किसी के साथ|किसी से)[^।\n]{0,20}(न|ना|मत) ",
     r"(न|ना|मत) (बताएं|बताइए|बताओ|शेयर करें|शेयर करो|दें)",
     r"(यदि|अगर) (यह )?(आपने नहीं|आपके द्वारा नहीं)",
+    # Tamil, Telugu, Malayalam, Marathi: "don't share / tell anyone"
+    r"(யாருடனும்|யாரிடமும்)[^.\n]{0,20}(பகிர வேண்டாம்|சொல்ல வேண்டாம்|பகிராதீர்கள்)",
+    r"(ఎవరితోనూ|ఎవరికీ)[^.\n]{0,20}(షేర్ చేయవద్దు|చెప్పవద్దు|పంచుకోవద్దు)",
+    _unify_chillu(r"(ആരുമായും|ആരോടും)[^.\n]{0,20}(പങ്കിടരുത്|പറയരുത്|ഷെയർ ചെയ്യരുത്)"),
+    r"(कोणालाही|कोणासोबतही)[^।\n]{0,20}(सांगू नका|शेअर करू नका|देऊ नका)",
 ]
 
 HIGH_RISK_LABELS = {r[0] for r in RULES if r[2] >= 30}
@@ -330,11 +456,12 @@ HIGH_RISK_LABELS = {r[0] for r in RULES if r[2] >= 30}
 # LANGUAGE COVERAGE — be honest when a message is in a script we can't check well
 # ---------------------------------------------------------------------------
 NOTE_OTHER_SCRIPT = (
-    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, "
-    "Kannada and Hindi). We couldn't fully check it — be careful, and never share OTPs, PINs or passwords."
+    "This message is mostly in a language our checks can't read yet (we check English, Hinglish, Kannada, "
+    "Hindi, Tamil, Telugu, Malayalam and Marathi). We couldn't fully check it — be careful, and never share "
+    "OTPs, PINs or passwords."
 )
 NOTE_NEW_SCRIPT = (
-    "Our checks for messages written in Kannada or Hindi script are new and may miss some scams — stay careful."
+    "Our checks for messages written in Indian-language scripts are new and may miss some scams — stay careful."
 )
 NOTE_TRANSLATED_CHECK = (
     "We also checked an automatic English translation of this message. Translations can miss details — stay careful."
@@ -360,7 +487,8 @@ def script_mix(text: str) -> dict:
         code = ord(ch)
         if ch.isascii():
             counts["latin"] += 1
-        elif 0x0900 <= code <= 0x097F or 0x0C80 <= code <= 0x0CFF:
+        elif (0x0900 <= code <= 0x097F or 0x0C80 <= code <= 0x0CFF or 0x0B80 <= code <= 0x0BFF
+              or 0x0C00 <= code <= 0x0C7F or 0x0D00 <= code <= 0x0D7F):
             counts["supported"] += 1
         else:
             counts["other"] += 1
@@ -380,6 +508,7 @@ def _normalise(text: str) -> str:
     text = text.lower()
     # zero-width joiners (common in Kannada words like ಅಪ್‌ಡೇಟ್) and Hindi nukta dots
     text = text.replace("\u200c", "").replace("\u200d", "").replace("\u093c", "")
+    text = _unify_chillu(text)
     text = text.replace("’", "'").replace("₹", "₹")
     text = re.sub(r"[ \t]+", " ", text)
     return text
