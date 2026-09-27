@@ -3,18 +3,20 @@ import { Button } from "@/components/Button";
 import { PageHeader } from "@/components/PageBits";
 import { Card } from "@/components/Card";
 import type { ScanHistoryItem } from "@/types";
-import { verdictTone, toneClasses, riskBarColor } from "@/verdict";
+import { verdictTone, toneClasses, riskBarColor, toneTagKey } from "@/verdict";
 import { IconHistory } from "@/icons";
 import { loadHistory, clearHistory, computeDashboard } from "@/history";
+import { useI18n } from "@/i18n";
 
 export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   // History lives in this browser, so it's private to you and survives server restarts.
+  const { t } = useI18n();
   const [history, setHistory] = useState<ScanHistoryItem[]>(() => loadHistory());
   const [tab, setTab] = useState<"overview" | "history">("overview");
   const data = computeDashboard(history);
 
   function handleClear() {
-    if (window.confirm("Clear your check history on this device?")) {
+    if (window.confirm(t("dashboard.clearConfirm"))) {
       clearHistory();
       setHistory([]);
     }
@@ -23,13 +25,13 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
   if (history.length === 0) {
     return (
       <div>
-        <PageHeader title="Safety Dashboard" subtitle="See your overall safety score and a history of everything you have checked." />
+        <PageHeader title={t("dashboard.title")} subtitle={t("dashboard.subtitleEmpty")} />
         <div className="rounded-2xl bg-gradient-to-br from-sage-100 to-cream-100 p-8 text-center shadow-warm">
           <IconHistory className="mx-auto mb-3 h-10 w-10 text-dustyblue-400" />
           <p className="mb-5 font-body text-base text-ink-700/80">
-            No checks yet. Check a link, message, QR code or file and your safety summary will appear here.
+            {t("dashboard.empty")}
           </p>
-          <Button onClick={() => onNavigate("/")} variant="secondary">Start a check</Button>
+          <Button onClick={() => onNavigate("/")} variant="secondary">{t("dashboard.start")}</Button>
         </div>
       </div>
     );
@@ -37,7 +39,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
 
   return (
     <div>
-      <PageHeader title="Safety Dashboard" subtitle="Your safety summary and check history." />
+      <PageHeader title={t("dashboard.title")} subtitle={t("dashboard.subtitle")} />
 
       <div>
           {/* Tabs */}
@@ -45,18 +47,18 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
             <button
               onClick={() => setTab("overview")}
               className={`btn-press rounded-xl px-4 py-2 font-body text-sm font-semibold ${tab === "overview" ? "bg-sage-200 text-sage-700" : "bg-cream-100 text-dustyblue-600"}`}
-            >Overview</button>
+            >{t("dashboard.overview")}</button>
             <button
               onClick={() => setTab("history")}
               className={`btn-press rounded-xl px-4 py-2 font-body text-sm font-semibold ${tab === "history" ? "bg-sage-200 text-sage-700" : "bg-cream-100 text-dustyblue-600"}`}
-            >History</button>
+            >{t("dashboard.history")}</button>
           </div>
 
           {tab === "overview" && (
             <div className="space-y-4">
               {/* Score circle */}
               <Card className="p-6 text-center">
-                <p className="font-body text-sm text-dustyblue-600">Your safety score</p>
+                <p className="font-body text-sm text-dustyblue-600">{t("dashboard.yourScore")}</p>
                 <div className="relative mx-auto my-4 flex h-32 w-32 items-center justify-center">
                   <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 120 120">
                     <circle cx="60" cy="60" r="52" fill="none" stroke="#EFE3D0" strokeWidth="10" />
@@ -69,24 +71,24 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
                   </svg>
                   <span className="font-heading text-3xl font-bold text-ink-900">{data.safety_score}</span>
                 </div>
-                <p className="font-heading text-lg font-semibold text-ink-800">{data.safety_label}</p>
-                <p className="mt-1 font-body text-sm text-dustyblue-600">{data.total_scans} checks done in total</p>
+                <p className="font-heading text-lg font-semibold text-ink-800">{t(`dashboard.labels.${data.safety_label}`)}</p>
+                <p className="mt-1 font-body text-sm text-dustyblue-600">{t("dashboard.total", { count: data.total_scans })}</p>
               </Card>
 
               {/* Breakdown */}
               <Card className="p-5">
-                <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">Breakdown of your checks</h3>
+                <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("dashboard.breakdown")}</h3>
                 <div className="space-y-3">
-                  <BreakdownBar label="Safe" count={data.breakdown.safe} total={data.total_scans} color="bg-sage-400" />
-                  <BreakdownBar label="Be careful" count={data.breakdown.caution} total={data.total_scans} color="bg-terracotta-400" />
-                  <BreakdownBar label="Risky" count={data.breakdown.dangerous} total={data.total_scans} color="bg-rust-500" />
+                  <BreakdownBar label={t("dashboard.safe")} count={data.breakdown.safe} total={data.total_scans} color="bg-sage-400" />
+                  <BreakdownBar label={t("dashboard.careful")} count={data.breakdown.caution} total={data.total_scans} color="bg-terracotta-400" />
+                  <BreakdownBar label={t("dashboard.risky")} count={data.breakdown.dangerous} total={data.total_scans} color="bg-rust-500" />
                 </div>
               </Card>
 
               {/* Recent scans */}
               {data.recent_scans && data.recent_scans.length > 0 && (
                 <Card className="p-5">
-                  <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">Recent checks</h3>
+                  <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("dashboard.recent")}</h3>
                   <div className="space-y-2">
                     {data.recent_scans.slice(0, 5).map((s, i) => (
                       <HistoryRow key={i} item={s} />
@@ -96,11 +98,11 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
               )}
 
               <Button onClick={() => onNavigate("/incident")} variant="outline" fullWidth>
-                Need help with something you clicked?
+                {t("dashboard.needHelp")}
               </Button>
               <p className="text-center font-body text-xs text-dustyblue-500">
-                Your history is saved only on this device.{" "}
-                <button onClick={handleClear} className="underline hover:text-terracotta-600">Clear history</button>
+                {t("dashboard.savedHere")}{" "}
+                <button onClick={handleClear} className="underline hover:text-terracotta-600">{t("dashboard.clear")}</button>
               </p>
             </div>
           )}
@@ -114,7 +116,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
               ) : (
                 <div className="py-8 text-center">
                   <IconHistory className="mx-auto mb-3 h-10 w-10 text-dustyblue-400" />
-                  <p className="font-body text-sm text-dustyblue-600">No history yet. Your checks will appear here.</p>
+                  <p className="font-body text-sm text-dustyblue-600">{t("dashboard.noHistory")}</p>
                 </div>
               )}
             </Card>
@@ -145,18 +147,19 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 function HistoryRow({ item }: { item: ScanHistoryItem }) {
+  const { t, lang } = useI18n();
   const tone = verdictTone(item.verdict);
   const cls = toneClasses(tone);
-  const date = item.timestamp ? new Date(item.timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
+  const date = item.timestamp ? new Date(item.timestamp).toLocaleDateString(lang === "tcy" ? "kn" : lang, { month: "short", day: "numeric" }) : "";
   return (
     <div className="flex items-center gap-3 rounded-xl bg-cream-100 p-3">
       <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${riskBarColor(tone)}`} />
       <div className="flex-1 min-w-0">
         <p className="truncate font-body text-sm font-semibold text-ink-800">{item.summary || item.type}</p>
-        <p className="font-body text-xs text-dustyblue-600">{TYPE_LABELS[item.type] ?? item.type} {date && `· ${date}`}</p>
+        <p className="font-body text-xs text-dustyblue-600">{TYPE_LABELS[item.type] ? t(`dashboard.types.${item.type}`) : item.type} {date && `· ${date}`}</p>
       </div>
       <span className={`shrink-0 rounded-lg px-2 py-0.5 font-body text-xs font-semibold ${cls.bg} ${cls.text}`}>
-        {tone === "safe" ? "Safe" : tone === "caution" ? "Careful" : "Risky"}
+        {t(toneTagKey(tone))}
       </span>
     </div>
   );

@@ -8,9 +8,11 @@ import { Card } from "@/components/Card";
 import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanMessageResponse } from "@/types";
-import { verdictTone, toneClasses } from "@/verdict";
+import { verdictTone, toneClasses, toneTagKey } from "@/verdict";
+import { useI18n } from "@/i18n";
 
 export function ScanMessagePage() {
+  const { t, lang } = useI18n();
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,21 +42,21 @@ export function ScanMessagePage() {
 
   return (
     <div>
-      <PageHeader title="Check a Message" subtitle="Paste a text message or upload a screenshot of a message you received." />
+      <PageHeader title={t("message.title")} subtitle={t("message.subtitle")} />
 
       {/* Text tab */}
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-        <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">Paste the message text</h3>
+        <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("message.pasteTitle")}</h3>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={5}
-          placeholder="Paste the message here..."
+          placeholder={t("message.placeholder")}
           className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400 scrollbar-warm"
         />
         <div className="mt-4">
           <Button onClick={handleCheckText} disabled={loading || !text.trim()} fullWidth>
-            {loading ? "Checking..." : "Check this message"}
+            {loading ? t("common.checking") : t("message.button")}
           </Button>
         </div>
       </div>
@@ -62,17 +64,17 @@ export function ScanMessagePage() {
       {/* Divider */}
       <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1 bg-cream-200" />
-        <span className="font-body text-sm text-dustyblue-500">or</span>
+        <span className="font-body text-sm text-dustyblue-500">{t("message.or")}</span>
         <div className="h-px flex-1 bg-cream-200" />
       </div>
 
       {/* Screenshot tab */}
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-        <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">Upload a screenshot</h3>
+        <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("message.uploadTitle")}</h3>
         <UploadZone
           accept="image/*"
-          label="Tap to choose a screenshot"
-          hint="A photo of the message on your screen works too"
+          label={t("message.uploadLabel")}
+          hint={t("message.uploadHint")}
           onFile={setFile}
           onClear={() => setFile(null)}
           disabled={loading}
@@ -80,13 +82,13 @@ export function ScanMessagePage() {
         {file && (
           <div className="mt-4">
             <Button onClick={handleCheckScreenshot} disabled={loading} fullWidth>
-              {loading ? "Checking..." : "Check this screenshot"}
+              {loading ? t("common.checking") : t("message.uploadButton")}
             </Button>
           </div>
         )}
       </div>
 
-      {loading && <LoadingBreath label="Reading the message carefully..." />}
+      {loading && <LoadingBreath label={t("message.loading")} />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
@@ -94,16 +96,16 @@ export function ScanMessagePage() {
         <div className="mt-4 space-y-4">
           <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
           {result.patterns_detected.length > 0 ? (
-            <FindingsList items={result.patterns_detected} title="Warning signs we noticed" />
+            <FindingsList items={result.patterns_detected} title={t("message.warningSigns")} />
           ) : (
-            <FindingsList items={["We didn't spot any common scam patterns. Still, never share OTPs, PINs or passwords with anyone."]} title="What we noticed" />
+            <FindingsList items={[t("message.noPatterns")]} />
           )}
           {result.safe_signals && result.safe_signals.length > 0 && (
-            <FindingsList items={result.safe_signals} title="Good signs" />
+            <FindingsList items={result.safe_signals} title={t("message.goodSigns")} />
           )}
           {result.links_checked && result.links_checked.length > 0 && (
             <Card className="p-4">
-              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">Links in this message</p>
+              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("message.linksTitle")}</p>
               <ul className="mt-2 space-y-2">
                 {result.links_checked.map((link) => {
                   const tone = verdictTone(link.verdict);
@@ -111,7 +113,7 @@ export function ScanMessagePage() {
                   return (
                     <li key={link.url} className="flex items-start gap-2">
                       <span className={`shrink-0 rounded-lg px-2 py-0.5 font-body text-xs font-semibold ${cls.bg} ${cls.text}`}>
-                        {tone === "safe" ? "Safe" : tone === "caution" ? "Careful" : "Risky"}
+                        {t(toneTagKey(tone))}
                       </span>
                       <span className="break-all font-body text-sm text-ink-800">{link.url}</span>
                     </li>
@@ -119,14 +121,15 @@ export function ScanMessagePage() {
                 })}
               </ul>
               <p className="mt-2 font-body text-xs text-dustyblue-600">
-                Each link was checked with our link rules, Google Safe Browsing and VirusTotal.
+                {t("message.linksNote")}
               </p>
             </Card>
           )}
           {fromScreenshot && result.text_analyzed && (
             <Card className="p-4">
-              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">Text we read from your screenshot</p>
+              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("message.ocrTitle")}</p>
               <p className="mt-2 whitespace-pre-wrap break-words font-body text-sm text-ink-800">{result.text_analyzed}</p>
+              {lang !== "en" && <p className="mt-2 font-body text-xs text-dustyblue-600">{t("message.ocrNote")}</p>}
             </Card>
           )}
         </div>

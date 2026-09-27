@@ -8,8 +8,10 @@ import { Card } from "@/components/Card";
 import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
+import { useI18n } from "@/i18n";
 
 export function ScanFilePage() {
+  const { t, ts } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanFileResponse | null>(null);
@@ -28,11 +30,11 @@ export function ScanFilePage() {
 
   return (
     <div>
-      <PageHeader title="Check a File" subtitle="Upload a file and we will look it over for anything worrying." />
+      <PageHeader title={t("file.title")} subtitle={t("file.subtitle")} />
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <UploadZone
-          label="Tap to choose a file"
-          hint="Documents, images, or any file you are unsure about (up to 20 MB)"
+          label={t("file.uploadLabel")}
+          hint={t("file.uploadHint")}
           onFile={setFile}
           onClear={() => setFile(null)}
           disabled={loading}
@@ -40,13 +42,13 @@ export function ScanFilePage() {
         {file && (
           <div className="mt-4">
             <Button onClick={handleCheck} disabled={loading} fullWidth>
-              {loading ? "Checking..." : "Check this file"}
+              {loading ? t("common.checking") : t("file.button")}
             </Button>
           </div>
         )}
       </div>
 
-      {loading && <LoadingBreath label="Looking over this file..." />}
+      {loading && <LoadingBreath label={t("file.loading")} />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
@@ -54,12 +56,12 @@ export function ScanFilePage() {
         <div className="mt-4 space-y-4">
           <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
           <Card className="p-4">
-            <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">File details</p>
+            <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("file.details")}</p>
             <p className="mt-1 font-body text-sm text-ink-800">{result.filename}</p>
             {result.detected_type && result.detected_type !== "unknown" && (
-              <p className="mt-1 font-body text-xs text-dustyblue-600">What it really is: {result.detected_type}</p>
+              <p className="mt-1 font-body text-xs text-dustyblue-600">{t("file.realType", { type: ts(result.detected_type) })}</p>
             )}
-            <p className="mt-1 break-all font-body text-xs text-dustyblue-600">ID: {result.sha256}</p>
+            <p className="mt-1 break-all font-body text-xs text-dustyblue-600">{t("file.id", { id: result.sha256 })}</p>
           </Card>
           <FindingsList items={result.findings} />
         </div>

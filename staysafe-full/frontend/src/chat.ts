@@ -129,9 +129,7 @@ export function useChat() {
   return { enabled: CHAT_ENABLED, ...snapshot, openChat };
 }
 
-export function statusText(status: ChatStatus): string {
-  if (status === "online") return "We're online now";
-  if (status === "away") return "We'll reply shortly";
-  if (status === "offline") return "Leave a message — we'll reply soon";
-  return "Usually replies within a few hours";
+/** Translation key describing the chat status. */
+export function statusKey(status: ChatStatus): string {
+  return `chat.${status}`;
 }

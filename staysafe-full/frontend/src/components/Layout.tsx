@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
-import { ALL_NAV, HOME_TOOLS, HELP_NAV, navLabel, type NavItem } from "@/nav";
-
-import { IconShield, IconChevronRight, IconAlert } from "@/icons";
+import { ALL_NAV, HOME_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from "@/nav";
+import { IconShield, IconChevronRight, IconAlert, IconSettings } from "@/icons";
+import { useI18n, LANGUAGES } from "@/i18n";
 import { FloatingHelpButton } from "@/components/ChatWidgets";
 import { loadChat, hasChattedBefore } from "@/chat";
 
@@ -19,7 +19,9 @@ const PHONE_NAV_PATHS = ["/", "/scan-url", "/scan-message", "/scan-qr", "/help"]
 const PHONE_NAV: NavItem[] = PHONE_NAV_PATHS.map((p) => ALL_NAV.find((n) => n.path === p)!).filter(Boolean);
 
 export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
+  const { t, lang } = useI18n();
   const crumbs = buildCrumbs(currentPath);
+  const langShort = LANGUAGES.find((l) => l.code === lang)?.short ?? "EN";
 
   // Load live chat early only where people are likely to need it (or if they've chatted before),
   // so the rest of the site stays fast. It also loads instantly when someone taps "Need help?".
@@ -40,7 +42,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
           </div>
           <div>
             <p className="font-heading text-xl font-bold text-ink-900">StaySafe</p>
-            <p className="font-body text-xs text-dustyblue-600">Your safety checkup</p>
+            <p className="font-body text-xs text-dustyblue-600">{t("common.tagline")}</p>
           </div>
         </button>
 
@@ -54,8 +56,8 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
                 className={`btn-press mb-1 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left font-body text-sm font-semibold
                   ${active ? "bg-sage-200 text-sage-700" : "text-ink-700 hover:bg-cream-200"}`}
               >
-                <item.icon className={`h-5 w-5 ${active ? "text-sage-600" : "text-dustyblue-500"}`} />
-                <span>{item.label}</span>
+                <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-sage-600" : "text-dustyblue-500"}`} />
+                <span>{t(item.label)}</span>
               </button>
             );
           })}
@@ -63,10 +65,26 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
 
         {/* Help section — always visible at the bottom of the sidebar */}
         <div className="space-y-2 border-t border-cream-200 px-3 py-4">
-          <p className="px-2 pb-1 font-body text-[11px] font-bold uppercase tracking-wider text-dustyblue-500">Get help</p>
+          <p className="px-2 pb-1 font-body text-[11px] font-bold uppercase tracking-wider text-dustyblue-500">{t("nav.getHelp")}</p>
           {HELP_NAV.map((item) => (
             <SidebarHelpButton key={item.path} item={item} active={currentPath === item.path} onNavigate={onNavigate} />
           ))}
+          <div className="flex gap-1 pt-1">
+            {EXTRA_NAV.map((item) => {
+              const active = currentPath === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => onNavigate(item.path)}
+                  className={`btn-press flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 font-body text-xs font-semibold
+                    ${active ? "bg-sage-200 text-sage-700" : "text-dustyblue-600 hover:bg-cream-200"}`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t(item.label)}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </aside>
 
@@ -78,22 +96,34 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sage-400 text-cream-50">
                 <IconShield className="h-5 w-5" />
               </div>
-              <span className="font-heading text-lg font-bold text-ink-900">StaySafe</span>
+              {/* hide the word on narrow phones so the emergency button always fits */}
+              <span className="hidden font-heading text-lg font-bold text-ink-900 min-[420px]:inline">StaySafe</span>
             </button>
 
-            {/* Phone: always-visible emergency shortcut */}
+            {/* Phone: always-visible emergency shortcut + settings */}
+            <div className="ml-auto flex items-center gap-2 lg:hidden">
             {currentPath !== "/incident" && (
               <button
                 onClick={() => onNavigate("/incident")}
-                className="btn-press ml-auto flex items-center gap-1.5 rounded-full bg-rust-500 px-3.5 py-2 font-body text-xs font-bold text-cream-50 shadow-warm-sm lg:hidden"
+                className="btn-press flex items-center gap-1.5 rounded-full bg-rust-500 px-3 py-2 font-body text-xs font-bold text-cream-50 shadow-warm-sm"
               >
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cream-50 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-cream-50" />
                 </span>
-                Clicked a scam?
+                <span className="whitespace-nowrap">{t("nav.clickedScamPill")}</span>
               </button>
             )}
+              <button
+                onClick={() => onNavigate("/settings")}
+                aria-label={t("nav.settingsAria")}
+                className={`btn-press flex h-9 items-center gap-1 rounded-full border-2 px-2.5 font-body text-xs font-bold
+                  ${currentPath === "/settings" ? "border-sage-400 bg-sage-200 text-sage-700" : "border-cream-200 bg-cream-100 text-dustyblue-600"}`}
+              >
+                <IconSettings className="h-4 w-4" />
+                <span>{langShort}</span>
+              </button>
+            </div>
 
             <div className="ml-auto hidden items-center gap-1.5 lg:flex">
               {crumbs.map((c, i) => (
@@ -103,7 +133,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
                     onClick={() => onNavigate(c.path)}
                     className={`font-body text-sm ${i === crumbs.length - 1 ? "font-semibold text-ink-800" : "text-dustyblue-600 hover:text-terracotta-600"}`}
                   >
-                    {c.label}
+                    {t(c.label)}
                   </button>
                 </span>
               ))}
@@ -136,7 +166,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
                   ${active ? "bg-cream-200/70" : ""}`}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="whitespace-nowrap font-body text-[10px] font-semibold">{item.short}</span>
+                <span className="max-w-full truncate px-0.5 font-body text-[10px] font-semibold">{t(item.short)}</span>
               </button>
             );
           })}
@@ -149,6 +179,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
 }
 
 function SidebarHelpButton({ item, active, onNavigate }: { item: NavItem; active: boolean; onNavigate: (p: string) => void }) {
+  const { t } = useI18n();
   if (item.tone === "urgent") {
     return (
       <button
@@ -165,7 +196,7 @@ function SidebarHelpButton({ item, active, onNavigate }: { item: NavItem; active
             </span>
           )}
         </span>
-        <span>{item.label}</span>
+        <span>{t(item.label)}</span>
       </button>
     );
   }
@@ -176,13 +207,13 @@ function SidebarHelpButton({ item, active, onNavigate }: { item: NavItem; active
         ${active ? "border-sage-400 bg-sage-200 text-sage-700" : "border-sage-300 bg-cream-50 text-sage-700 hover:bg-sage-100"}`}
     >
       <item.icon className="h-5 w-5" />
-      <span>{item.label}</span>
+      <span>{t(item.label)}</span>
     </button>
   );
 }
 
 function buildCrumbs(path: string): { path: string; label: string }[] {
-  const crumbs = [{ path: "/", label: "Home" }];
+  const crumbs = [{ path: "/", label: "nav.home" }];
   if (path !== "/") {
     crumbs.push({ path, label: navLabel(path) });
   }

@@ -46,8 +46,8 @@ export default {
         },
       },
       fontFamily: {
-        heading: ['Comfortaa', 'Quicksand', 'system-ui', 'sans-serif'],
-        body: ['Nunito', 'system-ui', 'sans-serif'],
+        heading: ['Comfortaa', 'Quicksand', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'system-ui', 'sans-serif'],
+        body: ['Nunito', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'xl2': '20px',

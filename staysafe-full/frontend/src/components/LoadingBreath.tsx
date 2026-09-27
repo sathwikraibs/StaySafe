@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
 
 export function LoadingBreath({ label }: { label?: string }) {
   // The free Render server sleeps when idle; tell people why the first check is slow.
+  const { t } = useI18n();
   const [slow, setSlow] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setSlow(true), 8000);
@@ -20,7 +22,7 @@ export function LoadingBreath({ label }: { label?: string }) {
       )}
       {slow && (
         <p className="max-w-xs text-center font-body text-sm text-dustyblue-500">
-          This is taking a little longer — the server may be waking up. It can take up to a minute the first time.
+          {t("loading.slow")}
         </p>
       )}
     </div>

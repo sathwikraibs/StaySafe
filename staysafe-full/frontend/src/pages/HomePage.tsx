@@ -1,7 +1,9 @@
 import { HOME_TOOLS } from "@/nav";
-import { IconShield, IconArrowRight, IconAlert, IconChat } from "@/icons";
+import { IconShield, IconArrowRight, IconAlert, IconChat, IconLock } from "@/icons";
+import { useI18n } from "@/i18n";
 
 export function HomePage({ onNavigate }: { onNavigate: (path: string) => void }) {
+  const { t } = useI18n();
   return (
     <div>
       {/* Hero */}
@@ -13,11 +15,10 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
           <span className="font-heading text-lg font-semibold text-sage-700">StaySafe</span>
         </div>
         <h1 className="font-heading text-2xl font-bold text-ink-900 sm:text-3xl">
-          Let's check things together
+          {t("home.title")}
         </h1>
         <p className="mt-3 max-w-lg font-body text-base text-ink-700/80">
-          Not sure if a link, message, or file is safe? You are in the right place.
-          Pick a tool below and we will take a careful look for you.
+          {t("home.intro")}
         </p>
       </div>
 
@@ -35,8 +36,8 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
             </span>
           </div>
           <div className="flex-1">
-            <p className="font-heading text-base font-bold sm:text-lg">Clicked a scam or lost money?</p>
-            <p className="mt-0.5 font-body text-sm text-cream-50/90">Get a step-by-step recovery plan right now</p>
+            <p className="font-heading text-base font-bold sm:text-lg">{t("home.urgentTitle")}</p>
+            <p className="mt-0.5 font-body text-sm text-cream-50/90">{t("home.urgentText")}</p>
           </div>
           <IconArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
         </button>
@@ -48,14 +49,14 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
             <IconChat className="h-7 w-7" />
           </div>
           <div className="flex-1">
-            <p className="font-heading text-base font-bold text-ink-900">Need help?</p>
-            <p className="mt-0.5 font-body text-sm text-dustyblue-600">Chat with a real person</p>
+            <p className="font-heading text-base font-bold text-ink-900">{t("home.helpTitle")}</p>
+            <p className="mt-0.5 font-body text-sm text-dustyblue-600">{t("home.helpText")}</p>
           </div>
         </button>
       </div>
 
       {/* Tool grid */}
-      <h2 className="mb-4 font-heading text-lg font-semibold text-ink-800">What would you like to check?</h2>
+      <h2 className="mb-4 font-heading text-lg font-semibold text-ink-800">{t("home.toolsTitle")}</h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {HOME_TOOLS.map((tool, i) => (
           <button
@@ -68,7 +69,7 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
               <tool.icon className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="font-heading text-base font-semibold text-ink-900">{tool.label}</p>
+              <p className="font-heading text-base font-semibold text-ink-900">{t(tool.label)}</p>
             </div>
             <div className="text-dustyblue-400 transition-transform group-hover:translate-x-1 group-hover:text-terracotta-500">
               <IconArrowRight className="h-5 w-5" />
@@ -78,10 +79,13 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
       </div>
 
       {/* Reassurance */}
-      <div className="mt-8 rounded-2xl bg-dustyblue-100 p-5">
+      <div className="mt-8 flex items-start gap-3 rounded-2xl bg-dustyblue-100 p-5">
+        <IconLock className="mt-0.5 h-5 w-5 shrink-0 text-dustyblue-500" />
         <p className="font-body text-sm text-dustyblue-600">
-          Everything you check here is private to you. Take your time, there is no rush.
-          If something feels wrong, trust your gut and let us help you look closer.
+          {t("home.privacy")}{" "}
+          <button onClick={() => onNavigate("/about")} className="font-semibold text-sage-700 underline underline-offset-2">
+            {t("home.privacyLink")}
+          </button>
         </p>
       </div>
     </div>

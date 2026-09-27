@@ -1,5 +1,6 @@
-import { verdictTone, verdictLabel, toneClasses } from "@/verdict";
+import { verdictTone, verdictLabelKey, toneClasses } from "@/verdict";
 import { IconCheck, IconWarning, IconAlert } from "@/icons";
+import { useI18n } from "@/i18n";
 import type { Verdict } from "@/types";
 
 interface VerdictBannerProps {
@@ -8,9 +9,9 @@ interface VerdictBannerProps {
 }
 
 export function VerdictBanner({ verdict, riskScore }: VerdictBannerProps) {
+  const { t } = useI18n();
   const tone = verdictTone(verdict);
   const cls = toneClasses(tone);
-
   const Icon = tone === "safe" ? IconCheck : tone === "caution" ? IconWarning : IconAlert;
 
   return (
@@ -19,11 +20,9 @@ export function VerdictBanner({ verdict, riskScore }: VerdictBannerProps) {
         <Icon className="h-7 w-7" />
       </div>
       <div className="flex-1">
-        <p className={`font-heading text-xl font-semibold ${cls.text}`}>{verdictLabel(verdict)}</p>
+        <p className={`font-heading text-xl font-semibold ${cls.text}`}>{t(verdictLabelKey(verdict))}</p>
         {typeof riskScore === "number" && (
-          <p className="mt-1 font-body text-sm text-ink-700/70">
-            Risk score: {riskScore} out of 100
-          </p>
+          <p className="mt-1 font-body text-sm text-ink-700/70">{t("common.riskScore", { score: riskScore })}</p>
         )}
       </div>
     </div>

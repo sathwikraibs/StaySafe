@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useI18n } from "@/i18n";
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -9,16 +10,18 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
   );
 }
 
-export function FindingsList({ items, title = "What we noticed" }: { items: string[]; title?: string }) {
+/** List of result messages. Server messages are translated automatically. */
+export function FindingsList({ items, title }: { items: string[]; title?: string }) {
+  const { t, ts } = useI18n();
   if (!items || items.length === 0) return null;
   return (
     <div className="mt-4 rounded-2xl bg-cream-100 p-5">
-      <h3 className="mb-3 font-heading text-lg font-semibold text-ink-800">{title}</h3>
+      <h3 className="mb-3 font-heading text-lg font-semibold text-ink-800">{title ?? t("common.whatWeNoticed")}</h3>
       <ul className="space-y-2">
         {items.map((item, i) => (
           <li key={i} className="flex items-start gap-2 font-body text-sm text-ink-700">
             <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta-400" />
-            <span>{item}</span>
+            <span>{ts(item)}</span>
           </li>
         ))}
       </ul>
@@ -26,7 +29,9 @@ export function FindingsList({ items, title = "What we noticed" }: { items: stri
   );
 }
 
+/** Error box. Plain-text server errors are translated automatically. */
 export function ErrorNotice({ children }: { children: ReactNode }) {
+  const { ts } = useI18n();
   return (
     <div className="flex items-start gap-3 rounded-2xl border-2 border-rust-400 bg-rust-400/15 p-4 animate-fade-up">
       <div className="shrink-0 text-rust-500">
@@ -35,7 +40,7 @@ export function ErrorNotice({ children }: { children: ReactNode }) {
           <path d="M12 8v5M12 16v.5" />
         </svg>
       </div>
-      <p className="font-body text-sm text-rust-600">{children}</p>
+      <p className="font-body text-sm text-rust-600">{typeof children === "string" ? ts(children) : children}</p>
     </div>
   );
 }

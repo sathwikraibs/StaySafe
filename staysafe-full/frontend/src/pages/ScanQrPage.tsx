@@ -8,8 +8,10 @@ import { Card } from "@/components/Card";
 import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
+import { useI18n } from "@/i18n";
 
 export function ScanQrPage() {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanQrResponse | null>(null);
@@ -28,12 +30,12 @@ export function ScanQrPage() {
 
   return (
     <div>
-      <PageHeader title="Check a QR Code" subtitle="Upload a photo of a QR code and we will tell you what it leads to." />
+      <PageHeader title={t("qr.title")} subtitle={t("qr.subtitle")} />
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <UploadZone
           accept="image/*"
-          label="Tap to choose a photo of the QR code"
-          hint="Make sure the QR code is clear and centered"
+          label={t("qr.uploadLabel")}
+          hint={t("qr.uploadHint")}
           onFile={setFile}
           onClear={() => setFile(null)}
           disabled={loading}
@@ -41,13 +43,13 @@ export function ScanQrPage() {
         {file && (
           <div className="mt-4">
             <Button onClick={handleCheck} disabled={loading} fullWidth>
-              {loading ? "Checking..." : "Check this QR code"}
+              {loading ? t("common.checking") : t("qr.button")}
             </Button>
           </div>
         )}
       </div>
 
-      {loading && <LoadingBreath label="Scanning the QR code..." />}
+      {loading && <LoadingBreath label={t("qr.loading")} />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
@@ -56,10 +58,10 @@ export function ScanQrPage() {
           <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
           {result.raw_data && (
             <Card className="p-4">
-              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">What the QR code contains</p>
+              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">{t("qr.contains")}</p>
               <p className="mt-1 break-words font-body text-sm text-ink-800">{result.raw_data}</p>
               {result.qr_type && (
-                <p className="mt-2 font-body text-xs text-dustyblue-600">Type: {result.qr_type}</p>
+                <p className="mt-2 font-body text-xs text-dustyblue-600">{t("qr.type", { type: t(`qr.types.${result.qr_type}`).startsWith("qr.") ? result.qr_type : t(`qr.types.${result.qr_type}`) })}</p>
               )}
             </Card>
           )}

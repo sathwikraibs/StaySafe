@@ -7,17 +7,22 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    font-family: 'Nunito', system-ui, sans-serif;
+    font-family: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif;
     background-color: #FBF7F0;
     color: #4A4038;
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Comfortaa', 'Quicksand', system-ui, sans-serif;
+    font-family: 'Comfortaa', 'Quicksand', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif;
   }
   * {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Indian scripts need a little more line height, and no letter-spacing (it breaks joined letters) */
+  html:is([lang="hi"], [lang="kn"], [lang="tcy"]) body { line-height: 1.65; }
+  html:is([lang="hi"], [lang="kn"], [lang="tcy"]) .tracking-wide,
+  html:is([lang="hi"], [lang="kn"], [lang="tcy"]) .tracking-wider { letter-spacing: 0; }
+  html:is([lang="hi"], [lang="kn"], [lang="tcy"]) .uppercase { text-transform: none; }
 }
 
 @layer components {

@@ -20,6 +20,8 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
 | 📊 Safety Dashboard | A running safety score based on your recent checks |
 | 🆘 Incident Wizard | Step-by-step recovery plan for "I think I clicked a scam", with 1930 helpline and cybercrime.gov.in shortcuts |
 | 💬 Need Help (live chat) | Chat with a real person via tawk.to — no app or sign-up for users |
+| 🌐 Languages | English, हिन्दी (Hindi), ಕನ್ನಡ (Kannada) and ತುಳು (Tulu, beta) — the whole site including results, recovery plans and scam library. Change it in Settings |
+| 🔒 About & Privacy | Plain-language explanation of what is checked where and what is (not) stored |
 | 📚 Scam Knowledge Base | Searchable library of common scam patterns (KYC scams, fake refunds, job scams, etc.) |
 
 ## Tech stack
@@ -77,6 +79,15 @@ Screenshot reading and QR decoding need system programs (Tesseract OCR, zbar) th
 - Root Directory `staysafe-full/frontend`, framework auto-detected as Vite.
 - Set the environment variable `VITE_API_BASE` to your Render backend URL (Project → Settings → Environment Variables), then redeploy. Without it, the frontend uses the URL in `src/config.ts`.
 - Live chat: set `VITE_TAWK_PROPERTY_ID` and `VITE_TAWK_WIDGET_ID` (from the tawk.to embed code `https://embed.tawk.to/PROPERTY_ID/WIDGET_ID`), then redeploy. Until they're set, the Help page shows "Live chat is being set up".
+
+## Languages
+
+All website text lives in `frontend/src/i18n/`:
+
+- `en.ts` — English source text; `hi.ts`, `kn.ts`, `tcy.ts` — translations (TypeScript checks that nothing is missing)
+- `content-*.ts` — translations of server results, recovery plans and the scam library. Server messages are matched against the English text the backend sends, so **if you change a message in the backend, update the same text in these files**.
+
+To add a language: copy `hi.ts` and `content-hi.ts`, translate, and register it in `i18n/index.tsx` (`LANGUAGES`, `DICTS`, `CONTENT`). The Tulu translation is marked beta — corrections from native speakers are welcome.
 
 ## Testing
 

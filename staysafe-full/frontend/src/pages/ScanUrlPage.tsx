@@ -6,8 +6,10 @@ import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
 import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanUrlResponse } from "@/types";
+import { useI18n } from "@/i18n";
 
 export function ScanUrlPage() {
+  const { t } = useI18n();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanUrlResponse | null>(null);
@@ -30,11 +32,12 @@ export function ScanUrlPage() {
 
   return (
     <div>
-      <PageHeader title="Check a Link" subtitle="Paste a web address and we will tell you if it looks safe to visit." />
+      <PageHeader title={t("url.title")} subtitle={t("url.subtitle")} />
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-        <label className="mb-2 block font-body text-sm font-semibold text-ink-800">Web address (link)</label>
+        <label className="mb-2 block font-body text-sm font-semibold text-ink-800">{t("url.label")}</label>
         <input
           type="url"
+          inputMode="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://example.com"
@@ -42,12 +45,12 @@ export function ScanUrlPage() {
         />
         <div className="mt-4">
           <Button onClick={handleCheck} disabled={loading || !url.trim()} fullWidth>
-            {loading ? "Checking..." : "Check this link"}
+            {loading ? t("common.checking") : t("url.button")}
           </Button>
         </div>
       </div>
 
-      {loading && <LoadingBreath label="Taking a careful look at this link..." />}
+      {loading && <LoadingBreath label={t("url.loading")} />}
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 

@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { IconUpload, IconClose } from "@/icons";
+import { useI18n } from "@/i18n";
 
 interface UploadZoneProps {
   accept?: string;
@@ -12,6 +13,7 @@ interface UploadZoneProps {
 }
 
 export function UploadZone({ accept, label, hint, onFile, onClear, selectedPreview, disabled }: UploadZoneProps) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
               onClick={() => { setFileName(null); if (inputRef.current) inputRef.current.value = ""; onClear?.(); }}
               className="mt-1 flex items-center gap-1 font-body text-xs text-dustyblue-500 hover:text-terracotta-600"
             >
-              <IconClose className="h-3.5 w-3.5" /> Choose a different file
+              <IconClose className="h-3.5 w-3.5" /> {t("common.chooseDifferentFile")}
             </button>
           </div>
         </div>

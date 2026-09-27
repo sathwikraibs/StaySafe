@@ -8,16 +8,18 @@ import { API_BASE } from "@/config";
 import type { IncidentOption, IncidentPlanResponse } from "@/types";
 import { IconArrowRight, IconCheck, IconAlert, IconPhone, IconGlobe } from "@/icons";
 import { ChatCard } from "@/components/ChatWidgets";
+import { useI18n } from "@/i18n";
 
 /** Always-visible emergency actions: 1930 helpline + national cyber crime portal. */
 function UrgentActions() {
+  const { t } = useI18n();
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       <a
         href="tel:1930"
         className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-rust-500 px-4 py-3.5 font-body text-[15px] font-bold text-cream-50 sm:text-base shadow-warm hover:bg-rust-600"
       >
-        <IconPhone className="h-5 w-5" /> Lost money? Call 1930
+        <IconPhone className="h-5 w-5 shrink-0" /> {t("incident.call1930")}
       </a>
       <a
         href="https://cybercrime.gov.in"
@@ -25,13 +27,18 @@ function UrgentActions() {
         rel="noopener noreferrer"
         className="btn-press flex items-center justify-center gap-2 rounded-2xl border-2 border-rust-400 bg-cream-50 px-4 py-3.5 font-body text-[15px] font-bold text-rust-600 sm:text-base hover:bg-rust-400/10"
       >
-        <IconGlobe className="h-5 w-5" /> Report at cybercrime.gov.in
+        <IconGlobe className="h-5 w-5 shrink-0" /> {t("incident.report")}
       </a>
     </div>
   );
 }
 
 export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
+  const { t, content } = useI18n();
+  // Recovery plans come from the server in English; swap in the translated version by id
+  const optionLabel = (opt: IncidentOption) => content?.incidents[opt.id]?.label ?? opt.label;
+  const planLabel = (p: IncidentPlanResponse) => content?.incidents[p.incident_type]?.label ?? p.label;
+  const planSteps = (p: IncidentPlanResponse) => content?.incidents[p.incident_type]?.steps ?? p.action_plan;
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [options, setOptions] = useState<IncidentOption[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -59,7 +66,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
   if (!options && !loadingOptions && !error) {
     return (
       <div className="space-y-5">
-        <PageHeader title="I Clicked a Scam" subtitle="Don't panic. Let's make a plan to fix it together, step by step." />
+        <PageHeader title={t("incident.title")} subtitle={t("incident.subtitle")} />
         <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rust-500 to-rust-600 p-6 text-cream-50 shadow-warm-lg animate-fade-up sm:p-8">
           <div className="flex items-start gap-4">
             <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20">
@@ -70,10 +77,9 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
               </span>
             </div>
             <div>
-              <p className="font-heading text-xl font-bold">It happens to the best of us</p>
+              <p className="font-heading text-xl font-bold">{t("incident.heroTitle")}</p>
               <p className="mt-2 font-body text-base text-cream-50/90">
-                Clicked a link, shared an OTP, installed an app or paid someone you don't trust?
-                Acting in the next few minutes matters most.
+                {t("incident.heroText")}
               </p>
             </div>
           </div>
@@ -81,7 +87,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
             onClick={loadOptions}
             className="btn-press mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-cream-50 px-6 py-4 font-body text-lg font-bold text-rust-600 shadow-warm transition-colors hover:bg-cream-100"
           >
-            Let's make a plan <IconArrowRight className="h-5 w-5" />
+            {t("incident.makePlan")} <IconArrowRight className="h-5 w-5" />
           </button>
         </div>
 
@@ -90,7 +96,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
         </div>
 
         <div className="animate-fade-up" style={{ animationDelay: "140ms" }}>
-          <ChatCard title="Scared or confused? Talk to us" compact />
+          <ChatCard title={t("incident.chatScared")} compact />
         </div>
       </div>
     );
@@ -98,9 +104,9 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
 
   return (
     <div>
-      <PageHeader title="I Clicked a Scam" subtitle="Pick what happened and we will give you a step-by-step plan." />
+      <PageHeader title={t("incident.title")} subtitle={t("incident.subtitlePick")} />
 
-      {(loadingOptions || loadingPlan) && <LoadingBreath label="Putting together a plan for you..." />}
+      {(loadingOptions || loadingPlan) && <LoadingBreath label={t("incident.loading")} />}
       {error && <ErrorNotice>{error}</ErrorNotice>}
 
       {options && !loadingOptions && !plan && (
@@ -114,12 +120,12 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-terracotta-300/30 text-terracotta-600">
                 <IconAlert className="h-5 w-5" />
               </div>
-              <span className="flex-1 font-body text-base font-semibold text-ink-800">{opt.label}</span>
+              <span className="flex-1 font-body text-base font-semibold text-ink-800">{optionLabel(opt)}</span>
               <IconArrowRight className="h-5 w-5 text-dustyblue-400" />
             </button>
           ))}
           <div className="pt-3">
-            <ChatCard title="Not listed here? Tell us what happened" compact />
+            <ChatCard title={t("incident.chatNotListed")} compact />
           </div>
         </div>
       )}
@@ -127,12 +133,12 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
       {plan && (
         <div className="space-y-4 animate-fade-up">
           <Card className="p-5">
-            <p className="font-body text-sm text-dustyblue-600">Your plan for</p>
-            <h2 className="mt-1 font-heading text-xl font-semibold text-ink-900">{plan.label}</h2>
+            <p className="font-body text-sm text-dustyblue-600">{t("incident.planFor")}</p>
+            <h2 className="mt-1 font-heading text-xl font-semibold text-ink-900">{planLabel(plan)}</h2>
           </Card>
 
           <div className="space-y-3">
-            {plan.action_plan.map((step, i) => (
+            {planSteps(plan).map((step, i) => (
               <div
                 key={i}
                 className="flex items-start gap-4 rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up"
@@ -149,26 +155,26 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
           <div className="rounded-2xl bg-sage-100 p-5">
             <div className="flex items-center gap-2 text-sage-700">
               <IconCheck className="h-5 w-5" />
-              <p className="font-heading text-base font-semibold">You can do this</p>
+              <p className="font-heading text-base font-semibold">{t("incident.youCan")}</p>
             </div>
             <p className="mt-2 font-body text-sm text-sage-600">
-              Take it one step at a time. If you need help from someone you trust, do not hesitate to ask them.
+              {t("incident.youCanText")}
             </p>
           </div>
 
           <UrgentActions />
 
-          <ChatCard title="Still worried? Talk to a real person" compact />
+          <ChatCard title={t("incident.chatStillWorried")} compact />
 
           <Button onClick={() => { setPlan(null); setSelected(null); }} variant="outline" fullWidth>
-            Pick a different situation
+            {t("incident.pickOther")}
           </Button>
           {onNavigate && (
             <button
               onClick={() => onNavigate("/help")}
               className="w-full text-center font-body text-sm font-semibold text-sage-600 underline-offset-4 hover:underline"
             >
-              More ways to get help
+              {t("incident.moreHelp")}
             </button>
           )}
         </div>
