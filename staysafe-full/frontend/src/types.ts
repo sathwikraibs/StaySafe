@@ -15,6 +15,14 @@ export interface ScanMessageResponse {
   patterns_detected: string[];
   safe_signals?: string[];
   text_analyzed?: string;
+  links_checked?: LinkCheck[];
+}
+
+export interface LinkCheck {
+  url: string;
+  verdict: Verdict;
+  risk_score: number;
+  findings: string[];
 }
 
 export interface ScanQrResponse {

@@ -5,7 +5,7 @@ Flask API with one module per checker in `scanners/`.
 | Module | What it checks |
 |---|---|
 | `url_scanner.py` | Link structure, brand look-alikes (e.g. `amaz0n-offers.com`, `sbi-kyc-update.in`), risky words and endings, free-hosting pages, domain age (WHOIS), Google Safe Browsing, VirusTotal |
-| `message_scanner.py` | Scam patterns in English and Hinglish (KYC, OTP requests, electricity cut-off, courier / digital arrest, task jobs, lottery, investment, remote-access apps, "new number" family scams), plus genuine-message signals. Screenshots are read with Tesseract OCR first |
+| `message_scanner.py` | Scam patterns in English and Hinglish (KYC, OTP requests, electricity cut-off, courier / digital arrest, task jobs, lottery, investment, remote-access apps, "new number" family scams), plus genuine-message signals. Up to 3 links in the message get the full link check (rules, Google Safe Browsing, VirusTotal). Screenshots are read with Tesseract OCR first |
 | `qr_scanner.py` | Decodes QR codes (zbar, falling back to OpenCV) and checks the link or UPI payment request |
 | `file_scanner.py` | File name tricks, what the file *really* is from its contents, macros, programs hidden in ZIPs, risky PDFs, VirusTotal hash lookup |
 | `password_checker.py` | Strength rules (common words, leetspeak, years, sequences) and HIBP k-anonymity breach check |

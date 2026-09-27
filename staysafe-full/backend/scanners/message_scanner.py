@@ -288,6 +288,76 @@ def analyze_text(text: str) -> dict:
     }
 
 
+
+# ---------------------------------------------------------------------------
+# LINK CHECK — every link in the message gets the full link scanner
+# (structure rules + domain age + Google Safe Browsing + VirusTotal)
+# ---------------------------------------------------------------------------
+MAX_LINKS_CHECKED = 3
+
+URL_IN_TEXT = re.compile(
+    r"(?<![@\w.])("
+    r"https?://[^\s<>\"'()]+"
+    r"|www\.[^\s<>\"'()]+"
+    r"|(?:[a-z0-9-]+\.)+(?:com|in|net|org|info|xyz|top|club|click|live|icu|buzz|site|online|shop|store|"
+    r"rest|sbs|cfd|cyou|vip|support|me|ly|co|io|app|link|tk|ml|ga|cf|gq|ru|cn|sbi)(?:/[^\s<>\"'()]*)?"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def extract_links(text: str) -> list:
+    """Find links in the text (with or without http://), de-duplicated, in order."""
+    links = []
+    for match in URL_IN_TEXT.finditer(text):
+        link = match.group(1).rstrip(".,;:!?)]}'\"")
+        if not link.lower().startswith(("http://", "https://")):
+            link = "https://" + link
+        if link.lower() not in (l.lower() for l in links):
+            links.append(link)
+    return links
+
+
+def check_links_in_result(result: dict) -> dict:
+    """Run the full link scanner on up to 3 links and fold the results into the verdict."""
+    from scanners.url_scanner import scan_url
+
+    links = extract_links(result.get("text_analyzed", ""))
+    checked = []
+    extra_score = 0
+    for link in links[:MAX_LINKS_CHECKED]:
+        try:
+            link_result = scan_url(link)
+        except Exception:
+            continue
+        checked.append({
+            "url": link,
+            "verdict": link_result["verdict"],
+            "risk_score": link_result["risk_score"],
+            "findings": link_result["findings"],
+        })
+        reason = next((f for f in link_result["findings"] if "Could not" not in f), "")
+        if link_result["verdict"] == "DANGEROUS":
+            result["patterns_detected"].append(
+                f"The link {link} looks dangerous" + (f": {reason}" if reason else "")
+            )
+            extra_score = max(extra_score, 50)
+        elif link_result["verdict"] == "CAUTION":
+            result["patterns_detected"].append(
+                f"The link {link} looks suspicious" + (f": {reason}" if reason else "")
+            )
+            extra_score = max(extra_score, 20)
+
+    if len(links) > MAX_LINKS_CHECKED:
+        result["patterns_detected"].append(
+            f"This message has {len(links)} links; we checked the first {MAX_LINKS_CHECKED}"
+        )
+
+    result["links_checked"] = checked
+    result["risk_score"] = min(100, result["risk_score"] + extra_score)
+    result["verdict"] = verdict_from_score(result["risk_score"])
+    return result
+
 # ---------------------------------------------------------------------------
 # OCR helpers
 # ---------------------------------------------------------------------------
@@ -331,7 +401,7 @@ def scan_message_route():
     if not text:
         return jsonify({"error": "Please paste the message you want to check."}), 400
 
-    result = analyze_text(text)
+    result = check_links_in_result(analyze_text(text))
 
     from scanners.risk_engine import log_scan
     log_scan("message", result)
@@ -370,7 +440,7 @@ def scan_screenshot_route():
                      "or paste the message text instead."
         }), 400
 
-    result = analyze_text(extracted_text)
+    result = check_links_in_result(analyze_text(extracted_text))
 
     from scanners.risk_engine import log_scan
     log_scan("screenshot", result)

@@ -8,6 +8,7 @@ import { Card } from "@/components/Card";
 import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanMessageResponse } from "@/types";
+import { verdictTone, toneClasses } from "@/verdict";
 
 export function ScanMessagePage() {
   const [text, setText] = useState("");
@@ -99,6 +100,28 @@ export function ScanMessagePage() {
           )}
           {result.safe_signals && result.safe_signals.length > 0 && (
             <FindingsList items={result.safe_signals} title="Good signs" />
+          )}
+          {result.links_checked && result.links_checked.length > 0 && (
+            <Card className="p-4">
+              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">Links in this message</p>
+              <ul className="mt-2 space-y-2">
+                {result.links_checked.map((link) => {
+                  const tone = verdictTone(link.verdict);
+                  const cls = toneClasses(tone);
+                  return (
+                    <li key={link.url} className="flex items-start gap-2">
+                      <span className={`shrink-0 rounded-lg px-2 py-0.5 font-body text-xs font-semibold ${cls.bg} ${cls.text}`}>
+                        {tone === "safe" ? "Safe" : tone === "caution" ? "Careful" : "Risky"}
+                      </span>
+                      <span className="break-all font-body text-sm text-ink-800">{link.url}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-2 font-body text-xs text-dustyblue-600">
+                Each link was checked with our link rules, Google Safe Browsing and VirusTotal.
+              </p>
+            </Card>
           )}
           {fromScreenshot && result.text_analyzed && (
             <Card className="p-4">

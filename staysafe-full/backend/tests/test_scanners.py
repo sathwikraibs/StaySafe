@@ -17,7 +17,7 @@ import scanners.url_scanner as url_scanner  # noqa: E402
 # Keep tests offline and fast: skip the live WHOIS lookup
 url_scanner.analyze_domain_age = lambda host: {"score": 0, "findings": []}
 
-from scanners.message_scanner import analyze_text  # noqa: E402
+from scanners.message_scanner import analyze_text, check_links_in_result, extract_links  # noqa: E402
 from scanners.url_scanner import scan_url  # noqa: E402
 from scanners.file_scanner import check_extension_risk, check_content  # noqa: E402
 from scanners.password_checker import analyze_strength  # noqa: E402
@@ -72,6 +72,22 @@ def test_genuine_messages_not_flagged():
     for name, text in GENUINE_MESSAGES.items():
         result = analyze_text(text)
         assert result["verdict"] == "LIKELY_SAFE", (name, result)
+
+
+def test_links_found_in_messages():
+    links = extract_links("Track at amazon.in/track or www.sbi-kyc.xyz/login. Mail a@b.com at 9.30pm (http://bit.ly/x)")
+    assert links == ["https://amazon.in/track", "https://www.sbi-kyc.xyz/login", "http://bit.ly/x"], links
+
+
+def test_dangerous_link_makes_message_risky():
+    result = check_links_in_result(analyze_text("Your parcel is waiting. Confirm address at amaz0n-delivery.com/track"))
+    assert result["verdict"] == "SCAM_LIKELY", result
+    assert result["links_checked"][0]["verdict"] == "DANGEROUS"
+
+
+def test_real_link_keeps_message_safe():
+    result = check_links_in_result(analyze_text("Your Amazon order has shipped. Track: https://amazon.in/track"))
+    assert result["verdict"] == "LIKELY_SAFE", result
 
 
 # ---------------------------------------------------------------------------
