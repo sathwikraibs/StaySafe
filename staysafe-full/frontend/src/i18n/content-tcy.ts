@@ -79,6 +79,9 @@ export const tcyContent: LangContent = {
     "This message asks you to click a link, but the link itself isn't visible here — it may be hidden behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link.":
       "ಈ ಮೆಸೇಜ್ ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡು ಪನ್ಪುಂಡು, ಆಂಡ ಲಿಂಕ್ ಮುಲ್ಪ ತೋಜುಜಿ — 'ಮುಲ್ಪ ಕ್ಲಿಕ್ ಮಲ್ಪುಲೆ' ಲೆಕ್ಕದ ಪದೊಲೆನ ಪಿರವು ದೆಂಗ್‌ದುಪ್ಪು. ಲಿಂಕ್‌ದ ಮಿತ್ತ್ ಒತ್ತುದು ಪತ್ತ್‌ದ್ 'Copy link' ಆಯ್ಕೆ ಮಲ್ತ್, 'ಲಿಂಕ್ ಪರಿಶೀಲನೆ' ಡ್ ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
 
+    "We also checked an automatic English translation of this message. Translations can miss details \u2014 stay careful.":
+      "ಈ ಮೆಸೇಜ್‌ದ ಇಂಗ್ಲಿಷ್ ಅನುವಾದನ್‌ಲಾ ಎಂಕುಲು ಪರಿಶೀಲನೆ ಮಲ್ತ್‌ದ. ಅನುವಾದೊಡು ಕೆಲವು ವಿವರ ತಪ್ಪೊಲಿ — ಜಾಗ್ರತೆಡ್ ಇಪ್ಪುಲೆ.",
+
     // ---- link checker
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಕೆ ಮಲ್ಪುಜಿ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆತಿಜಿ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ಡ್ ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ದ ಬದಲ್ ಬರೀ IP ನಂಬರ್ ಉಂಡು",

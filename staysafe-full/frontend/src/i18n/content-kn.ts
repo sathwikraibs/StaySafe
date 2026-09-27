@@ -78,6 +78,9 @@ export const knContent: LangContent = {
     "This message asks you to click a link, but the link itself isn't visible here — it may be hidden behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link.":
       "ಈ ಮೆಸೇಜ್ ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಾಡಲು ಹೇಳುತ್ತದೆ, ಆದರೆ ಲಿಂಕ್ ಇಲ್ಲಿ ಕಾಣುತ್ತಿಲ್ಲ — 'ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ' ತರಹದ ಪದಗಳ ಹಿಂದೆ ಮರೆಯಾಗಿರಬಹುದು. ಲಿಂಕ್ ಮೇಲೆ ಒತ್ತಿ ಹಿಡಿದು 'Copy link' ಆಯ್ಕೆಮಾಡಿ, 'ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ' ನಲ್ಲಿ ಪೇಸ್ಟ್ ಮಾಡಿ.",
 
+    "We also checked an automatic English translation of this message. Translations can miss details \u2014 stay careful.":
+      "ಈ ಮೆಸೇಜ್‌ನ ಇಂಗ್ಲಿಷ್ ಅನುವಾದವನ್ನೂ ನಾವು ಪರಿಶೀಲಿಸಿದ್ದೇವೆ. ಅನುವಾದದಲ್ಲಿ ಕೆಲವು ವಿವರಗಳು ತಪ್ಪಿಹೋಗಬಹುದು — ಎಚ್ಚರವಾಗಿರಿ.",
+
     // ---- link checker
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಸುತ್ತಿಲ್ಲ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿಲ್ಲ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನ ಬದಲು ಕೇವಲ IP ನಂಬರ್ ಇದೆ",

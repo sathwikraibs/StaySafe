@@ -10,11 +10,21 @@ import { API_BASE } from "@/config";
 import type { ScanMessageResponse } from "@/types";
 import { verdictTone, toneClasses, toneTagKey } from "@/verdict";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
-import { IconInfo } from "@/icons";
+import { IconInfo, IconLanguage } from "@/icons";
 import { useI18n } from "@/i18n";
 
+/** "Tamil", "ತಮಿಳು", "तमिल"… — the name of a language code, in the website language. */
+function languageName(code: string, uiLang: string): string {
+  try {
+    const names = new Intl.DisplayNames([uiLang === "tcy" ? "kn" : uiLang], { type: "language" });
+    return names.of(code) || code;
+  } catch {
+    return code;
+  }
+}
+
 export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
-  const { t, ts } = useI18n();
+  const { t, ts, lang } = useI18n();
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -102,6 +112,21 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
       {result && (
         <div className="mt-4 space-y-4">
           <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
+          {result.translation && (
+            <Card className="border-2 border-sage-200 p-4">
+              <p className="flex items-center gap-2 font-heading text-base font-semibold text-ink-800">
+                <IconLanguage className="h-5 w-5 text-sage-600" /> {t("message.meaningTitle")}
+              </p>
+              <p className="mt-0.5 font-body text-xs text-dustyblue-600">
+                {t("message.translatedFrom", { lang: languageName(result.translation.from, lang) })}
+                {lang === "tcy" && result.translation.to === "kn" ? ` · ${t("message.shownInKannada")}` : ""}
+              </p>
+              <p className="mt-3 whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-base text-ink-800">
+                {result.translation.text}
+              </p>
+              <p className="mt-2 font-body text-xs text-dustyblue-500">{t("message.meaningNote")}</p>
+            </Card>
+          )}
           {result.notes && result.notes.length > 0 && (
             <div className="space-y-2 rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100 p-4">
               <p className="flex items-center gap-2 font-heading text-base font-semibold text-ink-800">

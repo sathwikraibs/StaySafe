@@ -256,6 +256,96 @@ def test_normal_shop_upi_qr():
     assert result["verdict"] == "SAFE", result
 
 
+# ---------------------------------------------------------------------------
+# Translation (Google Cloud Translation is replaced by a fake — no internet needed)
+# ---------------------------------------------------------------------------
+import scanners.translator as translator  # noqa: E402
+from scanners.message_scanner import add_translation  # noqa: E402
+
+FAKE_TRANSLATIONS = {
+    ("உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்", "en"):
+        ("Your bank account will be blocked today. Update KYC immediately", "ta"),
+    ("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ", "en"): ("Tell me the OTP you received immediately", "kn"),
+    ("Your SBI account will be blocked today. Update KYC now", "kn"):
+        ("ನಿಮ್ಮ SBI ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ಈಗಲೇ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ", "en"),
+}
+
+
+class _FakeResponse:
+    def __init__(self, status, payload):
+        self.status_code, self._payload = status, payload
+
+    def json(self):
+        return self._payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise RuntimeError(self.status_code)
+
+
+def _use_fake_google(status=200):
+    calls = []
+
+    def fake_post(url, params=None, json=None, timeout=None):
+        calls.append((json["q"], json["target"]))
+        if status != 200:
+            return _FakeResponse(status, {"error": {"message": "Cloud Translation API has not been used in project"}})
+        text, src = FAKE_TRANSLATIONS.get((json["q"], json["target"]), (json["q"], "en"))
+        return _FakeResponse(200, {"data": {"translations": [{"translatedText": text, "detectedSourceLanguage": src}]}})
+
+    os.environ["TRANSLATE_API_KEY"] = "test-key"
+    translator.requests.post = fake_post
+    translator._cache.clear()
+    translator._disabled_reason = None
+    translator._usage["chars"] = 0
+    return calls
+
+
+def test_translation_lets_us_check_other_languages():
+    _use_fake_google()
+    text = "உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்"  # Tamil
+    result = add_translation(analyze_text(text), "en")
+    assert result["verdict"] == "SCAM_LIKELY", result
+    assert result["translation"]["from"] == "ta" and "blocked" in result["translation"]["text"]
+
+
+def test_kannada_message_explained_in_english():
+    _use_fake_google()
+    result = add_translation(analyze_text("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ"), "en")
+    assert result["verdict"] == "SCAM_LIKELY"
+    assert result["translation"]["to"] == "en" and "OTP" in result["translation"]["text"]
+
+
+def test_english_message_explained_in_kannada_and_tulu():
+    for ui in ("kn", "tcy"):  # Tulu isn't in Google's API, so Tulu readers get Kannada
+        calls = _use_fake_google()
+        result = add_translation(analyze_text("Your SBI account will be blocked today. Update KYC now"), ui)
+        assert result["translation"]["to"] == "kn", (ui, result)
+        assert calls == [("Your SBI account will be blocked today. Update KYC now", "kn")]
+
+
+def test_english_message_on_english_site_costs_nothing():
+    calls = _use_fake_google()
+    result = add_translation(analyze_text("Your order has shipped"), "en")
+    assert calls == [] and "translation" not in result
+
+
+def test_without_key_or_when_google_refuses_we_stay_honest():
+    text = "உங்கள் வங்கி கணக்கு இன்று முடக்கப்படும். உடனே KYC புதுப்பிக்கவும்"
+    _use_fake_google(status=403)
+    assert add_translation(analyze_text(text), "en")["verdict"] == "UNCERTAIN"
+    os.environ.pop("TRANSLATE_API_KEY"); os.environ.pop("GSB_API_KEY", None)
+    translator._disabled_reason = None
+    assert add_translation(analyze_text(text), "en")["verdict"] == "UNCERTAIN"
+
+
+def test_daily_limit_protects_free_tier():
+    calls = _use_fake_google()
+    translator._usage["chars"] = translator.DAILY_LIMIT  # pretend today's budget is used up
+    result = add_translation(analyze_text("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ"), "en")
+    assert calls == [] and result["verdict"] == "SCAM_LIKELY"  # native rules still work
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

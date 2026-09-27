@@ -11,7 +11,7 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
 | Feature | Description |
 |---|---|
 | 🔗 Link Checker | Scans URLs for phishing/malware risk using structure analysis, domain age, Google Safe Browsing, and VirusTotal |
-| 💬 Message Checker | Detects scam patterns (urgency, OTP requests, fake refunds, etc.) in English, Hinglish, Kannada and Hindi — pasted text or screenshots (OCR). Explains how to check links hidden behind "Click here" |
+| 💬 Message Checker | Detects scam patterns (urgency, OTP requests, fake refunds, etc.) in English, Hinglish, Kannada and Hindi — pasted text or screenshots (OCR). Messages in any other language are understood via Google Translation, and every message is explained ("What this message says") in the visitor's language. Explains how to check links hidden behind "Click here" |
 | 📱 QR Code Checker | Decodes QR codes and checks the destination URL or UPI payment request before you scan |
 | 📄 File Checker | Checks file hashes against VirusTotal and flags risky extensions and double-extension disguises |
 | 🔒 Password Checker | Rates password strength and checks breach exposure via HIBP's privacy-safe k-anonymity API |
@@ -69,7 +69,7 @@ Screenshot reading and QR decoding need system programs (Tesseract OCR, zbar) th
 
 1. Render → **New → Web Service** → connect this repo.
 2. **Root Directory:** `staysafe-full/backend` · **Runtime/Language:** `Docker` (Render finds the `Dockerfile`).
-3. Optional environment variables: `GSB_API_KEY`, `VT_API_KEY` (see `backend/.env.example`).
+3. Optional environment variables: `GSB_API_KEY`, `VT_API_KEY`, `TRANSLATE_API_KEY`, `TRANSLATE_DAILY_CHAR_LIMIT` (see `backend/.env.example`).
 4. After it deploys, open the service URL. You should see `"ocr": true` and `"qr": true`.
 
 (Render can't switch an existing Python service to Docker from the dashboard, so create a new service and point the frontend at its URL.)

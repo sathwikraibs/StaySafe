@@ -18,6 +18,8 @@ export interface ScanMessageResponse {
   links_checked?: LinkCheck[];
   /** extra information: language coverage, hidden-link tip */
   notes?: string[];
+  /** "What this message says" — automatic translation into the website language */
+  translation?: { text: string; from: string; to: string };
 }
 
 export interface LinkCheck {

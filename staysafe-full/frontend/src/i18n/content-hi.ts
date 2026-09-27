@@ -78,6 +78,9 @@ export const hiContent: LangContent = {
     "This message asks you to click a link, but the link itself isn't visible here — it may be hidden behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link.":
       "यह मैसेज लिंक पर क्लिक करने को कहता है, लेकिन असली लिंक यहाँ नहीं दिख रहा — शायद 'यहाँ क्लिक करें' जैसे शब्दों के पीछे छिपा है। लिंक को दबाकर रखें, 'Copy link' चुनें और उसे 'लिंक जाँचें' में पेस्ट करें।",
 
+    "We also checked an automatic English translation of this message. Translations can miss details \u2014 stay careful.":
+      "हमने इस मैसेज के अंग्रेज़ी अनुवाद की भी जाँच की। अनुवाद में कुछ बातें छूट सकती हैं — सावधान रहें।",
+
     // ---- link checker
     "Link does not use HTTPS (the connection is not encrypted)": "लिंक HTTPS इस्तेमाल नहीं करता (कनेक्शन सुरक्षित/एन्क्रिप्टेड नहीं है)",
     "Link uses a raw IP address instead of a real website name": "लिंक में वेबसाइट के नाम की जगह सिर्फ़ IP नंबर है",

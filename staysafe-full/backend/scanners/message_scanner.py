@@ -336,6 +336,9 @@ NOTE_OTHER_SCRIPT = (
 NOTE_NEW_SCRIPT = (
     "Our checks for messages written in Kannada or Hindi script are new and may miss some scams — stay careful."
 )
+NOTE_TRANSLATED_CHECK = (
+    "We also checked an automatic English translation of this message. Translations can miss details — stay careful."
+)
 NOTE_HIDDEN_LINK = (
     "This message asks you to click a link, but the link itself isn't visible here — it may be hidden "
     "behind words like 'click here'. Press and hold the link, choose 'Copy link', and paste it into Check a Link."
@@ -518,6 +521,56 @@ def check_links_in_result(result: dict) -> dict:
     return result
 
 # ---------------------------------------------------------------------------
+# TRANSLATION — understand other languages, and explain in the visitor's language
+# ---------------------------------------------------------------------------
+def request_language() -> str:
+    """The website language the visitor is using (sent by the frontend as X-Lang)."""
+    lang = (request.headers.get("X-Lang") or "en").strip().lower()
+    return lang if re.fullmatch(r"[a-z]{2,3}", lang) else "en"
+
+
+def add_translation(result: dict, ui_lang: str) -> dict:
+    """
+    1. If the message isn't mainly in English letters, check an English translation
+       with the same rules and merge what it finds (the rules still decide).
+    2. If the message's language differs from the website's, add
+       result["translation"] = {"text", "from", "to"} so we can show what it says.
+    """
+    from scanners.translator import translate, TARGET_FALLBACK
+
+    text = result.get("text_analyzed", "")
+    mix = script_mix(text)
+    non_latin = mix["supported"] + mix["other"]
+    english = None
+
+    if non_latin >= 0.2:
+        english = translate(text, "en")
+        if english and english["text"].strip():
+            en_result = analyze_text(english["text"])
+            for pattern in en_result["patterns_detected"]:
+                if pattern not in result["patterns_detected"]:
+                    result["patterns_detected"].append(pattern)
+            was_unreadable = result.get("verdict") == "UNCERTAIN" or not result["patterns_detected"]
+            result["risk_score"] = max(result["risk_score"], en_result["risk_score"])
+            result["verdict"] = verdict_from_score(result["risk_score"])
+            notes = [n for n in result.get("notes", []) if n not in (NOTE_OTHER_SCRIPT, NOTE_NEW_SCRIPT)]
+            if was_unreadable or mix["other"] > 0.4:
+                notes.append(NOTE_TRANSLATED_CHECK)
+            result["notes"] = notes
+
+    # "What this message says" in the visitor's language
+    target = TARGET_FALLBACK.get(ui_lang, ui_lang)
+    meaning = english if (english and target == "en") else None
+    if meaning is None and text.strip():
+        if non_latin >= 0.2 or target != "en":
+            meaning = translate(text, target)
+    if meaning and meaning.get("from") and meaning["from"].split("-")[0] != target \
+            and meaning["text"].strip().lower() != text.strip().lower():
+        result["translation"] = meaning
+    return result
+
+
+# ---------------------------------------------------------------------------
 # OCR helpers
 # ---------------------------------------------------------------------------
 def _prepare_for_ocr(img):
@@ -576,7 +629,8 @@ def scan_message_route():
     if not text:
         return jsonify({"error": "Please paste the message you want to check."}), 400
 
-    result = check_links_in_result(analyze_text(text))
+    result = add_translation(analyze_text(text), request_language())
+    result = check_links_in_result(result)
 
     from scanners.risk_engine import log_scan
     log_scan("message", result)
@@ -615,7 +669,8 @@ def scan_screenshot_route():
                      "or paste the message text instead."
         }), 400
 
-    result = check_links_in_result(analyze_text(extracted_text))
+    result = add_translation(analyze_text(extracted_text), request_language())
+    result = check_links_in_result(result)
 
     from scanners.risk_engine import log_scan
     log_scan("screenshot", result)

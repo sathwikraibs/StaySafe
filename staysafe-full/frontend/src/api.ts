@@ -30,6 +30,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   const headers = new Headers(init.headers);
   headers.set("X-Client-Id", getClientId());
+  // The website language, so results and translations come back in the visitor's language
+  headers.set("X-Lang", (typeof document !== "undefined" && document.documentElement.lang) || "en");
 
   let res: Response;
   try {

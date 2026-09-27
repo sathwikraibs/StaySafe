@@ -90,6 +90,10 @@ export const en = {
     ocrTitle: "Text we read from your screenshot",
     ocrNote: "Screenshots can be read in English, Kannada and Hindi. For other languages, paste the text instead.",
     notesTitle: "Please note",
+    meaningTitle: "What this message says",
+    translatedFrom: "Automatically translated from {lang}",
+    meaningNote: "Automatic translation by Google — it may not be perfect.",
+    shownInKannada: "shown in Kannada (Tulu isn't available for translation yet)",
   },
 
   qr: {
@@ -287,6 +291,7 @@ export const en = {
     dataItems: [
       "Messages, screenshots and files are sent securely to our server to be checked. We don't keep them — only a short summary goes into your check history.",
       "Links (including links found in messages, QR codes and emails) are also checked with Google Safe Browsing and VirusTotal.",
+      "Messages that aren't in English letters, or that are in a different language from the website, are sent to Google Translate so we can understand and explain them. We don't store them.",
       "Files are checked with VirusTotal using only their fingerprint (a hash) — the file itself is not uploaded to them.",
       "Passwords are never stored. Only a scrambled 5-character fragment is sent to the Have I Been Pwned leak database.",
       "The connection check looks up your internet address with ip-api.com.",
