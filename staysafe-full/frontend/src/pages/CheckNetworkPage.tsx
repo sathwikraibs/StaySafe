@@ -4,7 +4,7 @@ import { VerdictBanner } from "@/components/VerdictBanner";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiGet, NETWORK_ERROR_MSG } from "@/api";
+import { apiGet, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { CheckNetworkResponse } from "@/types";
 import { IconNetwork } from "@/icons";
@@ -19,7 +19,7 @@ export function CheckNetworkPage() {
     try {
       const data = await apiGet<CheckNetworkResponse>(`${API_BASE}/api/check-network`);
       setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   return (

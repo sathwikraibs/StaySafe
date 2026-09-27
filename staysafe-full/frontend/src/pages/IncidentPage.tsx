@@ -3,7 +3,7 @@ import { Button } from "@/components/Button";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiGet, apiPostJSON, NETWORK_ERROR_MSG } from "@/api";
+import { apiGet, apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { IncidentOption, IncidentPlanResponse } from "@/types";
 import { IconArrowRight, IconCheck, IconAlert } from "@/icons";
@@ -21,7 +21,7 @@ export function IncidentPage() {
     try {
       const data = await apiGet<{ options: IncidentOption[] }>(`${API_BASE}/api/incident-options`);
       setOptions(data.options);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoadingOptions(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoadingOptions(false); }
   }
 
   async function getPlan(id: string) {
@@ -30,7 +30,7 @@ export function IncidentPage() {
     try {
       const data = await apiPostJSON<IncidentPlanResponse>(`${API_BASE}/api/incident-plan`, { incident_type: id });
       setPlan(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoadingPlan(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoadingPlan(false); }
   }
 
   if (!options && !loadingOptions && !error) {

@@ -13,6 +13,8 @@ export interface ScanMessageResponse {
   risk_score: number;
   verdict: Verdict;
   patterns_detected: string[];
+  safe_signals?: string[];
+  text_analyzed?: string;
 }
 
 export interface ScanQrResponse {
@@ -26,6 +28,7 @@ export interface ScanQrResponse {
 export interface ScanFileResponse {
   filename: string;
   sha256: string;
+  detected_type?: string;
   risk_score: number;
   verdict: Verdict;
   findings: string[];

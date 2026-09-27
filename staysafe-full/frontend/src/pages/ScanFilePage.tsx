@@ -5,7 +5,7 @@ import { LoadingBreath } from "@/components/LoadingBreath";
 import { UploadZone } from "@/components/UploadZone";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiPostForm, NETWORK_ERROR_MSG } from "@/api";
+import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
 
@@ -23,7 +23,7 @@ export function ScanFilePage() {
       fd.append("file", file);
       const data = await apiPostForm<ScanFileResponse>(`${API_BASE}/api/scan-file`, fd);
       setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   return (
@@ -32,8 +32,9 @@ export function ScanFilePage() {
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <UploadZone
           label="Tap to choose a file"
-          hint="Documents, images, or any file you are unsure about"
+          hint="Documents, images, or any file you are unsure about (up to 20 MB)"
           onFile={setFile}
+          onClear={() => setFile(null)}
           disabled={loading}
         />
         {file && (
@@ -55,6 +56,9 @@ export function ScanFilePage() {
           <Card className="p-4">
             <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">File details</p>
             <p className="mt-1 font-body text-sm text-ink-800">{result.filename}</p>
+            {result.detected_type && result.detected_type !== "unknown" && (
+              <p className="mt-1 font-body text-xs text-dustyblue-600">What it really is: {result.detected_type}</p>
+            )}
             <p className="mt-1 break-all font-body text-xs text-dustyblue-600">ID: {result.sha256}</p>
           </Card>
           <FindingsList items={result.findings} />

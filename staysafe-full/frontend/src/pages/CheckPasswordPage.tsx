@@ -4,7 +4,7 @@ import { VerdictBanner } from "@/components/VerdictBanner";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiPostJSON, NETWORK_ERROR_MSG } from "@/api";
+import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { CheckPasswordResponse } from "@/types";
 
@@ -21,7 +21,7 @@ export function CheckPasswordPage() {
     try {
       const data = await apiPostJSON<CheckPasswordResponse>(`${API_BASE}/api/check-password`, { password });
       setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   return (

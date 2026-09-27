@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { PageHeader, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiGet, NETWORK_ERROR_MSG } from "@/api";
+import { apiGet, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScamLibraryResponse, CategoriesResponse, ScamEntry } from "@/types";
 import { IconSearch, IconChevronRight, IconArrowLeft } from "@/icons";
@@ -31,7 +31,7 @@ export function ScamLibraryPage() {
       const url = `${API_BASE}/api/scam-library${params.toString() ? "?" + params.toString() : ""}`;
       const data = await apiGet<ScamLibraryResponse>(url);
       setResults(data.scams);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {

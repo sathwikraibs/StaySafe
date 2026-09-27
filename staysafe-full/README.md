@@ -23,8 +23,15 @@ cp .env.example .env          # fill in GSB_API_KEY and VT_API_KEY (both optiona
 python app.py
 ```
 
-Runs on `http://localhost:5000` by default. Deploy to Render for production
-(push `backend/` as its own git repo, set the same env vars in Render's dashboard).
+Screenshot and QR checks also need two system programs:
+`sudo apt install tesseract-ocr libzbar0` (macOS: `brew install tesseract zbar`).
+
+Runs on `http://localhost:5000` by default. Deploy to Render as a **Docker**
+web service with Root Directory `staysafe-full/backend` (the included
+`Dockerfile` installs Tesseract and zbar). Visit the service URL afterwards —
+`"ocr": true` and `"qr": true` confirm image checks will work.
+
+Run the checker tests with `python tests/test_scanners.py`.
 
 ## 2. Run the frontend
 
@@ -34,12 +41,15 @@ npm install
 npm run dev
 ```
 
-Before deploying, open `frontend/src/config.ts` and set `API_BASE` to your
-deployed Render backend URL:
+Point the frontend at your backend by setting the `VITE_API_BASE` environment
+variable (in Vercel: Project → Settings → Environment Variables; locally: a
+`frontend/.env.local` file):
 
-```ts
-export const API_BASE = "https://your-actual-backend.onrender.com";
 ```
+VITE_API_BASE=https://your-actual-backend.onrender.com
+```
+
+If it isn't set, the default URL in `frontend/src/config.ts` is used.
 
 Deploy `frontend/` to Vercel — no extra build config needed (Vite is
 auto-detected, `vercel.json` is included as a fallback).
@@ -56,12 +66,16 @@ auto-detected, `vercel.json` is included as a fallback).
 | `/api/check-password` | POST | Check password strength + breach status |
 | `/api/check-network` | GET | Check current connection safety |
 | `/api/scan-email` | POST | Check raw email source |
-| `/api/dashboard` | GET | Safety score + recent activity |
-| `/api/history` | GET | Full scan history |
+| `/api/dashboard` | GET | Safety score + recent activity (per visitor, via `X-Client-Id` header) |
+| `/api/history` | GET | Full scan history (per visitor) |
 | `/api/incident-options` | GET | List of "I clicked a scam" scenarios |
 | `/api/incident-plan` | POST | Step-by-step recovery plan |
 | `/api/scam-library` | GET | Searchable scam knowledge base |
 | `/api/scam-library/categories` | GET | Scam category list |
+
+The dashboard is computed in the browser from each visitor's own saved checks,
+so it's private per person and survives the free Render server going to sleep.
+Uploads are limited to 20 MB.
 
 CORS is enabled on the backend (`flask-cors`) so the Vercel frontend can
 call the Render backend across origins.

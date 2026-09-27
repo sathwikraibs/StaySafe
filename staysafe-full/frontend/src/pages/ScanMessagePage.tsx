@@ -4,7 +4,8 @@ import { VerdictBanner } from "@/components/VerdictBanner";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { UploadZone } from "@/components/UploadZone";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
-import { apiPostJSON, apiPostForm, NETWORK_ERROR_MSG } from "@/api";
+import { Card } from "@/components/Card";
+import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanMessageResponse } from "@/types";
 
@@ -14,14 +15,15 @@ export function ScanMessagePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanMessageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fromScreenshot, setFromScreenshot] = useState(false);
 
   async function handleCheckText() {
     if (!text.trim()) return;
     setLoading(true); setError(null); setResult(null);
     try {
       const data = await apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim() });
-      setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+      setResult(data); setFromScreenshot(false);
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   async function handleCheckScreenshot() {
@@ -31,8 +33,8 @@ export function ScanMessagePage() {
       const fd = new FormData();
       fd.append("image", file);
       const data = await apiPostForm<ScanMessageResponse>(`${API_BASE}/api/scan-screenshot`, fd);
-      setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+      setResult(data); setFromScreenshot(true);
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   return (
@@ -71,6 +73,7 @@ export function ScanMessagePage() {
           label="Tap to choose a screenshot"
           hint="A photo of the message on your screen works too"
           onFile={setFile}
+          onClear={() => setFile(null)}
           disabled={loading}
         />
         {file && (
@@ -89,7 +92,20 @@ export function ScanMessagePage() {
       {result && (
         <div className="mt-4 space-y-4">
           <VerdictBanner verdict={result.verdict} riskScore={result.risk_score} />
-          <FindingsList items={result.patterns_detected} title="Patterns we noticed" />
+          {result.patterns_detected.length > 0 ? (
+            <FindingsList items={result.patterns_detected} title="Warning signs we noticed" />
+          ) : (
+            <FindingsList items={["We didn't spot any common scam patterns. Still, never share OTPs, PINs or passwords with anyone."]} title="What we noticed" />
+          )}
+          {result.safe_signals && result.safe_signals.length > 0 && (
+            <FindingsList items={result.safe_signals} title="Good signs" />
+          )}
+          {fromScreenshot && result.text_analyzed && (
+            <Card className="p-4">
+              <p className="font-body text-xs font-semibold uppercase tracking-wide text-dustyblue-500">Text we read from your screenshot</p>
+              <p className="mt-2 whitespace-pre-wrap break-words font-body text-sm text-ink-800">{result.text_analyzed}</p>
+            </Card>
+          )}
         </div>
       )}
     </div>

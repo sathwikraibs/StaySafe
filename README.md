@@ -24,7 +24,7 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
 ## Tech stack
 
 - **Frontend:** React + TypeScript + Tailwind CSS, built with Vite, deployed on Vercel
-- **Backend:** Python Flask, modular scanner architecture, deployed on Render
+- **Backend:** Python Flask, modular scanner architecture, deployed on Render with Docker (Tesseract OCR + zbar for images)
 
 ## Project structure
 
@@ -47,6 +47,7 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
     python -m venv venv && source venv/bin/activate
     pip install -r requirements.txt
     cp .env.example .env   # optional: add GSB_API_KEY / VT_API_KEY
+    # screenshot + QR checks also need: sudo apt install tesseract-ocr libzbar0  (macOS: brew install tesseract zbar)
     python app.py
 
 **Frontend:**
@@ -55,12 +56,32 @@ StaySafe helps everyday people especially those unfamiliar with online scams che
     npm install
     npm run dev
 
-Set `API_BASE` in `src/config.ts` to your backend URL before running.
+To use a local backend, create `frontend/.env.local` with `VITE_API_BASE=http://localhost:5000`.
 
 ## Deployment
 
-- **Backend → Render:** Root Directory `staysafe-full/backend`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn app:app`
-- **Frontend → Vercel:** Root Directory `staysafe-full/frontend`, framework auto-detected as Vite
+**Backend → Render (Docker)**
+
+Screenshot reading and QR decoding need system programs (Tesseract OCR, zbar) that Render's plain Python runtime cannot install, so the backend ships with a `Dockerfile`.
+
+1. Render → **New → Web Service** → connect this repo.
+2. **Root Directory:** `staysafe-full/backend` · **Runtime/Language:** `Docker` (Render finds the `Dockerfile`).
+3. Optional environment variables: `GSB_API_KEY`, `VT_API_KEY` (see `backend/.env.example`).
+4. After it deploys, open the service URL. You should see `"ocr": true` and `"qr": true`.
+
+(Render can't switch an existing Python service to Docker from the dashboard, so create a new service and point the frontend at its URL.)
+
+**Frontend → Vercel**
+
+- Root Directory `staysafe-full/frontend`, framework auto-detected as Vite.
+- Set the environment variable `VITE_API_BASE` to your Render backend URL (Project → Settings → Environment Variables), then redeploy. Without it, the frontend uses the URL in `src/config.ts`.
+
+## Testing
+
+    cd staysafe-full/backend
+    python tests/test_scanners.py
+
+Runs offline against real-world scam and genuine samples (messages, links, files, passwords, UPI QR codes).
 
 ## Notes
 
