@@ -3,7 +3,7 @@ import { Button } from "@/components/Button";
 import { VerdictBanner } from "@/components/VerdictBanner";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
-import { apiPostJSON, NETWORK_ERROR_MSG } from "@/api";
+import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanUrlResponse } from "@/types";
 
@@ -21,8 +21,8 @@ export function ScanUrlPage() {
     try {
       const data = await apiPostJSON<ScanUrlResponse>(`${API_BASE}/api/scan-url`, { url: url.trim() });
       setResult(data);
-    } catch {
-      setError(NETWORK_ERROR_MSG);
+    } catch (e) {
+      setError(errorMessage(e));
     } finally {
       setLoading(false);
     }

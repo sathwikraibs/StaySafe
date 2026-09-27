@@ -1,39 +1,35 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingBreath } from "@/components/LoadingBreath";
-import { PageHeader, ErrorNotice } from "@/components/PageBits";
+import { PageHeader } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiGet, NETWORK_ERROR_MSG } from "@/api";
-import { API_BASE } from "@/config";
-import type { DashboardResponse, HistoryResponse, ScanHistoryItem } from "@/types";
+import type { ScanHistoryItem } from "@/types";
 import { verdictTone, toneClasses, riskBarColor } from "@/verdict";
 import { IconHistory } from "@/icons";
+import { loadHistory, clearHistory, computeDashboard } from "@/history";
 
 export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => void }) {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<DashboardResponse | null>(null);
-  const [history, setHistory] = useState<ScanHistoryItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // History lives in this browser, so it's private to you and survives server restarts.
+  const [history, setHistory] = useState<ScanHistoryItem[]>(() => loadHistory());
   const [tab, setTab] = useState<"overview" | "history">("overview");
+  const data = computeDashboard(history);
 
-  async function loadDashboard() {
-    setLoading(true); setError(null);
-    try {
-      const [d, h] = await Promise.all([
-        apiGet<DashboardResponse>(`${API_BASE}/api/dashboard`),
-        apiGet<HistoryResponse>(`${API_BASE}/api/history`),
-      ]);
-      setData(d); setHistory(h.history);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+  function handleClear() {
+    if (window.confirm("Clear your check history on this device?")) {
+      clearHistory();
+      setHistory([]);
+    }
   }
 
-  if (!data && !loading && !error) {
+  if (history.length === 0) {
     return (
       <div>
         <PageHeader title="Safety Dashboard" subtitle="See your overall safety score and a history of everything you have checked." />
         <div className="rounded-2xl bg-gradient-to-br from-sage-100 to-cream-100 p-8 text-center shadow-warm">
-          <p className="mb-5 font-body text-base text-ink-700/80">Tap below to load your safety summary.</p>
-          <Button onClick={loadDashboard} variant="secondary">Show my dashboard</Button>
+          <IconHistory className="mx-auto mb-3 h-10 w-10 text-dustyblue-400" />
+          <p className="mb-5 font-body text-base text-ink-700/80">
+            No checks yet. Check a link, message, QR code or file and your safety summary will appear here.
+          </p>
+          <Button onClick={() => onNavigate("/")} variant="secondary">Start a check</Button>
         </div>
       </div>
     );
@@ -43,11 +39,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
     <div>
       <PageHeader title="Safety Dashboard" subtitle="Your safety summary and check history." />
 
-      {loading && <LoadingBreath label="Gathering your safety summary..." />}
-      {error && <ErrorNotice>{error}</ErrorNotice>}
-
-      {data && !loading && (
-        <div>
+      <div>
           {/* Tabs */}
           <div className="mb-5 flex gap-2">
             <button
@@ -106,6 +98,10 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
               <Button onClick={() => onNavigate("/incident")} variant="outline" fullWidth>
                 Need help with something you clicked?
               </Button>
+              <p className="text-center font-body text-xs text-dustyblue-500">
+                Your history is saved only on this device.{" "}
+                <button onClick={handleClear} className="underline hover:text-terracotta-600">Clear history</button>
+              </p>
             </div>
           )}
 
@@ -123,8 +119,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
               )}
             </Card>
           )}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -144,6 +139,11 @@ function BreakdownBar({ label, count, total, color }: { label: string; count: nu
   );
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  url: "Link", message: "Message", screenshot: "Screenshot", qr_upi: "QR payment",
+  qr_url: "QR link", qr_text: "QR code", file: "File", email: "Email",
+};
+
 function HistoryRow({ item }: { item: ScanHistoryItem }) {
   const tone = verdictTone(item.verdict);
   const cls = toneClasses(tone);
@@ -153,7 +153,7 @@ function HistoryRow({ item }: { item: ScanHistoryItem }) {
       <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${riskBarColor(tone)}`} />
       <div className="flex-1 min-w-0">
         <p className="truncate font-body text-sm font-semibold text-ink-800">{item.summary || item.type}</p>
-        <p className="font-body text-xs text-dustyblue-600">{item.type} {date && `· ${date}`}</p>
+        <p className="font-body text-xs text-dustyblue-600">{TYPE_LABELS[item.type] ?? item.type} {date && `· ${date}`}</p>
       </div>
       <span className={`shrink-0 rounded-lg px-2 py-0.5 font-body text-xs font-semibold ${cls.bg} ${cls.text}`}>
         {tone === "safe" ? "Safe" : tone === "caution" ? "Careful" : "Risky"}

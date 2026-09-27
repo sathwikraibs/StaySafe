@@ -6,11 +6,12 @@ interface UploadZoneProps {
   label: string;
   hint?: string;
   onFile: (file: File) => void;
+  onClear?: () => void;
   selectedPreview?: ReactNode;
   disabled?: boolean;
 }
 
-export function UploadZone({ accept, label, hint, onFile, selectedPreview, disabled }: UploadZoneProps) {
+export function UploadZone({ accept, label, hint, onFile, onClear, selectedPreview, disabled }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function UploadZone({ accept, label, hint, onFile, selectedPreview, disab
             <p className="truncate font-body text-sm font-semibold text-ink-800">{fileName}</p>
             <button
               type="button"
-              onClick={() => { setFileName(null); inputRef.current && (inputRef.current.value = ""); }}
+              onClick={() => { setFileName(null); if (inputRef.current) inputRef.current.value = ""; onClear?.(); }}
               className="mt-1 flex items-center gap-1 font-body text-xs text-dustyblue-500 hover:text-terracotta-600"
             >
               <IconClose className="h-3.5 w-3.5" /> Choose a different file

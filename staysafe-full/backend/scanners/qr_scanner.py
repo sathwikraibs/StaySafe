@@ -1,21 +1,19 @@
 """
 StaySafe - QR Code Safety Scanner
 ------------------------------------
-User uploads a QR code image. We decode it, and if it contains a URL,
-run it through the SAME risk engine as the URL scanner (no duplicate logic).
-If it's not a URL (e.g. plain UPI string), we do basic UPI-specific checks.
+User uploads a photo/screenshot of a QR code. We decode it and:
+  - URL      -> run it through the SAME checks as the link scanner
+  - UPI      -> payment-specific checks (a QR can only SEND your money, never receive)
+  - anything else -> show the raw content
 
-Requires:
-    pip install opencv-python pyzbar
-    (pyzbar also needs the system lib zbar0 -- see note below)
-
-Register with:
-    from qr_scanner import qr_scanner_bp
-    app.register_blueprint(qr_scanner_bp)
+Decoding uses pyzbar (needs the system library libzbar0, installed by the
+Dockerfile) and falls back to OpenCV's built-in QR detector, so QR scanning
+still works even if zbar is missing.
 """
 
 import re
-import io
+from urllib.parse import parse_qs, unquote, urlparse
+
 import numpy as np
 from flask import Blueprint, request, jsonify
 
@@ -26,39 +24,120 @@ qr_scanner_bp = Blueprint("qr_scanner", __name__)
 
 try:
     import cv2
-    from pyzbar.pyzbar import decode as decode_qr
-    QR_LIB_AVAILABLE = True
-except ImportError:
-    QR_LIB_AVAILABLE = False
+    CV2_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    CV2_AVAILABLE = False
+
+try:
+    from pyzbar.pyzbar import decode as zbar_decode
+    ZBAR_AVAILABLE = True
+except Exception:  # ImportError, or OSError when libzbar is missing
+    ZBAR_AVAILABLE = False
+
+
+def qr_status() -> bool:
+    return CV2_AVAILABLE
+
+
+# ---------------------------------------------------------------------------
+# DECODING
+# ---------------------------------------------------------------------------
+def _variants(img):
+    """Yield progressively 'cleaned up' versions of the image to improve decode rates."""
+    yield img
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    yield gray
+    h, w = gray.shape[:2]
+    if max(h, w) < 800:
+        yield cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    elif max(h, w) > 2000:
+        scale = 1600 / max(h, w)
+        yield cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    yield cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 10)
+    yield cv2.bitwise_not(gray)  # dark-mode / inverted codes
+
+
+def decode_qr_image(image_bytes: bytes):
+    """Returns the decoded text of the first QR code found, or None."""
+    file_bytes = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("not an image")
+
+    detector = cv2.QRCodeDetector()
+    for variant in _variants(img):
+        if ZBAR_AVAILABLE:
+            try:
+                results = zbar_decode(variant)
+                if results:
+                    return results[0].data.decode("utf-8", errors="replace")
+            except Exception:
+                pass
+        try:
+            data, _points, _ = detector.detectAndDecode(variant)
+            if data:
+                return data
+        except cv2.error:
+            pass
+    return None
+
+
+# ---------------------------------------------------------------------------
+# UPI CHECKS
+# ---------------------------------------------------------------------------
+SCAM_NOTE_WORDS = re.compile(
+    r"(refund|cashback|prize|reward|lottery|won|winner|kyc|verify|verification|receive|gift|bonus|claim|customer ?care|support)",
+    re.IGNORECASE,
+)
 
 
 def analyze_upi_string(upi_data: str) -> dict:
     """
-    Basic checks for UPI payment QR strings, e.g.:
-    upi://pay?pa=merchant@upi&pn=MerchantName&am=100
+    Checks a UPI payment QR string, e.g.
+    upi://pay?pa=merchant@okaxis&pn=Merchant%20Name&am=100&tn=note
     """
     findings = []
     score = 0
 
-    pa_match = re.search(r"pa=([^&]+)", upi_data)
-    am_match = re.search(r"am=([^&]+)", upi_data)
-    pn_match = re.search(r"pn=([^&]+)", upi_data)
+    parsed = urlparse(upi_data)
+    params = {k.lower(): unquote(v[0]) for k, v in parse_qs(parsed.query).items()}
 
-    payee = pa_match.group(1) if pa_match else None
-    amount = am_match.group(1) if am_match else None
-    payee_name = pn_match.group(1) if pn_match else None
+    payee = params.get("pa")
+    payee_name = params.get("pn")
+    amount = params.get("am")
+    note = params.get("tn", "")
 
-    if not payee:
-        findings.append("QR does not contain a valid UPI payee ID")
-        score += 20
-
-    if amount:
-        findings.append(f"QR requests a pre-filled amount of ₹{amount} — verify this matches what you expect to pay")
+    if not payee or not re.fullmatch(r"[\w.\-]{2,256}@[A-Za-z][\w]{1,64}", payee):
+        findings.append("This QR does not contain a valid UPI payee ID")
+        score += 30
+    elif re.match(r"^\d{10}@", payee):
+        findings.append(f"Payment goes to a personal phone-number UPI ID ({payee}), not a registered business")
         score += 10
 
-    findings.append("Reminder: you never need to enter your UPI PIN to RECEIVE money — only to send it")
+    if not payee_name:
+        findings.append("The QR doesn't show who you are paying (no payee name)")
+        score += 10
 
-    verdict = "CAUTION" if score >= 20 else "SAFE"
+    if amount:
+        try:
+            value = float(amount)
+            findings.append(f"This QR will pre-fill an amount of ₹{value:,.2f} — check it matches what you expect to pay")
+            score += 10
+            if value >= 10000:
+                findings.append("That is a large amount for a QR payment — double-check before paying")
+                score += 10
+        except ValueError:
+            findings.append("The amount in this QR is not a valid number")
+            score += 15
+
+    if note and SCAM_NOTE_WORDS.search(note):
+        findings.append(f"The payment note says “{note}” — scammers use notes like this to make you think you'll RECEIVE money")
+        score += 40
+
+    findings.append("Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.")
+
+    score = min(100, score)
+    verdict = "DANGEROUS" if score >= 50 else ("CAUTION" if score >= 20 else "SAFE")
     return {
         "qr_type": "upi_payment",
         "payee": payee,
@@ -70,47 +149,54 @@ def analyze_upi_string(upi_data: str) -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# ROUTE
+# ---------------------------------------------------------------------------
 @qr_scanner_bp.route("/api/scan-qr", methods=["POST"])
 def scan_qr_route():
-    if not QR_LIB_AVAILABLE:
-        return jsonify({
-            "error": "QR libraries not installed. Run: pip install opencv-python pyzbar "
-                     "(Linux also needs: sudo apt install libzbar0)"
-        }), 500
+    if not CV2_AVAILABLE:
+        return jsonify({"error": "QR reading is not set up on the server yet (OpenCV is missing)."}), 503
 
     if "image" not in request.files:
-        return jsonify({"error": "Missing 'image' file in form-data"}), 400
+        return jsonify({"error": "Please choose a photo of the QR code to upload."}), 400
 
-    file = request.files["image"]
+    image_bytes = request.files["image"].read()
+    if not image_bytes:
+        return jsonify({"error": "The uploaded image was empty."}), 400
+
     try:
-        file_bytes = np.frombuffer(file.read(), np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        decoded = decode_qr(img)
-    except Exception as e:
-        return jsonify({"error": f"Could not process image: {str(e)}"}), 400
+        qr_data = decode_qr_image(image_bytes)
+    except Exception:
+        return jsonify({"error": "We couldn't open this image. Please upload a PNG or JPG photo."}), 400
 
-    if not decoded:
-        return jsonify({"error": "No QR code found in this image"}), 400
+    if not qr_data:
+        return jsonify({
+            "error": "We couldn't find a QR code in this image. Try a clearer photo with the whole QR code visible."
+        }), 400
 
-    qr_data = decoded[0].data.decode("utf-8")
+    qr_data = qr_data.strip()
+    lowered = qr_data.lower()
 
-    if qr_data.startswith("upi://"):
+    if lowered.startswith("upi://"):
         result = analyze_upi_string(qr_data)
         result["raw_data"] = qr_data
         log_scan("qr_upi", result)
         return jsonify(result)
 
-    if qr_data.startswith(("http://", "https://")):
-        result = scan_url(qr_data)
+    if lowered.startswith(("http://", "https://", "www.")):
+        url = qr_data if lowered.startswith("http") else "https://" + qr_data
+        result = scan_url(url)
         result["qr_type"] = "url"
+        result["raw_data"] = qr_data
         log_scan("qr_url", result)
         return jsonify(result)
 
-    # Neither a URL nor a UPI string — just return the raw decoded content
-    return jsonify({
-        "qr_type": "unknown",
+    result = {
+        "qr_type": "text",
         "raw_data": qr_data,
-        "risk_score": 5,
+        "risk_score": 0,
         "verdict": "SAFE",
-        "findings": ["QR contains plain text/data, not a link or payment request"],
-    })
+        "findings": ["This QR contains plain text, not a link or payment request"],
+    }
+    log_scan("qr_text", result)
+    return jsonify(result)

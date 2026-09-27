@@ -1,4 +1,13 @@
+import { useEffect, useState } from "react";
+
 export function LoadingBreath({ label }: { label?: string }) {
+  // The free Render server sleeps when idle; tell people why the first check is slow.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center gap-5 py-12">
       <div className="relative flex h-24 w-24 items-center justify-center">
@@ -8,6 +17,11 @@ export function LoadingBreath({ label }: { label?: string }) {
       </div>
       {label && (
         <p className="font-body text-base text-dustyblue-600 animate-pulse">{label}</p>
+      )}
+      {slow && (
+        <p className="max-w-xs text-center font-body text-sm text-dustyblue-500">
+          This is taking a little longer — the server may be waking up. It can take up to a minute the first time.
+        </p>
       )}
     </div>
   );

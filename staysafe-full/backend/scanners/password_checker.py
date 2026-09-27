@@ -24,49 +24,90 @@ from flask import Blueprint, request, jsonify
 password_checker_bp = Blueprint("password_checker", __name__)
 
 COMMON_PASSWORDS = {
-    "123456", "password", "123456789", "12345678", "12345", "qwerty",
-    "abc123", "password1", "admin", "letmein", "welcome", "monkey",
-    "iloveyou", "111111", "123123", "sunshine", "princess", "football",
+    "123456", "password", "123456789", "12345678", "12345", "qwerty", "abc123", "password1",
+    "admin", "letmein", "welcome", "monkey", "iloveyou", "111111", "123123", "sunshine",
+    "princess", "football", "1234567890", "000000", "qwerty123", "1q2w3e4r", "dragon",
+    "india123", "india@123", "admin@123", "pass@123", "password@123", "welcome@123",
 }
+
+# Common words people build passwords around (checked after removing digits/symbols)
+COMMON_BASE_WORDS = {
+    "password", "passw0rd", "qwerty", "admin", "welcome", "letmein", "iloveyou", "india",
+    "sunshine", "princess", "football", "cricket", "monkey", "dragon", "master", "login",
+    "abc", "abcd", "test", "user", "hello", "love", "god", "krishna", "ganesh", "shiva",
+    "ram", "sairam", "jaishreeram", "mother", "baby", "qwertyuiop", "asdf", "zxcv",
+}
+
+LEET = str.maketrans({"@": "a", "4": "a", "0": "o", "1": "i", "!": "i", "3": "e", "$": "s", "5": "s", "7": "t"})
+
+SEQUENCES = [
+    "0123456789", "abcdefghijklmnopqrstuvwxyz", "qwertyuiop", "asdfghjkl", "zxcvbnm", "1qaz2wsx", "1q2w3e4r",
+]
+
+
+def has_sequence(pw: str, length: int = 4) -> bool:
+    low = pw.lower()
+    for seq in SEQUENCES:
+        for i in range(len(seq) - length + 1):
+            chunk = seq[i:i + length]
+            if chunk in low or chunk[::-1] in low:
+                return True
+    return False
 
 
 def analyze_strength(password: str) -> dict:
     findings = []
     score = 100  # start high, deduct for weaknesses
+    length = len(password)
+    lower = password.lower()
 
-    if len(password) < 8:
+    if length < 8:
         findings.append("Password is shorter than 8 characters")
-        score -= 30
-    elif len(password) < 12:
-        findings.append("Consider using 12+ characters for stronger protection")
-        score -= 10
+        score -= 40
+    elif length < 12:
+        findings.append("Use 12 or more characters for stronger protection")
+        score -= 15
 
-    if password.lower() in COMMON_PASSWORDS:
+    # strip leading/trailing digits+symbols, then undo leetspeak: "P@ssw0rd2024!" -> "password"
+    core = re.sub(r"^[^a-z@$]+|[^a-z]+$", "", lower)
+    base = re.sub(r"[^a-z]", "", core.translate(LEET))
+    if lower in COMMON_PASSWORDS:
         findings.append("This is one of the most commonly used passwords in the world")
-        score -= 50
+        score -= 60
+    elif length >= 6 and (base in COMMON_BASE_WORDS or re.sub(r"[^a-z]", "", lower) in COMMON_BASE_WORDS):
+        findings.append("It's a very common word with numbers or symbols added (e.g. Password@123) — attackers try these first")
+        score -= 45
 
-    if not re.search(r"[A-Z]", password):
-        findings.append("No uppercase letters")
-        score -= 10
-    if not re.search(r"[a-z]", password):
-        findings.append("No lowercase letters")
-        score -= 10
-    if not re.search(r"[0-9]", password):
-        findings.append("No numbers")
-        score -= 10
-    if not re.search(r"[^A-Za-z0-9]", password):
-        findings.append("No special characters")
-        score -= 10
+    # Missing character types matter less for long passphrases
+    class_penalty = 5 if length >= 16 else 10
+    classes = [
+        (r"[A-Z]", "No uppercase letters"),
+        (r"[a-z]", "No lowercase letters"),
+        (r"[0-9]", "No numbers"),
+        (r"[^A-Za-z0-9]", "No special characters"),
+    ]
+    for pattern, message in classes:
+        if not re.search(pattern, password):
+            findings.append(message)
+            score -= class_penalty
 
     if re.search(r"(.)\1{2,}", password):
         findings.append("Contains repeated characters (e.g. 'aaa')")
         score -= 10
 
-    if re.search(r"(0123|1234|2345|3456|4567|5678|6789|abcd|qwerty)", password.lower()):
-        findings.append("Contains a predictable sequence")
+    if has_sequence(password):
+        findings.append("Contains a predictable sequence (like 1234, abcd or qwerty)")
         score -= 15
 
-    score = max(0, score)
+    if re.search(r"(19[5-9]\d|20[0-3]\d)[^0-9]*$", password):
+        findings.append("Ends with a year (like a birth year) — easy to guess if someone knows you")
+        score -= 10
+
+    if re.fullmatch(r"[A-Za-z]+[^A-Za-z0-9]?\d{1,4}[^A-Za-z0-9]?", password) and length < 14:
+        findings.append("Follows the very common pattern Word + symbol + numbers")
+        score -= 10
+
+    score = max(0, min(100, score))
 
     if score >= 80:
         strength = "Strong"
@@ -115,7 +156,7 @@ def check_password_route():
     password = data.get("password", "")
 
     if not password:
-        return jsonify({"error": "Missing 'password' in request body"}), 400
+        return jsonify({"error": "Please type a password to check."}), 400
 
     strength = analyze_strength(password)
     breach = check_breach(password)

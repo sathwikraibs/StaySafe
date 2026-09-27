@@ -5,7 +5,7 @@ import { LoadingBreath } from "@/components/LoadingBreath";
 import { UploadZone } from "@/components/UploadZone";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiPostForm, NETWORK_ERROR_MSG } from "@/api";
+import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
 
@@ -23,7 +23,7 @@ export function ScanQrPage() {
       fd.append("image", file);
       const data = await apiPostForm<ScanQrResponse>(`${API_BASE}/api/scan-qr`, fd);
       setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   return (
@@ -35,6 +35,7 @@ export function ScanQrPage() {
           label="Tap to choose a photo of the QR code"
           hint="Make sure the QR code is clear and centered"
           onFile={setFile}
+          onClear={() => setFile(null)}
           disabled={loading}
         />
         {file && (

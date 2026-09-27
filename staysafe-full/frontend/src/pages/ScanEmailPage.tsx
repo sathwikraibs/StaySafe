@@ -4,7 +4,7 @@ import { VerdictBanner } from "@/components/VerdictBanner";
 import { LoadingBreath } from "@/components/LoadingBreath";
 import { PageHeader, FindingsList, ErrorNotice } from "@/components/PageBits";
 import { Card } from "@/components/Card";
-import { apiPostJSON, NETWORK_ERROR_MSG } from "@/api";
+import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanEmailResponse } from "@/types";
 
@@ -20,7 +20,7 @@ export function ScanEmailPage() {
     try {
       const data = await apiPostJSON<ScanEmailResponse>(`${API_BASE}/api/scan-email`, { raw_email: raw.trim() });
       setResult(data);
-    } catch { setError(NETWORK_ERROR_MSG); } finally { setLoading(false); }
+    } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
   return (
