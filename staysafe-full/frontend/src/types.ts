@@ -5,6 +5,12 @@ export type Verdict =
 export type CheckStatus = "pass" | "warn" | "fail" | "info" | "skip";
 
 /** One line of the "What we checked" list. Text comes from checks.<id>.<status> in the language files. */
+/** One line of the score breakdown: why points were added (or taken away). */
+export interface ScorePart {
+  label: string;
+  points: number;
+}
+
 export interface Check {
   id: string;
   status: CheckStatus;
@@ -13,6 +19,7 @@ export interface Check {
 
 export interface ScanUrlResponse {
   url: string;
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];
@@ -37,6 +44,7 @@ export interface ScanUrlResponse {
 }
 
 export interface ScanMessageResponse {
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   patterns_detected: string[];
@@ -61,6 +69,7 @@ export interface LinkCheck {
 }
 
 export interface ScanQrResponse {
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];
@@ -82,13 +91,16 @@ export interface ScanFileResponse {
   sha1?: string;
   virustotal?: VirusTotalInfo;
   apk?: { package: string; permissions: string[] } | null;
+  links_checked?: LinkCheck[];
   checks?: Check[];
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];
 }
 
 export interface CheckPasswordResponse {
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   strength_label: string;
@@ -101,6 +113,7 @@ export interface CheckPasswordResponse {
 }
 
 export interface CheckNetworkResponse {
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];
@@ -125,6 +138,7 @@ export interface ScanEmailResponse {
   from_name?: string;
   mode?: "form" | "source";
   checks?: Check[];
+  score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
   findings: string[];

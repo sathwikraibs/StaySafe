@@ -24,13 +24,14 @@ function StrengthBar({ result }: { result: CheckPasswordResponse }) {
           <p className="font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600">{t("password.strength")}</p>
           <p className={`mt-1 font-heading text-xl font-bold ${text}`}>{t(`password.labels.${label}`)}</p>
         </div>
-        <div className="text-right">
-          <p className="font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600">{t("password.leaks")}</p>
-          <p className={`mt-1 font-heading text-xl font-bold ${result.breached ? "text-rust-600" : result.breached === false ? "text-sage-700" : "text-dustyblue-500"}`}>
-            {result.breached ? t("password.foundIn", { count: result.breach_count.toLocaleString("en-IN") })
-              : result.breached === false ? t("password.notFound") : t("pwInfo.leakUnknown")}
-          </p>
-        </div>
+        {result.breached !== null && result.breached !== undefined && (
+          <div className="text-right">
+            <p className="font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600">{t("password.leaks")}</p>
+            <p className={`mt-1 font-heading text-xl font-bold ${result.breached ? "text-rust-600" : "text-sage-700"}`}>
+              {result.breached ? t("password.foundIn", { count: result.breach_count.toLocaleString("en-IN") }) : t("password.notFound")}
+            </p>
+          </div>
+        )}
       </div>
       <div className="mt-4 grid grid-cols-3 gap-1.5">
         {[0, 1, 2].map((i) => {
@@ -101,6 +102,7 @@ export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) 
           tool="password"
           verdict={result.verdict}
           riskScore={result.risk_score}
+          parts={result.score_parts}
           checks={result.checks}
           findings={result.findings}
           onNavigate={onNavigate}

@@ -126,34 +126,34 @@ def check_double_extension(filename: str) -> list:
     return []
 
 
-def check_extension_risk(filename: str) -> tuple:
+def check_extension_risk(filename: str, led=None) -> tuple:
     findings = []
     score = 0
 
     if "‮" in filename:
         findings.append("The file name contains a hidden character that reverses the text to disguise its real type")
-        score += 50
+        score += (led.note(findings, 50) if led else 50)
         filename = filename.replace("‮", "")
 
     ext = get_extension(filename)
 
     if ext in DANGEROUS_EXTENSIONS:
         findings.append(f"File type '{ext}' can run code on your device. Only open it if you fully trust the sender")
-        score += 30
+        score += (led.note(findings, 30) if led else 30)
 
     if ext in MACRO_RISK_EXTENSIONS:
         findings.append(f"File type '{ext}' can contain macros, which are often used to install malware")
-        score += 25
+        score += (led.note(findings, 25) if led else 25)
 
     disguise = check_double_extension(filename)
     if disguise:
         findings.extend(disguise)
-        score += 35
+        score += (led.note(findings, 35) if led else 35)
 
     return score, findings
 
 
-def check_content(filename: str, data: bytes) -> tuple:
+def check_content(filename: str, data: bytes, led=None) -> tuple:
     """Look INSIDE the file: does it match its name, and does it hide anything risky?"""
     findings = []
     score = 0
@@ -162,10 +162,10 @@ def check_content(filename: str, data: bytes) -> tuple:
 
     if real_type in EXECUTABLE_KINDS and ext not in DANGEROUS_EXTENSIONS:
         findings.append(f"This file is named like a '{ext or 'no extension'}' file but is actually {_a(real_type)}. Do NOT open it")
-        score += 60
+        score += (led.note(findings, 60) if led else 60)
     elif ext in EXPECTED_TYPES and real_type != "unknown" and real_type not in EXPECTED_TYPES[ext]:
         findings.append(f"The file's name says '{ext}' but its contents are {_a(real_type)}")
-        score += 20
+        score += (led.note(findings, 20) if led else 20)
 
     if real_type == "PDF":
         lowered = data[:5_000_000]
@@ -177,7 +177,7 @@ def check_content(filename: str, data: bytes) -> tuple:
         risky = sorted(set(risky))
         if risky:
             findings.append("This PDF " + ", ".join(risky) + ". Normal documents rarely need this")
-            score += 30
+            score += (led.note(findings, 30) if led else 30)
 
     if real_type in ("Word document", "Excel document", "PowerPoint document", "ZIP archive"):
         try:
@@ -186,25 +186,25 @@ def check_content(filename: str, data: bytes) -> tuple:
                 names = [i.filename for i in infos]
                 if any(n.lower().endswith("vbaproject.bin") for n in names):
                     findings.append("This Office document contains macros (hidden programs)")
-                    score += 35
+                    score += (led.note(findings, 35) if led else 35)
                     if ext in (".docx", ".xlsx", ".pptx"):
                         findings.append(f"'{ext}' files normally can't contain macros, so this one has been tampered with")
-                        score += 15
+                        score += (led.note(findings, 15) if led else 15)
                 if real_type == "ZIP archive":
                     inner_risky = [n for n in names if get_extension(n) in DANGEROUS_EXTENSIONS]
                     if inner_risky:
                         shown = ", ".join(n.rsplit("/", 1)[-1] for n in inner_risky[:3])
                         findings.append(f"This ZIP contains program files that can run code: {shown}")
-                        score += 40
+                        score += (led.note(findings, 40) if led else 40)
                     if any(i.flag_bits & 0x1 for i in infos):
                         findings.append("This ZIP is password-protected, a trick used to hide malware from scanners")
-                        score += 15
+                        score += (led.note(findings, 15) if led else 15)
         except Exception:
             pass
 
     if real_type == "old Office document" and (b"VBA" in data or b"_VBA_PROJECT" in data):
         findings.append("This Office document contains macros (hidden programs)")
-        score += 35
+        score += (led.note(findings, 35) if led else 35)
 
     return score, findings, real_type
 
@@ -314,6 +314,37 @@ def upload_to_virustotal(filename: str, data: bytes, sha256: str) -> dict:
     return {"state": "queued", "link": f"https://www.virustotal.com/gui/file/{sha256}"}
 
 
+_LINK_IN_FILE = re.compile(rb"https?://[^\s<>\"'()\\\]\[{}]{4,300}", re.IGNORECASE)
+_SKIP_LINK_HOSTS = ("schemas.openxmlformats.org", "schemas.microsoft.com", "www.w3.org", "purl.org", "ns.adobe.com",
+                    "www.adobe.com/xap", "openoffice.org", "xml.org", "microsoft.com/office")
+
+
+def extract_file_links(real_type: str, data: bytes, limit: int = 3) -> list:
+    """Web links a PDF, Office document or text file would open when clicked (not internal XML names)."""
+    raw = []
+    try:
+        if real_type in ("Word document", "Excel document", "PowerPoint document"):
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                for name in z.namelist():
+                    if name.endswith(".rels"):
+                        for m in re.finditer(rb'Target="(https?://[^"]+)"[^>]*TargetMode="External"', z.read(name)):
+                            raw.append(m.group(1))
+        elif real_type == "PDF":
+            raw = [m.group(1) for m in re.finditer(rb"/URI\s*\(([^)]{4,300})\)", data[:8_000_000])]
+        elif real_type in ("unknown", "script"):
+            raw = _LINK_IN_FILE.findall(data[:2_000_000])
+    except Exception:
+        return []
+    out = []
+    for r in raw:
+        u = r.decode("utf-8", "ignore").strip().rstrip(".,;")
+        if u.lower().startswith("http") and not any(h in u.lower() for h in _SKIP_LINK_HOSTS) and u not in out:
+            out.append(u)
+        if len(out) >= limit:
+            break
+    return out
+
+
 def check_known_good(sha256: str) -> dict:
     """
     CIRCL hashlookup (free, no key): is this exact file a known genuine one, e.g. from the US
@@ -392,15 +423,22 @@ def scan_file_route():
     md5 = hashlib.md5(file_bytes).hexdigest()
     sha1 = hashlib.sha1(file_bytes).hexdigest()
 
-    ext_score, ext_findings = check_extension_risk(filename)
-    content_score, content_findings, real_type = check_content(filename, file_bytes)
+    from scanners.ledger import Ledger
+    led = Ledger()
+    ext_score, ext_findings = check_extension_risk(filename, led)
+    content_score, content_findings, real_type = check_content(filename, file_bytes, led)
     apk = {"findings": [], "score": 0, "package": "", "permissions": []}
     if real_type == "Android app":
         from scanners.apk_check import analyze_apk
         apk = analyze_apk(filename, file_bytes)
         content_findings = content_findings + apk["findings"]
         content_score += apk["score"]
+        for f in apk["findings"]:
+            led.add(f, apk.get("points", {}).get(f, 0))
     from concurrent.futures import ThreadPoolExecutor
+    from scanners.url_scanner import scan_url, LINK_POOL
+    file_links = extract_file_links(real_type, file_bytes)
+    link_futures = [(u, LINK_POOL.submit(scan_url, u)) for u in file_links]
     with ThreadPoolExecutor(3) as pool:
         known_f = pool.submit(check_known_good, sha256)
         bazaar_f = pool.submit(check_malwarebazaar, sha256)
@@ -415,17 +453,37 @@ def scan_file_route():
         else:
             vt_result["vt"] = uploaded
 
-    total_score = min(100, ext_score + content_score + vt_result["score"])
-    all_findings = ext_findings + content_findings + vt_result["findings"]
+    links_checked, link_score, link_findings = [], 0, []
+    for u, fut in link_futures:
+        try:
+            lr = fut.result(timeout=60)
+        except Exception:
+            continue
+        links_checked.append({"url": u, "verdict": lr["verdict"], "risk_score": lr["risk_score"],
+                              "findings": lr["findings"], "checks": lr.get("checks", []), "details": lr.get("details", {})})
+        if lr["verdict"] != "SAFE":
+            word = "dangerous" if lr["verdict"] == "DANGEROUS" else "suspicious"
+            link_findings.append(f"A link inside this file looks {word}: {u}")
+            pts = 50 if lr["verdict"] == "DANGEROUS" else 20
+            if pts > link_score:
+                link_score = pts
+    total_score = min(100, ext_score + content_score + vt_result["score"] + link_score)
+    all_findings = ext_findings + content_findings + vt_result["findings"] + link_findings
+    if link_score:
+        led.add(link_findings[0], link_score)
+    if vt_result["score"] and vt_result["findings"]:
+        led.add(vt_result["findings"][0], vt_result["score"])
     vt_flagged = (vt_result.get("vt", {}) or {}).get("malicious", 0) or 0
     if bazaar.get("found"):
         all_findings.insert(0, f"This exact file is a known malware sample on MalwareBazaar ({bazaar['signature']}). Delete it")
+        led.add(all_findings[0], max(total_score, 95) - total_score)
         total_score = max(total_score, 95)
         known = {"known": False}
     if known.get("known") and vt_flagged == 0:
         # exactly the same file as a known genuine program: small warning signs don't matter
-        total_score = min(total_score, 10)
         all_findings.insert(0, f"This exact file is on a public list of known genuine software ({known['source']})")
+        led.add(all_findings[0], min(total_score, 10) - total_score)
+        total_score = min(total_score, 10)
     if not all_findings:
         all_findings = ["No warning signs found in this file's name or contents"]
 
@@ -456,6 +514,8 @@ def scan_file_route():
         "sha1": sha1,
         "virustotal": vt_result.get("vt", {}),
         "detected_type": real_type,
+        "score_parts": led.result(total_score),
+        "links_checked": links_checked,
         "apk": {"package": apk["package"], "permissions": apk["permissions"]} if real_type == "Android app" else None,
         "risk_score": total_score,
         "verdict": verdict_from_score(total_score),

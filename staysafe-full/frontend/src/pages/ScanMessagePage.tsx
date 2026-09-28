@@ -152,6 +152,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
           tool="message"
           verdict={result.verdict}
           riskScore={result.risk_score}
+          parts={result.score_parts}
           checks={messageChecks(result)}
           findings={result.patterns_detected}
           onNavigate={onNavigate}

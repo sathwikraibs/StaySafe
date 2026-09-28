@@ -110,6 +110,7 @@ export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) =
           tool="network"
           verdict={outdatedBrowser && result.verdict === "SAFE" ? "CAUTION" : result.verdict}
           riskScore={outdatedBrowser ? Math.max(result.risk_score, 20) : result.risk_score}
+          parts={result.score_parts}
           checks={allChecks}
           findings={result.findings.filter((f) => !f.startsWith("Approximate location"))}
           onNavigate={onNavigate}

@@ -300,6 +300,17 @@ export const knContent: LangContent = {
     "The server this website runs on has been reported for attacks ({n}% confidence)": "ಈ ವೆಬ್‌ಸೈಟ್ ನಡೆಯುವ ಸರ್ವರ್ ಮೇಲೆ ದಾಳಿಗಳ ದೂರು ಬಂದಿದೆ ({n}% ಖಚಿತತೆ)",
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ನಲ್ಲಿ ಗೊತ್ತಿರುವ ಮಾಲ್‌ವೇರ್ ({name}). ಇದನ್ನು ಅಳಿಸಿ",
     "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮೇಲೆ ದಾಳಿ ಅಥವಾ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬಂದಿದೆ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅಥವಾ ಮೊಬೈಲ್ ಡೇಟಾದಂತಹ ಹಂಚಿಕೆಯ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ, ಅಥವಾ ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್‌ನ ಯಾವುದಾದರೂ ಸಾಧನಕ್ಕೆ ವೈರಸ್ ತಗುಲಿದ್ದರೆ ಹೀಗಾಗಬಹುದು",
+
+    // ---- score breakdown and items inside messages
+    "A link inside this file looks dangerous: {url}": "ಈ ಫೈಲ್‌ನೊಳಗಿನ ಒಂದು ಲಿಂಕ್ ಅಪಾಯಕಾರಿ ಅನಿಸುತ್ತದೆ: {url}",
+    "A link inside this file looks suspicious: {url}": "ಈ ಫೈಲ್‌ನೊಳಗಿನ ಒಂದು ಲಿಂಕ್ ಸಂಶಯಾಸ್ಪದ ಅನಿಸುತ್ತದೆ: {url}",
+    "Asks you to send money to a UPI ID written in the message ({upi}). Check who it really belongs to": "ಮೆಸೇಜ್‌ನಲ್ಲಿ ಬರೆದ UPI ID ({upi}) ಗೆ ಹಣ ಕಳುಹಿಸಲು ಹೇಳುತ್ತದೆ. ಅದು ನಿಜವಾಗಿ ಯಾರದ್ದು ಎಂದು ಮೊದಲು ತಿಳಿಯಿರಿ",
+    "Known, trusted website (small warning signs count less)": "ಗೊತ್ತಿರುವ ನಂಬಿಕೆಯ ವೆಬ್‌ಸೈಟ್ (ಸಣ್ಣ ಸೂಚನೆಗಳಿಗೆ ಕಡಿಮೆ ಅಂಕ)",
+    "One of the world's most visited websites (small warning signs count less)": "ಜಗತ್ತಿನ ಅತಿ ಹೆಚ್ಚು ಭೇಟಿಯ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಒಂದು (ಸಣ್ಣ ಸೂಚನೆಗಳಿಗೆ ಕಡಿಮೆ ಅಂಕ)",
+    "Pressure together with a risky request": "ಒತ್ತಡದ ಜೊತೆ ಅಪಾಯಕಾರಿ ಬೇಡಿಕೆ",
+    "The email address {email} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ನಲ್ಲಿರುವ ಇಮೇಲ್ ವಿಳಾಸ {email}: {reason}",
+    "The score can't go above 100": "ಸ್ಕೋರ್ 100 ಕ್ಕಿಂತ ಹೆಚ್ಚಾಗುವುದಿಲ್ಲ",
+    "The sender's name ({name}) doesn't appear anywhere in their email address ({email}). Check it's really from them": "ಕಳುಹಿಸಿದವರ ಹೆಸರು ({name}) ಅವರ ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ({email}) ಎಲ್ಲೂ ಇಲ್ಲ. ನಿಜವಾಗಿ ಅವರದ್ದೇ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ",
   }),
 
   incidents: {

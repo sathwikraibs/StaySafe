@@ -236,6 +236,7 @@ def apply_review(result: dict, text: str) -> dict:
     reason = CATEGORIES[ai["category"]]
     rules_found = bool(result.get("patterns_detected"))
     shown = "unsure"  # what the page shows: the opinion only when it's confident
+    before = result["risk_score"]
     if ai["verdict"] == "scam" and ai["confidence"] >= 75:
         result["patterns_detected"].append(AI_FINDING.format(reason=reason))
         # alone it can make a message "suspicious"; "likely scam" still needs our own rules
@@ -249,6 +250,9 @@ def apply_review(result: dict, text: str) -> dict:
         shown = "safe"
         if not rules_found:
             result.setdefault("safe_signals", []).append(AI_SAFE_NOTE)
+    if result["risk_score"] != before:
+        result.setdefault("score_parts", []).append({"label": result["patterns_detected"][-1],
+                                                    "points": result["risk_score"] - before})
     result["ai_review"] = {"verdict": shown, "category": ai["category"], "provider": ai["provider"]}
     if result.get("verdict") != "UNCERTAIN" or result["risk_score"] >= 25:
         result["verdict"] = verdict_from_score(result["risk_score"])

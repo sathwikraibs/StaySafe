@@ -37,7 +37,8 @@ const CAT_STYLE: Record<string, string> = {
 export function VirusTotalPanel({ vt }: { vt?: VirusTotalInfo }) {
   const { t } = useI18n();
   const [showAll, setShowAll] = useState(false);
-  if (!vt || vt.state === "off") return null;
+  // when the antivirus service is busy or unavailable we simply say nothing about it
+  if (!vt || vt.state === "off" || vt.state === "busy") return null;
 
   if (vt.state !== "found") {
     const key = vt.state === "not_found" ? "vt.notSeen" : vt.state === "queued" ? "vt.queued" : vt.state === "too_big" ? "vt.tooBig" : "vt.busy";

@@ -19,6 +19,37 @@ export const reportEn = {
     todo: "What you should do now",
     recovery: "Already clicked, paid or shared something? Get a recovery plan",
     askUs: "Not sure? Ask a real person",
+    stamp: {
+      safe: "Safe",
+      caution: "Careful",
+      danger: "Risky",
+    },
+    slip: "StaySafe report",
+    toolName: {
+      link: "Link",
+      message: "Message",
+      qr: "QR code",
+      file: "File",
+      password: "Password",
+      network: "Connection",
+      email: "Email",
+    },
+    bill: {
+      title: "How we got this score",
+      none: "No warning signs, so nothing was added.",
+      adjust: "Adjusted after all checks",
+      total: "Risk score",
+      more: "Show {n} more",
+      less: "Show less",
+    },
+    groups: {
+      fail: "Problems",
+      warn: "To watch",
+      pass: "Fine",
+      info: "Good to know",
+    },
+    alsoKnow: "Also good to know",
+    todoHint: "Tick them off as you go",
     checkedItem: "Checked",
     meaning: {
       link: {
@@ -411,6 +442,8 @@ export const reportEn = {
 
     // email
     email_sender: {
+      warn: "The sender's name and address don't quite match",
+      warnV: "The sender's name and address don't quite match: {value}",
       pass: "Sender's address looks normal: {value}",
       fail: "The sender is not who they claim to be: {value}",
       skip: "No sender address given",
@@ -602,6 +635,7 @@ export const reportEn = {
     advancedNote: "The full source also lets us check the technical sender checks (SPF, DKIM, DMARC).",
     badEmail: "Please enter a full email address, like name@example.com",
     cleaned: "We used: {email}",
+    movedName: "We moved “{name}” to the sender's name. Now type their email address here.",
   },
 
   homeX: {
@@ -702,6 +736,7 @@ export const reportEn = {
   },
 
   fileX: {
+    linksTitle: "Links inside this file",
     appId: "App ID",
     permissions: "What this app asks to do ({n})",
   },

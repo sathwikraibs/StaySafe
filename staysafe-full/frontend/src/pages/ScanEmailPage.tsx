@@ -13,8 +13,19 @@ import { IconEmail, IconChevronRight } from "@/icons";
 
 const FIND_EMAIL = /[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
 
+/** "name [at] example [dot] com", "name @ x.com", "name at x dot com" -> "name@example.com" */
+function unhide(raw: string): string {
+  return raw
+    .replace(/\s*[[({]\s*(?:at|@)\s*[\])}]\s*/gi, "@")
+    .replace(/\s*[[({]\s*(?:dot|\.)\s*[\])}]\s*/gi, ".")
+    .replace(/(\w)\s+at\s+(?=[\w-]+(?:\s+dot\s+|\.)[a-z])/gi, "$1@")
+    .replace(/(\w)\s+dot\s+(?=[a-z])/gi, "$1.")
+    .replace(/([\w.-])\s*@\s*(?=[\w-])/g, "$1@");
+}
+
 /** "ManageEngine <itom@x.com" -> { name: "ManageEngine", email: "itom@x.com" } */
-function splitSender(raw: string): { name: string; email: string } {
+function splitSender(input: string): { name: string; email: string } {
+  const raw = unhide(input);
   const m = raw.match(FIND_EMAIL);
   if (!m || m.index === undefined) return { name: "", email: "" };
   const email = m[0].replace(/^[.']+|[.']+$/g, "").toLowerCase();
@@ -59,12 +70,23 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
   const [error, setError] = useState<string | null>(null);
 
   const [cleaned, setCleaned] = useState<string | null>(null);
-  const senderBad = sender.trim() !== "" && !FIND_EMAIL.test(sender);
-  const canCheck = mode === "form" ? FIND_EMAIL.test(sender) && body.trim().length > 0 : raw.trim().length > 0;
+  const [movedName, setMovedName] = useState<string | null>(null);
+  const senderBad = sender.trim() !== "" && !FIND_EMAIL.test(unhide(sender));
+  const canCheck = mode === "form" ? FIND_EMAIL.test(unhide(sender)) && body.trim().length > 0 : raw.trim().length > 0;
 
   // Tidy up whatever was pasted into an email box, e.g. 'Name <address' or 'From: x@y.com'
   function tidySender() {
     const { name: n, email } = splitSender(sender);
+    const typed = sender.trim();
+    // Only a company or person's name was typed: move it to the name box and ask for the address
+    if (!email && typed && !typed.includes("@") && !/\.[a-z]{2,}$/i.test(typed)) {
+      if (!name.trim()) setName(typed.replace(/^(from|sender)\s*:\s*/i, "").replace(/[<>"]/g, "").trim());
+      setSender("");
+      setMovedName(typed);
+      setCleaned(null);
+      return;
+    }
+    setMovedName(null);
     if (!email || email === sender.trim()) { setCleaned(null); return; }
     setSender(email);
     if (n && !name.trim()) setName(n);
@@ -119,7 +141,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
                 autoCapitalize="off"
                 spellCheck={false}
                 value={sender}
-                onChange={(e) => { setSender(e.target.value); setCleaned(null); }}
+                onChange={(e) => { setSender(e.target.value); setCleaned(null); setMovedName(null); }}
                 onBlur={tidySender}
                 onPaste={() => setTimeout(tidySender, 0)}
                 placeholder="alerts@example.com"
@@ -127,6 +149,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
               />
               {senderBad && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("emailForm.badEmail")}</span>}
               {cleaned && <span className="mt-1 block font-body text-xs font-semibold text-sage-700">{t("emailForm.cleaned", { email: cleaned })}</span>}
+              {movedName && <span className="mt-1 block font-body text-xs font-semibold text-terracotta-700">{t("emailForm.movedName", { name: movedName })}</span>}
             </Field>
             <Field label={t("emailForm.senderName")} need="optional">
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("emailForm.senderNamePh")} className={inputCls} />
@@ -186,6 +209,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
           tool="email"
           verdict={result.verdict}
           riskScore={result.risk_score}
+          parts={result.score_parts}
           subject={result.subject || undefined}
           checks={result.checks}
           findings={result.findings}

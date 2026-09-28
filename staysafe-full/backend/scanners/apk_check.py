@@ -98,7 +98,7 @@ def read_manifest(axml: bytes) -> dict:
 
 def analyze_apk(filename: str, data: bytes) -> dict:
     """Findings and score for an Android app file."""
-    out = {"findings": [], "score": 0, "package": "", "permissions": []}
+    out = {"findings": [], "score": 0, "package": "", "permissions": [], "points": {}}
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as z:
             manifest = read_manifest(z.read("AndroidManifest.xml"))
@@ -106,13 +106,14 @@ def analyze_apk(filename: str, data: bytes) -> dict:
         return out
     out["package"], out["permissions"] = manifest["package"], manifest["permissions"]
 
-    seen, total = [], 0
+    seen, total, each = [], 0, {}
     for perm in manifest["permissions"]:
         if perm in RISKY_PERMISSIONS:
             text, points = RISKY_PERMISSIONS[perm]
             if text not in seen:
                 seen.append(text)
                 total += points
+                each[f"This app {text}"] = points
     if seen:
         out["findings"].extend(f"This app {text}" for text in seen[:4])
         perms = set(manifest["permissions"])
@@ -122,6 +123,11 @@ def analyze_apk(filename: str, data: bytes) -> dict:
         if steals_otp and controls:
             total += 20  # reading OTPs AND controlling the screen is the typical banking-trojan combo
         out["score"] += min(70, total)
+        shown = out["findings"][-len(seen[:4]):]
+        for f in shown:
+            out["points"][f] = each.get(f, 0)
+        # the combo bonus and the 70-point cap go to the first line
+        out["points"][shown[0]] += min(70, total) - sum(out["points"][f] for f in shown)
 
     who = (filename or "") + " " + manifest["package"]
     if BRAND_WORDS.search(who):
@@ -129,4 +135,5 @@ def analyze_apk(filename: str, data: bytes) -> dict:
             "Banks, RTO, electricity boards and government offices never send apps as files. "
             "Install apps only from the Play Store")
         out["score"] += 25
+        out["points"][out["findings"][-1]] = 25
     return out

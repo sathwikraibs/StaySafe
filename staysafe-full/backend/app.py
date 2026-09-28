@@ -1,6 +1,7 @@
 """
 StaySafe - Main Flask App
 """
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
@@ -50,6 +51,9 @@ def home():
         "qr": qr_status(),
         "translation": translation_status(),
         "ai_review": ai_status(),
+        "connection": {"proxycheck_key": bool(os.environ.get("PROXYCHECK_KEY")),
+                       "ipinfo": bool(os.environ.get("IPINFO_TOKEN")),
+                       "abuseipdb": bool(os.environ.get("ABUSEIPDB_KEY"))},
         "link_checks": link_check_status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }

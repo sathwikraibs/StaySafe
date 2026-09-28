@@ -10,6 +10,7 @@ import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { IconFile } from "@/icons";
+import { CheckedLinks } from "@/components/WebsiteDetails";
 import { VirusTotalPanel } from "@/components/VirusTotalPanel";
 
 function formatSize(bytes?: number): string {
@@ -79,12 +80,16 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           tool="file"
           verdict={result.verdict}
           riskScore={result.risk_score}
+          parts={result.score_parts}
           subject={result.filename}
           checks={result.checks}
           findings={result.findings}
           onNavigate={onNavigate}
         >
           <VirusTotalPanel vt={result.virustotal} />
+          {result.links_checked && result.links_checked.length > 0 && (
+            <CheckedLinks links={result.links_checked} title={t("fileX.linksTitle")} />
+          )}
           <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
             <div className="flex items-center gap-2">
               <IconFile className="h-5 w-5 text-dustyblue-600" />

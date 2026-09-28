@@ -941,6 +941,66 @@ def test_connection_uses_proxycheck_and_abuseipdb():
         os.environ.pop("ABUSEIPDB_KEY", None)
 
 
+
+def test_score_breakdown_always_adds_up():
+    from scanners.message_scanner import add_sender_checks, finalize_parts
+    from scanners.qr_scanner import analyze_upi_string, analyze_qr_data
+    from scanners.password_checker import analyze_strength
+    total = lambda r: sum(p["points"] for p in r["score_parts"])
+    for u in ["http://sbi-kyc-update.xyz/login", "https://amaz0n-offers.com/claim", "https://www.google.com/",
+              "https://bit.ly/abc", "http://192.168.1.5/x", "https://x.vercel.app/login"]:
+        r = scan_url(u)
+        assert total(r) == r["risk_score"], (u, r["risk_score"], r["score_parts"])
+    for m in ["Your SBI account will be blocked today. Share the OTP now http://sbi-kyc.xyz",
+              "Your OTP is 1234. Do not share this OTP with anyone", "Hi, see you at 5", "Earn Rs 3000 daily from home"]:
+        r = finalize_parts(check_links_in_result(add_sender_checks(analyze_text(m), "+91 98765 43210")))
+        assert total(r) == r["risk_score"], (m, r)
+    for q in ["upi://pay?pa=9876543210@ybl&am=15000&tn=refund", "upi://pay?pa=shop@okaxis&pn=Shop",
+              "Congratulations you won a lottery, pay processing fee to claim"]:
+        r = analyze_upi_string(q) if q.startswith("upi") else analyze_qr_data(q)
+        assert total(r) == r["risk_score"], (q, r)
+    assert analyze_qr_data("Congratulations you won a lottery, pay processing fee to claim")["verdict"] != "SAFE"
+
+
+
+def test_email_and_file_breakdown_adds_up():
+    from flask import Flask
+    from scanners.email_analyzer import email_analyzer_bp
+    from scanners.file_scanner import file_scanner_bp
+    import io
+    app = Flask(__name__)
+    app.register_blueprint(email_analyzer_bp); app.register_blueprint(file_scanner_bp)
+    c = app.test_client()
+    r = c.post("/api/scan-email", json={"sender_email": "SBI Care <sbi.alerts2026@gmail.com>", "subject": "KYC pending",
+                                        "body": "Your account will be blocked today. Update KYC: http://sbi-kyc.xyz/update"}).get_json()
+    assert sum(p["points"] for p in r["score_parts"]) == r["risk_score"] and r["risk_score"] > 0, r
+    r = c.post("/api/scan-file", data={"file": (io.BytesIO(b"MZ" + b"\0" * 200), "invoice.pdf.exe")},
+               content_type="multipart/form-data").get_json()
+    assert sum(p["points"] for p in r["score_parts"]) == r["risk_score"] and r["risk_score"] > 0, r
+
+
+
+def test_items_inside_messages_are_checked():
+    from scanners.message_scanner import add_entity_checks
+    r = add_entity_checks(analyze_text("Pay the processing fee of Rs 500 to 9876543210@ybl to receive your prize"))
+    assert any("UPI ID" in p for p in r["patterns_detected"]) and r["verdict"] == "SCAM_LIKELY", r
+    r = add_entity_checks(analyze_text("Contact support at help@mailinator.com for your refund"))
+    assert any("throwaway" in p for p in r["patterns_detected"]), r
+    r = add_entity_checks(analyze_text("My email is rahul@gmail.com, UPI rahul@okaxis for the trip"))
+    assert r["verdict"] == "LIKELY_SAFE", r
+    assert analyze_text("Your Paytm wallet is blocked. Verify now")["verdict"] != "LIKELY_SAFE"
+
+
+def test_sender_box_takes_anything():
+    from scanners.email_analyzer import split_sender, name_matches_address
+    assert split_sender("support [at] paytm-help [dot] com") == ("", "support@paytm-help.com")
+    assert split_sender('From: "HDFC Bank" <alerts @ hdfcbank.net>') == ("HDFC Bank", "alerts@hdfcbank.net")
+    assert split_sender("ManageEngine <itom-promotions@itominfo.manageengine.com")[1] == "itom-promotions@itominfo.manageengine.com"
+    assert name_matches_address("ManageEngine", "itom-promotions@itominfo.manageengine.com") is True
+    assert name_matches_address("State Bank of India", "sbi@alerts.sbi.co.in") is True
+    assert name_matches_address("PayZone Support", "x@mail-center.co") is False
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

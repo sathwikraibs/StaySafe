@@ -162,6 +162,8 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
     findings = []
     checks = []
     score = 0
+    from scanners.ledger import Ledger
+    led = Ledger()
 
     try:
         data = lookup_ip(ip)
@@ -185,18 +187,18 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
 
     if is_tor_exit(ip):
         findings.append("You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks")
-        score += 20
+        score += led.note(findings, 20)
         checks.append({"id": "net_vpn", "status": "warn", "value": "Tor"})
     elif data.get("proxy"):
         findings.append("This connection appears to be using a VPN, proxy, or Tor exit node")
-        score += 20
+        score += led.note(findings, 20)
         checks.append({"id": "net_vpn", "status": "warn", "value": None})
     else:
         checks.append({"id": "net_vpn", "status": "pass", "value": None})
 
     if data.get("hosting"):
         findings.append("This IP belongs to a hosting/datacenter provider, not a typical home or mobile network. Unusual for regular browsing")
-        score += 15
+        score += led.note(findings, 15)
         checks.append({"id": "net_hosting", "status": "warn", "value": data.get("org") or isp})
     else:
         checks.append({"id": "net_hosting", "status": "pass", "value": isp})
@@ -206,7 +208,7 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
         if abuse["score"] >= 25:
             findings.append(f"Your internet address has been reported for attacks or spam ({abuse['score']}% confidence). "
                             "This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected")
-            score += 15 if abuse["score"] >= 50 else 5
+            score += led.note(findings, 15 if abuse["score"] >= 50 else 5)
             checks.append({"id": "net_abuse", "status": "warn", "value": abuse["score"]})
         else:
             checks.append({"id": "net_abuse", "status": "pass", "value": None})
@@ -224,7 +226,7 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
             checks.append({"id": "net_timezone", "status": "pass", "value": ip_tz})
         else:
             findings.append(f"Your device's time zone ({browser_tz}) is different from where your internet connection comes out ({ip_tz}). This usually means a VPN or proxy is in use")
-            score += 10
+            score += led.note(findings, 10)
             checks.append({"id": "net_timezone", "status": "warn", "value": ip_tz})
 
     if not findings:
@@ -239,6 +241,7 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
         "verdict": verdict,
         "findings": findings,
         "checks": checks,
+        "score_parts": led.result(score),
         "ip": ip,
         "ip_version": ip_version,
         "isp": isp,

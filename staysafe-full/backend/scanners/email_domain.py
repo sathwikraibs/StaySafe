@@ -117,7 +117,7 @@ def mail_setup(domain: str) -> dict:
 
 def domain_signals(domain: str, official: bool, free_mail: bool, offline: bool = False) -> dict:
     """Findings and score about the sender's domain. official = the real domain of the brand it names."""
-    out = {"findings": [], "score": 0, "safe": [], "setup": {}, "age_days": None}
+    out = {"findings": [], "score": 0, "safe": [], "setup": {}, "age_days": None, "points": {}}
     domain = (domain or "").lower()
     if not domain:
         return out
@@ -125,6 +125,7 @@ def domain_signals(domain: str, official: bool, free_mail: bool, offline: bool =
     if is_disposable(domain):
         out["findings"].append("The sender uses a throwaway (temporary) email address that anyone can create in seconds")
         out["score"] += 35
+        out["points"][out["findings"][-1]] = 35
     if offline or free_mail:
         return out
     setup = mail_setup(domain)
@@ -132,10 +133,12 @@ def domain_signals(domain: str, official: bool, free_mail: bool, offline: bool =
     if setup["exists"] is False:
         out["findings"].append("The sender's email domain doesn't exist. Nobody can reply to this address")
         out["score"] += 35
+        out["points"][out["findings"][-1]] = 35
         return out
     if setup["mx"] is False:
         out["findings"].append("The sender's email domain can't receive email. Real companies can always receive replies")
         out["score"] += 20
+        out["points"][out["findings"][-1]] = 20
     if not official:
         try:
             from scanners.url_scanner import whois_details, registered_domain
@@ -146,9 +149,11 @@ def domain_signals(domain: str, official: bool, free_mail: bool, offline: bool =
         if age is not None and age < 30:
             out["findings"].append(f"The sender's email domain was registered only {age} days ago. Scammers use brand-new domains")
             out["score"] += 30
+            out["points"][out["findings"][-1]] = 30
         elif age is not None and age < 180:
             out["findings"].append(f"The sender's email domain is fairly new ({age} days old)")
             out["score"] += 10
+            out["points"][out["findings"][-1]] = 10
     if official and setup.get("dmarc") in ("reject", "quarantine"):
         out["safe"].append("This company's email domain is protected against fake senders")
     return out

@@ -20,6 +20,37 @@ export const reportTcy: ReportDict = {
     todo: "ಇತ್ತೆ ಈರ್ ದಾದ ಮಲ್ಪೊಡು",
     recovery: "ದುಂಬೇ ಕ್ಲಿಕ್, ಪಾವತಿ ಅತ್ತಂಡ ದಾದಾಂಡಲ ಕೊರ್ತರಾ? ಪರಿಹಾರದ ಯೋಜನೆ ತೂಲೆ",
     askUs: "ಖಚಿತ ಇಜ್ಜಾ? ಒರಿ ನಿಜವಾಯಿನ ಆಳ್‌ನ್ ಕೇನುಲೆ",
+    stamp: {
+      safe: "ಸುರಕ್ಷಿತ",
+      caution: "ಜಾಗ್ರತೆ",
+      danger: "ಅಪಾಯ",
+    },
+    slip: "StaySafe ವರದಿ",
+    toolName: {
+      link: "ಲಿಂಕ್",
+      message: "ಮೆಸೇಜ್",
+      qr: "QR ಕೋಡ್",
+      file: "ಫೈಲ್",
+      password: "ಪಾಸ್‌ವರ್ಡ್",
+      network: "ಸಂಪರ್ಕ",
+      email: "ಇಮೇಲ್",
+    },
+    bill: {
+      title: "ಈ ಸ್ಕೋರ್ ಎಂಚ ಬತ್ತ್ಂಡ್",
+      none: "ಒವ್ವೇ ಎಚ್ಚರಿಕೆದ ಸೂಚನೆ ಇಜ್ಜಿ, ಅಂಚಾದ್ ಒವ್ವುಲಾ ಸೇರ್ತುಜಿ.",
+      adjust: "ಮಾತಾ ಪರಿಶೀಲನೆ ಆಯಿ ಬೊಕ್ಕ ಹೊಂದಾಣಿಕೆ",
+      total: "ಅಪಾಯದ ಸ್ಕೋರ್",
+      more: "ನನ {n} ತೋಜಾಲೆ",
+      less: "ಕಮ್ಮಿ ತೋಜಾಲೆ",
+    },
+    groups: {
+      fail: "ಸಮಸ್ಯೆಲು",
+      warn: "ಗಮನಿಸಲೆ",
+      pass: "ಸರಿ ಉಂಡು",
+      info: "ಗೊತ್ತಿಪ್ಪಡ್",
+    },
+    alsoKnow: "ಉಂದುಲಾ ಗೊತ್ತಿಪ್ಪಡ್",
+    todoHint: "ಮಲ್ತೊಂದು ಗುರ್ತ ಪಾಡ್ಲೆ",
     checkedItem: "ಪರಿಶೀಲನೆ ಆತ್ಂಡ್",
     meaning: {
       link: {
@@ -405,6 +436,8 @@ export const reportTcy: ReportDict = {
     },
 
     email_sender: {
+      warn: "ಕಡಪುಡಿನಾಕುಲೆನ ಪುದರ್ ಬೊಕ್ಕ ವಿಳಾಸ ಹೊಂದಿಕೆ ಆವೊಂದಿಜಿ",
+      warnV: "ಕಡಪುಡಿನಾಕುಲೆನ ಪುದರ್ ಬೊಕ್ಕ ವಿಳಾಸ ಹೊಂದಿಕೆ ಆವೊಂದಿಜಿ: {value}",
       pass: "ಕಡಪುಡಿನಾಕುಲೆನ ವಿಳಾಸ ಸಾಮಾನ್ಯ ಉಂಡು: {value}",
       fail: "ಕಡಪುಡಿನಾಕುಲು ಪನ್ಪಿನಾಕುಲು ಅತ್ತ್: {value}",
       skip: "ಕಡಪುಡಿನಾಕುಲೆನ ವಿಳಾಸ ಕೊರ್ತಿಜರ್",
@@ -596,6 +629,7 @@ export const reportTcy: ReportDict = {
     advancedNote: "ಪೂರ್ತಿ ಸೋರ್ಸ್‌ಡ್ದ್ ಕಡಪುಡಿನಾಕುಲೆನ ತಾಂತ್ರಿಕ ಪರಿಶೀಲನೆ (SPF, DKIM, DMARC) ಲಾ ಮಲ್ಪೊಲಿ.",
     badEmail: "ಪೂರ್ತಿ ಇಮೇಲ್ ವಿಳಾಸ ಬರೆಲೆ, ಉದಾ: name@example.com",
     cleaned: "ಎಂಕುಲು ದೆತೊಂದಿನ: {email}",
+    movedName: "“{name}” ನ್ ಕಡಪುಡಿನಾಕುಲೆನ ಪುದರ್‌ಗ್ ಪಾಡ್ದ್ಂಡ್. ಇತ್ತೆ ಮುಲ್ಪ ಅಕುಲೆನ ಇಮೇಲ್ ವಿಳಾಸ ಬರೆಲೆ.",
   },
 
   homeX: {
@@ -696,6 +730,7 @@ export const reportTcy: ReportDict = {
   },
 
   fileX: {
+    linksTitle: "ಈ ಫೈಲ್‌ದುಲಾಯಿದ ಲಿಂಕ್‌ಲು",
     appId: "ಆ್ಯಪ್ ID",
     permissions: "ಈ ಆ್ಯಪ್ ದಾದ ಮಲ್ಪೆರೆ ಕೇನುಂಡು ({n})",
   },

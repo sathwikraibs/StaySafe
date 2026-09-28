@@ -19,6 +19,37 @@ export const reportHi: ReportDict = {
     todo: "अब आप क्या करें",
     recovery: "पहले ही क्लिक, पेमेंट या कुछ शेयर कर दिया? बचाव का प्लान देखें",
     askUs: "पक्का नहीं? किसी असली इंसान से पूछें",
+    stamp: {
+      safe: "सुरक्षित",
+      caution: "सावधान",
+      danger: "खतरा",
+    },
+    slip: "StaySafe रिपोर्ट",
+    toolName: {
+      link: "लिंक",
+      message: "मैसेज",
+      qr: "QR कोड",
+      file: "फ़ाइल",
+      password: "पासवर्ड",
+      network: "कनेक्शन",
+      email: "ईमेल",
+    },
+    bill: {
+      title: "यह स्कोर कैसे बना",
+      none: "कोई चेतावनी संकेत नहीं मिला, इसलिए कुछ नहीं जुड़ा।",
+      adjust: "सभी जाँचों के बाद समायोजन",
+      total: "जोखिम स्कोर",
+      more: "{n} और दिखाएँ",
+      less: "कम दिखाएँ",
+    },
+    groups: {
+      fail: "समस्याएँ",
+      warn: "ध्यान दें",
+      pass: "ठीक है",
+      info: "जानने लायक",
+    },
+    alsoKnow: "यह भी जानें",
+    todoHint: "करते जाएँ और टिक करते जाएँ",
     checkedItem: "जाँचा गया",
     meaning: {
       link: {
@@ -404,6 +435,8 @@ export const reportHi: ReportDict = {
     },
 
     email_sender: {
+      warn: "भेजने वाले का नाम और पता मेल नहीं खाते",
+      warnV: "भेजने वाले का नाम और पता मेल नहीं खाते: {value}",
       pass: "भेजने वाले का पता सामान्य लगता है: {value}",
       fail: "भेजने वाला वह नहीं है जो होने का दावा करता है: {value}",
       skip: "भेजने वाले का पता नहीं दिया",
@@ -595,6 +628,7 @@ export const reportHi: ReportDict = {
     advancedNote: "पूरे सोर्स से हम भेजने वाले की तकनीकी जाँच (SPF, DKIM, DMARC) भी कर पाते हैं।",
     badEmail: "पूरा ईमेल पता लिखें, जैसे name@example.com",
     cleaned: "हमने यह लिया: {email}",
+    movedName: "हमने “{name}” को भेजने वाले के नाम में डाल दिया। अब यहाँ उनका ईमेल पता लिखें।",
   },
 
   homeX: {
@@ -695,6 +729,7 @@ export const reportHi: ReportDict = {
   },
 
   fileX: {
+    linksTitle: "इस फ़ाइल के अंदर के लिंक",
     appId: "ऐप ID",
     permissions: "यह ऐप क्या-क्या करना चाहता है ({n})",
   },

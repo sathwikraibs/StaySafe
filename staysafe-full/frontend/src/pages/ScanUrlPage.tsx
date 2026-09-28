@@ -74,6 +74,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
           tool="link"
           verdict={result.verdict}
           riskScore={result.risk_score}
+          parts={result.score_parts}
           subject={result.url}
           checks={result.checks}
           findings={result.findings}

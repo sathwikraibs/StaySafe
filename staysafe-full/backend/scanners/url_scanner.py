@@ -302,6 +302,8 @@ def link_check_status() -> dict:
 def analyze_structure(url: str) -> dict:
     findings, checks = [], []
     score = 0
+    from scanners.ledger import Ledger
+    led = Ledger()
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     path = (parsed.path + "?" + parsed.query).lower()
@@ -309,11 +311,11 @@ def analyze_structure(url: str) -> dict:
 
     if is_ip(host):
         findings.append("Link uses a raw IP address instead of a real website name")
-        score += 25
+        score += led.note(findings, 25)
         _check(checks, "known", "warn", host)
         _check(checks, "imitation", "pass")
         _check(checks, "name_tricks", "warn", 1)
-        return {"score": score, "findings": findings, "checks": checks, "trusted": False,
+        return {"score": score, "findings": findings, "checks": checks, "parts": led.parts, "trusted": False,
                 "hosting": None, "shortener": False, "brand": None}
 
     reg = registered_domain(host)
@@ -323,11 +325,11 @@ def analyze_structure(url: str) -> dict:
     if hosting:
         trusted = False
         findings.append(f"Page is hosted on a free hosting service ({hosting}) where anyone can publish. Check who made it")
-        score += 10
+        score += led.note(findings, 10)
         _check(checks, "known", "warn", hosting)
     elif shortener:
         findings.append("Link uses a link shortener, so the real destination is hidden")
-        score += 15
+        score += led.note(findings, 15)
         _check(checks, "known", "warn", reg)
     elif trusted:
         _check(checks, "known", "pass", reg)
@@ -339,7 +341,7 @@ def analyze_structure(url: str) -> dict:
 
     if "xn--" in host:
         findings.append("Website name uses special look-alike characters (punycode) to imitate another site")
-        score += 30
+        score += led.note(findings, 30)
         tricks += 1
 
     # Brand impersonation: a brand name appears, but this isn't that brand's real site
@@ -359,7 +361,7 @@ def analyze_structure(url: str) -> dict:
             if hit_plain or hit_lookalike:
                 how = "uses look-alike characters to imitate" if hit_lookalike else "mentions"
                 findings.append(f"Link {how} '{brand_name(brand)}' but is NOT {brand_name(brand)}'s official website ({reg})")
-                score += 50 if hit_lookalike else 40
+                score += led.note(findings, 50 if hit_lookalike else 40)
                 brand_hit = brand
                 break
 
@@ -382,7 +384,7 @@ def analyze_structure(url: str) -> dict:
                         break
                 if brand_hit:
                     findings.append(f"The website name '{reg}' is a misspelling of '{brand_name(brand_hit)}'. Scammers use names like this to trick you")
-                    score += 50
+                    score += led.note(findings, 50)
                     break
 
         # Brand name hidden in the page address: some-site.com/sbi/login
@@ -391,7 +393,7 @@ def analyze_structure(url: str) -> dict:
                 if len(brand) >= 4 and re.search(rf"[/\-_.=]{brand}[/\-_.?=]", path + "/"):
                     if any(w in path for w in ("login", "signin", "verify", "kyc", "update", "account", "secure", "wp-")):
                         findings.append(f"The page address mentions '{brand_name(brand)}' and a login or verification page, but the website is not {brand_name(brand)}'s")
-                        score += 30
+                        score += led.note(findings, 30)
                         brand_hit = brand
                         break
 
@@ -403,60 +405,60 @@ def analyze_structure(url: str) -> dict:
                                if any(tok == w or (len(w) >= 5 and w in tok) for tok in tokens))
         if words_in_host:
             findings.append(f"Website name contains words scammers love: {', '.join(words_in_host[:3])}")
-            score += 15
+            score += led.note(findings, 15)
             tricks += 1
         elif any(w in path for w in ("login", "verify", "kyc", "update-account", "signin", "wp-admin")):
             findings.append("Link leads to a login or verification page. Never enter details on a page you reached from a message")
-            score += 5
+            score += led.note(findings, 5)
 
         if subdomain_part.count(".") >= 2:
             findings.append("Link has an unusually long chain of sub-domains (a trick to hide the real site)")
-            score += 10
+            score += led.note(findings, 10)
             tricks += 1
 
         if "xn--" not in name_part and name_part.count("-") >= 2:
             findings.append("Website name has several hyphens, common in fake sites")
-            score += 5
+            score += led.note(findings, 5)
             tricks += 1
 
         if len(host) > 40:
             findings.append("Website name is unusually long")
-            score += 5
+            score += led.note(findings, 5)
             tricks += 1
 
         if re.search(r"\d{4,}", name_part):
             findings.append("Website name contains a long string of numbers, common in throwaway scam sites")
-            score += 10
+            score += led.note(findings, 10)
             tricks += 1
 
     tld = reg.rsplit(".", 1)[-1]
     if tld in SUSPICIOUS_TLDS and not trusted:
         findings.append(f"Website ending '.{tld}' is cheap and often used for scams")
-        score += 15
+        score += led.note(findings, 15)
         tricks += 1
 
     if "@" in (parsed.netloc or ""):
         findings.append("Link contains an '@' symbol, which can hide the real destination")
-        score += 20
+        score += led.note(findings, 20)
         tricks += 1
 
     if re.search(r"\.apk($|\?)", path):
         findings.append("Link downloads an Android app (.apk) from outside the Play Store. This is a common way to steal OTPs")
-        score += 40
+        score += led.note(findings, 40)
         tricks += 1
     elif re.search(r"\.(exe|scr|bat|msi|vbs|js)($|\?)", path):
         findings.append("Link downloads a program file. Only install programs from the maker's official website or app store")
-        score += 30
+        score += led.note(findings, 30)
         tricks += 1
 
     if re.search(r"%[0-9a-f]{2}", host):
         findings.append("Website name contains hidden encoded characters")
-        score += 10
+        score += led.note(findings, 10)
         tricks += 1
 
     _check(checks, "name_tricks", "pass" if tricks == 0 else ("fail" if tricks >= 3 else "warn"), tricks)
 
-    return {"score": score, "findings": findings, "checks": checks, "trusted": trusted,
+    return {"score": score, "findings": findings, "checks": checks, "parts": led.parts, "trusted": trusted,
             "hosting": hosting, "shortener": shortener, "brand": brand_hit}
 
 
@@ -1237,7 +1239,7 @@ def verdict_from_score(score: int) -> str:
     return "SAFE"
 
 
-_POOL = ThreadPoolExecutor(max_workers=32)
+_POOL = ThreadPoolExecutor(max_workers=48)
 # separate pool for checking several links at once (avoids waiting on our own workers)
 LINK_POOL = ThreadPoolExecutor(max_workers=8)
 
@@ -1309,6 +1311,8 @@ def scan_url(url: str) -> dict:
     checks = list(structure["checks"])
     findings = list(structure["findings"])
     score = structure["score"]
+    from scanners.ledger import Ledger, ADJ_TRUSTED, ADJ_POPULAR
+    led = Ledger(structure.get("parts"))
     trusted = structure["trusted"]
 
     # Slow lookups run at the same time so the whole check takes a few seconds
@@ -1335,24 +1339,24 @@ def scan_url(url: str) -> dict:
     dns = result_of(dns_f, {"exists": None, "ips": []}, 5)
     page = result_of(page_f, {"ok": False, "error": "skipped", "final_url": url, "hops": [],
                               "ssl_error": False, "title": "", "has_password": False, "text": "",
-                              "download": None, "blocked": False}, 12)
+                              "download": None, "blocked": False}, 16)
     final_url = page.get("final_url") or url
     final_host = (urlparse(final_url).hostname or "").lower()
-    gsb = result_of(gsb_f, {"listed": None, "threats": []}, 8)
+    gsb = result_of(gsb_f, {"listed": None, "threats": []}, 12)
     if not gsb.get("listed") and final_url != url:
         gsb2 = _run(check_safe_browsing, [final_url], timeout=6, default={"listed": None, "threats": []})
         if gsb2.get("listed"):
             gsb = gsb2
-    vt = result_of(vt_f, {"status": "skip"}, 12)
-    age_days = result_of(whois_f, None, 9)
+    vt = result_of(vt_f, {"status": "skip"}, 18)
+    age_days = result_of(whois_f, None, 12)
     if age_days is None and vt.get("created_days") is not None and not trusted:
         age_days = vt["created_days"]
-    first_cert_days = result_of(crt_f, None, 4) if age_days is None else None
+    first_cert_days = result_of(crt_f, None, 8) if age_days is None else None
 
     # --- does it exist?
     if dns["exists"] is False:
         findings.append("This website doesn't exist or has been shut down. No server answers for this name. Scam links are often taken down after a few days")
-        score = max(score + 40, 55)
+        score = led.moved(findings, score, max(score + 40, 55))
         _check(checks, "exists", "fail")
     elif dns["exists"]:
         _check(checks, "exists", "pass")
@@ -1362,11 +1366,11 @@ def scan_url(url: str) -> dict:
     # --- HTTPS and certificate
     if page.get("ssl_error"):
         findings.append("The website's security certificate is not valid. Your browser would show a warning, and anything you type could be seen by others")
-        score += 30
+        score += led.note(findings, 30)
         _check(checks, "https", "fail")
     elif parsed.scheme != "https" and not final_url.lower().startswith("https://"):
         findings.append("Link does not use HTTPS (the connection is not encrypted)")
-        score += 10
+        score += led.note(findings, 10)
         _check(checks, "https", "warn")
     else:
         _check(checks, "https", "pass")
@@ -1380,26 +1384,26 @@ def scan_url(url: str) -> dict:
         # registration date hidden: use the date of its first security certificate instead
         if first_cert_days < 30:
             findings.append(f"This website first appeared online only {first_cert_days} days ago. Very new sites are a big warning sign")
-            score += 30
+            score += led.note(findings, 30)
             _check(checks, "age", "fail", first_cert_days)
         elif first_cert_days < 180:
             findings.append(f"This website first appeared online {first_cert_days} days ago (fairly new)")
-            score += 10
+            score += led.note(findings, 10)
             _check(checks, "age", "warn", first_cert_days)
         else:
             _check(checks, "age", "pass", first_cert_days)
     elif age_days is None:
         if dns["exists"] is not False:
             findings.append("Could not confirm when this website was created")
-            score += 5
+            score += led.note(findings, 5)
         _check(checks, "age", "skip", None)
     elif age_days < 30:
         findings.append(f"Website was created only {age_days} days ago. Very new sites are a big warning sign")
-        score += 35
+        score += led.note(findings, 35)
         _check(checks, "age", "fail", age_days)
     elif age_days < 180:
         findings.append(f"Website is fairly new ({age_days} days old)")
-        score += 15
+        score += led.note(findings, 15)
         _check(checks, "age", "warn", age_days)
     else:
         _check(checks, "age", "pass", age_days)
@@ -1414,13 +1418,15 @@ def scan_url(url: str) -> dict:
             if structure["shortener"] or dest["score"] >= 20:
                 score += dest["score"]
                 findings.extend(f"Final website: {f}" for f in dest["findings"])
+                for dp in dest.get("parts", []):
+                    led.add(f"Final website: {dp['label']}", dp["points"])
             else:
-                score += 10
+                score += led.note(findings, 10)
         else:
             _check(checks, "redirect", "pass", final_host or host)
     elif page.get("error") == "private":
         findings.append("This link points to a private or local network address, not a public website")
-        score += 20
+        score += led.note(findings, 20)
         _check(checks, "redirect", "warn", host)
     elif trusted:
         _check(checks, "redirect", "pass", host)
@@ -1432,11 +1438,11 @@ def scan_url(url: str) -> dict:
         registered_domain(final_host or host) in TRUSTED_DOMAINS
     if page.get("download") == "apk":
         findings.append("Opening this link downloads an Android app (APK) straight away. Never install apps from links")
-        score += 40
+        score += led.note(findings, 40)
         _check(checks, "page", "fail", "apk")
     elif page.get("download") == "program":
         findings.append("Opening this link downloads a program straight away")
-        score += 30
+        score += led.note(findings, 30)
         _check(checks, "page", "fail", "program")
     elif page.get("ok") and not final_official:
         haystack = (page.get("title", "") + " " + page.get("text", "")[:3000]).lower()
@@ -1445,15 +1451,15 @@ def scan_url(url: str) -> dict:
         pretends = brand_name(pretends) if pretends else pretends
         if page.get("has_password") and pretends:
             findings.append(f"This page asks for a password and looks like a {pretends} page, but it is not on {pretends}'s website. This is a fake login page")
-            score += 45
+            score += led.note(findings, 45)
             _check(checks, "page", "fail", pretends)
         elif otp_words and pretends:
             findings.append(f"This page asks for bank or card details and uses the name {pretends}, but it is not {pretends}'s website")
-            score += 40
+            score += led.note(findings, 40)
             _check(checks, "page", "fail", pretends)
         elif page.get("has_password"):
             findings.append("This page asks you to type a password. Only do that on a website you opened yourself")
-            score += 10
+            score += led.note(findings, 10)
             _check(checks, "page", "warn", "password")
         else:
             _check(checks, "page", "pass", page.get("title") or None)
@@ -1466,7 +1472,7 @@ def scan_url(url: str) -> dict:
     if gsb.get("listed"):
         names = ", ".join(THREAT_NAMES.get(t, t.lower()) for t in gsb["threats"])
         findings.insert(0, f"Google Safe Browsing lists this link as dangerous: {names}")
-        score = max(score + 50, 95)
+        score = led.moved(findings, score, max(score + 50, 95))
         _check(checks, "google", "fail", names)
     elif gsb.get("listed") is False:
         _check(checks, "google", "pass")
@@ -1481,18 +1487,18 @@ def scan_url(url: str) -> dict:
     rank_order = {"fail": 0, "warn": 1, "pass": 2, "skip": 3}
     if rank_order[big["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and big["status"] != "skip"):
         feed = big
-    ach = result_of(abusech_f, {"status": "skip"}, 8)
+    ach = result_of(abusech_f, {"status": "skip"}, 14)
     if trusted and ach["status"] == "warn":
         ach = {"status": "pass"}
     if rank_order[ach["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and ach["status"] != "skip"):
         feed = ach
     if feed["status"] == "fail":
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
-        score = max(score + 50, 95)
+        score = led.moved(findings, score, max(score + 50, 95))
         _check(checks, "feeds", "fail", feed["source"])
     elif feed["status"] == "warn" and not structure["hosting"]:
         findings.append(f"Scam pages on this website were reported recently ({feed['source']})")
-        score += 25
+        score += led.note(findings, 25)
         _check(checks, "feeds", "warn", feed["source"])
     elif feed["status"] == "skip":
         _check(checks, "feeds", "skip")
@@ -1501,10 +1507,10 @@ def scan_url(url: str) -> dict:
 
     # --- urlscan.io: scans by security researchers that found a scam page on this website
     shared_site = structure["hosting"] and host == structure["hosting"]
-    us_res = result_of(urlscan_f, {"status": "skip"}, 8)
+    us_res = result_of(urlscan_f, {"status": "skip"}, 12)
     if us_res["status"] == "fail" and not shared_site and (popularity_rank(reg) or 10**9) > 20_000:
         findings.append("Security scans on urlscan.io found a scam or malware page on this website in the last 3 months")
-        score += 30
+        score += led.note(findings, 30)
         _check(checks, "urlscan", "fail", us_res.get("count"))
     elif us_res["status"] == "pass":
         _check(checks, "urlscan", "pass")
@@ -1515,7 +1521,7 @@ def scan_url(url: str) -> dict:
         ab = _run(check_server_abuse, server_ip, timeout=6, default={}) or {}
         if ab.get("score", 0) >= 50 and not ab.get("whitelisted"):
             findings.append(f"The server this website runs on has been reported for attacks ({ab['score']}% confidence)")
-            score += 10
+            score += led.note(findings, 10)
             _check(checks, "server", "warn", ab["score"])
         elif ab:
             _check(checks, "server", "pass")
@@ -1526,16 +1532,16 @@ def scan_url(url: str) -> dict:
         if mal >= 3 or vt.get("domain_malicious", 0) >= 3:
             n = max(mal, vt.get("domain_malicious", 0))
             findings.insert(0, f"{n} security companies on VirusTotal flagged this link as malicious")
-            score = max(score + 40, 90)
+            score = led.moved(findings, score, max(score + 40, 90))
             _check(checks, "virustotal", "fail", n)
         elif mal >= 1 or vt.get("domain_malicious", 0) >= 1:
             n = max(mal, vt.get("domain_malicious", 0))
             findings.insert(0, f"{n} security companies on VirusTotal flagged this link as malicious")
-            score += 35
+            score += led.note(findings, 35)
             _check(checks, "virustotal", "fail", n)
         elif sus:
             findings.append(f"{sus} security companies on VirusTotal flagged this link as suspicious")
-            score += 15
+            score += led.note(findings, 15)
             _check(checks, "virustotal", "warn", sus)
         else:
             _check(checks, "virustotal", "pass", vt.get("engines") or None)
@@ -1547,6 +1553,8 @@ def scan_url(url: str) -> dict:
     total = max(0, min(100, score))
     # Known-good sites keep a low score unless a blocklist says otherwise
     if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail":
+        if total > 15:
+            led.add(ADJ_TRUSTED, 15 - total)
         total = min(total, 15)
 
     # One of the world's most visited websites: small warning signs (a new-looking name, a
@@ -1559,7 +1567,10 @@ def scan_url(url: str) -> dict:
     if rank and not hard:
         _check(checks, "known", "pass", reg)
         checks[:] = [c for c in checks if not (c["id"] == "known" and c["status"] == "info")]
-        total = min(total, 20) if rank <= 10_000 else max(0, total - 10)
+        new_total = min(total, 20) if rank <= 10_000 else max(0, total - 10)
+        if new_total != total:
+            led.add(ADJ_POPULAR, new_total - total)
+        total = new_total
 
     order = ["google", "feeds", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
@@ -1570,6 +1581,7 @@ def scan_url(url: str) -> dict:
         "verdict": verdict_from_score(total),
         "findings": findings,
         "checks": checks,
+        "score_parts": led.result(total),
         "details": {
             "domain": host,
             "registered_domain": reg,
@@ -1577,7 +1589,7 @@ def scan_url(url: str) -> dict:
             "page_title": page.get("title", ""),
             "age_days": age_days,
             "ip": (dns.get("ips") or [""])[0],
-            "whois": result_of(who_f, {}, 6),
+            "whois": result_of(who_f, {}, 10),
             "certificate": result_of(cert_f, {}, 6),
             "server": _run(server_details, (dns.get("ips") or [""])[0], timeout=6, default={}),
         },

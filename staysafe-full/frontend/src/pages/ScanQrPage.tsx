@@ -101,6 +101,7 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
           tool="qr"
           verdict={result.verdict}
           riskScore={result.risk_score}
+          parts={result.score_parts}
           checks={result.checks}
           findings={result.findings}
           onNavigate={onNavigate}

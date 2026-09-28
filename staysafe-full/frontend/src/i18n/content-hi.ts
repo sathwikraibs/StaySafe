@@ -300,6 +300,17 @@ export const hiContent: LangContent = {
     "The server this website runs on has been reported for attacks ({n}% confidence)": "यह वेबसाइट जिस सर्वर पर चलती है, उसकी हमलों के लिए शिकायत हुई है ({n}% भरोसा)",
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "यह फ़ाइल MalwareBazaar पर एक जाना-माना मैलवेयर है ({name})। इसे डिलीट करें",
     "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "आपके इंटरनेट पते की हमलों या स्पैम के लिए शिकायत हुई है ({n}% भरोसा)। ऐसा पब्लिक Wi-Fi या मोबाइल डेटा जैसे साझा नेटवर्क पर, या आपके नेटवर्क का कोई डिवाइस संक्रमित होने पर हो सकता है",
+
+    // ---- score breakdown and items inside messages
+    "A link inside this file looks dangerous: {url}": "इस फ़ाइल के अंदर का एक लिंक खतरनाक लगता है: {url}",
+    "A link inside this file looks suspicious: {url}": "इस फ़ाइल के अंदर का एक लिंक संदिग्ध लगता है: {url}",
+    "Asks you to send money to a UPI ID written in the message ({upi}). Check who it really belongs to": "मैसेज में लिखे UPI ID ({upi}) पर पैसे भेजने को कहता है। पहले पता करें कि यह असल में किसका है",
+    "Known, trusted website (small warning signs count less)": "जानी-मानी भरोसेमंद वेबसाइट (छोटे संकेत कम गिने जाते हैं)",
+    "One of the world's most visited websites (small warning signs count less)": "दुनिया की सबसे ज़्यादा देखी जाने वाली वेबसाइटों में से एक (छोटे संकेत कम गिने जाते हैं)",
+    "Pressure together with a risky request": "जल्दबाज़ी के साथ जोखिम भरी माँग",
+    "The email address {email} in this message: {reason}": "इस मैसेज में ईमेल पता {email}: {reason}",
+    "The score can't go above 100": "स्कोर 100 से ऊपर नहीं जा सकता",
+    "The sender's name ({name}) doesn't appear anywhere in their email address ({email}). Check it's really from them": "भेजने वाले का नाम ({name}) उनके ईमेल पते ({email}) में कहीं नहीं है। पक्का करें कि यह सच में उन्हीं का है",
   }),
 
   incidents: {

@@ -98,6 +98,8 @@ def analyze_upi_string(upi_data: str) -> dict:
     """
     findings = []
     score = 0
+    from scanners.ledger import Ledger
+    led = Ledger()
 
     parsed = urlparse(upi_data)
     params = {k.lower(): unquote(v[0]) for k, v in parse_qs(parsed.query).items()}
@@ -109,30 +111,30 @@ def analyze_upi_string(upi_data: str) -> dict:
 
     if not payee or not re.fullmatch(r"[\w.\-]{2,256}@[A-Za-z][\w]{1,64}", payee):
         findings.append("This QR does not contain a valid UPI payee ID")
-        score += 30
+        score += led.note(findings, 30)
     elif re.match(r"^\d{10}@", payee):
         findings.append(f"Payment goes to a personal phone-number UPI ID ({payee}), not a registered business")
-        score += 10
+        score += led.note(findings, 10)
 
     if not payee_name:
         findings.append("The QR doesn't show who you are paying (no payee name)")
-        score += 10
+        score += led.note(findings, 10)
 
     if amount:
         try:
             value = float(amount)
             findings.append(f"This QR will pre-fill an amount of ₹{value:,.2f}. Check it matches what you expect to pay")
-            score += 10
+            score += led.note(findings, 10)
             if value >= 10000:
                 findings.append("That is a large amount for a QR payment. Double-check before paying")
-                score += 10
+                score += led.note(findings, 10)
         except ValueError:
             findings.append("The amount in this QR is not a valid number")
-            score += 15
+            score += led.note(findings, 15)
 
     if note and SCAM_NOTE_WORDS.search(note):
         findings.append(f"The payment note says “{note}”. Scammers use notes like this to make you think you'll RECEIVE money")
-        score += 40
+        score += led.note(findings, 40)
 
     findings.append("Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.")
 
@@ -161,6 +163,7 @@ def analyze_upi_string(upi_data: str) -> dict:
         "risk_score": score,
         "verdict": verdict,
         "findings": findings,
+        "score_parts": led.result(score),
     }
 
 
@@ -211,6 +214,31 @@ def analyze_qr_data(qr_data: str) -> dict:
         log_scan("qr_url", result)
         return result
 
+    # Plain text (or Wi-Fi details, a contact card...). It can still hide a link or a scam
+    # message, so it gets the message checks, including the full check of any link inside.
+    from scanners.url_scanner import extract_url
+    inner = extract_url(qr_data)
+    if inner and not lowered.startswith(("wifi:", "begin:vcard", "mecard:")):
+        url = inner if inner.lower().startswith("http") else "https://" + inner
+        result = scan_url(url)
+        result["qr_type"] = "url"
+        result["raw_data"] = qr_data
+        log_scan("qr_url", result)
+        return result
+    from scanners.message_scanner import analyze_text, finalize_parts, verdict_from_score as msg_verdict
+    msg = analyze_text(qr_data)
+    from scanners.message_scanner import add_entity_checks
+    msg = add_entity_checks(msg, qr_data)
+    if msg["patterns_detected"]:
+        verdict = "DANGEROUS" if msg["risk_score"] >= 50 else ("CAUTION" if msg["risk_score"] >= 20 else "SAFE")
+        result = {
+            "qr_type": "text", "raw_data": qr_data, "risk_score": msg["risk_score"], "verdict": verdict,
+            "findings": msg["patterns_detected"],
+            "checks": [{"id": "qr_text", "status": "fail" if verdict == "DANGEROUS" else "warn", "value": None}],
+            "score_parts": finalize_parts(msg)["score_parts"],
+        }
+        log_scan("qr_text", result)
+        return result
     result = {
         "qr_type": "text",
         "raw_data": qr_data,
@@ -218,6 +246,7 @@ def analyze_qr_data(qr_data: str) -> dict:
         "verdict": "SAFE",
         "findings": ["This QR contains plain text, not a link or payment request"],
         "checks": [{"id": "qr_text", "status": "pass", "value": None}],
+        "score_parts": [],
     }
     log_scan("qr_text", result)
     return result

@@ -71,25 +71,27 @@ def crack_time_seconds(password: str):
 def analyze_strength(password: str) -> dict:
     findings = []
     score = 100  # start high, deduct for weaknesses
+    from scanners.ledger import Ledger
+    led = Ledger()  # each weakness and how much risk it adds
     length = len(password)
     lower = password.lower()
 
     if length < 8:
         findings.append("Password is shorter than 8 characters")
-        score -= 40
+        score -= led.note(findings, 40)
     elif length < 12:
         findings.append("Use 12 or more characters for stronger protection")
-        score -= 15
+        score -= led.note(findings, 15)
 
     # strip leading/trailing digits+symbols, then undo leetspeak: "P@ssw0rd2024!" -> "password"
     core = re.sub(r"^[^a-z@$]+|[^a-z]+$", "", lower)
     base = re.sub(r"[^a-z]", "", core.translate(LEET))
     if lower in COMMON_PASSWORDS:
         findings.append("This is one of the most commonly used passwords in the world")
-        score -= 60
+        score -= led.note(findings, 60)
     elif length >= 6 and (base in COMMON_BASE_WORDS or re.sub(r"[^a-z]", "", lower) in COMMON_BASE_WORDS):
         findings.append("It's a very common word with numbers or symbols added (e.g. Password@123). Attackers try these first")
-        score -= 45
+        score -= led.note(findings, 45)
 
     # Missing character types matter less for long passphrases
     class_penalty = 5 if length >= 16 else 10
@@ -102,23 +104,23 @@ def analyze_strength(password: str) -> dict:
     for pattern, message in classes:
         if not re.search(pattern, password):
             findings.append(message)
-            score -= class_penalty
+            score -= led.note(findings, class_penalty)
 
     if re.search(r"(.)\1{2,}", password):
         findings.append("Contains repeated characters (e.g. 'aaa')")
-        score -= 10
+        score -= led.note(findings, 10)
 
     if has_sequence(password):
         findings.append("Contains a predictable sequence (like 1234, abcd or qwerty)")
-        score -= 15
+        score -= led.note(findings, 15)
 
     if re.search(r"(19[5-9]\d|20[0-3]\d)[^0-9]*$", password):
         findings.append("Ends with a year (like a birth year). Easy to guess if someone knows you")
-        score -= 10
+        score -= led.note(findings, 10)
 
     if re.fullmatch(r"[A-Za-z]+[^A-Za-z0-9]?\d{1,4}[^A-Za-z0-9]?", password) and length < 14:
         findings.append("Follows the very common pattern Word + symbol + numbers")
-        score -= 10
+        score -= led.note(findings, 10)
 
     # zxcvbn (Dropbox's realistic password-guessing model): how long a real attacker with a
     # leaked password database would need. Catches names, dates, keyboard walks and words we miss.
@@ -128,14 +130,17 @@ def analyze_strength(password: str) -> dict:
         if crack < 60:
             crack_bucket = "minute"
             findings.append("A computer could guess this password in under a minute")
+            led.note(findings, max(0, score - 25))
             score = min(score, 25)
         elif crack < 86400:
             crack_bucket = "day"
             findings.append("A computer could guess this password in less than a day")
+            led.note(findings, max(0, score - 45))
             score = min(score, 45)
         elif crack < 30 * 86400:
             crack_bucket = "month"
             findings.append("A computer could guess this password in less than a month")
+            led.note(findings, max(0, score - 65))
             score = min(score, 65)
         elif crack < 10 * 365 * 86400:
             crack_bucket = "years"
@@ -166,7 +171,8 @@ def analyze_strength(password: str) -> dict:
     if crack_bucket:
         checks.insert(0, {"id": "pw_crack", "status": {"minute": "fail", "day": "fail", "month": "warn"}.get(crack_bucket, "pass"),
                           "value": crack_bucket})
-    return {"strength_score": score, "strength_label": strength, "findings": findings, "checks": checks}
+    return {"strength_score": score, "strength_label": strength, "findings": findings, "checks": checks,
+            "parts": led.parts}
 
 
 def check_breach(password: str) -> dict:
@@ -211,8 +217,11 @@ def check_password_route():
     findings = list(strength["findings"])
     risk_score = 100 - strength["strength_score"]
 
+    from scanners.ledger import Ledger
+    led = Ledger(strength.get("parts"))
     if breach.get("breached") is True:
         findings.insert(0, f"This password has appeared in {breach['count']:,} known data breaches. Change it everywhere you use it")
+        led.add(findings[0], max(risk_score, 70) - risk_score)
         risk_score = max(risk_score, 70)
     elif breach.get("breached") is False:
         findings.append("Not found in any known breach database")
@@ -232,6 +241,7 @@ def check_password_route():
         "breached": breach.get("breached"),
         "breach_count": breach.get("count", 0),
         "findings": findings,
+        "score_parts": led.result(min(100, risk_score)),
     })
 
 

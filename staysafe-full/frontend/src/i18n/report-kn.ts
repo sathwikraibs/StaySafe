@@ -19,6 +19,37 @@ export const reportKn: ReportDict = {
     todo: "ಈಗ ನೀವು ಏನು ಮಾಡಬೇಕು",
     recovery: "ಈಗಾಗಲೇ ಕ್ಲಿಕ್, ಪಾವತಿ ಅಥವಾ ಏನಾದರೂ ಹಂಚಿಕೊಂಡಿರಾ? ಪರಿಹಾರದ ಯೋಜನೆ ನೋಡಿ",
     askUs: "ಖಚಿತವಿಲ್ಲವೇ? ನಿಜವಾದ ವ್ಯಕ್ತಿಯನ್ನು ಕೇಳಿ",
+    stamp: {
+      safe: "ಸುರಕ್ಷಿತ",
+      caution: "ಎಚ್ಚರ",
+      danger: "ಅಪಾಯ",
+    },
+    slip: "StaySafe ವರದಿ",
+    toolName: {
+      link: "ಲಿಂಕ್",
+      message: "ಮೆಸೇಜ್",
+      qr: "QR ಕೋಡ್",
+      file: "ಫೈಲ್",
+      password: "ಪಾಸ್‌ವರ್ಡ್",
+      network: "ಸಂಪರ್ಕ",
+      email: "ಇಮೇಲ್",
+    },
+    bill: {
+      title: "ಈ ಸ್ಕೋರ್ ಹೇಗೆ ಬಂತು",
+      none: "ಯಾವುದೇ ಎಚ್ಚರಿಕೆ ಸೂಚನೆ ಇಲ್ಲ, ಹಾಗಾಗಿ ಏನೂ ಸೇರಿಸಲಿಲ್ಲ.",
+      adjust: "ಎಲ್ಲಾ ಪರಿಶೀಲನೆಗಳ ನಂತರ ಹೊಂದಾಣಿಕೆ",
+      total: "ಅಪಾಯದ ಸ್ಕೋರ್",
+      more: "ಇನ್ನೂ {n} ತೋರಿಸಿ",
+      less: "ಕಡಿಮೆ ತೋರಿಸಿ",
+    },
+    groups: {
+      fail: "ಸಮಸ್ಯೆಗಳು",
+      warn: "ಗಮನಿಸಿ",
+      pass: "ಸರಿ ಇದೆ",
+      info: "ತಿಳಿದಿರಲಿ",
+    },
+    alsoKnow: "ಇದೂ ತಿಳಿದಿರಲಿ",
+    todoHint: "ಮಾಡುತ್ತಾ ಗುರುತು ಹಾಕಿ",
     checkedItem: "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
     meaning: {
       link: {
@@ -404,6 +435,8 @@ export const reportKn: ReportDict = {
     },
 
     email_sender: {
+      warn: "ಕಳುಹಿಸಿದವರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ",
+      warnV: "ಕಳುಹಿಸಿದವರ ಹೆಸರು ಮತ್ತು ವಿಳಾಸ ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ: {value}",
       pass: "ಕಳುಹಿಸಿದವರ ವಿಳಾಸ ಸಾಮಾನ್ಯವಾಗಿದೆ: {value}",
       fail: "ಕಳುಹಿಸಿದವರು ಹೇಳಿಕೊಂಡವರಲ್ಲ: {value}",
       skip: "ಕಳುಹಿಸಿದವರ ವಿಳಾಸ ನೀಡಿಲ್ಲ",
@@ -595,6 +628,7 @@ export const reportKn: ReportDict = {
     advancedNote: "ಪೂರ್ಣ ಸೋರ್ಸ್‌ನಿಂದ ಕಳುಹಿಸಿದವರ ತಾಂತ್ರಿಕ ಪರಿಶೀಲನೆ (SPF, DKIM, DMARC) ಕೂಡ ಮಾಡಬಹುದು.",
     badEmail: "ಪೂರ್ಣ ಇಮೇಲ್ ವಿಳಾಸ ಬರೆಯಿರಿ, ಉದಾ: name@example.com",
     cleaned: "ನಾವು ಬಳಸಿದ್ದು: {email}",
+    movedName: "“{name}” ಅನ್ನು ಕಳುಹಿಸಿದವರ ಹೆಸರಿಗೆ ಹಾಕಿದ್ದೇವೆ. ಈಗ ಇಲ್ಲಿ ಅವರ ಇಮೇಲ್ ವಿಳಾಸ ಬರೆಯಿರಿ.",
   },
 
   homeX: {
@@ -695,6 +729,7 @@ export const reportKn: ReportDict = {
   },
 
   fileX: {
+    linksTitle: "ಈ ಫೈಲ್‌ನೊಳಗಿನ ಲಿಂಕ್‌ಗಳು",
     appId: "ಆ್ಯಪ್ ID",
     permissions: "ಈ ಆ್ಯಪ್ ಏನೇನು ಮಾಡಲು ಕೇಳುತ್ತದೆ ({n})",
   },

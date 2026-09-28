@@ -82,7 +82,7 @@ RULES = [
         "Bank / KYC / PAN impersonation",
         [
             r"\bre-?kyc\b", r"\bkyc\b[^.\n]{0,40}\b(update|pending|expire|verify|complete|block|suspend)",
-            r"\b(account|a/c|khata|card|yono|net ?banking)\b[^.\n]{0,40}\b(will be |has been |is |ho jayega |hoga )?(blocked|suspended|frozen|deactivated|closed|band)\b",
+            r"\b(account|a/c|khata|card|yono|net ?banking|wallet|upi id|paytm|phonepe|gpay)\b[^.\n]{0,40}\b(will be |has been |is |ho jayega |hoga )?(blocked|suspended|frozen|deactivated|closed|band)\b",
             r"\b(update|link|verify)\b[^.\n]{0,20}\b(pan|aadhaar|aadhar)\b",
             r"\bverify your (account|bank|kyc|identity)\b",
             r"\b(unusual|suspicious|unknown|new) (login|log-in|sign-?in|activity|device)\b[^\n]{0,80}\b(secure|verify|confirm|click|update)\b",
@@ -633,13 +633,17 @@ def analyze_text(text: str) -> dict:
     findings = []
     score = 0
 
+    parts = []
     for label, patterns, weight in RULES:
         hits = sum(1 for p in patterns if re.search(p, text_norm))
         if hits:
             findings.append(label)
             score += weight
+            pts = weight
             if hits >= 2 and weight >= 30:
                 score += 10  # several independent signs of the same scam type
+                pts += 10
+            parts.append({"label": label, "points": pts})
 
     # A plain link on its own is normal, but links in a threatening message are a red flag
     has_link = re.search(LINK, text_norm) is not None
@@ -647,10 +651,12 @@ def analyze_text(text: str) -> dict:
     if has_link and high_risk_hits:
         findings.append("Contains a link inside a threatening or too-good-to-be-true message")
         score += 15
+        parts.append({"label": findings[-1], "points": 15})
 
     # Pressure + a high-risk ask together is a classic scam combo
     if "Pressure / urgency language" in findings and high_risk_hits:
         score += 10
+        parts.append({"label": "Pressure together with a risky request", "points": 10})
 
     safe_hits = [p for p in SAFE_SIGNALS if re.search(p, text_norm)]
     notes = []
@@ -664,7 +670,9 @@ def analyze_text(text: str) -> dict:
         if otp_label in findings and not asks_to_share_with_sender:
             findings.remove(otp_label)
             score -= RULES[0][2]
+            parts = [p for p in parts if p["label"] != otp_label]
         score -= 15
+        parts.append({"label": "Contains a genuine-looking safety warning (e.g. 'do not share your OTP')", "points": -15})
         notes.append("Contains a genuine-looking safety warning (e.g. 'do not share your OTP')")
 
     score = max(0, min(100, score))
@@ -686,6 +694,7 @@ def analyze_text(text: str) -> dict:
         "patterns_detected": findings,
         "safe_signals": notes,
         "notes": info,
+        "score_parts": parts,
     }
 
 
@@ -694,7 +703,7 @@ def analyze_text(text: str) -> dict:
 # LINK CHECK. Every link in the message gets the full link scanner
 # (structure rules + domain age + Google Safe Browsing + VirusTotal)
 # ---------------------------------------------------------------------------
-MAX_LINKS_CHECKED = 3
+MAX_LINKS_CHECKED = 5
 
 URL_IN_TEXT = re.compile(
     r"(?<![@\w.])("
@@ -728,11 +737,12 @@ def check_links_in_result(result: dict) -> dict:
     links = extract_links(result.get("text_analyzed", ""))
     checked = []
     extra_score = 0
+    extra_label = ""
     # Check the links at the same time, so three links take about as long as one
     futures = [(link, LINK_POOL.submit(scan_url, link)) for link in links[:MAX_LINKS_CHECKED]]
     for link, future in futures:
         try:
-            link_result = future.result(timeout=25)
+            link_result = future.result(timeout=60)
         except Exception:
             continue
         checked.append({
@@ -748,11 +758,15 @@ def check_links_in_result(result: dict) -> dict:
             result["patterns_detected"].append(
                 f"The link {link} looks dangerous" + (f": {reason}" if reason else "")
             )
+            if extra_score < 50:
+                extra_label = result["patterns_detected"][-1]
             extra_score = max(extra_score, 50)
         elif link_result["verdict"] == "CAUTION":
             result["patterns_detected"].append(
                 f"The link {link} looks suspicious" + (f": {reason}" if reason else "")
             )
+            if extra_score < 20:
+                extra_label = result["patterns_detected"][-1]
             extra_score = max(extra_score, 20)
 
     if len(links) > MAX_LINKS_CHECKED:
@@ -764,6 +778,8 @@ def check_links_in_result(result: dict) -> dict:
         result.setdefault("notes", []).append(NOTE_HIDDEN_LINK)
 
     result["links_checked"] = checked
+    if extra_score:
+        result.setdefault("score_parts", []).append({"label": extra_label, "points": extra_score})
     result["risk_score"] = min(100, result["risk_score"] + extra_score)
     if extra_score or result.get("verdict") != "UNCERTAIN":
         result["verdict"] = verdict_from_score(result["risk_score"])
@@ -799,6 +815,9 @@ def add_translation(result: dict, ui_lang: str) -> dict:
             for pattern in en_result["patterns_detected"]:
                 if pattern not in result["patterns_detected"]:
                     result["patterns_detected"].append(pattern)
+            if en_result["risk_score"] > result["risk_score"]:
+                have = {p["label"] for p in result.get("score_parts", [])}
+                result.setdefault("score_parts", []).extend(p for p in en_result["score_parts"] if p["label"] not in have)
             was_unreadable = result.get("verdict") == "UNCERTAIN" or not result["patterns_detected"]
             result["risk_score"] = max(result["risk_score"], en_result["risk_score"])
             result["verdict"] = verdict_from_score(result["risk_score"])
@@ -998,6 +1017,71 @@ ORG_LABELS = {
 }
 
 
+EMAIL_IN_TEXT = re.compile(r"(?<![\w.+-])([A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})")
+UPI_IN_TEXT = re.compile(r"(?<![\w.@-])([\w.\-]{2,64}@(?:ok[a-z]+|ybl|ibl|axl|paytm|upi|apl|yapl|ptyes|ptsbi|pthdfc|ptaxis|"
+                         r"freecharge|jupiteraxis|axisbank|sbi|hdfcbank|icici|kotak|pnb|boi|barodampay|ikwik|fbl|idfcbank|"
+                         r"indus|rbl|yesbank|airtel|jio|slc|timecosmos|waaxis|waicici|wahdfcbank|wasbi))\b", re.IGNORECASE)
+PAY_WORDS = re.compile(r"\b(pay|send|transfer|deposit|fee|charges?|refund|bhejo|bhej|jama|ಪಾವತಿ|ಕಳುಹಿಸಿ|भेज|भुगतान|जमा)", re.IGNORECASE)
+
+
+def add_entity_checks(result: dict, text: str = None) -> dict:
+    """
+    Everything else inside the text gets checked too:
+    - email addresses: throwaway services, domains that don't exist, brand-new domains, and the
+      domain goes through the same blocklists as links (Google, VirusTotal, scam lists)
+    - UPI IDs: asking you to pay a UPI ID written in a message is how most fee scams collect money
+    """
+    text = text if text is not None else result.get("text_analyzed", "")
+    from scanners.url_scanner import LINK_POOL, scan_url
+    from scanners.email_domain import domain_signals
+    from scanners.email_analyzer import FREE_MAIL
+    import scanners.url_scanner as _us
+    added = []
+
+    upis = [u for u in UPI_IN_TEXT.findall(text)]
+    emails = [e for e in EMAIL_IN_TEXT.findall(text) if e not in upis][:2]
+    futures = []
+    for e in emails:
+        dom = e.split("@")[-1].lower()
+        if dom not in FREE_MAIL:
+            futures.append((e, dom, LINK_POOL.submit(scan_url, "https://" + dom)))
+    for e in emails:
+        dom = e.split("@")[-1].lower()
+        sig = domain_signals(dom, False, dom in FREE_MAIL, offline=_us.OFFLINE)
+        for f in sig["findings"][:1]:
+            added.append((f"The email address {e} in this message: {f}", sig.get("points", {}).get(f, 20)))
+    for e, dom, fut in futures:
+        try:
+            r = fut.result(timeout=60)
+        except Exception:
+            continue
+        listed = [c for c in r.get("checks", []) if c["id"] in ("google", "feeds", "virustotal", "urlscan") and c["status"] == "fail"]
+        if listed and r.get("findings"):
+            added.append((f"The email address {e} in this message: {r['findings'][0]}", 40))
+
+    if upis and PAY_WORDS.search(text):
+        upi = upis[0]
+        # with other scam signs this is how the money is collected; alone it can be a normal request
+        added.append((f"Asks you to send money to a UPI ID written in the message ({upi}). Check who it really belongs to",
+                      25 if result.get("patterns_detected") else 10))
+
+    for finding, pts in added:
+        if finding not in result["patterns_detected"]:
+            result["patterns_detected"].append(finding)
+            result.setdefault("score_parts", []).append({"label": finding, "points": pts})
+            result["risk_score"] = min(100, result["risk_score"] + pts)
+    if added:
+        result["verdict"] = verdict_from_score(result["risk_score"])
+    return result
+
+
+def finalize_parts(result: dict) -> dict:
+    """Turn the recorded points into the final bill that adds up to the score."""
+    from scanners.ledger import Ledger
+    result["score_parts"] = Ledger(result.get("score_parts")).result(result["risk_score"])
+    return result
+
+
 def add_sender_checks(result: dict, sender: str = "") -> dict:
     """Who sent it (TRAI sender rules) and foreign phone numbers inside the message."""
     from scanners.sender_check import sender_signals, find_sender_in_text, foreign_numbers_in_text
@@ -1017,6 +1101,10 @@ def add_sender_checks(result: dict, sender: str = "") -> dict:
     for f in added:
         if f not in result["patterns_detected"]:
             result["patterns_detected"].append(f)
+    if added and score:
+        result.setdefault("score_parts", []).append({"label": added[0], "points": sig["score"] or score})
+        if len(added) > 1 and sig["score"]:
+            result["score_parts"].append({"label": added[-1], "points": score - sig["score"]})
     if score:
         result["risk_score"] = max(0, min(100, result["risk_score"] + score))
         result["verdict"] = verdict_from_score(result["risk_score"])
@@ -1037,9 +1125,11 @@ def scan_message_route():
 
     result = add_translation(analyze_text(text), request_language())
     result = add_sender_checks(result, str(data.get("sender") or ""))
+    result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, text)
     result = check_links_in_result(result)
+    result = finalize_parts(result)
 
     from scanners.risk_engine import log_scan
     log_scan("message", result)
@@ -1088,9 +1178,11 @@ def scan_screenshot_route():
 
     result = add_translation(analyze_text(extracted_text), request_language())
     result = add_sender_checks(result, request.form.get("sender", ""))
+    result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, extracted_text)
     result = check_links_in_result(result)
+    result = finalize_parts(result)
 
     from scanners.risk_engine import log_scan
     log_scan("screenshot", result)

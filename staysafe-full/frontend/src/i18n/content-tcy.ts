@@ -301,6 +301,17 @@ export const tcyContent: LangContent = {
     "The server this website runs on has been reported for attacks ({n}% confidence)": "ಈ ವೆಬ್‌ಸೈಟ್ ನಡಪುನ ಸರ್ವರ್‌ದ ಮಿತ್ತ್ ದಾಳಿದ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ)",
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ಡ್ ಗೊತ್ತುಪ್ಪುನ ಮಾಲ್‌ವೇರ್ ({name}). ಉಂದೆನ್ ಡಿಲೀಟ್ ಮಲ್ಪುಲೆ",
     "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ಈರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮಿತ್ತ್ ದಾಳಿ ಅತ್ತಂಡ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅತ್ತಂಡ ಮೊಬೈಲ್ ಡೇಟಾದ ಲೆಕ್ಕೊದ ಹಂಚಿಕೆದ ನೆಟ್‌ವರ್ಕ್‌ಡ್, ಅತ್ತಂಡ ಈರೆನ ನೆಟ್‌ವರ್ಕ್‌ದ ಏತಾಂಡಲ ಸಾಧನೊಗು ವೈರಸ್ ಬತ್ತ್‌ಂಡ ಇಂಚ ಆವೊಲಿ",
+
+    // ---- score breakdown and items inside messages
+    "A link inside this file looks dangerous: {url}": "ಈ ಫೈಲ್‌ದುಲಾಯಿದ ಒಂಜಿ ಲಿಂಕ್ ಅಪಾಯದ ಲೆಕ್ಕ ತೋಜುಂಡು: {url}",
+    "A link inside this file looks suspicious: {url}": "ಈ ಫೈಲ್‌ದುಲಾಯಿದ ಒಂಜಿ ಲಿಂಕ್ ಸಂಶಯದ ಲೆಕ್ಕ ತೋಜುಂಡು: {url}",
+    "Asks you to send money to a UPI ID written in the message ({upi}). Check who it really belongs to": "ಮೆಸೇಜ್‌ಡ್ ಬರೆತಿನ UPI ID ({upi}) ಗ್ ಪೈಸೆ ಕಡಪುಡೆರೆ ಪನ್ಪುಂಡು. ಉಂದು ನಿಜವಾದ್ ಏರೆನವು ಪಂಡ್ದ್ ದುಂಬು ತೂಲೆ",
+    "Known, trusted website (small warning signs count less)": "ಗೊತ್ತುಪ್ಪುನ ನಂಬಿಕೆದ ವೆಬ್‌ಸೈಟ್ (ಎಲ್ಯ ಸೂಚನೆಲೆಗ್ ಕಮ್ಮಿ ಅಂಕ)",
+    "One of the world's most visited websites (small warning signs count less)": "ಲೋಕೊಡು ಮಸ್ತ್ ಜನ ತೂಪಿನ ವೆಬ್‌ಸೈಟ್‌ಲೆಡ್ ಒಂಜಿ (ಎಲ್ಯ ಸೂಚನೆಲೆಗ್ ಕಮ್ಮಿ ಅಂಕ)",
+    "Pressure together with a risky request": "ಒತ್ತಡದ ಒಟ್ಟುಗು ಅಪಾಯದ ಬೇಡಿಕೆ",
+    "The email address {email} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ಡುಪ್ಪುನ ಇಮೇಲ್ ವಿಳಾಸ {email}: {reason}",
+    "The score can't go above 100": "ಸ್ಕೋರ್ 100 ಡ್ದ್ ಜಾಸ್ತಿ ಆಪುಜಿ",
+    "The sender's name ({name}) doesn't appear anywhere in their email address ({email}). Check it's really from them": "ಕಡಪುಡಿನಾಕುಲೆನ ಪುದರ್ ({name}) ಅಕುಲೆನ ಇಮೇಲ್ ವಿಳಾಸೊಡು ({email}) ಓಲುಲಾ ಇಜ್ಜಿ. ನಿಜವಾದ್ ಅಕುಲೆನವೇ ಪಂಡ್ದ್ ಖಚಿತ ಮಲ್ಪುಲೆ",
   }),
 
   incidents: {
