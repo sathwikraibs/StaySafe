@@ -280,6 +280,26 @@ export const knContent: LangContent = {
     "This website first appeared online only {n} days ago. Very new sites are a big warning sign": "ಈ ವೆಬ್‌ಸೈಟ್ ಕೇವಲ {n} ದಿನಗಳ ಹಿಂದೆ ಆನ್‌ಲೈನ್‌ಗೆ ಬಂದಿದೆ. ತುಂಬಾ ಹೊಸ ವೆಬ್‌ಸೈಟ್‌ಗಳು ದೊಡ್ಡ ಎಚ್ಚರಿಕೆ ಸಂಕೇತ",
     "You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks": "ನೀವು Tor ನೆಟ್‌ವರ್ಕ್ ಬಳಸುತ್ತಿದ್ದೀರಿ. ಹಲವು ಬ್ಯಾಂಕ್ ಮತ್ತು ಪೇಮೆಂಟ್ ಸೈಟ್‌ಗಳು Tor ಅನ್ನು ತಡೆಯುತ್ತವೆ ಅಥವಾ ಹೆಚ್ಚಿನ ಪರಿಶೀಲನೆ ಕೇಳುತ್ತವೆ",
     "You've checked a lot of addresses. Please try again in an hour.": "ನೀವು ಹಲವು ವಿಳಾಸಗಳನ್ನು ಪರಿಶೀಲಿಸಿದ್ದೀರಿ. ದಯವಿಟ್ಟು ಒಂದು ಗಂಟೆಯ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+
+    // ---- AI second opinion, urlscan, AbuseIPDB, MalwareBazaar
+    "An AI review also found no scam signs": "AI ಪರಿಶೀಲನೆಯಲ್ಲೂ ವಂಚನೆಯ ಸೂಚನೆ ಸಿಗಲಿಲ್ಲ",
+    "An AI review also thinks this is a scam: {reason}": "AI ಪರಿಶೀಲನೆಯೂ ಇದನ್ನು ವಂಚನೆ ಎನ್ನುತ್ತದೆ: {reason}",
+    "An AI review thinks this message is suspicious: {reason}": "AI ಪರಿಶೀಲನೆ ಈ ಮೆಸೇಜ್ ಸಂಶಯಾಸ್ಪದ ಎನ್ನುತ್ತದೆ: {reason}",
+    "Pretends to be a bank or payment app to get your details or money": "ನಿಮ್ಮ ವಿವರ ಅಥವಾ ಹಣ ಪಡೆಯಲು ಬ್ಯಾಂಕ್ ಅಥವಾ ಪೇಮೆಂಟ್ ಆ್ಯಪ್ ಎಂದು ನಟಿಸುತ್ತದೆ",
+    "Pretends to be the government, police or a utility company to scare you": "ಹೆದರಿಸಲು ಸರ್ಕಾರ, ಪೊಲೀಸ್ ಅಥವಾ ವಿದ್ಯುತ್/ಗ್ಯಾಸ್ ಕಂಪನಿ ಎಂದು ನಟಿಸುತ್ತದೆ",
+    "Promises a prize, gift, cashback or refund that isn't real": "ನಿಜವಲ್ಲದ ಬಹುಮಾನ, ಉಡುಗೊರೆ, ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್ ಅಥವಾ ರಿಫಂಡ್ ಭರವಸೆ ನೀಡುತ್ತದೆ",
+    "Fake job, task or easy-money offer": "ನಕಲಿ ಉದ್ಯೋಗ, ಟಾಸ್ಕ್ ಅಥವಾ ಸುಲಭ ಹಣದ ಆಫರ್",
+    "Fake investment or trading offer": "ನಕಲಿ ಹೂಡಿಕೆ ಅಥವಾ ಟ್ರೇಡಿಂಗ್ ಆಫರ್",
+    "Fake loan offer": "ನಕಲಿ ಸಾಲದ ಆಫರ್",
+    "Uses romance or friendship to get money": "ಹಣ ಪಡೆಯಲು ಪ್ರೀತಿ ಅಥವಾ ಸ್ನೇಹ ಬಳಸುತ್ತದೆ",
+    "Pretends to be a friend or family member who needs money": "ಹಣ ಬೇಕಾದ ಸ್ನೇಹಿತ ಅಥವಾ ಕುಟುಂಬದವರು ಎಂದು ನಟಿಸುತ್ತದೆ",
+    "Fake delivery, courier or parcel problem": "ನಕಲಿ ಡೆಲಿವರಿ, ಕೊರಿಯರ್ ಅಥವಾ ಪಾರ್ಸೆಲ್ ಸಮಸ್ಯೆ",
+    "Fake tech support, or asks you to install an app": "ನಕಲಿ ಟೆಕ್ ಸಪೋರ್ಟ್, ಅಥವಾ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಹೇಳುತ್ತದೆ",
+    "Other scam tricks": "ವಂಚನೆಯ ಇತರ ತಂತ್ರಗಳು",
+    "Security scans on urlscan.io found a scam or malware page on this website in the last 3 months": "urlscan.io ಭದ್ರತಾ ಪರಿಶೀಲನೆಗಳು ಕಳೆದ 3 ತಿಂಗಳಲ್ಲಿ ಈ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ವಂಚನೆ ಅಥವಾ ಮಾಲ್‌ವೇರ್ ಪುಟ ಕಂಡಿವೆ",
+    "The server this website runs on has been reported for attacks ({n}% confidence)": "ಈ ವೆಬ್‌ಸೈಟ್ ನಡೆಯುವ ಸರ್ವರ್ ಮೇಲೆ ದಾಳಿಗಳ ದೂರು ಬಂದಿದೆ ({n}% ಖಚಿತತೆ)",
+    "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ನಲ್ಲಿ ಗೊತ್ತಿರುವ ಮಾಲ್‌ವೇರ್ ({name}). ಇದನ್ನು ಅಳಿಸಿ",
+    "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮೇಲೆ ದಾಳಿ ಅಥವಾ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬಂದಿದೆ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅಥವಾ ಮೊಬೈಲ್ ಡೇಟಾದಂತಹ ಹಂಚಿಕೆಯ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ, ಅಥವಾ ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್‌ನ ಯಾವುದಾದರೂ ಸಾಧನಕ್ಕೆ ವೈರಸ್ ತಗುಲಿದ್ದರೆ ಹೀಗಾಗಬಹುದು",
   }),
 
   incidents: {

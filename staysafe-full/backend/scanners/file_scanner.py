@@ -337,6 +337,28 @@ def check_known_good(sha256: str) -> dict:
     return {"known": True, "source": str(source)[:60]}
 
 
+def check_malwarebazaar(sha256: str) -> dict:
+    """
+    MalwareBazaar (abuse.ch, free key ABUSECH_AUTH_KEY): is this exact file a known malware
+    sample? Very strong evidence when found. {'found': bool, 'signature': str}
+    """
+    import os
+    import scanners.url_scanner as _us
+    key = os.environ.get("ABUSECH_AUTH_KEY", "")
+    if _us.OFFLINE or not key:
+        return {"found": False}
+    try:
+        resp = requests.post("https://mb-api.abuse.ch/api/v1/", data={"query": "get_info", "hash": sha256},
+                             headers={"Auth-Key": key, "User-Agent": "StaySafe/2.0"}, timeout=8)
+        data = resp.json()
+    except Exception:
+        return {"found": False}
+    if data.get("query_status") != "ok" or not data.get("data"):
+        return {"found": False}
+    item = data["data"][0] or {}
+    return {"found": True, "signature": str(item.get("signature") or item.get("file_type") or "malware")[:60]}
+
+
 def verdict_from_score(score: int) -> str:
     if score >= 50:
         return "DANGEROUS"
@@ -379,10 +401,12 @@ def scan_file_route():
         content_findings = content_findings + apk["findings"]
         content_score += apk["score"]
     from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(2) as pool:
+    with ThreadPoolExecutor(3) as pool:
         known_f = pool.submit(check_known_good, sha256)
+        bazaar_f = pool.submit(check_malwarebazaar, sha256)
         vt_result = check_virustotal_hash(sha256)
         known = known_f.result()
+        bazaar = bazaar_f.result()
     # The visitor agreed to let VirusTotal scan the file itself (only if it has never been seen)
     if request.form.get("vt_upload") == "1" and vt_result.get("vt", {}).get("state") == "not_found":
         uploaded = upload_to_virustotal(filename, file_bytes, sha256)
@@ -394,6 +418,10 @@ def scan_file_route():
     total_score = min(100, ext_score + content_score + vt_result["score"])
     all_findings = ext_findings + content_findings + vt_result["findings"]
     vt_flagged = (vt_result.get("vt", {}) or {}).get("malicious", 0) or 0
+    if bazaar.get("found"):
+        all_findings.insert(0, f"This exact file is a known malware sample on MalwareBazaar ({bazaar['signature']}). Delete it")
+        total_score = max(total_score, 95)
+        known = {"known": False}
     if known.get("known") and vt_flagged == 0:
         # exactly the same file as a known genuine program: small warning signs don't matter
         total_score = min(total_score, 10)
@@ -413,6 +441,8 @@ def scan_file_route():
     ]
     if known.get("known"):
         checks.insert(0, {"id": "file_known", "status": "pass", "value": known.get("source")})
+    if bazaar.get("found"):
+        checks.insert(0, {"id": "file_bazaar", "status": "fail", "value": bazaar["signature"]})
     if real_type == "Android app":
         checks.insert(1, {"id": "file_apk", "status": "fail" if apk["score"] >= 35 else ("warn" if apk["score"] else "pass"),
                           "value": len(apk["permissions"])})

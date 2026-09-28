@@ -16,6 +16,7 @@ from scanners.network_checker import network_checker_bp
 from scanners.email_analyzer import email_analyzer_bp
 from scanners.knowledge_base import knowledge_base_bp
 from scanners.translator import translation_status
+from scanners.ai_review import ai_status
 
 MAX_UPLOAD_MB = 20
 
@@ -48,6 +49,7 @@ def home():
         "ocr_languages": ocr_languages() if ocr_status() else "",
         "qr": qr_status(),
         "translation": translation_status(),
+        "ai_review": ai_status(),
         "link_checks": link_check_status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }

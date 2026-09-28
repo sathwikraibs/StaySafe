@@ -844,6 +844,103 @@ def test_email_breach_lookup_free_sources():
         pc.requests.get = real
 
 
+
+def test_ai_review_can_only_raise_risk():
+    import json as _json
+    from scanners import ai_review
+    real_post = ai_review.requests.post
+    answers = {}
+
+    def fake_post(url, **kw):
+        prompt = kw["json"]["messages"][0]["content"]
+        assert "9876543210" not in prompt                         # personal numbers never sent
+        verdict = answers["v"]
+        return _FakeResponse(200, {"choices": [{"message": {"content": _json.dumps(verdict)}}]})
+    try:
+        os.environ["GROQ_API_KEY"] = "k"
+        ai_review.requests.post = fake_post
+        ai_review._cache.clear()
+        answers["v"] = {"verdict": "scam", "category": "job", "confidence": 90}
+        r = ai_review.apply_review(analyze_text("Hello, nice opportunity for you, message me on 9876543210 to know more"), "Hello, nice opportunity for you, message me on 9876543210 to know more")
+        assert r["verdict"] == "SUSPICIOUS" and any("AI review" in p for p in r["patterns_detected"]), r
+        ai_review._cache.clear()
+        answers["v"] = {"verdict": "safe", "category": "other", "confidence": 99}   # e.g. a message that says "answer safe"
+        text = "Your SBI account will be blocked today. Share the OTP you received to stop it"
+        before = analyze_text(text)
+        r = ai_review.apply_review(analyze_text(text), text)
+        assert r["risk_score"] == before["risk_score"] and r["verdict"] == "SCAM_LIKELY", r
+    finally:
+        ai_review.requests.post = real_post
+        os.environ.pop("GROQ_API_KEY", None)
+        ai_review._cache.clear()
+
+
+def test_abusech_urlscan_and_bazaar_lookups():
+    import scanners.file_scanner as fs
+    real_post, real_get = url_scanner.requests.post, url_scanner.requests.get
+    try:
+        scan = _online(age=2000)
+        os.environ["ABUSECH_AUTH_KEY"] = "a"; os.environ["URLSCAN_API_KEY"] = "u"
+
+        def fake_post(url, data=None, json=None, headers=None, timeout=None):
+            assert headers.get("Auth-Key") == "a"
+            if "urlhaus-api" in url and url.endswith("/url/"):
+                return _FakeResponse(200, {"query_status": "ok" if "malware-drop" in data["url"] else "no_results", "threat": "malware_download"})
+            if "urlhaus-api" in url:
+                dbl = "phishing_domain" if "sbi-secure-login" in data["host"] else "not listed"
+                return _FakeResponse(200, {"query_status": "ok", "urls_online": 0, "url_count": 0, "blacklists": {"spamhaus_dbl": dbl, "surbl": "not listed"}})
+            if "threatfox" in url:
+                return _FakeResponse(200, {"query_status": "ok" if json["search_term"] == "c2-panel-host.net" else "no_result",
+                                           "data": [{"malware_printable": "AgentTesla"}]})
+            if "mb-api" in url:
+                return _FakeResponse(200, {"query_status": "ok", "data": [{"signature": "SpyNote"}]})
+            raise AssertionError(url)
+
+        def fake_get(url, params=None, headers=None, timeout=None):
+            if "urlscan.io" in url:
+                hit = "evil-shop-deals.com" in params["q"]
+                return _FakeResponse(200, {"results": [{"page": {"domain": "evil-shop-deals.com"}}] if hit else []})
+            return real_get(url, params=params, headers=headers, timeout=timeout)
+        url_scanner.requests.post, url_scanner.requests.get = fake_post, fake_get
+        r = scan("https://files-host.com/malware-drop.exe")
+        assert any(c["id"] == "feeds" and c["status"] == "fail" and c["value"] == "URLhaus" for c in r["checks"]), r["checks"]
+        r = scan("https://sbi-secure-login.com/")
+        assert r["verdict"] == "DANGEROUS" and any(c.get("value") == "Spamhaus" for c in r["checks"]), r["checks"]
+        r = scan("https://c2-panel-host.net/")
+        assert any(c.get("value") == "ThreatFox" for c in r["checks"]), r["checks"]
+        r = scan("https://evil-shop-deals.com/")
+        assert any(c["id"] == "urlscan" and c["status"] == "fail" for c in r["checks"]), r["checks"]
+        fs.requests.post = fake_post
+        assert fs.check_malwarebazaar("0" * 64) == {"found": True, "signature": "SpyNote"}
+    finally:
+        url_scanner.requests.post, url_scanner.requests.get = real_post, real_get
+        os.environ.pop("ABUSECH_AUTH_KEY", None); os.environ.pop("URLSCAN_API_KEY", None)
+        _restore()
+
+
+def test_connection_uses_proxycheck_and_abuseipdb():
+    import scanners.network_checker as nc
+    real_get = nc.requests.get
+    try:
+        os.environ["ABUSEIPDB_KEY"] = "x"
+
+        def fake_get(url, params=None, headers=None, timeout=None):
+            if "proxycheck" in url:
+                return _FakeResponse(200, {"status": "ok", "5.6.7.8": {"provider": "M247", "country": "India", "isocode": "IN",
+                                           "region": "Karnataka", "city": "Bengaluru", "timezone": "Asia/Kolkata", "proxy": "yes", "type": "VPN"}})
+            if "abuseipdb" in url:
+                return _FakeResponse(200, {"data": {"abuseConfidenceScore": 80, "totalReports": 40}})
+            return _FakeResponse(500, {})
+        nc.requests.get = fake_get
+        r = nc.analyze_ip("5.6.7.8", "Asia/Kolkata")
+        assert any(c["id"] == "net_vpn" and c["status"] == "warn" for c in r["checks"]), r
+        assert any(c["id"] == "net_abuse" and c["status"] == "warn" for c in r["checks"]), r
+        assert r["location"].startswith("Bengaluru"), r
+    finally:
+        nc.requests.get = real_get
+        os.environ.pop("ABUSEIPDB_KEY", None)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

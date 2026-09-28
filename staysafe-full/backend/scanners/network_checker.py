@@ -35,13 +35,101 @@ def get_client_ip() -> str:
     return request.remote_addr or ""
 
 
-def lookup_ip(ip: str) -> dict:
+def _ip_api(ip: str) -> dict:
+    """ip-api.com free tier: last fallback (plain HTTP, non-commercial use only)."""
     resp = requests.get(
         f"http://ip-api.com/json/{ip}?fields=status,message,country,countryCode,regionName,city,"
         "isp,org,as,proxy,hosting,mobile,timezone,query",
         timeout=6,
     )
     return resp.json()
+
+
+def _proxycheck(ip: str) -> dict:
+    """
+    proxycheck.io: VPN / proxy / hosting detection plus location, over HTTPS.
+    100 lookups a day without a key, 1,000 a day with a free key (PROXYCHECK_KEY).
+    """
+    import os
+    params = {"vpn": 1, "asn": 1}
+    if os.environ.get("PROXYCHECK_KEY"):
+        params["key"] = os.environ["PROXYCHECK_KEY"]
+    resp = requests.get(f"https://proxycheck.io/v2/{ip}", params=params, timeout=6)
+    data = resp.json()
+    info = data.get(ip) if isinstance(data, dict) else None
+    if data.get("status") not in ("ok", "warning") or not isinstance(info, dict):
+        return {}
+    kind = str(info.get("type", "")).lower()
+    return {
+        "status": "success",
+        "country": info.get("country", ""), "countryCode": info.get("isocode", ""),
+        "regionName": info.get("region", ""), "city": info.get("city", ""),
+        "isp": info.get("provider", ""), "org": info.get("organisation", "") or info.get("provider", ""),
+        "as": info.get("asn", ""), "timezone": info.get("timezone", ""),
+        "proxy": str(info.get("proxy", "")).lower() == "yes" or kind in ("vpn", "tor"),
+        "hosting": kind in ("hosting", "business hosting", "datacenter"),
+        "mobile": kind == "wireless",
+        "source": "proxycheck.io",
+    }
+
+
+def _ipinfo(ip: str) -> dict:
+    """ipinfo Lite (free, unlimited, HTTPS; IPINFO_TOKEN): country and network owner (ASN)."""
+    import os
+    token = os.environ.get("IPINFO_TOKEN", "")
+    if not token:
+        return {}
+    resp = requests.get(f"https://api.ipinfo.io/lite/{ip}", params={"token": token}, timeout=6)
+    if resp.status_code != 200:
+        return {}
+    d = resp.json()
+    return {"country": d.get("country", ""), "countryCode": d.get("country_code", ""),
+            "isp": d.get("as_name", ""), "org": d.get("as_name", ""), "as": d.get("asn", "")}
+
+
+def lookup_ip(ip: str) -> dict:
+    """Combine the free sources: proxycheck.io (+ ipinfo for the network owner), else ip-api."""
+    data = {}
+    try:
+        data = _proxycheck(ip)
+    except Exception:
+        data = {}
+    try:
+        extra = _ipinfo(ip)
+        if extra:
+            data = {**{"status": "success"}, **data, **{k: v for k, v in extra.items() if v}}
+    except Exception:
+        pass
+    if not data.get("city") or not data.get("timezone"):
+        try:
+            fallback = _ip_api(ip)
+            if fallback.get("status") == "success":
+                merged = dict(fallback)
+                merged.update({k: v for k, v in data.items() if v not in ("", None)})
+                if data:  # proxycheck's VPN verdict wins over ip-api's
+                    merged["proxy"] = data.get("proxy", False) or fallback.get("proxy", False)
+                data = merged
+        except Exception:
+            pass
+    return data
+
+
+def abuse_report(ip: str) -> dict:
+    """AbuseIPDB (free key ABUSEIPDB_KEY, 1,000 checks a day): has this address been reported for attacks?"""
+    import os
+    key = os.environ.get("ABUSEIPDB_KEY", "")
+    if not key or not ip:
+        return {}
+    try:
+        resp = requests.get("https://api.abuseipdb.com/api/v2/check", params={"ipAddress": ip, "maxAgeInDays": 90},
+                            headers={"Key": key, "Accept": "application/json"}, timeout=6)
+        if resp.status_code != 200:
+            return {}
+        d = resp.json().get("data", {})
+        return {"score": int(d.get("abuseConfidenceScore") or 0), "reports": int(d.get("totalReports") or 0),
+                "usage": d.get("usageType") or ""}
+    except Exception:
+        return {}
 
 
 _TOR = {"ips": set(), "loaded_at": 0.0, "loading": False}
@@ -112,6 +200,16 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
         checks.append({"id": "net_hosting", "status": "warn", "value": data.get("org") or isp})
     else:
         checks.append({"id": "net_hosting", "status": "pass", "value": isp})
+
+    abuse = abuse_report(ip)
+    if abuse:
+        if abuse["score"] >= 25:
+            findings.append(f"Your internet address has been reported for attacks or spam ({abuse['score']}% confidence). "
+                            "This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected")
+            score += 15 if abuse["score"] >= 50 else 5
+            checks.append({"id": "net_abuse", "status": "warn", "value": abuse["score"]})
+        else:
+            checks.append({"id": "net_abuse", "status": "pass", "value": None})
 
     if data.get("mobile"):
         findings.append("You appear to be on a mobile data network")

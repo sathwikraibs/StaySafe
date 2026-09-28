@@ -280,6 +280,26 @@ export const hiContent: LangContent = {
     "This website first appeared online only {n} days ago. Very new sites are a big warning sign": "यह वेबसाइट सिर्फ़ {n} दिन पहले ऑनलाइन आई। बहुत नई वेबसाइटें बड़ा खतरे का संकेत हैं",
     "You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks": "आप Tor नेटवर्क इस्तेमाल कर रहे हैं। कई बैंक और पेमेंट साइटें Tor को रोकती हैं या अतिरिक्त जाँच माँगती हैं",
     "You've checked a lot of addresses. Please try again in an hour.": "आपने कई पते जाँच लिए हैं। कृपया एक घंटे बाद फिर कोशिश करें।",
+
+    // ---- AI second opinion, urlscan, AbuseIPDB, MalwareBazaar
+    "An AI review also found no scam signs": "AI जाँच में भी धोखे के कोई संकेत नहीं मिले",
+    "An AI review also thinks this is a scam: {reason}": "AI जाँच भी इसे धोखा मानती है: {reason}",
+    "An AI review thinks this message is suspicious: {reason}": "AI जाँच इस मैसेज को संदिग्ध मानती है: {reason}",
+    "Pretends to be a bank or payment app to get your details or money": "आपकी जानकारी या पैसे पाने के लिए बैंक या पेमेंट ऐप होने का नाटक करता है",
+    "Pretends to be the government, police or a utility company to scare you": "डराने के लिए सरकार, पुलिस या बिजली/गैस कंपनी होने का नाटक करता है",
+    "Promises a prize, gift, cashback or refund that isn't real": "ऐसा इनाम, गिफ़्ट, कैशबैक या रिफंड देने का वादा करता है जो असली नहीं है",
+    "Fake job, task or easy-money offer": "नकली नौकरी, टास्क या आसान कमाई का ऑफ़र",
+    "Fake investment or trading offer": "नकली निवेश या ट्रेडिंग ऑफ़र",
+    "Fake loan offer": "नकली लोन ऑफ़र",
+    "Uses romance or friendship to get money": "पैसे पाने के लिए प्यार या दोस्ती का इस्तेमाल करता है",
+    "Pretends to be a friend or family member who needs money": "पैसों की ज़रूरत वाला दोस्त या परिवार का सदस्य होने का नाटक करता है",
+    "Fake delivery, courier or parcel problem": "नकली डिलीवरी, कूरियर या पार्सल की समस्या",
+    "Fake tech support, or asks you to install an app": "नकली टेक सपोर्ट, या कोई ऐप इंस्टॉल करने को कहता है",
+    "Other scam tricks": "धोखे की दूसरी चालें",
+    "Security scans on urlscan.io found a scam or malware page on this website in the last 3 months": "urlscan.io की सुरक्षा जाँचों में पिछले 3 महीनों में इस वेबसाइट पर धोखे या मैलवेयर वाला पेज मिला",
+    "The server this website runs on has been reported for attacks ({n}% confidence)": "यह वेबसाइट जिस सर्वर पर चलती है, उसकी हमलों के लिए शिकायत हुई है ({n}% भरोसा)",
+    "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "यह फ़ाइल MalwareBazaar पर एक जाना-माना मैलवेयर है ({name})। इसे डिलीट करें",
+    "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "आपके इंटरनेट पते की हमलों या स्पैम के लिए शिकायत हुई है ({n}% भरोसा)। ऐसा पब्लिक Wi-Fi या मोबाइल डेटा जैसे साझा नेटवर्क पर, या आपके नेटवर्क का कोई डिवाइस संक्रमित होने पर हो सकता है",
   }),
 
   incidents: {

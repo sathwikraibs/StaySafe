@@ -281,6 +281,26 @@ export const tcyContent: LangContent = {
     "This website first appeared online only {n} days ago. Very new sites are a big warning sign": "ಈ ವೆಬ್‌ಸೈಟ್ {n} ದಿನ ದುಂಬು ಮಾತ್ರ ಆನ್‌ಲೈನ್‌ಗ್ ಬೈದ್ಂಡ್. ಮಸ್ತ್ ಪೊಸ ವೆಬ್‌ಸೈಟ್‌ಲು ಮಲ್ಲ ಎಚ್ಚರಿಕೆದ ಸೂಚನೆ",
     "You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks": "ಈರ್ Tor ನೆಟ್‌ವರ್ಕ್ ಗಳಸೊಂದುಲ್ಲರ್. ಮಸ್ತ್ ಬ್ಯಾಂಕ್ ಬೊಕ್ಕ ಪೇಮೆಂಟ್ ಸೈಟ್‌ಲು Tor ನ್ ತಡೆಪುಂಡು ಅತ್ತಂಡ ಜಾಸ್ತಿ ಪರಿಶೀಲನೆ ಕೇನುಂಡು",
     "You've checked a lot of addresses. Please try again in an hour.": "ಈರ್ ಮಸ್ತ್ ವಿಳಾಸೊಲೆನ್ ತೂಯರ್. ದಯದಿಂದ ಒಂಜಿ ಗಂಟೆ ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+
+    // ---- AI second opinion, urlscan, AbuseIPDB, MalwareBazaar
+    "An AI review also found no scam signs": "AI ಪರಿಶೀಲನೆಡ್‌ಲಾ ಮೋಸದ ಸೂಚನೆ ತಿಕ್ಕಿಜಿ",
+    "An AI review also thinks this is a scam: {reason}": "AI ಪರಿಶೀಲನೆಲಾ ಉಂದೆನ್ ಮೋಸ ಪನ್ಪುಂಡು: {reason}",
+    "An AI review thinks this message is suspicious: {reason}": "AI ಪರಿಶೀಲನೆ ಈ ಮೆಸೇಜ್ ಸಂಶಯದ್ ಪನ್ಪುಂಡು: {reason}",
+    "Pretends to be a bank or payment app to get your details or money": "ಈರೆನ ವಿವರ ಅತ್ತಂಡ ಪೈಸೆ ದೆತೊನೆರೆ ಬ್ಯಾಂಕ್ ಅತ್ತಂಡ ಪೇಮೆಂಟ್ ಆ್ಯಪ್ ಪಂಡ್ದ್ ನಟನೆ ಮಲ್ಪುಂಡು",
+    "Pretends to be the government, police or a utility company to scare you": "ಪೆದರಾವರೆ ಸರಕಾರ, ಪೊಲೀಸ್ ಅತ್ತಂಡ ವಿದ್ಯುತ್/ಗ್ಯಾಸ್ ಕಂಪನಿ ಪಂಡ್ದ್ ನಟನೆ ಮಲ್ಪುಂಡು",
+    "Promises a prize, gift, cashback or refund that isn't real": "ನಿಜ ಅತ್ತಿನ ಬಹುಮಾನ, ಉಡುಗೊರೆ, ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್ ಅತ್ತಂಡ ರಿಫಂಡ್ ಕೊರ್ಪೆ ಪನ್ಪುಂಡು",
+    "Fake job, task or easy-money offer": "ನಕಲಿ ಬೇಲೆ, ಟಾಸ್ಕ್ ಅತ್ತಂಡ ಸುಲಭ ಸಂಪಾದನೆದ ಆಫರ್",
+    "Fake investment or trading offer": "ನಕಲಿ ಹೂಡಿಕೆ ಅತ್ತಂಡ ಟ್ರೇಡಿಂಗ್ ಆಫರ್",
+    "Fake loan offer": "ನಕಲಿ ಸಾಲದ ಆಫರ್",
+    "Uses romance or friendship to get money": "ಪೈಸೆ ದೆತೊನೆರೆ ಪ್ರೀತಿ ಅತ್ತಂಡ ಸ್ನೇಹ ಗಳಸುಂಡು",
+    "Pretends to be a friend or family member who needs money": "ಪೈಸೆ ಬೋಡಾಯಿನ ಸ್ನೇಹಿತೆ ಅತ್ತಂಡ ಕುಟುಂಬದಕುಲು ಪಂಡ್ದ್ ನಟನೆ ಮಲ್ಪುಂಡು",
+    "Fake delivery, courier or parcel problem": "ನಕಲಿ ಡೆಲಿವರಿ, ಕೊರಿಯರ್ ಅತ್ತಂಡ ಪಾರ್ಸೆಲ್ ಸಮಸ್ಯೆ",
+    "Fake tech support, or asks you to install an app": "ನಕಲಿ ಟೆಕ್ ಸಪೋರ್ಟ್, ಅತ್ತಂಡ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು",
+    "Other scam tricks": "ಮೋಸದ ಬೇತೆ ತಂತ್ರೊಲು",
+    "Security scans on urlscan.io found a scam or malware page on this website in the last 3 months": "urlscan.io ಭದ್ರತಾ ಪರಿಶೀಲನೆಲು ಕರಿನ 3 ತಿಂಗೊಳುಡು ಈ ವೆಬ್‌ಸೈಟ್‌ಡ್ ಮೋಸ ಅತ್ತಂಡ ಮಾಲ್‌ವೇರ್ ಪುಟ ತೂತೊಂಡ್",
+    "The server this website runs on has been reported for attacks ({n}% confidence)": "ಈ ವೆಬ್‌ಸೈಟ್ ನಡಪುನ ಸರ್ವರ್‌ದ ಮಿತ್ತ್ ದಾಳಿದ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ)",
+    "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ಡ್ ಗೊತ್ತುಪ್ಪುನ ಮಾಲ್‌ವೇರ್ ({name}). ಉಂದೆನ್ ಡಿಲೀಟ್ ಮಲ್ಪುಲೆ",
+    "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ಈರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮಿತ್ತ್ ದಾಳಿ ಅತ್ತಂಡ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅತ್ತಂಡ ಮೊಬೈಲ್ ಡೇಟಾದ ಲೆಕ್ಕೊದ ಹಂಚಿಕೆದ ನೆಟ್‌ವರ್ಕ್‌ಡ್, ಅತ್ತಂಡ ಈರೆನ ನೆಟ್‌ವರ್ಕ್‌ದ ಏತಾಂಡಲ ಸಾಧನೊಗು ವೈರಸ್ ಬತ್ತ್‌ಂಡ ಇಂಚ ಆವೊಲಿ",
   }),
 
   incidents: {

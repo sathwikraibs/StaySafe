@@ -28,7 +28,7 @@ function languageName(code: string, uiLang: string): string {
 /** The "What we checked" list for a message, worked out from the result. */
 function messageChecks(r: ScanMessageResponse): Check[] {
   const checks: Check[] = [];
-  const signs = r.patterns_detected.filter((p) => !p.startsWith("The link ") && !p.startsWith("This message has "));
+  const signs = r.patterns_detected.filter((p) => !p.startsWith("The link ") && !p.startsWith("This message has ") && !p.startsWith("An AI review"));
   checks.push({ id: "msg_patterns", status: signs.length === 0 ? "pass" : signs.length >= 2 ? "fail" : "warn", value: signs.length });
   const links = r.links_checked ?? [];
   const risky = links.filter((l) => verdictTone(l.verdict) !== "safe").length;
@@ -36,6 +36,10 @@ function messageChecks(r: ScanMessageResponse): Check[] {
     ? { id: "msg_links", status: "info" }
     : risky ? { id: "msg_links", status: "fail", value: risky } : { id: "msg_links", status: "pass", value: links.length });
   checks.push({ id: "msg_safe", status: r.safe_signals && r.safe_signals.length ? "pass" : "info" });
+  if (r.ai_review) {
+    const v = r.ai_review.verdict;
+    checks.push({ id: "msg_ai", status: v === "scam" ? "fail" : v === "suspicious" ? "warn" : v === "safe" ? "pass" : "info" });
+  }
   if (r.verdict === "UNCERTAIN") checks.push({ id: "msg_language", status: "warn" });
   else if (r.translation) checks.push({ id: "msg_language", status: "info" });
   return checks;

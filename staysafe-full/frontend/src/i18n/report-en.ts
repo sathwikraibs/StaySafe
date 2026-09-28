@@ -178,6 +178,30 @@ export const reportEn = {
   },
 
   checks: {
+    msg_ai: {
+      pass: "An AI review found no scam signs",
+      warn: "An AI review thinks it looks suspicious",
+      fail: "An AI review thinks it is a scam",
+      info: "The AI review wasn't sure",
+    },
+    urlscan: {
+      pass: "No scam pages found in security scans (urlscan.io)",
+      fail: "Security scans found scam pages on this website",
+    },
+    server: {
+      pass: "The website's server has no abuse reports",
+      warn: "The website's server was reported for attacks",
+      warnV: "The website's server was reported for attacks ({value}% confidence)",
+    },
+    net_abuse: {
+      pass: "Your internet address has no abuse reports",
+      warn: "Your internet address was reported for abuse",
+      warnV: "Your internet address was reported for abuse ({value}% confidence)",
+    },
+    file_bazaar: {
+      fail: "Known malware sample",
+      failV: "Known malware sample: {value}",
+    },
     file_apk: {
       pass: "The app doesn't ask for risky permissions",
       warn: "The app asks for some risky permissions",

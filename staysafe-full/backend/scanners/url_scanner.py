@@ -278,7 +278,7 @@ def _cached(key, fn):
         waiter.set()
 
 
-_PROBLEMS = {"safe_browsing": None, "virustotal": None}
+_PROBLEMS = {"safe_browsing": None, "virustotal": None, "abusech": None, "urlscan": None}
 
 
 def link_check_status() -> dict:
@@ -286,6 +286,9 @@ def link_check_status() -> dict:
     return {
         "safe_browsing": {"configured": bool(GOOGLE_SAFE_BROWSING_API_KEY), "problem": _PROBLEMS["safe_browsing"]},
         "virustotal": {"configured": bool(VIRUSTOTAL_API_KEY), "problem": _PROBLEMS["virustotal"]},
+        "abusech": {"configured": bool(_abusech_key()), "problem": _PROBLEMS["abusech"]},
+        "urlscan": {"configured": bool(os.environ.get("URLSCAN_API_KEY")), "problem": _PROBLEMS["urlscan"]},
+        "abuseipdb": {"configured": bool(os.environ.get("ABUSEIPDB_KEY"))},
         "public_lists": {"links": sum(_FEEDS["counts"].values()), "counts": _FEEDS["counts"],
                          "problem": _FEEDS["problem"],
                          "big_lists": _BIG["counts"], "big_problem": _BIG["problem"]},
@@ -771,7 +774,10 @@ def refresh_feeds() -> None:
     urls, hosts, counts, problems = {}, {}, {}, []
     for name, src in FEED_SOURCES.items():
         try:
-            resp = requests.get(src, timeout=25, headers={"User-Agent": "StaySafe/2.0"})
+            hdrs = {"User-Agent": "StaySafe/2.0"}
+            if "abuse.ch" in src and _abusech_key():
+                hdrs["Auth-Key"] = _abusech_key()
+            resp = requests.get(src, timeout=25, headers=hdrs)
             if resp.status_code != 200:
                 problems.append(f"{name}: HTTP {resp.status_code}")
                 continue
@@ -966,6 +972,108 @@ def big_feed_lookup(urls, host: str, reg: str) -> dict:
         if any(c and _in_fingerprints(arr, c) for c in {h, reg}):
             return {"status": "warn" if shared else "fail", "source": name}
     return {"status": "pass"}
+
+
+# ---------------------------------------------------------------------------
+# 4d. Lookups that need a free key (each is skipped until its key is added)
+#     ABUSECH_AUTH_KEY : URLhaus (malware links, with Spamhaus DBL / SURBL results) and
+#                        ThreatFox (malware and botnet servers)       free at auth.abuse.ch
+#     URLSCAN_API_KEY  : urlscan.io, past scans of this website marked malicious
+#     ABUSEIPDB_KEY    : is the website's server reported for attacks
+# ---------------------------------------------------------------------------
+BAD_DBL = ("phishing", "malware", "botnet", "spam")
+
+
+def _abusech_key() -> str:
+    return os.environ.get("ABUSECH_AUTH_KEY", "")
+
+
+def check_abusech(url: str, host: str) -> dict:
+    """
+    {'status': 'fail'|'warn'|'pass'|'skip', 'source': str, 'detail': str}
+    fail: this exact link is a known malware link, the website is a known malware/botnet
+          server (ThreatFox), or Spamhaus lists the domain as phishing/malware/spam.
+    warn: other links on this website spread malware recently.
+    """
+    key = _abusech_key()
+    if OFFLINE or not key or not host:
+        return {"status": "skip"}
+
+    def call():
+        headers = {"Auth-Key": key, "User-Agent": "StaySafe/2.0"}
+        out = {"status": "pass"}
+        try:
+            r = requests.post("https://urlhaus-api.abuse.ch/v1/url/", data={"url": url}, headers=headers, timeout=6).json()
+            if r.get("query_status") == "ok":
+                return {"status": "fail", "source": "URLhaus", "detail": r.get("threat") or ""}
+            h = requests.post("https://urlhaus-api.abuse.ch/v1/host/", data={"host": host}, headers=headers, timeout=6).json()
+            if h.get("query_status") == "ok":
+                dbl = str((h.get("blacklists") or {}).get("spamhaus_dbl", "")).lower()
+                surbl = str((h.get("blacklists") or {}).get("surbl", "")).lower()
+                if dbl and not dbl.startswith(("not", "abused_legit")) and any(w in dbl for w in BAD_DBL):
+                    return {"status": "fail", "source": "Spamhaus", "detail": dbl}
+                if surbl == "listed":
+                    out = {"status": "warn", "source": "SURBL", "detail": ""}
+                if int(h.get("urls_online") or 0) > 0 or int(h.get("url_count") or 0) >= 3:
+                    out = {"status": "warn", "source": "URLhaus", "detail": ""}
+            t = requests.post("https://threatfox-api.abuse.ch/api/v1/", json={"query": "search_ioc", "search_term": host},
+                              headers=headers, timeout=6).json()
+            if t.get("query_status") == "ok" and t.get("data"):
+                fam = (t["data"][0] or {}).get("malware_printable") or ""
+                return {"status": "fail", "source": "ThreatFox", "detail": fam}
+        except Exception as e:
+            _PROBLEMS["abusech"] = type(e).__name__
+            return {"status": "skip"}
+        _PROBLEMS["abusech"] = None
+        return out
+
+    return _cached(("abusech", url), call)
+
+
+def check_urlscan(host: str) -> dict:
+    """urlscan.io: has this exact website been scanned and marked malicious in the last 90 days?"""
+    key = os.environ.get("URLSCAN_API_KEY", "")
+    if OFFLINE or not key or not host:
+        return {"status": "skip"}
+
+    def call():
+        try:
+            resp = requests.get("https://urlscan.io/api/v1/search/", timeout=8,
+                                params={"q": f'page.domain:"{host}" AND verdicts.malicious:true AND date:>now-90d', "size": 5},
+                                headers={"API-Key": key, "User-Agent": "StaySafe/2.0"})
+            if resp.status_code != 200:
+                _PROBLEMS["urlscan"] = f"HTTP {resp.status_code}"
+                return {"status": "skip"}
+            data = resp.json()
+        except Exception as e:
+            _PROBLEMS["urlscan"] = type(e).__name__
+            return {"status": "skip"}
+        _PROBLEMS["urlscan"] = None
+        hits = [r for r in data.get("results", []) if (r.get("page") or {}).get("domain", "").lower() == host]
+        return {"status": "fail", "count": len(hits)} if hits else {"status": "pass"}
+
+    return _cached(("urlscan", host), call)
+
+
+def check_server_abuse(ip: str) -> dict:
+    """AbuseIPDB: has the server this website runs on been reported for attacks?"""
+    key = os.environ.get("ABUSEIPDB_KEY", "")
+    if OFFLINE or not key or not ip:
+        return {}
+
+    def call():
+        try:
+            resp = requests.get("https://api.abuseipdb.com/api/v2/check", params={"ipAddress": ip, "maxAgeInDays": 90},
+                                headers={"Key": key, "Accept": "application/json"}, timeout=6)
+            d = resp.json().get("data", {}) if resp.status_code == 200 else {}
+        except Exception:
+            d = {}
+        if not d:
+            return {"none": True}
+        return {"score": int(d.get("abuseConfidenceScore") or 0), "whitelisted": bool(d.get("isWhitelisted"))}
+
+    out = _cached(("abuseip", ip), call)
+    return {} if out.get("none") else out
 
 # ---------------------------------------------------------------------------
 # 5. VirusTotal
@@ -1213,6 +1321,8 @@ def scan_url(url: str) -> dict:
     gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
     crt_f = None if (trusted or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
+    abusech_f = _POOL.submit(check_abusech, url, host)
+    urlscan_f = None if (trusted or is_ip(host)) else _POOL.submit(check_urlscan, host)
 
     def result_of(f, default, timeout=10):
         if f is None:
@@ -1371,6 +1481,11 @@ def scan_url(url: str) -> dict:
     rank_order = {"fail": 0, "warn": 1, "pass": 2, "skip": 3}
     if rank_order[big["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and big["status"] != "skip"):
         feed = big
+    ach = result_of(abusech_f, {"status": "skip"}, 8)
+    if trusted and ach["status"] == "warn":
+        ach = {"status": "pass"}
+    if rank_order[ach["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and ach["status"] != "skip"):
+        feed = ach
     if feed["status"] == "fail":
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
         score = max(score + 50, 95)
@@ -1383,6 +1498,27 @@ def scan_url(url: str) -> dict:
         _check(checks, "feeds", "skip")
     else:
         _check(checks, "feeds", "pass")
+
+    # --- urlscan.io: scans by security researchers that found a scam page on this website
+    shared_site = structure["hosting"] and host == structure["hosting"]
+    us_res = result_of(urlscan_f, {"status": "skip"}, 8)
+    if us_res["status"] == "fail" and not shared_site and (popularity_rank(reg) or 10**9) > 20_000:
+        findings.append("Security scans on urlscan.io found a scam or malware page on this website in the last 3 months")
+        score += 30
+        _check(checks, "urlscan", "fail", us_res.get("count"))
+    elif us_res["status"] == "pass":
+        _check(checks, "urlscan", "pass")
+
+    # --- AbuseIPDB: the server itself
+    server_ip = (dns.get("ips") or [None])[0]
+    if server_ip and not trusted and not structure["hosting"]:
+        ab = _run(check_server_abuse, server_ip, timeout=6, default={}) or {}
+        if ab.get("score", 0) >= 50 and not ab.get("whitelisted"):
+            findings.append(f"The server this website runs on has been reported for attacks ({ab['score']}% confidence)")
+            score += 10
+            _check(checks, "server", "warn", ab["score"])
+        elif ab:
+            _check(checks, "server", "pass")
 
     # --- VirusTotal
     if vt.get("status") == "ok":
@@ -1425,7 +1561,7 @@ def scan_url(url: str) -> dict:
         checks[:] = [c for c in checks if not (c["id"] == "known" and c["status"] == "info")]
         total = min(total, 20) if rank <= 10_000 else max(0, total - 10)
 
-    order = ["google", "feeds", "virustotal", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
+    order = ["google", "feeds", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
 
     return {

@@ -1037,6 +1037,8 @@ def scan_message_route():
 
     result = add_translation(analyze_text(text), request_language())
     result = add_sender_checks(result, str(data.get("sender") or ""))
+    from scanners.ai_review import apply_review
+    result = apply_review(result, text)
     result = check_links_in_result(result)
 
     from scanners.risk_engine import log_scan
@@ -1086,6 +1088,8 @@ def scan_screenshot_route():
 
     result = add_translation(analyze_text(extracted_text), request_language())
     result = add_sender_checks(result, request.form.get("sender", ""))
+    from scanners.ai_review import apply_review
+    result = apply_review(result, extracted_text)
     result = check_links_in_result(result)
 
     from scanners.risk_engine import log_scan
