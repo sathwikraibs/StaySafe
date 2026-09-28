@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { LinkDetails } from "@/components/WebsiteDetails";
 import { ErrorNotice } from "@/components/PageBits";
@@ -13,6 +13,7 @@ import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 
 export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
+  const pace = usePace();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanUrlResponse | null>(null);
@@ -26,7 +27,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
     setResult(null);
     try {
       setAsked(url.trim());
-      const data = await apiPostJSON<ScanUrlResponse>(`${API_BASE}/api/scan-url`, { url: url.trim() });
+      const data = await pace("link", apiPostJSON<ScanUrlResponse>(`${API_BASE}/api/scan-url`, { url: url.trim() }));
       setResult(data);
       // show the tidied address in the box so the person sees exactly what was checked
       if (data.url && data.url !== url.trim()) setUrl(data.url);

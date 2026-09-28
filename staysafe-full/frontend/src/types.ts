@@ -40,6 +40,7 @@ export interface ScanUrlResponse {
       valid_to?: string; days_left?: number; cert_age_days?: number;
     };
     server?: { country?: string; city?: string; company?: string };
+    virustotal?: VirusTotalInfo | null;
   };
 }
 
@@ -209,4 +210,9 @@ export interface VirusTotalInfo {
   names?: string[];
   tags?: string[];
   link?: string;
+  /** links: "link" = this exact address, "website" = the whole site */
+  scope?: "link" | "website";
+  categories?: string[];
+  reputation?: number | null;
+  title?: string;
 }

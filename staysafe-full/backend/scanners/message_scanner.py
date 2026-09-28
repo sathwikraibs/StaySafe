@@ -728,13 +728,38 @@ def extract_links(text: str) -> list:
     return links
 
 
-def check_links_in_result(result: dict) -> dict:
-    """Run the full link scanner on up to 3 links and fold the results into the verdict."""
+# Screenshot reading often turns the dot in ".gov.in" into an "l" or "i" (TRAI.GOV.IN -> TRAILGOV.IN)
+OCR_LINK_FIXES = [(re.compile(r"(?i)^(https?://)?([a-z0-9-]+?)[li1|,]((?:gov|nic|org|co|ac|edu)\.in)(/|$)"), r"\1\2.\3\4"),
+                  (re.compile(r"(?i),(com|in|org|net)\b"), r".\1")]
+
+
+def fix_ocr_link(link: str) -> str:
+    """A misread official address is put right when the corrected one is a known official site."""
+    from scanners.url_scanner import registered_domain, TRUSTED_DOMAINS, BRANDS, resolve_host, OFFLINE
+    from urllib.parse import urlparse
+    official = TRUSTED_DOMAINS | set().union(*BRANDS.values())
+    for rx, repl in OCR_LINK_FIXES:
+        fixed = rx.sub(repl, link)
+        if fixed != link:
+            # never "correct" an address that really exists: a scam site could use that exact name
+            orig_host = (urlparse(link if "://" in link else "https://" + link).hostname or "").lower()
+            if not OFFLINE and resolve_host(orig_host).get("exists") is not False:
+                continue
+            host = (urlparse(fixed if "://" in fixed else "https://" + fixed).hostname or "").lower()
+            if host.endswith((".gov.in", ".nic.in")) or registered_domain(host) in official:
+                return fixed
+    return link
+
+
+def check_links_in_result(result: dict, from_screenshot: bool = False) -> dict:
+    """Run the full link scanner on up to 5 links and fold the results into the verdict."""
     from scanners.url_scanner import scan_url
 
     from scanners.url_scanner import LINK_POOL
 
     links = extract_links(result.get("text_analyzed", ""))
+    if from_screenshot:
+        links = list(dict.fromkeys(fix_ocr_link(l) for l in links))
     checked = []
     extra_score = 0
     extra_label = ""
@@ -753,6 +778,13 @@ def check_links_in_result(result: dict) -> dict:
             "checks": link_result.get("checks", []),
             "details": link_result.get("details", {}),
         })
+        if from_screenshot:
+            # A link read from a picture may be misread. A made-up looking address that simply
+            # doesn't exist is then more likely our misreading than a scam, unless other checks agree.
+            hard = [c for c in link_result.get("checks", []) if c["status"] == "fail" and c["id"] != "exists"]
+            if not hard and any(c["id"] == "exists" and c["status"] == "fail" for c in link_result.get("checks", [])):
+                checked.pop()
+                continue
         reason = next((f for f in link_result["findings"] if "Could not" not in f), "")
         if link_result["verdict"] == "DANGEROUS":
             result["patterns_detected"].append(
@@ -841,7 +873,7 @@ def add_translation(result: dict, ui_lang: str) -> dict:
 # ---------------------------------------------------------------------------
 # OCR helpers
 # ---------------------------------------------------------------------------
-def _prepare_for_ocr(img):
+def _prepare_for_ocr(img, target_w: int = 1100):
     """
     Grayscale, fix phone photo rotation, bring the size into the range Tesseract reads
     best AND fast, handle dark mode. Phone screenshots (e.g. 1080x2400) are scaled so the
@@ -850,7 +882,6 @@ def _prepare_for_ocr(img):
     img = ImageOps.exif_transpose(img)
     img = img.convert("L")
     w, h = img.size
-    target_w = 1100
     scale = target_w / w
     # never let the picture get too big in total (that is what makes reading slow)
     max_pixels = 3_000_000
@@ -937,10 +968,98 @@ def _ocr_space(image_bytes_jpeg: bytes) -> str:
         return ""
 
 
+def _tesseract_conf(img, lang: str, config: str, timeout: int):
+    """Text plus Tesseract's average confidence (0-100) for the words it read."""
+    try:
+        d = pytesseract.image_to_data(img, lang=lang, config=config, timeout=max(5, timeout),
+                                      output_type=pytesseract.Output.DICT)
+    except RuntimeError as e:
+        OCR_PROBLEM["last"] = f"{lang} {config}: {str(e)[:160] or 'timed out'}"
+        return "", 0.0
+    except Exception as e:
+        OCR_PROBLEM["last"] = f"{lang}: {type(e).__name__}: {str(e)[:120]}"
+        return "", 0.0
+    lines, confs = {}, []
+    for k, word in enumerate(d.get("text", [])):
+        if not str(word).strip():
+            continue
+        key = (d["block_num"][k], d["par_num"][k], d["line_num"][k])
+        lines.setdefault(key, []).append(str(word))
+        try:
+            c = float(d["conf"][k])
+            if c >= 0:
+                confs.append(c)
+        except (TypeError, ValueError):
+            pass
+    text = "\n".join(" ".join(ws) for _, ws in sorted(lines.items()))
+    return text.strip(), (sum(confs) / len(confs) if confs else 0.0)
+
+
+def _latin_items(text: str) -> list:
+    """Links, email addresses, UPI IDs and phone numbers in an English reading of a picture."""
+    items = []
+    for m in re.finditer(r"(?:https?://)?(?:[A-Za-z0-9-]+\.)+(?:com|in|net|org|co|xyz|top|info|app|link|me|ly|io|gov\.in|nic\.in)(?:/[^\s]*)?"
+                         r"|[\w.+-]+@[\w-]+(?:\.[\w-]+)*|\+?\d[\d\s-]{8,}\d", text or "", re.IGNORECASE):
+        v = m.group(0).strip().rstrip(".,;:")
+        if v and v not in items:
+            items.append(v)
+    return items[:8]
+
+
+def fix_ocr_links(text: str) -> str:
+    """
+    Screenshot reading often turns the dot in an underlined link into 'L', 'I' or '1'
+    ('TRAI.GOV.IN' -> 'TRAILGOV.IN'). When the name as read doesn't exist on the internet and
+    putting a dot back gives a known official website (a bank, a brand, any .gov.in / .nic.in /
+    .bank.in site), use that instead. A lookalike that really exists is never "corrected".
+    """
+    from scanners.url_scanner import TRUSTED_DOMAINS, registered_domain
+
+    def official(host: str) -> bool:
+        host = host.lower()
+        return registered_domain(host) in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in"))
+
+    def fix(m):
+        host = m.group(0)
+        if official(host):
+            return host
+        # a real website with this exact name (maybe a lookalike a scammer bought) stays as read
+        try:
+            from scanners.url_scanner import resolve_host
+            if resolve_host(host.lower()).get("exists") is not False:
+                return host
+        except Exception:
+            return host
+        for i, ch in enumerate(host):
+            if ch in "lLiI1|":
+                for cand in (host[:i] + "." + host[i + 1:], host[:i] + "." + host[i:]):
+                    if ".." not in cand and official(cand):
+                        return cand
+        return host
+
+    return re.sub(r"(?<![\w@.-])(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?![\w-])", fix, text or "")
+
+
+def _detect_script(img) -> str:
+    """Tesseract's script detector: 'Kannada', 'Devanagari', 'Latin'... or '' when unsure."""
+    try:
+        osd = pytesseract.image_to_osd(img, config="--psm 0", timeout=10)
+    except Exception:
+        return ""
+    m = re.search(r"Script:\s*(\w+)", osd)
+    return m.group(1) if m else ""
+
+
+SCRIPT_LANG = {"Kannada": "kan", "Devanagari": "hin"}
+
+
 def extract_text_from_image(image_bytes: bytes) -> str:
     """
-    1. English only on a right-sized picture (fast).
-    2. If the text looks like Kannada/Hindi, read again with those languages.
+    1. Ask Tesseract which script the screenshot is in. Kannada or Hindi screenshots are read
+       with that language (plus English for numbers, links and names).
+    2. Otherwise read it as English, and check Tesseract's own confidence. Text in another
+       script read as English comes back as confident-looking nonsense with LOW confidence, so
+       then we read it again with Kannada and Hindi and keep the better reading.
     3. If nothing worked, try a smaller picture, then the optional OCR.space backup.
     Raises RuntimeError only when every way failed.
     """
@@ -949,20 +1068,42 @@ def extract_text_from_image(image_bytes: bytes) -> str:
     img.load()
     prepared = _prepare_for_ocr(img)
     langs = ocr_languages()
+    installed = set(langs.split("+"))
 
     def left() -> int:
         return int(OCR_TIME_BUDGET - (time.time() - started))
 
+    def native_share(text: str) -> float:
+        mix = script_mix(text)
+        return mix["supported"] + mix["other"]
+
     with _OCR_LOCK:
-        english = _tesseract(prepared, "eng", "--oem 1 --psm 6", min(40, left()))
-        if english and (_looks_like_real_english(english) or langs == "eng"):
+        script = _detect_script(prepared) if len(installed) > 1 else ""
+        native = SCRIPT_LANG.get(script)
+        if native and native in installed:
+            # Indian scripts have small joined letters: a bigger picture reads them much better
+            big = _prepare_for_ocr(img, 1600)
+            text, conf = _tesseract_conf(big, f"{native}+eng", "--oem 1 --psm 6", min(45, left()))
+            if text and (conf >= 45 or native_share(text) >= 0.2):
+                # ...but the bigger picture can garble underlined links. Take links, numbers and
+                # email addresses from a normal-size English reading too, so they get checked.
+                if left() > 8:
+                    english = _tesseract(prepared, "eng", "--oem 1 --psm 6", min(25, left()))
+                    extras = [x for x in _latin_items(english) if x.lower() not in text.lower()]
+                    if extras:
+                        text = text.rstrip() + "\n" + " ".join(extras)
+                return text
+
+        english, eng_conf = _tesseract_conf(prepared, "eng", "--oem 1 --psm 6", min(40, left()))
+        if english and (langs == "eng" or (eng_conf >= 72 and _looks_like_real_english(english))):
             return english
 
-        best = english
+        best, best_conf = english, eng_conf
         if langs != "eng" and left() > 10:
-            mixed = _tesseract(prepared, langs, "--oem 1 --psm 6", left())
-            if len(mixed) >= len(english) * 0.6:
-                best = mixed or english
+            mixed, mixed_conf = _tesseract_conf(prepared, langs, "--oem 1 --psm 6", left())
+            # prefer the Indian-language reading when it is at least as sure, or clearly found that script
+            if mixed and (mixed_conf >= best_conf - 5 or native_share(mixed) >= 0.25):
+                best, best_conf = mixed, mixed_conf
         if best:
             return best
 
@@ -1176,12 +1317,13 @@ def scan_screenshot_route():
                      "or paste the message text instead."
         }), 400
 
+    extracted_text = fix_ocr_links(extracted_text)
     result = add_translation(analyze_text(extracted_text), request_language())
     result = add_sender_checks(result, request.form.get("sender", ""))
     result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, extracted_text)
-    result = check_links_in_result(result)
+    result = check_links_in_result(result, from_screenshot=True)
     result = finalize_parts(result)
 
     from scanners.risk_engine import log_scan

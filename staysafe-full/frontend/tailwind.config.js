@@ -48,8 +48,6 @@ export default {
       fontFamily: {
         heading: ['Comfortaa', 'Quicksand', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'system-ui', 'sans-serif'],
         body: ['Nunito', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'system-ui', 'sans-serif'],
-        report: ['Fraunces', 'Noto Serif Devanagari', 'Noto Serif Kannada', 'Georgia', 'serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       borderRadius: {
         'xl2': '20px',

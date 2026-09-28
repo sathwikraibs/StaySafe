@@ -1001,6 +1001,18 @@ def test_sender_box_takes_anything():
     assert name_matches_address("PayZone Support", "x@mail-center.co") is False
 
 
+
+def test_screenshot_link_dot_fix_only_for_names_that_dont_exist():
+    from scanners import message_scanner as ms
+    real = url_scanner.resolve_host
+    try:
+        url_scanner.resolve_host = lambda h: {"exists": h in ("incometaxlgov.in",), "ips": []}
+        assert ms.fix_ocr_links("visit TRAILGOV.IN now") == "visit TRAI.GOV.IN now"
+        assert ms.fix_ocr_links("go to incometaxlgov.in") == "go to incometaxlgov.in"   # a real lookalike stays
+    finally:
+        url_scanner.resolve_host = real
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

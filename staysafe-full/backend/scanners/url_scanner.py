@@ -1099,6 +1099,30 @@ def _vt_get(path: str):
         return None, "error"
 
 
+def _vt_report(attrs: dict, scope: str) -> dict:
+    """The full VirusTotal result, shown on our own page: what every security company said."""
+    from scanners.file_scanner import _engine_list, _vt_date
+    stats = attrs.get("last_analysis_stats", {}) or {}
+    cats = sorted({str(c) for c in (attrs.get("categories") or {}).values() if c})[:6]
+    return {
+        "state": "found",
+        "scope": scope,                                   # "link" = this exact address, "website" = the whole site
+        "malicious": stats.get("malicious", 0),
+        "suspicious": stats.get("suspicious", 0),
+        "harmless": stats.get("harmless", 0),
+        "undetected": stats.get("undetected", 0),
+        "total": sum(v for k, v in stats.items() if k in ("malicious", "suspicious", "undetected", "harmless")),
+        "engines": _engine_list(attrs.get("last_analysis_results") or {}),
+        "categories": cats,
+        "reputation": attrs.get("reputation"),
+        "first_seen": _vt_date(attrs.get("first_submission_date") or attrs.get("creation_date")),
+        "last_analysis": _vt_date(attrs.get("last_analysis_date")),
+        "times_submitted": attrs.get("times_submitted"),
+        "title": str(attrs.get("title") or "")[:120],
+        "tags": (attrs.get("tags") or [])[:6],
+    }
+
+
 def check_virustotal(url: str, domain: str) -> dict:
     """
     {'status': 'ok'|'not_found'|'skip', 'malicious', 'suspicious', 'harmless', 'engines',
@@ -1124,6 +1148,7 @@ def check_virustotal(url: str, domain: str) -> dict:
             stats = attrs.get("last_analysis_stats", {})
             out.update(status="ok", malicious=stats.get("malicious", 0), suspicious=stats.get("suspicious", 0),
                        harmless=stats.get("harmless", 0), engines=sum(stats.values()) if stats else 0)
+            out["report"] = _vt_report(attrs, "link")
         if out["status"] == "ok":
             return out
         # Link never seen: look at the whole website's reputation (also gives its age)
@@ -1134,6 +1159,7 @@ def check_virustotal(url: str, domain: str) -> dict:
             if out["status"] != "ok":
                 out.update(status="ok", suspicious=dstats.get("suspicious", 0),
                            harmless=dstats.get("harmless", 0), engines=sum(dstats.values()) if dstats else 0)
+            out["report"] = _vt_report(dattrs, "website")
             created = dattrs.get("creation_date")
             if isinstance(created, (int, float)) and created > 0:
                 out["created_days"] = max(0, int((time.time() - created) // 86400))
@@ -1589,6 +1615,7 @@ def scan_url(url: str) -> dict:
             "page_title": page.get("title", ""),
             "age_days": age_days,
             "ip": (dns.get("ips") or [""])[0],
+            "virustotal": vt.get("report"),
             "whois": result_of(who_f, {}, 10),
             "certificate": result_of(cert_f, {}, 6),
             "server": _run(server_details, (dns.get("ips") or [""])[0], timeout=6, default={}),

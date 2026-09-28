@@ -105,6 +105,25 @@ function ToolAnimation({ tool, th }: { tool: WaitingTool; th: ToolTheme }) {
   }
 }
 
+/** Time each step is shown. Every scan takes at least (number of steps x this). */
+export const STEP_MS = 1300;
+
+/**
+ * Lets a scan take its time: the answer is shown only after every step has been worked
+ * through, so people can see each check happen. Errors are shown straight away.
+ */
+export function usePace() {
+  const { tl } = useI18n();
+  return async function pace<T>(tool: WaitingTool, work: Promise<T>): Promise<T> {
+    const min = tl(`waiting.${tool}`).length * STEP_MS + 400;
+    const started = Date.now();
+    const out = await work;
+    const left = min - (Date.now() - started);
+    if (left > 0) await new Promise((r) => setTimeout(r, left));
+    return out;
+  };
+}
+
 /**
  * Friendly progress while we check. Steps tick off one by one; the last step keeps going
  * until the answer arrives, with a changing reassuring line underneath.
@@ -124,7 +143,6 @@ export function LoadingSteps({ tool }: { tool: WaitingTool }) {
     return () => clearInterval(timer);
   }, []);
 
-  const STEP_MS = 1500;
   const done = Math.min(steps.length - 1, Math.floor(elapsed / STEP_MS));
   const allTicked = done >= steps.length - 1;
   const stillLine = allTicked && still.length ? still[Math.floor((elapsed - STEP_MS * (steps.length - 1)) / 3500) % still.length] : "";

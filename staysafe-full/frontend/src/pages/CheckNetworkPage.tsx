@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
 import { apiGet, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { Check, CheckNetworkResponse } from "@/types";
-import { IconNetwork, IconArrowRight, IconWarning } from "@/icons";
+import { IconArrowRight, IconNetwork, IconWarning } from "@/icons";
+import { Section } from "@/components/Section";
 import { useI18n } from "@/i18n";
 
 const SAFEHOP_URL = "https://safehop.vercel.app/";
@@ -56,6 +57,7 @@ function deviceChecks(): { checks: Check[]; browser: string; netType: string } {
 
 export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, tl } = useI18n();
+  const pace = usePace();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CheckNetworkResponse | null>(null);
   const [device, setDevice] = useState<ReturnType<typeof deviceChecks> | null>(null);
@@ -66,7 +68,7 @@ export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) =
     setLoading(true); setError(null); setResult(null);
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-      const data = await apiGet<CheckNetworkResponse>(`${API_BASE}/api/check-network?tz=${encodeURIComponent(tz)}`);
+      const data = await pace("network", apiGet<CheckNetworkResponse>(`${API_BASE}/api/check-network?tz=${encodeURIComponent(tz)}`));
       setDevice(deviceChecks());
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
@@ -116,8 +118,7 @@ export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) =
           onNavigate={onNavigate}
         >
           {rows.length > 0 && (
-            <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
-              <h3 className="mb-3 font-heading text-lg font-semibold text-ink-900">{t("networkMore.detailsTitle")}</h3>
+            <Section icon={<IconNetwork className="h-5 w-5" />} title={t("networkMore.detailsTitle")} tone="info" defaultOpen>
               <dl className="grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
                 {rows.map(([k, v]) => (
                   <div key={k} className="contents">
@@ -126,14 +127,10 @@ export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) =
                   </div>
                 ))}
               </dl>
-            </div>
+            </Section>
           )}
-
-          <div className="rounded-2xl border-2 border-terracotta-300 bg-terracotta-300/20 p-5">
-            <p className="flex items-center gap-2 font-heading text-lg font-semibold text-terracotta-700">
-              <IconWarning className="h-5 w-5" /> {t("networkMore.publicWifiTitle")}
-            </p>
-            <ul className="mt-3 space-y-2">
+          <Section icon={<IconWarning className="h-5 w-5" />} title={t("networkMore.publicWifiTitle")} tone="warn">
+            <ul className="space-y-2">
               {tl("networkMore.publicWifi").map((tip) => (
                 <li key={tip} className="flex items-start gap-2.5 font-body text-sm text-ink-800">
                   <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-terracotta-400" />
@@ -141,7 +138,7 @@ export function CheckNetworkPage({ onNavigate }: { onNavigate?: (path: string) =
                 </li>
               ))}
             </ul>
-          </div>
+          </Section>
         </ResultReport>
       )}
 

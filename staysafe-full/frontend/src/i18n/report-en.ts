@@ -3,6 +3,7 @@
 
 export const reportEn = {
   report: {
+    checkedCount: "{n} checks",
     riskLow: "Low risk",
     riskMedium: "Medium risk",
     riskHigh: "High risk",
@@ -484,7 +485,9 @@ export const reportEn = {
       "Checking the website really exists",
       "Looking for fake bank and brand names",
       "Asking Google's list of dangerous sites",
+      "Searching more than a million known scam links",
       "Asking 70+ security companies",
+      "Looking at past security scans of this website",
       "Opening the page safely for you",
       "Checking how old the website is",
       "Putting your report together",
@@ -494,7 +497,9 @@ export const reportEn = {
       "Looking for OTP and PIN requests",
       "Checking for threats and pressure",
       "Looking for fake prizes, jobs and refunds",
+      "Checking phone numbers, email addresses and UPI IDs",
       "Checking every link inside",
+      "Getting a second opinion",
       "Putting your report together",
     ],
     screenshot: [
@@ -516,7 +521,9 @@ export const reportEn = {
       "Uploading your file safely",
       "Finding out what the file really is",
       "Looking for hidden programs and macros",
+      "Checking it against known malware",
       "Comparing it with security companies' records",
+      "Checking any links inside the file",
       "Putting your report together",
     ],
     password: [
@@ -536,7 +543,9 @@ export const reportEn = {
     email: [
       "Reading the email",
       "Checking who really sent it",
+      "Checking the sender's website against scam lists",
       "Looking for scam wording",
+      "Checking numbers and UPI IDs inside",
       "Checking every link inside",
       "Putting your report together",
     ],
@@ -681,6 +690,14 @@ export const reportEn = {
   },
 
   vt: {
+    showLess: "Show fewer",
+    names: "Known names",
+    pageTitle: "Page title",
+    categories: "Listed as",
+    websiteScope: "This exact link hasn't been scanned before, so this is the result for the whole website.",
+    cleanLink: "No security company flagged this ({total} checked)",
+    flaggedLink: "{n} of {total} security companies flagged this link",
+    newFile: "New file",
     title: "Checked by 70+ antivirus companies",
     notSeen: "None of the antivirus companies have seen this exact file before. That doesn't make it safe, so only open it if you trust where it came from.",
     queued: "The file was sent for a full scan. It can take a few minutes. Open the full report to see the result.",

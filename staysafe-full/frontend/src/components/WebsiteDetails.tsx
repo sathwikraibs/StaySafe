@@ -5,6 +5,8 @@ import { IconGlobe, IconLock, IconShield, IconLink } from "@/icons";
 import type { LinkCheck, ScanUrlResponse } from "@/types";
 import { verdictTone, toneClasses, toneTagKey } from "@/verdict";
 import { IconChevronRight } from "@/icons";
+import { Section } from "@/components/Section";
+import { VirusTotalPanel } from "@/components/VirusTotalPanel";
 
 type Details = NonNullable<ScanUrlResponse["details"]>;
 
@@ -33,20 +35,15 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 function Panel({ icon, title, tone, badge, children }: {
   icon: ReactNode; title: string; tone: "blue" | "green" | "amber" | "red"; badge?: ReactNode; children: ReactNode;
 }) {
-  const head = {
-    blue: "from-dustyblue-100 to-cream-50 text-dustyblue-600",
-    green: "from-sage-100 to-cream-50 text-sage-700",
-    amber: "from-terracotta-300/30 to-cream-50 text-terracotta-700",
-    red: "from-rust-400/20 to-cream-50 text-rust-600",
-  }[tone];
+  const color = { blue: "text-dustyblue-600", green: "text-sage-700", amber: "text-terracotta-700", red: "text-rust-600" }[tone];
   return (
-    <div className="overflow-hidden rounded-2xl border border-cream-200 bg-cream-50 shadow-warm-sm animate-fade-up">
-      <div className={`flex items-center gap-2.5 bg-gradient-to-r px-4 py-3 ${head}`}>
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cream-50/80">{icon}</span>
-        <h4 className="flex-1 font-heading text-base font-semibold">{title}</h4>
+    <div className="rounded-xl bg-cream-100/70 px-3.5 py-2.5">
+      <div className={`flex items-center gap-2 ${color}`}>
+        {icon}
+        <h4 className="flex-1 font-heading text-sm font-bold">{title}</h4>
         {badge}
       </div>
-      <dl className="px-4 py-1">{children}</dl>
+      <dl className="mt-1">{children}</dl>
     </div>
   );
 }
@@ -92,7 +89,10 @@ export function LinkDetails({ details }: { details?: ScanUrlResponse["details"] 
 
   return (
     <div className="space-y-3">
-      <h3 className="px-1 font-heading text-lg font-semibold text-ink-900">{t("siteInfo.title")}</h3>
+      <VirusTotalPanel vt={d.virustotal ?? undefined} kind="link" />
+      <Section icon={<IconGlobe className="h-5 w-5" />} title={t("siteInfo.title")} tone="info"
+        summary={age !== null && age !== undefined ? formatAge(age) : d.domain}>
+      <div className="space-y-2.5">
 
       <Panel icon={<IconLink className="h-4 w-4" />} title={t("siteInfo.addressTitle")} tone="blue">
         {d.domain && <Row label={t("linkInfo.site")}><span className="font-mono">{d.domain}</span></Row>}
@@ -164,6 +164,8 @@ export function LinkDetails({ details }: { details?: ScanUrlResponse["details"] 
           {srv.company && <Row label={t("siteInfo.company")}>{srv.company}</Row>}
         </Panel>
       )}
+      </div>
+      </Section>
     </div>
   );
 }
@@ -174,9 +176,10 @@ export function CheckedLinks({ links, title, note }: { links: LinkCheck[]; title
   const [open, setOpen] = useState<string | null>(null);
   if (!links.length) return null;
   return (
-    <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-      <p className="font-heading text-lg font-semibold text-ink-900">{title}</p>
-      <ul className="mt-3 space-y-2.5">
+    <Section icon={<IconLink className="h-5 w-5" />} title={title} defaultOpen
+      tone={links.some((l) => verdictTone(l.verdict) === "danger") ? "bad" : links.some((l) => verdictTone(l.verdict) === "caution") ? "warn" : "good"}
+      summary={String(links.length)}>
+      <ul className="space-y-2.5">
         {links.map((link) => {
           const tone = verdictTone(link.verdict);
           const cls = toneClasses(tone);
@@ -205,6 +208,6 @@ export function CheckedLinks({ links, title, note }: { links: LinkCheck[]; title
         })}
       </ul>
       {note && <p className="mt-3 font-body text-xs text-dustyblue-600">{note}</p>}
-    </div>
+    </Section>
   );
 }

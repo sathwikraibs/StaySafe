@@ -1,7 +1,8 @@
 import { PageHeader } from "@/components/PageBits";
 import { Card } from "@/components/Card";
 import { useI18n } from "@/i18n";
-import { IconShield, IconCheck, IconLock, IconWarning, IconChat } from "@/icons";
+import { IconShield, IconCheck, IconLock, IconWarning, IconChat, IconSearch } from "@/icons";
+import { Section } from "@/components/Section";
 
 export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const { t, tl } = useI18n();
@@ -16,9 +17,31 @@ export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }
           <h2 className="font-heading text-lg font-semibold text-ink-900">{t("about.whatTitle")}</h2>
         </div>
         <p className="font-body text-sm leading-relaxed text-ink-700">{t("about.what")}</p>
-        <h3 className="mb-1 mt-4 font-heading text-base font-semibold text-ink-800">{t("about.howTitle")}</h3>
-        <p className="font-body text-sm leading-relaxed text-ink-700">{t("about.how")}</p>
       </Card>
+
+      <Card className="p-5 sm:p-6">
+        <h2 className="font-heading text-lg font-semibold text-ink-900">{t("about.stepsTitle")}</h2>
+        <ol className="mt-3 space-y-3">
+          {tl("about.steps").map((step, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage-500 font-heading text-sm font-bold text-cream-50">{i + 1}</span>
+              <span className="pt-0.5 font-body text-sm leading-relaxed text-ink-800">{step}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-4 rounded-xl bg-cream-100 p-3 font-body text-sm leading-relaxed text-ink-700">{t("about.how")}</p>
+      </Card>
+
+      <Section icon={<IconSearch className="h-5 w-5" />} title={t("about.toolsTitle")} tone="info">
+        <dl className="space-y-3">
+          {(["link", "message", "qr", "file", "email", "password", "network"] as const).map((k) => (
+            <div key={k}>
+              <dt className="font-heading text-sm font-bold text-ink-900">{t(`report.toolName.${k}`)}</dt>
+              <dd className="mt-0.5 font-body text-sm text-ink-700">{t(`about.tools.${k}`)}</dd>
+            </div>
+          ))}
+        </dl>
+      </Section>
 
       <div className="flex items-start gap-3 rounded-2xl border-2 border-terracotta-300 bg-terracotta-300/20 p-5">
         <IconWarning className="mt-0.5 h-5 w-5 shrink-0 text-terracotta-600" />

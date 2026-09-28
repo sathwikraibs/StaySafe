@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
 import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
-import { Card } from "@/components/Card";
 import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { Check, ScanMessageResponse } from "@/types";
 import { verdictTone } from "@/verdict";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 import { CheckedLinks } from "@/components/WebsiteDetails";
-import { IconInfo, IconLanguage } from "@/icons";
+import { IconInfo, IconLanguage, IconCheck, IconImage } from "@/icons";
+import { Section } from "@/components/Section";
 import { useI18n } from "@/i18n";
 
 /** "Tamil", "ತಮಿಳು", "तमिल"… — the name of a language code, in the website language. */
@@ -47,6 +47,7 @@ function messageChecks(r: ScanMessageResponse): Check[] {
 
 export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, ts, lang } = useI18n();
+  const pace = usePace();
   const [text, setText] = useState("");
   const [sender, setSender] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -61,7 +62,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
     setPendingTool("message");
     setLoading(true); setError(null); setResult(null);
     try {
-      const data = await apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim(), sender: sender.trim() });
+      const data = await pace("message", apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim(), sender: sender.trim() }));
       setResult(data); setFromScreenshot(false);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -74,7 +75,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
       const fd = new FormData();
       fd.append("image", file);
       if (sender.trim()) fd.append("sender", sender.trim());
-      const data = await apiPostForm<ScanMessageResponse>(`${API_BASE}/api/scan-screenshot`, fd);
+      const data = await pace("screenshot", apiPostForm<ScanMessageResponse>(`${API_BASE}/api/scan-screenshot`, fd));
       setResult(data); setFromScreenshot(true);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -158,33 +159,27 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
           onNavigate={onNavigate}
         >
           {result.translation && (
-            <Card className="border-2 border-sage-200 p-5">
-              <p className="flex items-center gap-2 font-heading text-lg font-semibold text-ink-900">
-                <IconLanguage className="h-5 w-5 text-sage-600" /> {t("message.meaningTitle")}
-              </p>
-              <p className="mt-0.5 font-body text-xs text-dustyblue-600">
+            <Section icon={<IconLanguage className="h-5 w-5" />} title={t("message.meaningTitle")} tone="good" defaultOpen
+              summary={languageName(result.translation.from, lang)}>
+              <p className="font-body text-xs text-dustyblue-600">
                 {t("message.translatedFrom", { lang: languageName(result.translation.from, lang) })}
                 {lang === "tcy" && result.translation.to === "kn" ? `, ${t("message.shownInKannada")}` : ""}
               </p>
-              <p className="mt-3 whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-base text-ink-800">
+              <p className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-base text-ink-800">
                 {result.translation.text}
               </p>
-              <p className="mt-2 font-body text-xs text-dustyblue-500">{t("message.meaningNote", { provider: ({ mymemory: "MyMemory", gemini: "Google Gemini", bhashini: "Bhashini", google: "Google" } as Record<string, string>)[result.translation.provider ?? ""] ?? "MyMemory" })}</p>
-            </Card>
+              <p className="mt-2 font-body text-xs text-dustyblue-500">{t("message.meaningNoteSimple")}</p>
+            </Section>
           )}
           {result.notes && result.notes.length > 0 && (
-            <div className="space-y-2 rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100 p-5">
-              <p className="flex items-center gap-2 font-heading text-lg font-semibold text-ink-900">
-                <IconInfo className="h-5 w-5 text-dustyblue-500" /> {t("message.notesTitle")}
-              </p>
-              {result.notes.map((n) => (
-                <p key={n} className="font-body text-sm text-ink-700">{ts(n)}</p>
-              ))}
-            </div>
+            <Section icon={<IconInfo className="h-5 w-5" />} title={t("message.notesTitle")} tone="info" defaultOpen summary={String(result.notes.length)}>
+              <div className="space-y-2">
+                {result.notes.map((n) => <p key={n} className="font-body text-sm text-ink-800">{ts(n)}</p>)}
+              </div>
+            </Section>
           )}
           {result.safe_signals && result.safe_signals.length > 0 && (
-            <div className="rounded-2xl border-2 border-sage-200 bg-sage-100 p-5">
-              <p className="mb-2 font-heading text-lg font-semibold text-sage-700">{t("message.goodSigns")}</p>
+            <Section icon={<IconCheck className="h-5 w-5" />} title={t("message.goodSigns")} tone="good" summary={String(result.safe_signals.length)}>
               <ul className="space-y-1.5">
                 {result.safe_signals.map((g) => (
                   <li key={g} className="flex items-start gap-2 font-body text-sm text-ink-800">
@@ -192,17 +187,16 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
                   </li>
                 ))}
               </ul>
-            </div>
+            </Section>
           )}
           {result.links_checked && result.links_checked.length > 0 && (
             <CheckedLinks links={result.links_checked} title={t("message.linksTitle")} note={t("message.linksNote")} />
           )}
           {fromScreenshot && result.text_analyzed && (
-            <Card className="p-5">
-              <p className="font-heading text-lg font-semibold text-ink-900">{t("message.ocrTitle")}</p>
-              <p className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-cream-100 p-3 font-body text-sm text-ink-800">{result.text_analyzed}</p>
+            <Section icon={<IconImage className="h-5 w-5" />} title={t("message.ocrTitle")}>
+              <p className="whitespace-pre-wrap break-words rounded-xl bg-cream-100 p-3 font-body text-sm text-ink-800">{result.text_analyzed}</p>
               <p className="mt-2 font-body text-xs text-dustyblue-600">{t("message.ocrNote")}</p>
-            </Card>
+            </Section>
           )}
         </ResultReport>
       )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
@@ -46,6 +46,7 @@ function StrengthBar({ result }: { result: CheckPasswordResponse }) {
 
 export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
+  const pace = usePace();
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -56,7 +57,7 @@ export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) 
     if (!password || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
-      const data = await apiPostJSON<CheckPasswordResponse>(`${API_BASE}/api/check-password`, { password });
+      const data = await pace("password", apiPostJSON<CheckPasswordResponse>(`${API_BASE}/api/check-password`, { password }));
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
@@ -10,6 +10,7 @@ import { API_BASE } from "@/config";
 import type { ScanEmailResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { IconEmail, IconChevronRight } from "@/icons";
+import { Section } from "@/components/Section";
 
 const FIND_EMAIL = /[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
 
@@ -57,6 +58,7 @@ const inputCls = "w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-4 
 
 export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
+  const pace = usePace();
   const [mode, setMode] = useState<"form" | "source">("form");
   const [sender, setSender] = useState("");
   const [name, setName] = useState("");
@@ -104,7 +106,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
       const payload = mode === "form"
         ? { sender_email: splitSender(sender).email || sender.trim(), sender_name: name.trim() || splitSender(sender).name, subject: subject.trim(), body: body.trim(), reply_to: splitSender(replyTo).email }
         : { raw_email: raw.trim() };
-      const data = await apiPostJSON<ScanEmailResponse>(`${API_BASE}/api/scan-email`, payload);
+      const data = await pace("email", apiPostJSON<ScanEmailResponse>(`${API_BASE}/api/scan-email`, payload));
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -215,12 +217,8 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
           findings={result.findings}
           onNavigate={onNavigate}
         >
-          <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
-            <div className="flex items-center gap-2">
-              <IconEmail className="h-5 w-5 text-dustyblue-600" />
-              <h3 className="font-heading text-lg font-semibold text-ink-900">{t("email.details")}</h3>
-            </div>
-            <dl className="mt-3 grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
+          <Section icon={<IconEmail className="h-5 w-5" />} title={t("email.details")} tone="info" summary={result.from || undefined}>
+            <dl className="grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
               <dt className={label}>{t("emailInfo.from")}</dt>
               <dd className={value}>{[result.from_name, result.from].filter(Boolean).join(" · ") || t("common.unknown")}</dd>
               <dt className={label}>{t("emailInfo.replyTo")}</dt>
@@ -228,7 +226,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
               <dt className={label}>{t("emailInfo.links")}</dt>
               <dd className={value}>{result.links_found?.length || 0}</dd>
             </dl>
-          </div>
+          </Section>
           {result.links_checked && result.links_checked.length > 0 && (
             <CheckedLinks links={result.links_checked} title={t("message.linksTitle")} />
           )}

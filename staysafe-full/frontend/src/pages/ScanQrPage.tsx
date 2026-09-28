@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
 import { ErrorNotice } from "@/components/PageBits";
@@ -10,11 +10,13 @@ import { QrCameraScanner } from "@/components/QrCameraScanner";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { Section } from "@/components/Section";
 import { LinkDetails } from "@/components/WebsiteDetails";
 import { IconQr, IconCamera } from "@/icons";
 
 export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
+  const pace = usePace();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanQrResponse | null>(null);
@@ -28,7 +30,7 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
     try {
       const fd = new FormData();
       fd.append("image", img);
-      const data = await apiPostForm<ScanQrResponse>(`${API_BASE}/api/scan-qr`, fd);
+      const data = await pace("qr", apiPostForm<ScanQrResponse>(`${API_BASE}/api/scan-qr`, fd));
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -38,7 +40,7 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
     setCamera(false);
     setLoading(true); setError(null); setResult(null);
     try {
-      const data = await apiPostJSON<ScanQrResponse>(`${API_BASE}/api/scan-qr-text`, { data: text });
+      const data = await pace("qr", apiPostJSON<ScanQrResponse>(`${API_BASE}/api/scan-qr-text`, { data: text }));
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -59,20 +61,21 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
             onClose={() => setCamera(false)}
           />
         </div>
-      ) : (
-        <button
-          onClick={() => { setResult(null); setError(null); setCamera(true); }}
-          disabled={loading}
-          className="btn-press card-hover mb-4 flex w-full items-center gap-4 rounded-2xl bg-gradient-to-br from-[#A283B0] to-[#6E4E7C] p-5 text-left text-cream-50 shadow-warm-lg disabled:opacity-60"
-        >
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20"><IconCamera className="h-7 w-7" /></span>
-          <span className="min-w-0">
-            <span className="block font-heading text-lg font-bold">{t("qrCam.open")}</span>
-            <span className="block font-body text-sm text-cream-50/85">{t("qrCam.openHint")}</span>
-          </span>
-        </button>
-      )}
+      ) : null}
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
+        {!camera && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="font-body text-sm text-ink-700">{t("qrCam.openHint")}</p>
+            <button
+              type="button"
+              onClick={() => { setResult(null); setError(null); setCamera(true); }}
+              disabled={loading}
+              className="btn-press inline-flex items-center gap-2 rounded-full border-2 border-[#8C6A9B] bg-cream-50 px-4 py-2 font-body text-sm font-bold text-[#6E4E7C] hover:bg-[#8C6A9B]/10 disabled:opacity-60"
+            >
+              <IconCamera className="h-4 w-4" /> {t("qrCam.open")}
+            </button>
+          </div>
+        )}
         <UploadZone
           accept="image/*"
           label={t("qr.uploadLabel")}
@@ -107,18 +110,10 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
           onNavigate={onNavigate}
         >
           {result.raw_data && (
-            <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
-              <div className="flex items-center gap-2">
-                <IconQr className="h-5 w-5 text-dustyblue-600" />
-                <h3 className="font-heading text-lg font-semibold text-ink-900">{t("qr.contains")}</h3>
-                {result.qr_type && (
-                  <span className="ml-auto rounded-full bg-cream-50 px-2.5 py-1 font-body text-xs font-bold text-dustyblue-600">
-                    {typeLabel(result.qr_type)}
-                  </span>
-                )}
-              </div>
-              <p className="mt-3 break-all rounded-xl bg-cream-50 p-3 font-mono text-xs text-ink-800 sm:text-sm">{result.raw_data}</p>
-            </div>
+            <Section icon={<IconQr className="h-5 w-5" />} title={t("qr.contains")} tone="info" defaultOpen
+              summary={result.qr_type ? typeLabel(result.qr_type) : undefined}>
+              <p className="break-all rounded-xl bg-cream-100 p-3 font-mono text-xs text-ink-800 sm:text-sm">{result.raw_data}</p>
+            </Section>
           )}
           {result.qr_type === "url" && <LinkDetails details={result.details} />}
         </ResultReport>

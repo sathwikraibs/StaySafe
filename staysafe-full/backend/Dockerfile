@@ -5,7 +5,7 @@
 FROM python:3.11-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-kan tesseract-ocr-hin libzbar0 libglib2.0-0 \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-osd tesseract-ocr-kan tesseract-ocr-hin libzbar0 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -18,4 +18,4 @@ ENV PYTHONUNBUFFERED=1
 # shared machine those threads fight each other and reading a screenshot takes minutes.
 ENV OMP_THREAD_LIMIT=1
 # One worker keeps the in-memory scan history in a single process; threads handle concurrency.
-CMD gunicorn app:app --bind 0.0.0.0:${PORT:-10000} --workers 1 --threads 4 --timeout 120
+CMD gunicorn app:app --bind 0.0.0.0:${PORT:-10000} --workers 1 --threads 8 --timeout 180

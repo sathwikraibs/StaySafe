@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
 import { ErrorNotice } from "@/components/PageBits";
@@ -9,7 +9,8 @@ import { apiPostForm, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
 import { useI18n } from "@/i18n";
-import { IconFile } from "@/icons";
+import { IconFile, IconKey } from "@/icons";
+import { Section } from "@/components/Section";
 import { CheckedLinks } from "@/components/WebsiteDetails";
 import { VirusTotalPanel } from "@/components/VirusTotalPanel";
 
@@ -22,6 +23,7 @@ function formatSize(bytes?: number): string {
 
 export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, ts } = useI18n();
+  const pace = usePace();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanFileResponse | null>(null);
@@ -35,7 +37,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
       const fd = new FormData();
       fd.append("file", file);
       if (fullScan) fd.append("vt_upload", "1");
-      const data = await apiPostForm<ScanFileResponse>(`${API_BASE}/api/scan-file`, fd);
+      const data = await pace("file", apiPostForm<ScanFileResponse>(`${API_BASE}/api/scan-file`, fd));
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -90,12 +92,18 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           {result.links_checked && result.links_checked.length > 0 && (
             <CheckedLinks links={result.links_checked} title={t("fileX.linksTitle")} />
           )}
-          <div className="rounded-2xl border-2 border-dustyblue-200 bg-dustyblue-100/60 p-5">
-            <div className="flex items-center gap-2">
-              <IconFile className="h-5 w-5 text-dustyblue-600" />
-              <h3 className="font-heading text-lg font-semibold text-ink-900">{t("file.details")}</h3>
-            </div>
-            <dl className="mt-3 grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
+          {result.apk && result.apk.permissions.length > 0 && (
+            <Section icon={<IconKey className="h-5 w-5" />} title={t("fileX.permissions", { n: result.apk.permissions.length })}
+              tone={result.checks?.some((c) => c.id === "file_apk" && c.status === "fail") ? "bad" : "info"}>
+              <ul className="flex flex-wrap gap-1.5">
+                {result.apk.permissions.map((p) => (
+                  <li key={p} className="rounded-md bg-cream-100 px-2 py-0.5 font-mono text-[11px] text-ink-700">{p.replace("android.permission.", "")}</li>
+                ))}
+              </ul>
+            </Section>
+          )}
+          <Section icon={<IconFile className="h-5 w-5" />} title={t("file.details")} summary={typeof result.size === "number" ? formatSize(result.size) : undefined}>
+            <dl className="grid gap-2.5 sm:grid-cols-[auto,1fr] sm:gap-x-5">
               <dt className={label}>{t("fileInfo.name")}</dt>
               <dd className={`${value} break-all`}>{result.filename}</dd>
               {result.detected_type && result.detected_type !== "unknown" && (
@@ -121,19 +129,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
                 </>
               )}
             </dl>
-            {result.apk && result.apk.permissions.length > 0 && (
-              <details className="mt-3 rounded-xl bg-cream-100 px-3 py-2">
-                <summary className="cursor-pointer font-body text-sm font-bold text-ink-800">
-                  {t("fileX.permissions", { n: result.apk.permissions.length })}
-                </summary>
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {result.apk.permissions.map((p) => (
-                    <li key={p} className="rounded-md bg-cream-50 px-2 py-0.5 font-mono text-[11px] text-ink-700">{p.replace("android.permission.", "")}</li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </div>
+          </Section>
         </ResultReport>
       )}
     </div>
