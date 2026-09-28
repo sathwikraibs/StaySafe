@@ -20,6 +20,8 @@ import os
 import re
 import hashlib
 import zipfile
+
+from scanners.security import safe_zip_read
 import requests
 from flask import Blueprint, request, jsonify
 
@@ -325,9 +327,9 @@ def extract_file_links(real_type: str, data: bytes, limit: int = 3) -> list:
     try:
         if real_type in ("Word document", "Excel document", "PowerPoint document"):
             with zipfile.ZipFile(io.BytesIO(data)) as z:
-                for name in z.namelist():
+                for name in z.namelist()[:400]:
                     if name.endswith(".rels"):
-                        for m in re.finditer(rb'Target="(https?://[^"]+)"[^>]*TargetMode="External"', z.read(name)):
+                        for m in re.finditer(rb'Target="(https?://[^"]+)"[^>]*TargetMode="External"', safe_zip_read(z, name)):
                             raw.append(m.group(1))
         elif real_type == "PDF":
             raw = [m.group(1) for m in re.finditer(rb"/URI\s*\(([^)]{4,300})\)", data[:8_000_000])]

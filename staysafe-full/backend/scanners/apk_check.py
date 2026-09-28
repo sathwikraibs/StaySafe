@@ -15,6 +15,8 @@ import re
 import struct
 import zipfile
 
+from scanners.security import safe_zip_read
+
 # permission -> (plain-language finding, score)
 RISKY_PERMISSIONS = {
     "android.permission.RECEIVE_SMS": ("can read your incoming SMS, including bank OTPs", 35),
@@ -101,7 +103,7 @@ def analyze_apk(filename: str, data: bytes) -> dict:
     out = {"findings": [], "score": 0, "package": "", "permissions": [], "points": {}}
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as z:
-            manifest = read_manifest(z.read("AndroidManifest.xml"))
+            manifest = read_manifest(safe_zip_read(z, "AndroidManifest.xml", 2 * 1024 * 1024))
     except Exception:
         return out
     out["package"], out["permissions"] = manifest["package"], manifest["permissions"]

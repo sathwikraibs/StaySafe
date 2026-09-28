@@ -1259,13 +1259,13 @@ def add_sender_checks(result: dict, sender: str = "") -> dict:
 @message_scanner_bp.route("/api/scan-message", methods=["POST"])
 def scan_message_route():
     data = request.get_json(silent=True) or {}
-    text = (data.get("text") or "").strip()
+    text = str(data.get("text") or "").strip()[:10000]
 
     if not text:
         return jsonify({"error": "Please paste the message you want to check."}), 400
 
     result = add_translation(analyze_text(text), request_language())
-    result = add_sender_checks(result, str(data.get("sender") or ""))
+    result = add_sender_checks(result, str(data.get("sender") or "")[:300])
     result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, text)
@@ -1283,7 +1283,10 @@ def scan_message_route():
 # ---------------------------------------------------------------------------
 @message_scanner_bp.route("/api/ocr-check", methods=["GET"])
 def ocr_check_route():
-    """Open this in a browser to see if screenshot reading works on the server and how fast."""
+    """Open this (with ?key=<STATUS_KEY>) to see if screenshot reading works on the server and how fast."""
+    from scanners.security import has_status_key
+    if not has_status_key():
+        return jsonify({"error": "Not found"}), 404
     if not ocr_status():
         return jsonify({"ok": False, "error": "Tesseract is not installed"})
     return jsonify(ocr_self_check())
@@ -1293,8 +1296,7 @@ def ocr_check_route():
 def scan_screenshot_route():
     if not ocr_status():
         return jsonify({
-            "error": "Screenshot reading is not set up on the server yet (Tesseract OCR is missing). "
-                     "You can paste the message text instead."
+            "error": "Screenshot reading isn't available right now. You can paste the message text instead."
         }), 503
 
     if "image" not in request.files:
@@ -1319,7 +1321,7 @@ def scan_screenshot_route():
 
     extracted_text = fix_ocr_links(extracted_text)
     result = add_translation(analyze_text(extracted_text), request_language())
-    result = add_sender_checks(result, request.form.get("sender", ""))
+    result = add_sender_checks(result, request.form.get("sender", "")[:300])
     result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, extracted_text)

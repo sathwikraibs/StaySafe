@@ -4,6 +4,7 @@ StaySafe - Main Flask App
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
+from PIL import Image
 from werkzeug.exceptions import HTTPException
 
 from scanners.url_scanner import url_scanner_bp, link_check_status
@@ -18,12 +19,17 @@ from scanners.email_analyzer import email_analyzer_bp
 from scanners.knowledge_base import knowledge_base_bp
 from scanners.translator import translation_status
 from scanners.ai_review import ai_status
+from scanners.security import (check_rate_limit, allowed_origins, add_security_headers,
+                               has_status_key)
 
 MAX_UPLOAD_MB = 20
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
-CORS(app)  # allows your Vercel frontend (different domain) to call this API
+# Only StaySafe's own website may call the API from a browser
+CORS(app, origins=allowed_origins())
+app.before_request(check_rate_limit)
+app.after_request(add_security_headers)
 
 app.register_blueprint(url_scanner_bp)
 app.register_blueprint(message_scanner_bp)
@@ -43,7 +49,9 @@ ensure_feeds()
 
 @app.route("/")
 def home():
-    # Open this URL after deploying: "ocr" and "qr" should both be true.
+    # Public view: just "is it running". Full details need ?key=<STATUS_KEY> (set on Render).
+    if not has_status_key():
+        return {"status": "StaySafe API running", "ocr": ocr_status(), "qr": qr_status()}
     return {
         "status": "StaySafe API running",
         "ocr": ocr_status(),
@@ -64,6 +72,11 @@ def too_large(_e):
     return jsonify({"error": f"That file is too big. Please upload something under {MAX_UPLOAD_MB} MB."}), 413
 
 
+@app.errorhandler(Image.DecompressionBombError)
+def image_bomb(_e):
+    return jsonify({"error": "That picture is too large to read. Please send a normal screenshot or photo."}), 400
+
+
 @app.errorhandler(HTTPException)
 def http_error(e):
     return jsonify({"error": e.description or e.name}), e.code
@@ -76,4 +89,4 @@ def unexpected_error(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=os.environ.get("FLASK_DEBUG") == "1", port=5000)

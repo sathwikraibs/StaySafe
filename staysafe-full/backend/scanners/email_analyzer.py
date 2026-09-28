@@ -249,20 +249,20 @@ def check_sender_identity(from_name: str, from_addr: str) -> dict:
 @email_analyzer_bp.route("/api/scan-email", methods=["POST"])
 def scan_email_route():
     data = request.get_json(silent=True) or {}
-    raw_email = (data.get("raw_email") or "").strip()
+    raw_email = str(data.get("raw_email") or "").strip()[:300_000]
     form_mode = False
 
     if not raw_email:
         # The simple form: sender, subject and message typed or pasted into separate boxes
-        name_in, sender = split_sender(data.get("sender_email") or "")
-        body_in = (data.get("body") or "").strip()
+        name_in, sender = split_sender(str(data.get("sender_email") or "")[:300])
+        body_in = str(data.get("body") or "").strip()[:50_000]
         if not body_in and not sender:
             return jsonify({"error": "Please fill in the sender's email address and paste the message."}), 400
-        if (data.get("sender_email") or "").strip() and not sender:
+        if str(data.get("sender_email") or "").strip() and not sender:
             return jsonify({"error": "That sender email address doesn't look right. It should look like name@example.com"}), 400
-        name = ((data.get("sender_name") or "").strip() or name_in).replace("\n", " ")[:120]
+        name = (str(data.get("sender_name") or "")[:300].strip() or name_in).replace("\n", " ")[:120]
         reply = split_sender(data.get("reply_to") or "")[1]
-        subject = (data.get("subject") or "").strip().replace("\n", " ")[:300]
+        subject = str(data.get("subject") or "")[:1000].strip().replace("\n", " ")[:300]
         raw_email = (f"From: {name} <{sender}>\n" if name else f"From: {sender}\n")
         if reply:
             raw_email += f"Reply-To: {reply}\n"

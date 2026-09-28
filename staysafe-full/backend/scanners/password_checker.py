@@ -207,6 +207,10 @@ def check_breach(password: str) -> dict:
 def check_password_route():
     data = request.get_json(silent=True) or {}
     password = data.get("password", "")
+    if not isinstance(password, str):
+        password = ""
+    if len(password) > 256:
+        return jsonify({"error": "That password is too long to check. Please use one under 256 characters."}), 400
 
     if not password:
         return jsonify({"error": "Please type a password to check."}), 400
@@ -310,7 +314,7 @@ def _breach_lookup(email: str) -> dict:
 def check_email_breach_route():
     import time
     data = request.get_json(silent=True) or {}
-    email = str(data.get("email", "")).strip().lower()
+    email = str(data.get("email", "")).strip().lower()[:254]
     if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[a-z]{2,}", email):
         return jsonify({"error": "Please enter a full email address, like name@example.com"}), 400
 

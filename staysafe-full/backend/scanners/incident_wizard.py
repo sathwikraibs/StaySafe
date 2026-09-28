@@ -118,7 +118,7 @@ def incident_options_route():
 @incident_wizard_bp.route("/api/incident-plan", methods=["POST"])
 def incident_plan_route():
     data = request.get_json(silent=True) or {}
-    incident_type = data.get("incident_type", "")
+    incident_type = str(data.get("incident_type", ""))[:80]
 
     plan = INCIDENT_PLANS.get(incident_type)
     if not plan:

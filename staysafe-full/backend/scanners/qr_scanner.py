@@ -173,7 +173,7 @@ def analyze_upi_string(upi_data: str) -> dict:
 @qr_scanner_bp.route("/api/scan-qr", methods=["POST"])
 def scan_qr_route():
     if not CV2_AVAILABLE:
-        return jsonify({"error": "QR reading is not set up on the server yet (OpenCV is missing)."}), 503
+        return jsonify({"error": "QR reading from a picture isn't available right now. Try the camera button instead."}), 503
 
     if "image" not in request.files:
         return jsonify({"error": "Please choose a photo of the QR code to upload."}), 400
@@ -256,7 +256,7 @@ def analyze_qr_data(qr_data: str) -> dict:
 def scan_qr_text_route():
     """The phone's camera already read the QR code; we only check what's inside."""
     data = request.get_json(silent=True) or {}
-    qr_data = (data.get("data") or "").strip()[:4000]
+    qr_data = str(data.get("data") or "").strip()[:4000]
     if not qr_data:
         return jsonify({"error": "We couldn't find a QR code in this image. Try a clearer photo with the whole QR code visible."}), 400
     return jsonify(analyze_qr_data(qr_data))

@@ -32,6 +32,8 @@ from urllib.parse import urljoin, urlparse
 import requests
 from flask import Blueprint, jsonify, request
 
+from scanners.security import guarded_fetch, install_connection_guard
+
 try:
     import whois  # python-whois
 except Exception:  # pragma: no cover
@@ -486,9 +488,12 @@ def resolve_host(host: str) -> dict:
 
 def _public_ip(ip: str) -> bool:
     try:
-        return ipaddress.ip_address(ip).is_global
+        return ipaddress.ip_address(ip.split("%")[0]).is_global
     except ValueError:
         return False
+
+
+install_connection_guard(_public_ip)
 
 
 # ---------------------------------------------------------------------------
@@ -1183,6 +1188,39 @@ LOGIN_BRAND_WORDS = {
 }
 
 
+def _strip_blocks(html: str) -> str:
+    """Remove <script>/<style> blocks in one pass (a regex here can be made to run for minutes)."""
+    low = html.lower()
+    out, i = [], 0
+    while True:
+        a = min((x for x in (low.find("<script", i), low.find("<style", i)) if x != -1), default=-1)
+        if a == -1:
+            out.append(html[i:])
+            break
+        out.append(html[i:a])
+        close = "</script" if low.startswith("<script", a) else "</style"
+        b = low.find(close, a)
+        if b == -1:
+            break
+        e = low.find(">", b)
+        i = len(html) if e == -1 else e + 1
+        out.append(" ")
+    return "".join(out)
+
+
+def _page_title(html: str) -> str:
+    low = html.lower()
+    a = low.find("<title")
+    if a == -1:
+        return ""
+    s = low.find(">", a)
+    if s == -1:
+        return ""
+    e = low.find("</title", s)
+    raw = html[s + 1: e if e != -1 else s + 1000][:2000]
+    return re.sub(r"\s+", " ", raw).strip()[:120]
+
+
 def fetch_page(url: str) -> dict:
     """
     Follows the link (max 5 redirects) without running anything on the page.
@@ -1197,58 +1235,59 @@ def fetch_page(url: str) -> dict:
         return out
     current = url
     session = requests.Session()
+    session.trust_env = False  # never go through a proxy set on the server
     try:
-        for _ in range(6):
-            host = urlparse(current).hostname or ""
-            ips = resolve_host(host).get("ips") or []
-            if not ips or not all(_public_ip(ip) for ip in ips):
-                out["blocked"] = bool(ips)
-                out["error"] = "private" if ips else "no_dns"
-                return out
-            try:
-                resp = session.get(current, headers={"User-Agent": USER_AGENT, "Accept-Language": "en-IN,en"},
-                                   timeout=(4, 5), allow_redirects=False, stream=True)
-            except requests.exceptions.SSLError:
-                out["ssl_error"] = True
-                out["error"] = "ssl"
-                return out
-            if resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308):
-                nxt = resp.headers.get("Location")
-                resp.close()
-                if not nxt:
-                    break
-                current = urljoin(current, nxt)
-                out["hops"].append(current)
-                if not current.lower().startswith(("http://", "https://")):
-                    out["error"] = "odd_redirect"
-                    out["final_url"] = current
+        with guarded_fetch():  # every connection re-checked at connect time: public address, web port
+            for _ in range(6):
+                host = urlparse(current).hostname or ""
+                ips = resolve_host(host).get("ips") or []
+                if not ips or not all(_public_ip(ip) for ip in ips):
+                    out["blocked"] = bool(ips)
+                    out["error"] = "private" if ips else "no_dns"
                     return out
-                continue
-            out["status"] = resp.status_code
-            out["final_url"] = current
-            ctype = (resp.headers.get("Content-Type") or "").lower()
-            dispo = (resp.headers.get("Content-Disposition") or "").lower()
-            if "android.package-archive" in ctype or ".apk" in dispo:
-                out["download"] = "apk"
-            elif "msdownload" in ctype or "x-msdos-program" in ctype or re.search(r"\.(exe|msi|scr|bat)\b", dispo):
-                out["download"] = "program"
-            if "html" in ctype or not ctype:
-                body = b""
-                for chunk in resp.iter_content(16384):
-                    body += chunk
-                    if len(body) >= MAX_PAGE_BYTES:
+                try:
+                    resp = session.get(current, headers={"User-Agent": USER_AGENT, "Accept-Language": "en-IN,en"},
+                                       timeout=(4, 5), allow_redirects=False, stream=True)
+                except requests.exceptions.SSLError:
+                    out["ssl_error"] = True
+                    out["error"] = "ssl"
+                    return out
+                if resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308):
+                    nxt = resp.headers.get("Location")
+                    resp.close()
+                    if not nxt:
                         break
-                html = body.decode(resp.encoding or "utf-8", errors="ignore")
-                m = re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S)
-                out["title"] = re.sub(r"\s+", " ", m.group(1)).strip()[:120] if m else ""
-                out["has_password"] = re.search(r"<input[^>]+type\s*=\s*[\"']?password", html, re.I) is not None
-                text = re.sub(r"(?is)<(script|style).*?</\1>", " ", html)
-                out["text"] = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text))[:5000].lower()
-            resp.close()
-            out["ok"] = True
+                    current = urljoin(current, nxt)
+                    out["hops"].append(current)
+                    if not current.lower().startswith(("http://", "https://")):
+                        out["error"] = "odd_redirect"
+                        out["final_url"] = current
+                        return out
+                    continue
+                out["status"] = resp.status_code
+                out["final_url"] = current
+                ctype = (resp.headers.get("Content-Type") or "").lower()
+                dispo = (resp.headers.get("Content-Disposition") or "").lower()
+                if "android.package-archive" in ctype or ".apk" in dispo:
+                    out["download"] = "apk"
+                elif "msdownload" in ctype or "x-msdos-program" in ctype or re.search(r"\.(exe|msi|scr|bat)\b", dispo):
+                    out["download"] = "program"
+                if "html" in ctype or not ctype:
+                    body = b""
+                    for chunk in resp.iter_content(16384):
+                        body += chunk
+                        if len(body) >= MAX_PAGE_BYTES:
+                            break
+                    html = body.decode(resp.encoding or "utf-8", errors="ignore")
+                    out["title"] = _page_title(html)
+                    out["has_password"] = re.search(r"<input[^>]{0,400}type\s*=\s*[\"']?password", html, re.I) is not None
+                    text = _strip_blocks(html)
+                    out["text"] = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text))[:5000].lower()
+                resp.close()
+                out["ok"] = True
+                return out
+            out["error"] = "too_many_redirects"
             return out
-        out["error"] = "too_many_redirects"
-        return out
     except Exception as e:
         out["error"] = type(e).__name__
         return out
@@ -1629,7 +1668,7 @@ def scan_url(url: str) -> dict:
 @url_scanner_bp.route("/api/scan-url", methods=["POST"])
 def scan_url_route():
     data = request.get_json(silent=True) or {}
-    raw = (data.get("url") or "").strip()
+    raw = str(data.get("url") or "").strip()
 
     if not raw:
         return jsonify({"error": "Please paste the link you want to check."}), 400

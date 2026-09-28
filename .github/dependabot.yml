@@ -1,0 +1,17 @@
+# Weekly check for security fixes in the website and server libraries (free, built into GitHub)
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/staysafe-full/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "pip"
+    directory: "/staysafe-full/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "docker"
+    directory: "/staysafe-full/backend"
+    schedule:
+      interval: "monthly"
