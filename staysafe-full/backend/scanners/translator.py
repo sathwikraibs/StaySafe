@@ -24,6 +24,7 @@ guarantee is Google's own quota + staying on the free trial.)
 """
 
 import os
+import re
 import threading
 import time
 from collections import OrderedDict
@@ -170,6 +171,49 @@ def _chunks(text: str, limit: int):
     return pieces
 
 
+def _same_text(a: str, b: str) -> bool:
+    norm = lambda s: re.sub(r"[\W_]+", "", (s or "").lower())
+    return bool(norm(a)) and norm(a) == norm(b)
+
+
+def _looks_like_translation(source: str, translated: str, target: str) -> bool:
+    """Reject empty, unchanged or wildly short/long results."""
+    if not translated or _same_text(source, translated):
+        return False
+    if target == "en":
+        letters = len(re.findall(r"[A-Za-z]", translated))
+        src_letters = len(re.findall(r"\w", source))
+        if letters < 2 or not (0.25 <= letters / max(src_letters, 1) <= 5):
+            return False
+    return True
+
+
+def _pick_mymemory(piece: str, data: dict, target: str):
+    """
+    MyMemory mixes its machine translation with "similar sentences" people saved before.
+    Those near matches are sentences about something else, so we only accept:
+      1. a saved human translation of exactly this text, or
+      2. the machine translation (created-by "MT!") of exactly this text.
+    """
+    matches = data.get("matches") or []
+    exact_human = [m for m in matches
+                   if m.get("created-by") != "MT!" and _same_text(m.get("segment", ""), piece)
+                   and float(m.get("match") or 0) >= 0.99]
+    machine = [m for m in matches if m.get("created-by") == "MT!"
+               and (not m.get("segment") or _same_text(m.get("segment", ""), piece))]
+    for m in exact_human + machine:
+        text = (m.get("translation") or "").strip()
+        if _looks_like_translation(piece, text, target):
+            return text
+    if not matches:
+        # older answer format without the list: trust it only when MyMemory is sure
+        best = data.get("responseData") or {}
+        text = (best.get("translatedText") or "").strip()
+        if float(best.get("match") or 0) >= 0.85 and _looks_like_translation(piece, text, target):
+            return text
+    return None
+
+
 def _mymemory(text: str, target: str):
     if not _available("mymemory"):
         return None
@@ -193,7 +237,12 @@ def _mymemory(text: str, target: str):
             return None
         if status != "200" or not translated:
             return None
-        out.append(translated)
+        picked = _pick_mymemory(piece, data, target)
+        if not picked:
+            # Only a "similar sentence" from someone else's memory came back. That is often
+            # about something different, so showing nothing is better than showing it.
+            return None
+        out.append(picked)
     return {"text": " ".join(out), "from": source, "to": target, "provider": "mymemory"}
 
 

@@ -478,8 +478,15 @@ def _use_fake_google(status=200, mymemory="ok", google_message="Cloud Translatio
         if mymemory == "quota":
             return _FakeResponse(200, {"responseStatus": 429, "responseData": {"translatedText":
                 "MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY"}})
+        if mymemory == "fuzzy":
+            # what caused wrong translations: only a saved sentence about something else
+            return _FakeResponse(200, {"responseStatus": 200, "responseData": {"translatedText": "Thank you for your purchase", "match": 0.6},
+                                       "matches": [{"segment": "ನಿಮ್ಮ ಖರೀದಿಗೆ ಧನ್ಯವಾದ", "translation": "Thank you for your purchase", "match": 0.6, "created-by": "MateCat"}]})
         text, _ = FAKE_TRANSLATIONS.get((params["q"], target), (params["q"], src))
-        return _FakeResponse(200, {"responseStatus": 200, "responseData": {"translatedText": text}})
+        # real MyMemory shape: the machine translation plus an unrelated "similar sentence" ranked higher
+        return _FakeResponse(200, {"responseStatus": 200, "responseData": {"translatedText": "Your account is active", "match": 0.9},
+                                   "matches": [{"segment": "ನಿಮ್ಮ ಖಾತೆ ಸಕ್ರಿಯವಾಗಿದೆ", "translation": "Your account is active", "match": 0.9, "created-by": "MateCat"},
+                                               {"segment": params["q"], "translation": text, "match": 0.85, "created-by": "MT!"}]})
 
     os.environ["TRANSLATE_API_KEY"] = "test-key"
     translator.requests.post = fake_post
@@ -556,6 +563,16 @@ def test_daily_limit_protects_free_tier():
     result = add_translation(analyze_text("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ"), "en")
     assert not any(c[0] == "google" for c in calls)  # Google not called at all
     assert result["verdict"] == "SCAM_LIKELY"  # native rules still work
+
+
+
+def test_mymemory_never_shows_an_unrelated_sentence():
+    _use_fake_google(mymemory="fuzzy")
+    os.environ.pop("TRANSLATE_API_KEY")
+    text = "ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ತಕ್ಷಣ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"
+    result = add_translation(analyze_text(text), "en")
+    assert "translation" not in result, result.get("translation")   # nothing shown instead of nonsense
+    assert result["verdict"] == "SCAM_LIKELY"                          # built-in Kannada rules still decide
 
 
 if __name__ == "__main__":
