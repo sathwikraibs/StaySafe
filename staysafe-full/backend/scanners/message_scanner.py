@@ -85,13 +85,17 @@ RULES = [
             r"\b(account|a/c|khata|card|yono|net ?banking)\b[^.\n]{0,40}\b(will be |has been |is |ho jayega |hoga )?(blocked|suspended|frozen|deactivated|closed|band)\b",
             r"\b(update|link|verify)\b[^.\n]{0,20}\b(pan|aadhaar|aadhar)\b",
             r"\bverify your (account|bank|kyc|identity)\b",
+            r"\b(unusual|suspicious|unknown|new) (login|log-in|sign-?in|activity|device)\b[^\n]{0,80}\b(secure|verify|confirm|click|update)\b",
+            r"\bsecure your (account|bank|card)\b",
+            r"\b(debit|credit|atm) card\b[^.\n]{0,40}\b(blocked|suspended|deactivated)\b[^\n]{0,60}\b(call|click|reactivate|verify|update)\b",
         ],
         30,
     ),
     (
         "Electricity disconnection threat",
         [
-            r"\b(electricity|bijli|power|light|eb)\b[^.\n]{0,60}\b(disconnect|disconnected|cut|kaat|kat|band)\b",
+            r"\b(electricity|bijli|power|light|eb)\b[^.\n]{0,60}\b(disconnect|disconnected|cut|kaat|kat|band)\b(?![^.\n]{0,30}\b(avoid|to avoid)\b)",
+            r"\bmeter\b[^.\n]{0,40}\b(will be |is being )?(removed|disconnected|cut|seized)\b",
             r"\belectricity (officer|department)\b",
             r"\b(bill|bijli bill)\b[^.\n]{0,50}\b(not (been )?updated|update nahi)\b",
         ],
@@ -110,7 +114,8 @@ RULES = [
     (
         "Impersonating government, police or tax department",
         [
-            r"\b(income tax|it department)\b[^.\n]{0,40}\b(refund|notice|penalty)\b",
+            r"\b(income tax|it department|itr)\b[^\n]{0,60}\brefund\b[^\n]{0,60}\b(claim|click|verify|update|pending|approved|link|apply|submit)\b",
+            r"\b(income tax|it department)\b[^.\n]{0,40}\b(notice|penalty)\b",
             r"\b(police|court) (verification|notice|summons)\b",
             r"\btrai\b[^.\n]{0,60}\b(disconnect|block|suspend)\b",
             r"\bpress \d\b[^.\n]{0,40}\b(officer|executive|agent|speak)\b",
@@ -125,6 +130,7 @@ RULES = [
         [
             r"\b(earn|kamao|kamaye|income|salary)\b[^.\n]{0,40}(rs\.?|₹|inr)\s?\d[\d,]*\s*(/|per|a|daily|every)\s*(day|daily|hour|hr|task)",
             r"\b(earn|kamao|kamaye)\b\s+(up ?to\s+)?(rs\.?|₹|inr)?\s?\d[\d,]{2,}(\s?(k|rs|rupees))?\s*(/|per|a|every)?\s*(day|daily|hour|hr|week|weekly)\b",
+
         ],
         15,
     ),
@@ -135,6 +141,8 @@ RULES = [
             r"\b(hiring|job offer|vacancy)\b[^\n]{0,120}\b(telegram|whatsapp)\b",
             r"\b(part[- ]time|work from home|ghar baithe)\b[^\n]{0,80}\b(earn|daily|salary|income|kamao)\b",
             r"\b(registration|joining|security|training) (fee|deposit|charges?)\b",
+            r"\bget rich (quick|fast)\b",
+            r"\bearn\b[^.\n]{0,40}\b(daily|per day|a day|every day)\b[^.\n]{0,20}\b(from home|sitting at home|online)\b",
         ],
         35,
     ),
@@ -143,6 +151,9 @@ RULES = [
         [
             r"\byou (have |'ve )?(won|been selected)\b", r"\blottery\b", r"\blucky draw\b",
             r"\bkbc\b", r"\bjackpot\b", r"\bclaim (your )?(prize|reward|gift|cashback)\b",
+            r"\bwinner\b[^\n]{0,80}\b(claim|collect|cashback|prize|reward)\b",
+            r"\byou (have |'ve )?(got|received|won)\b[^.\n]{0,40}\b(cashback|reward|prize|iphone|gift|bonus)\b[^\n]{0,60}\b(claim|click|collect)\b",
+            r"\b(selected|chosen|eligible)\b for\b[^.\n]{0,25}\b(grant|scheme|subsidy|prize|reward|bonus)\b",
             r"\bcongratulations\b[^.\n]{0,60}\b(won|winner|selected|reward|prize)\b",
             r"\b(inaam|lottery lagi)\b",
         ],
@@ -287,6 +298,24 @@ RULES = [
             r"\b(kisi ko mat batana|kisi ko na batayein)\b",
         ],
         25,
+    ),
+    (
+        "Romance or dating message from a stranger",
+        [
+            r"\b(hi|hello|hey) (beautiful|handsome|dear|sweetheart|gorgeous)\b[^\n]{0,80}\b(profile|chat|meet|friend)\b",
+            r"\b(single|lonely|hot) (women|girls|ladies|bhabhi|aunty)\b[^\n]{0,80}\b(waiting|meet|call|chat|near you)\b",
+            r"\b(saw|liked|found) your profile\b[^\n]{0,60}\b(chat|talk|meet|reply|whatsapp)\b",
+            r"\b(video call|friendship|dating)\b[^\n]{0,40}\b(girls?|women|service|club)\b[^\n]{0,40}\b(call|join|whatsapp|click)\b",
+        ],
+        30,
+    ),
+    (
+        "Discount or refund on a bill, with a link or number to contact",
+        [
+            r"\b\d{1,3}\s?% (discount|off|cashback)\b[^\n]{0,40}\b(electricity|power|gas|water|phone|mobile) bill\b",
+            r"\b(electricity|power|gas|water) bill\b[^\n]{0,40}\b(refund|discount|cashback)\b[^\n]{0,60}\b(claim|click|approved|call)\b",
+        ],
+        30,
     ),
     (
         "Free recharge, data or gifts with a link",
@@ -961,6 +990,43 @@ def ocr_self_check() -> dict:
 # ---------------------------------------------------------------------------
 # ROUTE 1. Paste text directly (SMS / WhatsApp / email body)
 # ---------------------------------------------------------------------------
+# Warning signs that mean "this message pretends to be an organisation"
+ORG_LABELS = {
+    "Bank / KYC / PAN impersonation", "Electricity disconnection threat",
+    "Courier / customs / 'digital arrest' scam", "Fake government scheme, Aadhaar, PAN or gas update",
+    "Reward points or cashback that 'expire today'",
+}
+
+
+def add_sender_checks(result: dict, sender: str = "") -> dict:
+    """Who sent it (TRAI sender rules) and foreign phone numbers inside the message."""
+    from scanners.sender_check import sender_signals, find_sender_in_text, foreign_numbers_in_text
+    text = result.get("text_analyzed", "")
+    tr = result.get("translation") or {}
+    english = tr.get("text", "") if tr.get("to") == "en" else ""
+    sender = (sender or "").strip()[:60] or find_sender_in_text(text)
+    claims_org = any(p in ORG_LABELS for p in result.get("patterns_detected", []))
+    sig = sender_signals(sender, text + "\n" + english, claims_org) if sender else {"findings": [], "score": 0, "safe": []}
+    added = list(sig["findings"])
+    score = sig["score"]
+    if not any(f.startswith("Sent from a foreign phone number") for f in added):
+        countries = foreign_numbers_in_text(text)
+        if countries:
+            added.append(f"Asks you to contact a foreign phone number ({', '.join(countries[:2])})")
+            score += 20
+    for f in added:
+        if f not in result["patterns_detected"]:
+            result["patterns_detected"].append(f)
+    if score:
+        result["risk_score"] = max(0, min(100, result["risk_score"] + score))
+        result["verdict"] = verdict_from_score(result["risk_score"])
+    if not result["patterns_detected"]:  # scammers can register senders too, so only as reassurance
+        result.setdefault("safe_signals", []).extend(sig["safe"])
+    if sender:
+        result["sender"] = sender
+    return result
+
+
 @message_scanner_bp.route("/api/scan-message", methods=["POST"])
 def scan_message_route():
     data = request.get_json(silent=True) or {}
@@ -970,6 +1036,7 @@ def scan_message_route():
         return jsonify({"error": "Please paste the message you want to check."}), 400
 
     result = add_translation(analyze_text(text), request_language())
+    result = add_sender_checks(result, str(data.get("sender") or ""))
     result = check_links_in_result(result)
 
     from scanners.risk_engine import log_scan
@@ -1018,6 +1085,7 @@ def scan_screenshot_route():
         }), 400
 
     result = add_translation(analyze_text(extracted_text), request_language())
+    result = add_sender_checks(result, request.form.get("sender", ""))
     result = check_links_in_result(result)
 
     from scanners.risk_engine import log_scan

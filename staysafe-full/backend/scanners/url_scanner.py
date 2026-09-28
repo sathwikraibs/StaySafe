@@ -76,7 +76,7 @@ MULTI_PART_SUFFIXES = {
 BRANDS = {
     "sbi": {"sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbicard.com", "sbi", "sbi.bank.in"},
     "onlinesbi": {"onlinesbi.sbi", "onlinesbi.com"},
-    "hdfc": {"hdfcbank.com", "hdfc.com", "hdfclife.com", "hdfcsec.com", "hdfc.bank.in", "hdfcbank.bank.in"},
+    "hdfc": {"hdfcbank.com", "hdfcbank.net", "hdfc.com", "hdfclife.com", "hdfcsec.com", "hdfc.bank.in", "hdfcbank.bank.in"},
     "icici": {"icicibank.com", "icicidirect.com", "iciciprulife.com", "icici.bank.in"},
     "axisbank": {"axisbank.com", "axis.bank.in"},
     "kotak": {"kotak.com", "kotak.bank.in"},
@@ -287,7 +287,9 @@ def link_check_status() -> dict:
         "safe_browsing": {"configured": bool(GOOGLE_SAFE_BROWSING_API_KEY), "problem": _PROBLEMS["safe_browsing"]},
         "virustotal": {"configured": bool(VIRUSTOTAL_API_KEY), "problem": _PROBLEMS["virustotal"]},
         "public_lists": {"links": sum(_FEEDS["counts"].values()), "counts": _FEEDS["counts"],
-                         "problem": _FEEDS["problem"]},
+                         "problem": _FEEDS["problem"],
+                         "big_lists": _BIG["counts"], "big_problem": _BIG["problem"]},
+        "popular_sites": {"count": len(_TRANCO["ranks"]), "problem": _TRANCO["problem"]},
     }
 
 
@@ -495,6 +497,11 @@ def _first(value):
 
 
 def _as_date(value):
+    if isinstance(value, str):  # RDAP / crt.sh give ISO text like 2021-03-04T10:00:00Z
+        try:
+            value = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
     value = value if not isinstance(value, (list, tuple)) else min((v for v in value if isinstance(v, datetime)), default=None)
     if not isinstance(value, datetime):
         return None
@@ -511,8 +518,10 @@ def whois_details(domain: str) -> dict:
     Public registration record of a website (WHOIS): who registered it through which company,
     when, when it was last changed and when it expires. {} when not available.
     """
-    if OFFLINE or whois is None or not domain:
+    if OFFLINE or not domain:
         return {}
+    if whois is None:
+        return rdap_details(domain)
 
     def call():
         try:
@@ -542,7 +551,83 @@ def whois_details(domain: str) -> dict:
         return out if any(v for k, v in out.items() if k != "name_servers") else {"error": True}
 
     info = _cached(("whois", domain), call)
+    if info.get("error") or not info.get("created"):
+        rd = rdap_details(domain)
+        if rd:
+            merged = dict(rd) if info.get("error") else {**rd, **{k: v for k, v in info.items() if v}}
+            return merged
     return {} if info.get("error") else info
+
+
+def rdap_details(domain: str) -> dict:
+    """
+    RDAP: the modern, structured version of WHOIS run by the domain registries themselves.
+    Much more reliable for the creation date (.in, .com, new endings). Free, no key.
+    """
+    if OFFLINE or not domain:
+        return {}
+
+    def call():
+        try:
+            resp = requests.get(f"https://rdap.org/domain/{domain}", timeout=8,
+                                headers={"Accept": "application/rdap+json", "User-Agent": "StaySafe/2.0"})
+            if resp.status_code != 200:
+                return {"error": True}
+            data = resp.json()
+        except Exception:
+            return {"error": True}
+        events = {e.get("eventAction"): e.get("eventDate") for e in data.get("events", []) if isinstance(e, dict)}
+        created = _as_date(events.get("registration"))
+        updated = _as_date(events.get("last changed"))
+        expires = _as_date(events.get("expiration"))
+        registrar = ""
+        for ent in data.get("entities", []) or []:
+            if "registrar" in (ent.get("roles") or []):
+                for item in ((ent.get("vcardArray") or [None, []])[1] or []):
+                    if item and item[0] == "fn":
+                        registrar = str(item[3])[:80]
+        now = datetime.now(timezone.utc)
+        ns = sorted({str(n.get("ldhName", "")).lower().rstrip(".") for n in data.get("nameservers", []) or []
+                     if isinstance(n, dict) and n.get("ldhName")})[:3]
+        out = {
+            "registrar": registrar, "org": "", "country": "",
+            "created": created.date().isoformat() if created else "",
+            "updated": updated.date().isoformat() if updated else "",
+            "expires": expires.date().isoformat() if expires else "",
+            "age_days": max(0, (now - created).days) if created else None,
+            "expires_in_days": (expires - now).days if expires else None,
+            "name_servers": ns,
+        }
+        return out if out["created"] or out["registrar"] else {"error": True}
+
+    info = _cached(("rdap", domain), call)
+    return {} if info.get("error") else info
+
+
+def first_certificate_days(host: str):
+    """
+    Days since the first HTTPS certificate was ever issued for this website name (from the
+    public Certificate Transparency logs on crt.sh). A good stand-in for "how long has this
+    site been online" when the registration date is hidden. None when unknown.
+    """
+    if OFFLINE or not host or is_ip(host):
+        return None
+
+    def call():
+        try:
+            resp = requests.get("https://crt.sh/", params={"q": host, "output": "json", "exclude": "expired"},
+                                timeout=8, headers={"User-Agent": "StaySafe/2.0"})
+            if resp.status_code != 200:
+                return {"days": None}
+            dates = [_as_date(c.get("not_before")) for c in resp.json()[:500] if isinstance(c, dict)]
+        except Exception:
+            return {"days": None}
+        dates = [d for d in dates if d]
+        if not dates:
+            return {"days": None}
+        return {"days": max(0, (datetime.now(timezone.utc) - min(dates)).days)}
+
+    return _cached(("crt", host), call).get("days")
 
 
 def whois_age_days(domain: str):
@@ -713,6 +798,7 @@ def ensure_feeds() -> None:
     """Start a background refresh when the lists are missing or older than 3 hours."""
     if OFFLINE:
         return
+    ensure_big_feeds()
     with _FEED_LOCK:
         stale = time.time() - _FEEDS["loaded_at"] > FEED_REFRESH_SECONDS
         if not stale or _FEEDS["loading"]:
@@ -737,6 +823,149 @@ def feed_lookup(urls, host: str) -> dict:
         return {"status": "warn", "source": _FEEDS["hosts"][h]}
     return {"status": "pass"}
 
+
+
+# ---------------------------------------------------------------------------
+# 4c. Big community phishing lists + the "most visited websites" list
+#     Phishing.Database (~400k domains, ~800k links, MIT licence) and Phishing Army
+#     (CC BY-NC 4.0) are far too big to keep as text on a small server, so each entry is
+#     stored as an 8-byte fingerprint in a sorted numpy array (about 10 MB for everything).
+#     Tranco (top sites, refreshed daily) lowers false alarms on popular real websites.
+# ---------------------------------------------------------------------------
+BIG_FEEDS = {
+    # name: (url, kind)  kind = "links" (exact addresses) or "domains" (whole website names)
+    "Phishing.Database": [
+        ("https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-links-ACTIVE.txt", "links"),
+        ("https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt", "domains"),
+    ],
+    "Phishing Army": [
+        ("https://phishing.army/download/phishing_army_blocklist_extended.txt", "domains"),
+    ],
+}
+BIG_FEED_REFRESH_SECONDS = 6 * 3600
+TRANCO_URL = "https://tranco-list.eu/top-1m.csv.zip"
+TRANCO_KEEP = 100_000          # the top 100k registered domains
+TRANCO_REFRESH_SECONDS = 24 * 3600
+_BIG = {"links": {}, "domains": {}, "counts": {}, "loaded_at": 0.0, "loading": False, "problem": None}
+_TRANCO = {"ranks": {}, "loaded_at": 0.0, "loading": False, "problem": None}
+
+
+def _fingerprint(text: str) -> int:
+    import hashlib
+    return int.from_bytes(hashlib.blake2b(text.encode("utf-8", "ignore"), digest_size=8).digest(), "big")
+
+
+def _sorted_fingerprints(values):
+    import numpy as np
+    arr = np.fromiter(values, dtype=np.uint64)
+    arr.sort()
+    return np.unique(arr)
+
+
+def _in_fingerprints(arr, text: str) -> bool:
+    import numpy as np
+    if arr is None or not len(arr):
+        return False
+    fp = np.uint64(_fingerprint(text))
+    i = int(np.searchsorted(arr, fp))
+    return i < len(arr) and arr[i] == fp
+
+
+def refresh_big_feeds() -> None:
+    links, domains, counts, problems = {}, {}, {}, []
+    for name, sources in BIG_FEEDS.items():
+        for src, kind in sources:
+            try:
+                resp = requests.get(src, timeout=60, stream=True, headers={"User-Agent": "StaySafe/2.0"})
+                if resp.status_code != 200:
+                    problems.append(f"{name} {kind}: HTTP {resp.status_code}")
+                    continue
+
+                def keys():
+                    for raw in resp.iter_lines(decode_unicode=True):
+                        line = (raw or "").strip()
+                        if not line or line.startswith(("#", "!")) or "." not in line:
+                            continue
+                        if kind == "domains":
+                            line = line.split()[-1]  # also accepts "0.0.0.0 domain" style lines
+                            yield _fingerprint(re.sub(r"^www\.", "", line.lower().strip(".")))
+                        else:
+                            yield _fingerprint(_feed_key(line))
+
+                arr = _sorted_fingerprints(keys())
+                (links if kind == "links" else domains)[name] = arr
+                counts[f"{name} {kind}"] = int(len(arr))
+            except Exception as e:
+                problems.append(f"{name} {kind}: {type(e).__name__}")
+    with _FEED_LOCK:
+        if links or domains:
+            _BIG.update(links=links or _BIG["links"], domains=domains or _BIG["domains"], counts=counts)
+        _BIG.update(loaded_at=time.time(), loading=False, problem="; ".join(problems) or None)
+
+
+def refresh_tranco() -> None:
+    import io
+    import zipfile
+    try:
+        resp = requests.get(TRANCO_URL, timeout=60, headers={"User-Agent": "StaySafe/2.0"})
+        if resp.status_code != 200:
+            raise RuntimeError(f"HTTP {resp.status_code}")
+        ranks = {}
+        with zipfile.ZipFile(io.BytesIO(resp.content)) as z:
+            with z.open(z.namelist()[0]) as f:
+                for raw in f:
+                    rank, _, domain = raw.decode("utf-8", "ignore").strip().partition(",")
+                    if domain:
+                        ranks.setdefault(domain.lower(), int(rank))
+                    if len(ranks) >= TRANCO_KEEP:
+                        break
+        with _FEED_LOCK:
+            _TRANCO.update(ranks=ranks, problem=None)
+    except Exception as e:
+        _TRANCO["problem"] = f"{type(e).__name__}: {str(e)[:80]}"
+    _TRANCO.update(loaded_at=time.time(), loading=False)
+
+
+def ensure_big_feeds() -> None:
+    if OFFLINE:
+        return
+    for store, refresh, every in ((_BIG, refresh_big_feeds, BIG_FEED_REFRESH_SECONDS),
+                                  (_TRANCO, refresh_tranco, TRANCO_REFRESH_SECONDS)):
+        with _FEED_LOCK:
+            if store["loading"] or time.time() - store["loaded_at"] < every:
+                continue
+            store["loading"] = True
+        threading.Thread(target=refresh, daemon=True).start()
+
+
+def popularity_rank(domain: str):
+    """Position in the list of the world's most visited websites (1 = most visited), or None."""
+    ensure_big_feeds()
+    return _TRANCO["ranks"].get((domain or "").lower())
+
+
+def big_feed_lookup(urls, host: str, reg: str) -> dict:
+    """
+    {'status': 'fail'|'warn'|'pass'|'skip', 'source': ...}
+    fail: this exact address, or a website that exists only for phishing, is listed.
+    warn: a page on a big shared website (like sites.google.com) is listed; the website
+          itself is fine, so we only mention it.
+    """
+    ensure_big_feeds()
+    if not _BIG["links"] and not _BIG["domains"]:
+        return {"status": "skip"}
+    for name, arr in _BIG["links"].items():
+        if any(u and _in_fingerprints(arr, _feed_key(u)) for u in urls):
+            return {"status": "fail", "source": name}
+    h = re.sub(r"^www\.", "", (host or "").lower())
+    # Lists sometimes contain pages on big shared websites (docs.google.com, a popular site).
+    # The website itself isn't a scam then, so we only mention it instead of condemning it.
+    shared = (reg in TRUSTED_DOMAINS or reg in FREE_HOSTING or h in FREE_HOSTING
+              or (popularity_rank(reg) or 10**9) <= 20_000)
+    for name, arr in _BIG["domains"].items():
+        if any(c and _in_fingerprints(arr, c) for c in {h, reg}):
+            return {"status": "warn" if shared else "fail", "source": name}
+    return {"status": "pass"}
 
 # ---------------------------------------------------------------------------
 # 5. VirusTotal
@@ -983,6 +1212,7 @@ def scan_url(url: str) -> dict:
     vt_f = _POOL.submit(check_virustotal, url, reg)
     gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
+    crt_f = None if (trusted or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
 
     def result_of(f, default, timeout=10):
         if f is None:
@@ -1007,6 +1237,7 @@ def scan_url(url: str) -> dict:
     age_days = result_of(whois_f, None, 9)
     if age_days is None and vt.get("created_days") is not None and not trusted:
         age_days = vt["created_days"]
+    first_cert_days = result_of(crt_f, None, 4) if age_days is None else None
 
     # --- does it exist?
     if dns["exists"] is False:
@@ -1035,6 +1266,18 @@ def scan_url(url: str) -> dict:
         _check(checks, "age", "pass", None)
     elif structure["hosting"] or is_ip(host):
         _check(checks, "age", "skip", None)
+    elif age_days is None and first_cert_days is not None:
+        # registration date hidden: use the date of its first security certificate instead
+        if first_cert_days < 30:
+            findings.append(f"This website first appeared online only {first_cert_days} days ago. Very new sites are a big warning sign")
+            score += 30
+            _check(checks, "age", "fail", first_cert_days)
+        elif first_cert_days < 180:
+            findings.append(f"This website first appeared online {first_cert_days} days ago (fairly new)")
+            score += 10
+            _check(checks, "age", "warn", first_cert_days)
+        else:
+            _check(checks, "age", "pass", first_cert_days)
     elif age_days is None:
         if dns["exists"] is not False:
             findings.append("Could not confirm when this website was created")
@@ -1122,6 +1365,12 @@ def scan_url(url: str) -> dict:
 
     # --- Public scam-link lists (OpenPhish, URLhaus)
     feed = feed_lookup([url, final_url], host) if not trusted else {"status": "pass"}
+    big = big_feed_lookup([url, final_url], host, reg)
+    if trusted and big["status"] == "warn":
+        big = {"status": "pass"}
+    rank_order = {"fail": 0, "warn": 1, "pass": 2, "skip": 3}
+    if rank_order[big["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and big["status"] != "skip"):
+        feed = big
     if feed["status"] == "fail":
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
         score = max(score + 50, 95)
@@ -1163,6 +1412,18 @@ def scan_url(url: str) -> dict:
     # Known-good sites keep a low score unless a blocklist says otherwise
     if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail":
         total = min(total, 15)
+
+    # One of the world's most visited websites: small warning signs (a new-looking name, a
+    # risky word) matter less. Real danger signals (lists, security companies, fake login
+    # page, lookalike name) are never softened. Lookalike sites are never in this list.
+    rank = None if (trusted or structure["hosting"] or is_ip(host)) else popularity_rank(reg)
+    hard = gsb.get("listed") or feed["status"] == "fail" or vt.get("malicious", 0) >= 1 \
+        or vt.get("domain_malicious", 0) >= 1 or dns["exists"] is False \
+        or any(c["id"] in ("imitation", "page") and c["status"] == "fail" for c in checks)
+    if rank and not hard:
+        _check(checks, "known", "pass", reg)
+        checks[:] = [c for c in checks if not (c["id"] == "known" and c["status"] == "info")]
+        total = min(total, 20) if rank <= 10_000 else max(0, total - 10)
 
     order = ["google", "feeds", "virustotal", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)

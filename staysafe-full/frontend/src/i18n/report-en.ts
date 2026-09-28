@@ -178,6 +178,20 @@ export const reportEn = {
   },
 
   checks: {
+    file_apk: {
+      pass: "The app doesn't ask for risky permissions",
+      warn: "The app asks for some risky permissions",
+      fail: "The app asks for permissions scam apps use to steal money",
+    },
+    file_known: {
+      pass: "Known genuine software",
+      passV: "Known genuine software: {value}",
+    },
+    pw_crack: {
+      pass: "A computer would need years to guess it",
+      warn: "A computer could guess it within a month",
+      fail: "A computer could guess it within a day",
+    },
     feeds: {
       pass: "Not on public lists of scam and malware links",
       warn: "Scam pages on this website were reported recently",
@@ -655,6 +669,28 @@ export const reportEn = {
 
   urlX: {
     cleaned: "We found this link in what you pasted: {url}",
+  },
+
+  messageX: {
+    senderLabel: "Who sent it?",
+    senderPh: "e.g. AX-HDFCBK-S or +91 98765 43210",
+    senderHint: "The name or number shown at the top of the message. It helps us spot fake bank and government messages.",
+  },
+
+  fileX: {
+    appId: "App ID",
+    permissions: "What this app asks to do ({n})",
+  },
+
+  leak: {
+    title: "Has your email been in a data leak?",
+    subtitle: "When a website is hacked, the email addresses on it often leak. Check if yours was one of them.",
+    button: "Check my email",
+    found: "Found in {n} data leaks",
+    notFound: "Not found in any known data leak",
+    todo: "Change the password on these websites, and on any other site where you used the same password. Turn on two-step verification where you can.",
+    source: "Checked with {source}",
+    privacy: "We only get back the names of the leaks, never your leaked data. We don't store your email.",
   },
 
   linkInfo: {

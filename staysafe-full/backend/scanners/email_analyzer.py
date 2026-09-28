@@ -184,6 +184,14 @@ def check_sender_identity(from_name: str, from_addr: str) -> dict:
         findings.extend(f"Sender address: {f}" for f in risky[:2])
         score += min(40, structure["score"])
         status, value = "fail", domain
+    # Throwaway address, domain that doesn't exist or can't get mail, brand-new domain
+    import scanners.url_scanner as _us
+    from scanners.email_domain import domain_signals
+    extra = domain_signals(domain, bool(official), domain in FREE_MAIL, offline=_us.OFFLINE)
+    if extra["findings"]:
+        findings.extend(extra["findings"])
+        score += extra["score"]
+        status, value = "fail", domain
     if status == "pass":
         value = domain
     return {"score": score, "findings": findings, "status": status, "value": value}
@@ -225,7 +233,6 @@ def scan_email_route():
     sender_result = check_sender_mismatch(msg)
     from email.utils import parseaddr as _parse
     from_name, from_addr = _parse(msg.get("From", ""))
-    identity = check_sender_identity(from_name, from_addr.lower())
     body_result = analyze_text(body)
 
     # Links from the text AND from the HTML (including ones hidden behind "Click here" buttons)
@@ -237,6 +244,8 @@ def scan_email_route():
     urls = urls[:5]  # cap at 5 to keep it fast
     from scanners.url_scanner import LINK_POOL
     futures = [(u, LINK_POOL.submit(scan_url, u)) for u in urls]
+    # the sender checks (DNS, domain age) run while the links are being checked
+    identity = check_sender_identity(from_name, from_addr.lower())
     url_findings = []
     url_score = 0
     risky_links = 0

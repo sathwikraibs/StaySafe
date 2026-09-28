@@ -109,7 +109,25 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
               <dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.sha256}</dd>
               {result.sha1 && (<><dt className={label}>SHA-1</dt><dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.sha1}</dd></>)}
               {result.md5 && (<><dt className={label}>MD5</dt><dd className="-mt-1.5 break-all font-mono text-[11px] text-ink-700 sm:mt-0">{result.md5}</dd></>)}
+              {result.apk?.package && (
+                <>
+                  <dt className={label}>{t("fileX.appId")}</dt>
+                  <dd className="break-all font-mono text-xs text-ink-800">{result.apk.package}</dd>
+                </>
+              )}
             </dl>
+            {result.apk && result.apk.permissions.length > 0 && (
+              <details className="mt-3 rounded-xl bg-cream-100 px-3 py-2">
+                <summary className="cursor-pointer font-body text-sm font-bold text-ink-800">
+                  {t("fileX.permissions", { n: result.apk.permissions.length })}
+                </summary>
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {result.apk.permissions.map((p) => (
+                    <li key={p} className="rounded-md bg-cream-50 px-2 py-0.5 font-mono text-[11px] text-ink-700">{p.replace("android.permission.", "")}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </div>
         </ResultReport>
       )}

@@ -79,6 +79,7 @@ export interface ScanFileResponse {
   md5?: string;
   sha1?: string;
   virustotal?: VirusTotalInfo;
+  apk?: { package: string; permissions: string[] } | null;
   checks?: Check[];
   risk_score: number;
   verdict: Verdict;

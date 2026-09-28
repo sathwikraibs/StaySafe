@@ -8,3 +8,5 @@ opencv-python-headless
 pyzbar
 numpy
 gunicorn
+phonenumbers
+zxcvbn

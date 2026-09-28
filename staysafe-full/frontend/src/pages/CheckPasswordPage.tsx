@@ -8,6 +8,7 @@ import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { CheckPasswordResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { EmailLeakCheck } from "@/components/EmailLeakCheck";
 
 /** Big coloured strength bar: Weak / Moderate / Strong. */
 function StrengthBar({ result }: { result: CheckPasswordResponse }) {
@@ -107,6 +108,8 @@ export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) 
           <StrengthBar result={result} />
         </ResultReport>
       )}
+
+      <EmailLeakCheck />
     </div>
   );
 }

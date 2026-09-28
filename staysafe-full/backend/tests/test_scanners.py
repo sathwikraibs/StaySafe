@@ -258,6 +258,8 @@ def _online(dns=True, age=900, gsb=False, vt=None, page=None):
                                                              "harmless": 60, "engines": 90, "domain_malicious": 0}
     url_scanner.fetch_page = fake_page
     url_scanner.ensure_feeds = lambda: None  # no downloads in tests
+    url_scanner.ensure_big_feeds = lambda: None
+    url_scanner.first_certificate_days = lambda host: None
     if not url_scanner._FEEDS["urls"]:
         url_scanner._FEEDS["urls"] = {"example.invalid/x": "test"}
     try:
@@ -353,6 +355,71 @@ def test_public_scam_list_hit_is_risky():
         r2 = scan("https://normal-shop-offers.com/other")
         assert any(c["id"] == "feeds" and c["status"] == "warn" for c in r2["checks"]), r2
     finally:
+        _restore()
+
+
+
+def _big_lists(links=(), domains=(), tranco=None):
+    fp = url_scanner._sorted_fingerprints
+    url_scanner._BIG["links"] = {"Phishing.Database": fp(url_scanner._fingerprint(url_scanner._feed_key(u)) for u in links)}
+    url_scanner._BIG["domains"] = {"Phishing Army": fp(url_scanner._fingerprint(d) for d in domains)}
+    url_scanner._TRANCO["ranks"] = tranco or {}
+
+
+def test_big_phishing_lists():
+    try:
+        scan = _online(age=2000)
+        _big_lists(links=["http://sites.google.com/view/sbi-kyc-update"],
+                   domains=["sbi-rewards-claim.com", "docs.google.com", "hdfc-login.web.app"])
+        r = scan("https://sbi-rewards-claim.com/")                       # whole scam website listed
+        assert r["verdict"] == "DANGEROUS" and any(c["id"] == "feeds" and c["status"] == "fail" for c in r["checks"]), r
+        r = scan("https://hdfc-login.web.app/")                          # scam page on free hosting
+        assert r["verdict"] == "DANGEROUS", r
+        r = scan("https://docs.google.com/document/d/abc")               # big shared site: never condemned
+        assert r["verdict"] == "SAFE", r
+        r = scan("https://sites.google.com/view/sbi-kyc-update")         # but an exact listed page is
+        assert r["verdict"] == "DANGEROUS", r
+    finally:
+        _restore()
+
+
+def test_popular_sites_get_fewer_false_alarms_but_lookalikes_do_not():
+    try:
+        scan = _online(age=None)
+        _big_lists(tranco={"zomato.com": 900, "some-blog-site.net": 60000})
+        r = scan("http://zomato.com/offers-login-reward")                 # risky words, no https, age unknown
+        assert r["risk_score"] <= 20 and any(c["id"] == "known" and c["status"] == "pass" for c in r["checks"]), r
+        r = scan("https://zomat0-offers.com/login")                       # lookalike: not in the list
+        assert r["risk_score"] > 20, r
+    finally:
+        _restore()
+
+
+def test_first_certificate_date_used_when_registration_hidden():
+    try:
+        scan = _online(age=None)
+        url_scanner.first_certificate_days = lambda host: 4
+        r = scan("https://fresh-offer-store.com/")
+        assert any(c["id"] == "age" and c["status"] == "fail" and c["value"] == 4 for c in r["checks"]), r["checks"]
+    finally:
+        _restore()
+
+
+def test_rdap_gives_age_when_whois_fails():
+    class R:
+        status_code = 200
+        def json(self):
+            return {"events": [{"eventAction": "registration", "eventDate": "2026-09-20T10:00:00Z"}],
+                    "entities": [{"roles": ["registrar"], "vcardArray": ["vcard", [["fn", {}, "text", "Test Registrar"]]]}]}
+    real_get = url_scanner.requests.get
+    try:
+        url_scanner.OFFLINE = False
+        url_scanner.whois = None
+        url_scanner.requests.get = lambda *a, **k: R()
+        info = url_scanner.whois_details("brand-new-shop.in")
+        assert info["registrar"] == "Test Registrar" and info["created"] == "2026-09-20" and info["age_days"] < 30, info
+    finally:
+        url_scanner.requests.get = real_get
         _restore()
 
 
@@ -637,6 +704,144 @@ def test_our_own_gemini_limit_stops_before_googles():
     translator._GEMINI["day_count"] = translator.GEMINI_DAILY_LIMIT
     add_translation(analyze_text(KN_SCAM), "en")
     assert not any(c[0] == "gemini" for c in calls)      # Gemini not called at all
+
+
+
+def test_personal_numbers_never_sent_for_translation():
+    calls = _fake_gemini_and_bhashini()
+    sent = []
+    fake = translator.requests.post
+
+    def spy(url, **kw):
+        sent.append(str(kw.get("json")))
+        return fake(url, **kw)
+    translator.requests.post = spy
+    text = "ನಿಮ್ಮ ಖಾತೆ 50012345678 ಇಂದು ಬ್ಲಾಕ್. OTP 482913 ಹೇಳಿ. ರಾಹುಲ್ rahul@okaxis ಗೆ +91 98765 43210"
+    translator.translate(text, "en")
+    assert sent and not any(x in " ".join(sent) for x in ("50012345678", "482913", "rahul@okaxis", "98765 43210")), sent
+    masked, secrets = translator.mask_personal(text)
+    assert translator.unmask_personal(masked, secrets) == text
+
+
+
+def test_sender_rules_trai():
+    from scanners.message_scanner import add_sender_checks
+    kyc = "Dear customer your SBI account will be blocked today. Update KYC now"
+    r = add_sender_checks(analyze_text(kyc), "+91 98765 43210")
+    assert any("personal mobile" in p for p in r["patterns_detected"]), r
+    r = add_sender_checks(analyze_text(kyc), "AX-SBIINB-P")
+    assert any("advert" in p for p in r["patterns_detected"]), r
+    r = add_sender_checks(analyze_text("Rs 500 debited from a/c XX1234. Not you? Call 1800 425 3800"), "AX-HDFCBK-T")
+    assert r["verdict"] == "LIKELY_SAFE" and r["safe_signals"], r
+    r = add_sender_checks(analyze_text("Hey bro, reached home, call you later"), "9876543210")
+    assert r["verdict"] == "LIKELY_SAFE", r           # friends texting from a mobile are fine
+    r = add_sender_checks(analyze_text("Part time job, earn daily. WhatsApp +84 912 345 678"), "")
+    assert any("foreign phone number" in p for p in r["patterns_detected"]), r
+    r = add_sender_checks(analyze_text("VM-SBIINB-S\nYour a/c is credited with Rs 2000"), "")
+    assert r.get("sender") == "VM-SBIINB-S"          # sender read from the top of a screenshot
+
+
+INDIAN_SMS_SAMPLES = [  # from the CloveAI india-spam-sms dataset (MIT licence)
+    (1, "Get rich quick! Earn ₹7938185397 daily from home. Call Sri Ganganagar"),
+    (1, "Hi beautiful! I saw your profile. Want to chat? Reply YES to 9409249465"),
+    (1, "Axis Bank: Unusual login detected from new device. Secure your account: http://verify-bank960.com"),
+    (1, "Get 50% discount on your 670 electricity bill! Pay only INR 99. Limited time: http://bill-discount536.com"),
+    (1, "Your meter will be removed today due to non-payment. Call 848 immediately."),
+    (1, "WINNER! You got ₹SBI cashback in your 710 Bank account. Claim now: http://bank-reward4650.in"),
+    (1, "PMO India: You are selected for ₹862 grant. Call 297"),
+    (1, "Your debit card XXHDFC has been blocked. Call immediately: 314 to reactivate."),
+    (0, "Income Tax Dept: Your refund of INR 14882 has been processed. Will be credited in 3-5 days."),
+    (0, "UPPCL: Electricity bill for December is INR 3153. Pay by 2025-09-22 to avoid disconnection."),
+    (0, "Thank you for using your ICICI Bank Debit Card XX4839 for INR 24776 at 88102."),
+    (0, "EPFO: Pension contribution of INR 12676 received for November."),
+]
+
+
+def test_indian_sms_dataset_samples():
+    for label, text in INDIAN_SMS_SAMPLES:
+        verdict = analyze_text(text)["verdict"]
+        assert (verdict != "LIKELY_SAFE") == bool(label), (verdict, text)
+
+
+
+def test_email_sender_domain_checks():
+    from scanners import email_domain, email_analyzer
+    import scanners.url_scanner as us
+    saved = (email_domain.dns_query, us.OFFLINE, us.whois_details)
+    try:
+        us.OFFLINE = False
+        email_domain.ensure_disposable_list = lambda offline=False: None
+        records = {("ghost-bank-alerts.com", "MX"): "nxdomain",
+                   ("sbi-alerts-team.co", "MX"): ["10 mx.sbi-alerts-team.co"], ("sbi-alerts-team.co", "TXT"): [],
+                   ("_dmarc.sbi-alerts-team.co", "TXT"): "nxdomain"}
+        email_domain.dns_query = lambda name, rtype: records.get((name, rtype), [])
+        us.whois_details = lambda d: {"age_days": 6} if d == "sbi-alerts-team.co" else {}
+        r = email_analyzer.check_sender_identity("Support", "help@mailinator.com")
+        assert any("throwaway" in f for f in r["findings"]), r
+        r = email_analyzer.check_sender_identity("Alerts", "noreply@ghost-bank-alerts.com")
+        assert any("doesn't exist" in f for f in r["findings"]), r
+        r = email_analyzer.check_sender_identity("Alerts", "noreply@sbi-alerts-team.co")
+        assert any("registered only 6 days ago" in f for f in r["findings"]), r
+    finally:
+        email_domain.dns_query, us.OFFLINE, us.whois_details = saved
+
+
+
+def _fake_apk(package: str, permissions) -> bytes:
+    """A tiny APK whose binary manifest lists the given package and permissions."""
+    import struct, zipfile, io
+    strs = ["manifest", "package", package] + list(permissions)
+    enc = b"".join(struct.pack("<H", len(x)) + x.encode("utf-16-le") + b"\0\0" for x in strs)
+    offs, o = [], 0
+    for x in strs:
+        offs.append(o); o += 2 + len(x) * 2 + 2
+    hdr = 28
+    pool = struct.pack("<IIIII", len(strs), 0, 0, hdr + 4 * len(strs), 0)
+    body = struct.pack(f"<{len(strs)}I", *offs) + enc
+    body += b"\0" * (-len(body) % 4)
+    sp = struct.pack("<HHI", 0x0001, hdr, hdr + len(body)) + pool + body
+    attr = struct.pack("<IIIHBBI", 0xFFFFFFFF, 1, 2, 8, 0, 3, 2)
+    el = struct.pack("<HHIII", 0x0102, 16, 36 + len(attr), 0, 0xFFFFFFFF) + struct.pack("<IIHHHHHH", 0xFFFFFFFF, 0, 20, 20, 1, 0, 0, 0) + attr
+    axml = struct.pack("<HHI", 0x0003, 8, 8 + len(sp) + len(el)) + sp + el
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("AndroidManifest.xml", axml)
+        z.writestr("classes.dex", b"dex\n035")
+    return buf.getvalue()
+
+
+def test_apk_permissions_are_read():
+    from scanners.apk_check import analyze_apk, read_manifest
+    import zipfile, io
+    data = _fake_apk("com.wedding.invite", ["android.permission.RECEIVE_SMS", "android.permission.BIND_ACCESSIBILITY_SERVICE"])
+    m = read_manifest(zipfile.ZipFile(io.BytesIO(data)).read("AndroidManifest.xml"))
+    assert m["package"] == "com.wedding.invite" and "android.permission.RECEIVE_SMS" in m["permissions"], m
+    r = analyze_apk("Wedding Card.apk", data)
+    assert r["score"] >= 70 and any("OTP" in f for f in r["findings"]), r
+    r = analyze_apk("game.apk", _fake_apk("com.fun.game", ["android.permission.INTERNET"]))
+    assert r["score"] == 0, r
+
+
+
+def test_email_breach_lookup_free_sources():
+    import scanners.password_checker as pc
+    real = pc.requests.get
+    try:
+        def fake(url, **k):
+            if "xposedornot" in url:
+                if "/found" in url:
+                    return _FakeResponse(200, {"breaches": [["Canva", "LinkedIn"]], "status": "success"})
+                if "/busy" in url:
+                    return _FakeResponse(429, {"Error": "rate limited"})
+                return _FakeResponse(200, {"Error": "Not found", "email": None})
+            return _FakeResponse(200, {"success": True, "found": 1, "fields": ["username"], "sources": [{"name": "Dunzo", "date": "2022-05"}]})
+        pc.requests.get = fake
+        assert pc._breach_lookup("found@x.com")["breaches"] == ["Canva", "LinkedIn"]
+        assert pc._breach_lookup("clean@x.com")["breached"] is False
+        r = pc._breach_lookup("busy@x.com")        # first service busy: the second one answers
+        assert r["source"] == "LeakCheck" and r["breaches"] == ["Dunzo"], r
+    finally:
+        pc.requests.get = real
 
 
 if __name__ == "__main__":

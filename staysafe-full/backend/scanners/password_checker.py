@@ -55,6 +55,19 @@ def has_sequence(pw: str, length: int = 4) -> bool:
     return False
 
 
+def crack_time_seconds(password: str):
+    """Seconds a real attacker would need (zxcvbn, slow-hash offline attack), or None if unavailable."""
+    try:
+        from zxcvbn import zxcvbn
+    except Exception:
+        return None
+    try:
+        result = zxcvbn(password[:72])
+        return float(result["crack_times_seconds"]["offline_slow_hashing_1e4_per_second"])
+    except Exception:
+        return None
+
+
 def analyze_strength(password: str) -> dict:
     findings = []
     score = 100  # start high, deduct for weaknesses
@@ -107,6 +120,28 @@ def analyze_strength(password: str) -> dict:
         findings.append("Follows the very common pattern Word + symbol + numbers")
         score -= 10
 
+    # zxcvbn (Dropbox's realistic password-guessing model): how long a real attacker with a
+    # leaked password database would need. Catches names, dates, keyboard walks and words we miss.
+    crack = crack_time_seconds(password)
+    crack_bucket = None
+    if crack is not None:
+        if crack < 60:
+            crack_bucket = "minute"
+            findings.append("A computer could guess this password in under a minute")
+            score = min(score, 25)
+        elif crack < 86400:
+            crack_bucket = "day"
+            findings.append("A computer could guess this password in less than a day")
+            score = min(score, 45)
+        elif crack < 30 * 86400:
+            crack_bucket = "month"
+            findings.append("A computer could guess this password in less than a month")
+            score = min(score, 65)
+        elif crack < 10 * 365 * 86400:
+            crack_bucket = "years"
+        else:
+            crack_bucket = "centuries"
+
     score = max(0, min(100, score))
 
     if score >= 80:
@@ -128,6 +163,9 @@ def analyze_strength(password: str) -> dict:
         {"id": "pw_variety", "status": "pass" if missing == 0 else ("warn" if missing <= 2 else "fail"), "value": 4 - missing},
         {"id": "pw_patterns", "status": "pass" if patterns == 0 else ("warn" if patterns == 1 else "fail"), "value": patterns},
     ]
+    if crack_bucket:
+        checks.insert(0, {"id": "pw_crack", "status": {"minute": "fail", "day": "fail", "month": "warn"}.get(crack_bucket, "pass"),
+                          "value": crack_bucket})
     return {"strength_score": score, "strength_label": strength, "findings": findings, "checks": checks}
 
 
@@ -197,42 +235,91 @@ def check_password_route():
     })
 
 
-@password_checker_bp.route("/api/check-email-breach", methods=["POST"])
-def check_email_breach_route():
+_BREACH_CACHE: dict = {}      # sha256(email) -> (expires, result)
+_BREACH_RATE: dict = {}       # visitor IP -> [times]  (the free services' limits are shared by everyone)
+
+
+def _breach_lookup(email: str) -> dict:
     """
-    Note: HIBP's email breach API requires a paid API key as of their
-    current pricing. This endpoint is scaffolded and ready --
-    just add your key to HIBP_API_KEY below once you have one.
-    Leave it out of your MVP demo if you don't want to pay for it;
-    the password breach check above is completely free.
+    Which data leaks an email address appears in. Free sources, tried in order:
+      1. Have I Been Pwned (only if HIBP_API_KEY is set; paid)
+      2. XposedOrNot (free, no key, about 100 lookups a day)
+      3. LeakCheck public API (free, no key; asks for a "Powered by LeakCheck" credit)
+    Only the names of the leaks and the kinds of data leaked are returned, never the data itself.
     """
     import os
-    HIBP_API_KEY = os.environ.get("HIBP_API_KEY", "")
-
-    if not HIBP_API_KEY:
-        return jsonify({
-            "error": "Email breach check requires a paid HIBP API key. "
-                     "The password breach check (/api/check-password) is free and doesn't need one."
-        }), 501
-
-    data = request.get_json(silent=True) or {}
-    email = data.get("email", "").strip()
-    if not email:
-        return jsonify({"error": "Missing 'email' in request body"}), 400
-
+    key = os.environ.get("HIBP_API_KEY", "")
+    if key:
+        try:
+            resp = requests.get(f"https://haveibeenpwned.com/api/v3/breachedaccount/{requests.utils.quote(email)}",
+                                headers={"hibp-api-key": key, "user-agent": "StaySafe"}, timeout=8)
+            if resp.status_code == 404:
+                return {"breached": False, "breaches": [], "source": "Have I Been Pwned"}
+            if resp.status_code == 200:
+                return {"breached": True, "breaches": [b["Name"] for b in resp.json()], "source": "Have I Been Pwned"}
+        except Exception:
+            pass
     try:
-        resp = requests.get(
-            f"https://haveibeenpwned.com/api/v3/breachedaccount/{email}",
-            headers={"hibp-api-key": HIBP_API_KEY},
-            timeout=8,
-        )
+        resp = requests.get(f"https://api.xposedornot.com/v1/check-email/{requests.utils.quote(email)}",
+                            timeout=8, headers={"User-Agent": "StaySafe/2.0"})
         if resp.status_code == 404:
-            return jsonify({"breached": False, "breaches": []})
-        breaches = resp.json()
-        return jsonify({
-            "breached": True,
-            "breach_count": len(breaches),
-            "breaches": [b["Name"] for b in breaches],
-        })
+            return {"breached": False, "breaches": [], "source": "XposedOrNot"}
+        if resp.status_code == 200:
+            data = resp.json()
+            names = []
+
+            def walk(x):
+                if isinstance(x, str):
+                    names.append(x)
+                elif isinstance(x, (list, tuple)):
+                    for y in x:
+                        walk(y)
+            walk(data.get("breaches", []))
+            if names:
+                return {"breached": True, "breaches": sorted(set(names))[:40], "source": "XposedOrNot"}
+            if str(data.get("Error", "")).lower() == "not found" or data.get("status") == "success":
+                return {"breached": False, "breaches": [], "source": "XposedOrNot"}
     except Exception:
-        return jsonify({"error": "Breach check failed"}), 500
+        pass
+    try:
+        resp = requests.get("https://leakcheck.io/api/public", params={"check": email}, timeout=8,
+                            headers={"User-Agent": "StaySafe/2.0"})
+        data = resp.json()
+        if data.get("success") and data.get("found"):
+            names = [str(src.get("name", "")).strip() for src in data.get("sources", []) if isinstance(src, dict)]
+            return {"breached": True, "breaches": sorted({n for n in names if n})[:40],
+                    "fields": [str(f) for f in data.get("fields", [])][:12], "source": "LeakCheck"}
+        if data.get("success") is False and "not found" in str(data.get("error", "")).lower():
+            return {"breached": False, "breaches": [], "source": "LeakCheck"}
+    except Exception:
+        pass
+    return {"error": True}
+
+
+@password_checker_bp.route("/api/check-email-breach", methods=["POST"])
+def check_email_breach_route():
+    import time
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email", "")).strip().lower()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[a-z]{2,}", email):
+        return jsonify({"error": "Please enter a full email address, like name@example.com"}), 400
+
+    ip = (request.headers.get("X-Forwarded-For", request.remote_addr or "") or "").split(",")[0].strip()
+    now = time.time()
+    recent = [t for t in _BREACH_RATE.get(ip, []) if now - t < 3600]
+    if len(recent) >= 10:
+        return jsonify({"error": "You've checked a lot of addresses. Please try again in an hour."}), 429
+    _BREACH_RATE[ip] = recent + [now]
+
+    cache_key = hashlib.sha256(email.encode()).hexdigest()
+    hit = _BREACH_CACHE.get(cache_key)
+    if hit and hit[0] > now:
+        return jsonify(hit[1])
+    result = _breach_lookup(email)
+    if result.get("error"):
+        return jsonify({"error": "The data-leak check isn't available right now. Please try again later."}), 503
+    result["breach_count"] = len(result["breaches"])
+    _BREACH_CACHE[cache_key] = (now + 24 * 3600, result)
+    if len(_BREACH_CACHE) > 5000:
+        _BREACH_CACHE.clear()
+    return jsonify(result)

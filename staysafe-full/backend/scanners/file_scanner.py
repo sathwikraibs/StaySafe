@@ -314,6 +314,29 @@ def upload_to_virustotal(filename: str, data: bytes, sha256: str) -> dict:
     return {"state": "queued", "link": f"https://www.virustotal.com/gui/file/{sha256}"}
 
 
+def check_known_good(sha256: str) -> dict:
+    """
+    CIRCL hashlookup (free, no key): is this exact file a known genuine one, e.g. from the US
+    NIST software library (NSRL), Windows or Linux installers? {'known': bool, 'source': str}
+    """
+    import scanners.url_scanner as _us
+    if _us.OFFLINE:
+        return {"known": False}
+    try:
+        resp = requests.get(f"https://hashlookup.circl.lu/lookup/sha256/{sha256}", timeout=5,
+                            headers={"Accept": "application/json", "User-Agent": "StaySafe/2.0"})
+        if resp.status_code != 200:
+            return {"known": False}
+        data = resp.json()
+    except Exception:
+        return {"known": False}
+    trust = data.get("hashlookup:trust", 50)
+    if isinstance(trust, (int, float)) and trust < 50:
+        return {"known": False}
+    source = data.get("ProductName") or data.get("FileName") or data.get("source") or "NSRL"
+    return {"known": True, "source": str(source)[:60]}
+
+
 def verdict_from_score(score: int) -> str:
     if score >= 50:
         return "DANGEROUS"
@@ -349,7 +372,17 @@ def scan_file_route():
 
     ext_score, ext_findings = check_extension_risk(filename)
     content_score, content_findings, real_type = check_content(filename, file_bytes)
-    vt_result = check_virustotal_hash(sha256)
+    apk = {"findings": [], "score": 0, "package": "", "permissions": []}
+    if real_type == "Android app":
+        from scanners.apk_check import analyze_apk
+        apk = analyze_apk(filename, file_bytes)
+        content_findings = content_findings + apk["findings"]
+        content_score += apk["score"]
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(2) as pool:
+        known_f = pool.submit(check_known_good, sha256)
+        vt_result = check_virustotal_hash(sha256)
+        known = known_f.result()
     # The visitor agreed to let VirusTotal scan the file itself (only if it has never been seen)
     if request.form.get("vt_upload") == "1" and vt_result.get("vt", {}).get("state") == "not_found":
         uploaded = upload_to_virustotal(filename, file_bytes, sha256)
@@ -360,6 +393,11 @@ def scan_file_route():
 
     total_score = min(100, ext_score + content_score + vt_result["score"])
     all_findings = ext_findings + content_findings + vt_result["findings"]
+    vt_flagged = (vt_result.get("vt", {}) or {}).get("malicious", 0) or 0
+    if known.get("known") and vt_flagged == 0:
+        # exactly the same file as a known genuine program: small warning signs don't matter
+        total_score = min(total_score, 10)
+        all_findings.insert(0, f"This exact file is on a public list of known genuine software ({known['source']})")
     if not all_findings:
         all_findings = ["No warning signs found in this file's name or contents"]
 
@@ -373,6 +411,11 @@ def scan_file_route():
         {"id": "file_hidden", "status": "fail" if hidden else "pass", "value": len(hidden)},
         {"id": "file_name", "status": "fail" if ext_score >= 35 else ("warn" if ext_score else "pass"), "value": ext or None},
     ]
+    if known.get("known"):
+        checks.insert(0, {"id": "file_known", "status": "pass", "value": known.get("source")})
+    if real_type == "Android app":
+        checks.insert(1, {"id": "file_apk", "status": "fail" if apk["score"] >= 35 else ("warn" if apk["score"] else "pass"),
+                          "value": len(apk["permissions"])})
 
     result = {
         "filename": filename,
@@ -383,6 +426,7 @@ def scan_file_route():
         "sha1": sha1,
         "virustotal": vt_result.get("vt", {}),
         "detected_type": real_type,
+        "apk": {"package": apk["package"], "permissions": apk["permissions"]} if real_type == "Android app" else None,
         "risk_score": total_score,
         "verdict": verdict_from_score(total_score),
         "findings": all_findings,

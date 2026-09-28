@@ -17,6 +17,7 @@ Register with:
     app.register_blueprint(network_checker_bp)
 """
 
+import time
 import requests
 from flask import Blueprint, request, jsonify
 
@@ -41,6 +42,32 @@ def lookup_ip(ip: str) -> dict:
         timeout=6,
     )
     return resp.json()
+
+
+_TOR = {"ips": set(), "loaded_at": 0.0, "loading": False}
+
+
+def _refresh_tor():
+    """The Tor Project's own list of Tor exit addresses (free, refreshed hourly)."""
+    import requests as _rq
+    try:
+        resp = _rq.get("https://check.torproject.org/torbulkexitlist", timeout=15,
+                       headers={"User-Agent": "StaySafe/2.0"})
+        if resp.status_code == 200:
+            ips = {l.strip() for l in resp.text.splitlines() if l.strip() and not l.startswith("#")}
+            if len(ips) > 100:
+                _TOR["ips"] = ips
+    except Exception:
+        pass
+    _TOR.update(loaded_at=time.time(), loading=False)
+
+
+def is_tor_exit(ip: str) -> bool:
+    import threading
+    if not _TOR["loading"] and time.time() - _TOR["loaded_at"] > 3600:
+        _TOR["loading"] = True
+        threading.Thread(target=_refresh_tor, daemon=True).start()
+    return ip in _TOR["ips"]
 
 
 def analyze_ip(ip: str, browser_tz: str = "") -> dict:
@@ -68,7 +95,11 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
     ip_tz = data.get("timezone", "")
     ip_version = "IPv6" if ":" in ip else "IPv4"
 
-    if data.get("proxy"):
+    if is_tor_exit(ip):
+        findings.append("You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks")
+        score += 20
+        checks.append({"id": "net_vpn", "status": "warn", "value": "Tor"})
+    elif data.get("proxy"):
         findings.append("This connection appears to be using a VPN, proxy, or Tor exit node")
         score += 20
         checks.append({"id": "net_vpn", "status": "warn", "value": None})

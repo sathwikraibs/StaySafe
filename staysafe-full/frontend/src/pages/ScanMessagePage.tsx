@@ -44,6 +44,7 @@ function messageChecks(r: ScanMessageResponse): Check[] {
 export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, ts, lang } = useI18n();
   const [text, setText] = useState("");
+  const [sender, setSender] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanMessageResponse | null>(null);
@@ -56,7 +57,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
     setPendingTool("message");
     setLoading(true); setError(null); setResult(null);
     try {
-      const data = await apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim() });
+      const data = await apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim(), sender: sender.trim() });
       setResult(data); setFromScreenshot(false);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
@@ -68,6 +69,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
     try {
       const fd = new FormData();
       fd.append("image", file);
+      if (sender.trim()) fd.append("sender", sender.trim());
       const data = await apiPostForm<ScanMessageResponse>(`${API_BASE}/api/scan-screenshot`, fd);
       setResult(data); setFromScreenshot(true);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
@@ -87,6 +89,21 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
           placeholder={t("message.placeholder")}
           className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400 scrollbar-warm"
         />
+        <label className="mt-3 block">
+          <span className="flex items-center gap-2 font-body text-sm font-semibold text-ink-800">
+            {t("messageX.senderLabel")}
+            <span className="rounded-full bg-cream-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-dustyblue-600">{t("emailForm.optional")}</span>
+          </span>
+          <input
+            type="text"
+            value={sender}
+            onChange={(e) => setSender(e.target.value)}
+            placeholder={t("messageX.senderPh")}
+            autoCapitalize="characters"
+            className="mt-1.5 w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-2.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400"
+          />
+          <span className="mt-1 block font-body text-xs text-dustyblue-600">{t("messageX.senderHint")}</span>
+        </label>
         <div className="mt-4">
           <Button onClick={handleCheckText} disabled={loading || !text.trim()} fullWidth>
             {loading ? t("common.checking") : t("message.button")}
