@@ -293,7 +293,7 @@ const enBase = {
     dataItems: [
       "Messages, screenshots and files are sent securely to StaySafe to be checked. We don't keep them. Only a short summary goes into your check history.",
       "Links (including links found in messages, QR codes and emails) are also checked with Google Safe Browsing and VirusTotal.",
-      "Messages in a different language from the website may be sent to the MyMemory translation service, so we can understand them and explain them in your language. We don't store them.",
+      "Messages in a different language from the website may be sent to a translation service (Bhashini, Google Gemini or MyMemory), so we can understand them and explain them in your language. We don't store them.",
       "Files are checked with VirusTotal using only their fingerprint (a hash). The file itself is not uploaded to them.",
       "Passwords are never stored. Only a scrambled 5-character fragment is sent to the Have I Been Pwned leak database.",
       "The connection check looks up your internet address with ip-api.com.",

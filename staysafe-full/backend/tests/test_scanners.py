@@ -489,11 +489,15 @@ def _use_fake_google(status=200, mymemory="ok", google_message="Cloud Translatio
                                                {"segment": params["q"], "translation": text, "match": 0.85, "created-by": "MT!"}]})
 
     os.environ["TRANSLATE_API_KEY"] = "test-key"
+    for k in ("GEMINI_API_KEY", "BHASHINI_USER_ID", "BHASHINI_API_KEY", "GEMINI_MODEL"):
+        os.environ.pop(k, None)
+    translator._GEMINI.update(model=None, minute=[], day_count=0)
+    translator._BHASHINI_CFG.clear()
     translator.requests.post = fake_post
     translator.requests.get = fake_get
     translator._cache.clear()
-    translator._paused_until.update(google=0.0, mymemory=0.0)
-    translator._problem.update(google=None, mymemory=None)
+    translator._paused_until.update({p: 0.0 for p in translator.PROVIDERS})
+    translator._problem.update({p: None for p in translator.PROVIDERS})
     translator._usage["chars"] = 0
     return calls
 
@@ -573,6 +577,66 @@ def test_mymemory_never_shows_an_unrelated_sentence():
     result = add_translation(analyze_text(text), "en")
     assert "translation" not in result, result.get("translation")   # nothing shown instead of nonsense
     assert result["verdict"] == "SCAM_LIKELY"                          # built-in Kannada rules still decide
+
+
+KN_SCAM = "ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ತಕ್ಷಣ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"
+
+
+def _fake_gemini_and_bhashini(gemini_status=200, gemini_error="", bhashini=True):
+    """Gemini answers with JSON; Bhashini needs a config call then a compute call."""
+    calls = _use_fake_google()
+    os.environ.pop("TRANSLATE_API_KEY")
+    os.environ["GEMINI_API_KEY"] = "g-key"
+    if bhashini:
+        os.environ["BHASHINI_USER_ID"], os.environ["BHASHINI_API_KEY"] = "uid", "ulca"
+    import json as _json
+
+    def fake_post(url, params=None, json=None, headers=None, timeout=None, data=None):
+        if "generativelanguage" in url:
+            calls.append(("gemini", url, headers.get("x-goog-api-key")))
+            if "gemini-flash-lite-latest" in url:
+                return _FakeResponse(404, {"error": {"message": "model not found"}})
+            if gemini_status != 200:
+                return _FakeResponse(gemini_status, {"error": {"message": gemini_error}})
+            answer = {"source_language": "kn", "translation": "Your bank account will be blocked today. Update KYC immediately"}
+            return _FakeResponse(200, {"candidates": [{"content": {"parts": [{"text": _json.dumps(answer)}]}}]})
+        if "getModelsPipeline" in url:
+            calls.append(("bhashini-config", headers["userID"], headers["ulcaApiKey"]))
+            return _FakeResponse(200, {"pipelineInferenceAPIEndPoint": {"callbackUrl": "https://dhruva.example/infer",
+                                       "inferenceApiKey": {"name": "Authorization", "value": "inf-key"}},
+                                       "pipelineResponseConfig": [{"config": [{"serviceId": "ai4bharat/indictrans"}]}]})
+        if "dhruva" in url:
+            calls.append(("bhashini", headers["Authorization"], json["pipelineTasks"][0]["config"]["serviceId"]))
+            return _FakeResponse(200, {"pipelineResponse": [{"output": [{"source": "x", "target": "Your bank account will be blocked today"}]}]})
+        raise AssertionError(url)
+
+    translator.requests.post = fake_post
+    return calls
+
+
+def test_gemini_translates_first_when_its_key_is_set():
+    calls = _fake_gemini_and_bhashini()
+    result = add_translation(analyze_text(KN_SCAM), "en")
+    assert result["translation"]["provider"] == "gemini" and "blocked" in result["translation"]["text"]
+    assert result["translation"]["from"] == "kn"
+    assert translator._GEMINI["model"] == "gemini-2.5-flash-lite"   # skipped the model name that didn't exist
+    assert not any(c[0] == "mymemory" for c in calls)
+
+
+def test_gemini_free_limit_falls_back_to_bhashini():
+    calls = _fake_gemini_and_bhashini(429, "Quota exceeded ... GenerateRequestsPerDayPerProjectPerModel-FreeTier")
+    result = add_translation(analyze_text(KN_SCAM), "en")
+    assert result["translation"]["provider"] == "bhashini", result.get("translation")
+    assert ("bhashini", "inf-key", "ai4bharat/indictrans") in calls
+    assert not translator._available("gemini")          # paused for hours, not retried every message
+    assert result["verdict"] == "SCAM_LIKELY"
+
+
+def test_our_own_gemini_limit_stops_before_googles():
+    calls = _fake_gemini_and_bhashini(bhashini=False)
+    translator._GEMINI["day_count"] = translator.GEMINI_DAILY_LIMIT
+    add_translation(analyze_text(KN_SCAM), "en")
+    assert not any(c[0] == "gemini" for c in calls)      # Gemini not called at all
 
 
 if __name__ == "__main__":
