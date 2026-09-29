@@ -273,9 +273,14 @@ def _breach_lookup(email: str) -> dict:
                 return {"breached": True, "breaches": [b["Name"] for b in resp.json()], "source": "Have I Been Pwned"}
         except Exception:
             pass
+    from scanners.quota import quota
     try:
+        if not quota("xposedornot").take(wait=8):
+            raise RuntimeError("busy")
         resp = requests.get(f"https://api.xposedornot.com/v1/check-email/{requests.utils.quote(email)}",
                             timeout=8, headers={"User-Agent": "StaySafe/2.0"})
+        if resp.status_code == 429:
+            quota("xposedornot").cool_down(60)
         if resp.status_code == 404:
             return {"breached": False, "breaches": [], "source": "XposedOrNot"}
         if resp.status_code == 200:
@@ -296,6 +301,8 @@ def _breach_lookup(email: str) -> dict:
     except Exception:
         pass
     try:
+        if not quota("leakcheck").take(wait=8):
+            raise RuntimeError("busy")
         resp = requests.get("https://leakcheck.io/api/public", params={"check": email}, timeout=8,
                             headers={"User-Agent": "StaySafe/2.0"})
         data = resp.json()

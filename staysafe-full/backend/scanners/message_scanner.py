@@ -751,23 +751,29 @@ def fix_ocr_link(link: str) -> str:
     return link
 
 
-def check_links_in_result(result: dict, from_screenshot: bool = False) -> dict:
-    """Run the full link scanner on up to 5 links and fold the results into the verdict."""
-    from scanners.url_scanner import scan_url
-
-    from scanners.url_scanner import LINK_POOL
-
-    links = extract_links(result.get("text_analyzed", ""))
+def start_link_checks(text: str, from_screenshot: bool = False):
+    """
+    Start checking the message's links right away (at the same time as the other work), so
+    waiting for a free slot on one service doesn't make the whole check slower.
+    Returns (links, [(link, future), ...]).
+    """
+    from scanners.url_scanner import LINK_POOL, scan_url
+    links = extract_links(text)
     if from_screenshot:
         links = list(dict.fromkeys(fix_ocr_link(l) for l in links))
+    return links, [(link, LINK_POOL.submit(scan_url, link)) for link in links[:MAX_LINKS_CHECKED]]
+
+
+def check_links_in_result(result: dict, from_screenshot: bool = False, started=None) -> dict:
+    """Run the full link scanner on up to 5 links and fold the results into the verdict."""
+    links, futures = started or start_link_checks(result.get("text_analyzed", ""), from_screenshot)
     checked = []
     extra_score = 0
     extra_label = ""
-    # Check the links at the same time, so three links take about as long as one
-    futures = [(link, LINK_POOL.submit(scan_url, link)) for link in links[:MAX_LINKS_CHECKED]]
+    # The links are checked at the same time, so three links take about as long as one
     for link, future in futures:
         try:
-            link_result = future.result(timeout=60)
+            link_result = future.result(timeout=80)
         except Exception:
             continue
         checked.append({
@@ -841,7 +847,7 @@ def add_translation(result: dict, ui_lang: str) -> dict:
     english = None
 
     if non_latin >= 0.2:
-        english = translate(text, "en")
+        english = translate(text, "en", priority="high", wait=30)
         if english and english["text"].strip():
             en_result = analyze_text(english["text"])
             for pattern in en_result["patterns_detected"]:
@@ -863,7 +869,7 @@ def add_translation(result: dict, ui_lang: str) -> dict:
     meaning = english if (english and target == "en") else None
     if meaning is None and text.strip():
         if non_latin >= 0.2 or target != "en":
-            meaning = translate(text, target)
+            meaning = translate(text, target, priority="normal", wait=20)
     if meaning and meaning.get("from") and meaning["from"].split("-")[0] not in (target, meaning.get("to")) \
             and meaning["text"].strip().lower() != text.strip().lower():
         result["translation"] = meaning
@@ -889,7 +895,7 @@ def translate_route():
         return jsonify({"error": "Please paste the message you want to check."}), 400
     if target not in TRANSLATE_TARGETS:
         return jsonify({"error": "That language isn't available."}), 400
-    out = translate(text, target)
+    out = translate(text, target, priority="low", wait=20)
     src = (out or {}).get("from", "").split("-")[0]
     if not out or not out.get("text", "").strip() or (src and src == out.get("to")):
         return jsonify({"error": "We couldn't translate this right now. Please try again in a moment."}), 503
@@ -973,7 +979,8 @@ def _ocr_space(image_bytes_jpeg: bytes) -> str:
     Used only when Tesseract fails. Needs OCRSPACE_API_KEY in Render's environment.
     """
     key = os.environ.get("OCRSPACE_API_KEY", "")
-    if not key:
+    from scanners.quota import quota
+    if not key or not quota("ocrspace").take(wait=15):
         return ""
     try:
         import requests
@@ -1219,7 +1226,7 @@ def add_entity_checks(result: dict, text: str = None) -> dict:
             added.append((f"The email address {e} in this message: {f}", sig.get("points", {}).get(f, 20)))
     for e, dom, fut in futures:
         try:
-            r = fut.result(timeout=60)
+            r = fut.result(timeout=80)
         except Exception:
             continue
         listed = [c for c in r.get("checks", []) if c["id"] in ("google", "feeds", "virustotal", "urlscan") and c["status"] == "fail"]
@@ -1282,6 +1289,20 @@ def add_sender_checks(result: dict, sender: str = "") -> dict:
     return result
 
 
+def start_background_work(text: str, ui_lang: str, from_screenshot: bool = False):
+    """Ask Gemini once for everything it's needed for, and start the link checks, in parallel."""
+    from scanners.gemini_combo import prefetch
+    from scanners.url_scanner import _POOL
+    return _POOL.submit(prefetch, text, ui_lang), start_link_checks(text, from_screenshot)
+
+
+def _wait_for(future, timeout: float = 60):
+    try:
+        future.result(timeout=timeout)
+    except Exception:
+        pass
+
+
 @message_scanner_bp.route("/api/scan-message", methods=["POST"])
 def scan_message_route():
     data = request.get_json(silent=True) or {}
@@ -1290,12 +1311,16 @@ def scan_message_route():
     if not text:
         return jsonify({"error": "Please paste the message you want to check."}), 400
 
-    result = add_translation(analyze_text(text), request_language())
+    ui = request_language()
+    gemini_f, links = start_background_work(text, ui)
+    result = analyze_text(text)
+    _wait_for(gemini_f)
+    result = add_translation(result, ui)
     result = add_sender_checks(result, str(data.get("sender") or "")[:300])
     result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, text)
-    result = check_links_in_result(result)
+    result = check_links_in_result(result, started=links)
     result = finalize_parts(result)
 
     from scanners.risk_engine import log_scan
@@ -1346,12 +1371,16 @@ def scan_screenshot_route():
         }), 400
 
     extracted_text = fix_ocr_links(extracted_text)
-    result = add_translation(analyze_text(extracted_text), request_language())
+    ui = request_language()
+    gemini_f, links = start_background_work(extracted_text, ui, from_screenshot=True)
+    result = analyze_text(extracted_text)
+    _wait_for(gemini_f)
+    result = add_translation(result, ui)
     result = add_sender_checks(result, request.form.get("sender", "")[:300])
     result = add_entity_checks(result)
     from scanners.ai_review import apply_review
     result = apply_review(result, extracted_text)
-    result = check_links_in_result(result, from_screenshot=True)
+    result = check_links_in_result(result, from_screenshot=True, started=links)
     result = finalize_parts(result)
 
     from scanners.risk_engine import log_scan

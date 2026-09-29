@@ -19,6 +19,8 @@ import io
 import os
 import re
 import hashlib
+import threading
+import time
 import zipfile
 
 from scanners.security import safe_zip_read
@@ -269,13 +271,29 @@ def _vt_scoring(vt: dict) -> dict:
             "findings": ["No security engines flagged this file"]}
 
 
+_VT_FOUND: dict = {}          # sha256 -> (time, result): known files, so repeat checks cost nothing
+_VT_LOCK = threading.Lock()
+
+
 def check_virustotal_hash(sha256: str) -> dict:
     """Look the file up on VirusTotal by its fingerprint only (the file itself is not sent)."""
     if not VIRUSTOTAL_API_KEY:
         return {"status": "skip", "score": 0, "findings": [], "vt": {"state": "off"}}
+    from scanners.quota import quota
     headers = {"x-apikey": VIRUSTOTAL_API_KEY}
+    with _VT_LOCK:
+        hit = _VT_FOUND.get(sha256)
+    if hit and time.time() - hit[0] < 3 * 3600:
+        return hit[1]
     try:
-        resp = requests.get(f"{VT_API}/files/{sha256}", headers=headers, timeout=8)
+        deadline = time.time() + 40   # the file's own VirusTotal result matters most: wait for a free slot
+        for _attempt in range(2):
+            if not quota("virustotal").take(wait=max(0.0, deadline - time.time()), priority="high"):
+                return {"status": "skip", "score": 0, "findings": [], "vt": {"state": "busy"}}
+            resp = requests.get(f"{VT_API}/files/{sha256}", headers=headers, timeout=8)
+            if resp.status_code != 429:
+                break
+            quota("virustotal").cool_down(60)
         if resp.status_code == 404:
             return {"status": "info", "score": 5,
                     "findings": ["This exact file hasn't been seen by VirusTotal before. Treat with normal caution"],
@@ -284,7 +302,12 @@ def check_virustotal_hash(sha256: str) -> dict:
             return {"status": "skip", "score": 0, "findings": [], "vt": {"state": "busy"}}
         attrs = resp.json()["data"]["attributes"]
         vt = _vt_summary(attrs.get("last_analysis_stats", {}), attrs.get("last_analysis_results", {}), attrs, sha256)
-        return {**_vt_scoring(vt), "vt": vt}
+        out = {**_vt_scoring(vt), "vt": vt}
+        with _VT_LOCK:
+            _VT_FOUND[sha256] = (time.time(), out)
+            if len(_VT_FOUND) > 500:
+                _VT_FOUND.pop(next(iter(_VT_FOUND)))
+        return out
     except Exception:
         return {"status": "skip", "score": 0, "findings": [], "error": True, "vt": {"state": "error"}}
 
@@ -297,6 +320,9 @@ def upload_to_virustotal(filename: str, data: bytes, sha256: str) -> dict:
     headers = {"x-apikey": VIRUSTOTAL_API_KEY}
     if len(data) > 32 * 1024 * 1024:
         return {"state": "too_big"}
+    from scanners.quota import quota
+    if not quota("virustotal").take(wait=40, priority="high"):
+        return {"state": "busy"}
     try:
         up = requests.post(f"{VT_API}/files", headers=headers, files={"file": (filename, data)}, timeout=60)
         if up.status_code == 429:
@@ -307,6 +333,8 @@ def upload_to_virustotal(filename: str, data: bytes, sha256: str) -> dict:
     import time as _t
     for _ in range(3):
         _t.sleep(15)
+        if not quota("virustotal").take(wait=20):
+            continue
         try:
             a = requests.get(f"{VT_API}/analyses/{analysis_id}", headers=headers, timeout=10).json()["data"]["attributes"]
         except Exception:
@@ -353,7 +381,8 @@ def check_known_good(sha256: str) -> dict:
     NIST software library (NSRL), Windows or Linux installers? {'known': bool, 'source': str}
     """
     import scanners.url_scanner as _us
-    if _us.OFFLINE:
+    from scanners.quota import quota
+    if _us.OFFLINE or not quota("circl").take(wait=5):
         return {"known": False}
     try:
         resp = requests.get(f"https://hashlookup.circl.lu/lookup/sha256/{sha256}", timeout=5,
@@ -378,7 +407,8 @@ def check_malwarebazaar(sha256: str) -> dict:
     import os
     import scanners.url_scanner as _us
     key = os.environ.get("ABUSECH_AUTH_KEY", "")
-    if _us.OFFLINE or not key:
+    from scanners.quota import quota
+    if _us.OFFLINE or not key or not quota("abusech").take(wait=5):
         return {"found": False}
     try:
         resp = requests.post("https://mb-api.abuse.ch/api/v1/", data={"query": "get_info", "hash": sha256},
@@ -458,7 +488,7 @@ def scan_file_route():
     links_checked, link_score, link_findings = [], 0, []
     for u, fut in link_futures:
         try:
-            lr = fut.result(timeout=60)
+            lr = fut.result(timeout=80)
         except Exception:
             continue
         links_checked.append({"url": u, "verdict": lr["verdict"], "risk_score": lr["risk_score"],

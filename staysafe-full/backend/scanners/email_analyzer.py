@@ -315,7 +315,7 @@ def scan_email_route():
     link_results = []
     for url, future in futures:
         try:
-            result = future.result(timeout=60)
+            result = future.result(timeout=80)
         except Exception:
             continue
         link_results.append({"url": url, "verdict": result["verdict"], "risk_score": result["risk_score"],
@@ -331,7 +331,7 @@ def scan_email_route():
     # blocklist hits on the sender's domain
     if domain_f is not None:
         try:
-            dres = domain_f.result(timeout=60)
+            dres = domain_f.result(timeout=80)
         except Exception:
             dres = None
         if dres:

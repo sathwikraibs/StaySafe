@@ -566,6 +566,9 @@ def _use_fake_google(status=200, mymemory="ok", google_message="Cloud Translatio
     translator._paused_until.update({p: 0.0 for p in translator.PROVIDERS})
     translator._problem.update({p: None for p in translator.PROVIDERS})
     translator._usage["chars"] = 0
+    from scanners.quota import QUOTAS
+    for q in QUOTAS.values():
+        q.reset()
     return calls
 
 
@@ -630,7 +633,8 @@ def test_without_google_key_mymemory_still_translates():
 
 def test_daily_limit_protects_free_tier():
     calls = _use_fake_google()
-    translator._usage["chars"] = translator.DAILY_LIMIT  # pretend today's Google budget is used up
+    from scanners.quota import quota
+    quota("google_translate").take(cost=translator.DAILY_LIMIT, priority="high")  # today's Google budget used up
     result = add_translation(analyze_text("ನಿಮಗೆ ಬಂದ OTP ಯನ್ನು ತಕ್ಷಣ ಹೇಳಿ"), "en")
     assert not any(c[0] == "google" for c in calls)  # Google not called at all
     assert result["verdict"] == "SCAM_LIKELY"  # native rules still work
@@ -695,13 +699,16 @@ def test_gemini_free_limit_falls_back_to_bhashini():
     result = add_translation(analyze_text(KN_SCAM), "en")
     assert result["translation"]["provider"] == "bhashini", result.get("translation")
     assert ("bhashini", "inf-key", "ai4bharat/indictrans") in calls
-    assert not translator._available("gemini")          # paused for hours, not retried every message
+    from scanners.quota import quota
+    assert quota("gemini").status()["day_closed"]        # not asked again until Google's day ends
     assert result["verdict"] == "SCAM_LIKELY"
 
 
 def test_our_own_gemini_limit_stops_before_googles():
     calls = _fake_gemini_and_bhashini(bhashini=False)
-    translator._GEMINI["day_count"] = translator.GEMINI_DAILY_LIMIT
+    from scanners.quota import quota
+    quota("gemini").take()
+    quota("gemini")._day_used = quota("gemini").per_day                  # today's allowance used
     add_translation(analyze_text(KN_SCAM), "en")
     assert not any(c[0] == "gemini" for c in calls)      # Gemini not called at all
 
@@ -1019,18 +1026,18 @@ def test_translate_route_and_message_language():
     c = appmod.app.test_client()
     real = translator.translate
     try:
-        translator.translate = lambda text, to: {"text": "Your account will be blocked", "from": "kn", "to": to}
+        translator.translate = lambda text, to, **k: {"text": "Your account will be blocked", "from": "kn", "to": to}
         r = c.post("/api/translate", json={"text": "ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ", "to": "en"})
         assert r.status_code == 200 and r.get_json()["text"] == "Your account will be blocked", r.get_json()
         assert c.post("/api/translate", json={"text": "hi", "to": "xx"}).status_code == 400
-        translator.translate = lambda text, to: None
+        translator.translate = lambda text, to, **k: None
         assert c.post("/api/translate", json={"text": "hi", "to": "kn"}).status_code == 503
     finally:
         translator.translate = real
     from scanners.message_scanner import add_translation, analyze_text
     translator_real = translator.translate
     try:
-        translator.translate = lambda text, to: None
+        translator.translate = lambda text, to, **k: None
         assert add_translation(analyze_text("ನಿಮ್ಮ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ"), "en")["message_language"] == "kn"
         assert add_translation(analyze_text("Your parcel is waiting"), "kn")["message_language"] == "en"
     finally:
@@ -1042,11 +1049,11 @@ def test_tulu_translation_uses_gemini_then_kannada():
     real = translator._gemini, translator._google, translator._mymemory, translator._bhashini
     try:
         translator._cache.clear()
-        translator._gemini = lambda text, target: {"text": "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಪುಂಡು", "from": "en", "to": target, "provider": "gemini"}
+        translator._gemini = lambda text, target, *a: {"text": "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಪುಂಡು", "from": "en", "to": target, "provider": "gemini"}
         out = translator.translate("Your account will be blocked", "tcy")
         assert out["to"] == "tcy" and out["text"].startswith("ಈರೆನ"), out
         translator._cache.clear()
-        translator._gemini = lambda text, target: None
+        translator._gemini = lambda text, target, *a: None
         translator._google = translator._bhashini = lambda text, target: None
         translator._mymemory = lambda text, target: {"text": "ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ", "from": "en", "to": target, "provider": "mymemory"}
         out = translator.translate("Your account will be blocked today", "tcy")

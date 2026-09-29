@@ -25,7 +25,6 @@ import re
 import threading
 import time
 from collections import OrderedDict
-from datetime import date
 
 import requests
 
@@ -60,28 +59,17 @@ PROMPT = (
 
 _lock = threading.Lock()
 _cache: "OrderedDict[str, dict]" = OrderedDict()
-_limits = {  # provider -> per minute, per day
-    "groq": (int(os.environ.get("GROQ_PER_MINUTE", "20")), int(os.environ.get("GROQ_DAILY_LIMIT", "900"))),
-    "cloudflare": (20, int(os.environ.get("CLOUDFLARE_AI_DAILY_LIMIT", "300"))),
-}
-_usage = {p: {"minute": [], "day": date.today(), "count": 0} for p in _limits}
 _paused = {"groq": 0.0, "cloudflare": 0.0, "gemini": 0.0}
 _problem = {"groq": None, "cloudflare": None, "gemini": None}
 
 
+# How long a review may wait for a free slot, and how important it is (see quota.py)
+REVIEW_WAIT = 25.0
+
+
 def _reserve(provider: str) -> bool:
-    per_min, per_day = _limits[provider]
-    with _lock:
-        u = _usage[provider]
-        now = time.time()
-        if u["day"] != date.today():
-            u["day"], u["count"] = date.today(), 0
-        u["minute"] = [t for t in u["minute"] if now - t < 60]
-        if len(u["minute"]) >= per_min or u["count"] >= per_day:
-            return False
-        u["minute"].append(now)
-        u["count"] += 1
-        return True
+    from scanners.quota import quota
+    return quota(provider).take(wait=REVIEW_WAIT)
 
 
 def _parse(raw: str):
@@ -108,7 +96,14 @@ def _parse(raw: str):
 def _handle_error(provider: str, status: int, msg: str):
     low = msg.lower()
     if status == 429 or "quota" in low or "rate limit" in low or "exhausted" in low:
-        _paused[provider] = time.time() + (6 * 3600 if "day" in low else 120)
+        from scanners.quota import quota
+        if provider == "gemini":
+            from scanners.translator import gemini_limit_hit
+            gemini_limit_hit(status, msg)
+        elif "day" in low:
+            quota(provider).close_day()
+        else:
+            quota(provider).cool_down(60)
     elif status in (401, 403):
         _paused[provider] = time.time() + 6 * 3600
     else:
@@ -168,7 +163,7 @@ def _cloudflare(prompt: str):
 def _gemini(prompt: str):
     from scanners import translator as tr
     key = tr._gemini_key()
-    if not key or time.time() < _paused["gemini"] or not tr._available("gemini") or not tr._reserve_gemini():
+    if not key or time.time() < _paused["gemini"] or not tr._available("gemini") or not tr._reserve_gemini(REVIEW_WAIT):
         return None
     body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": 0, "responseMimeType": "application/json"}}
@@ -190,12 +185,17 @@ def _gemini(prompt: str):
     return None
 
 
+def _q(name):
+    from scanners.quota import quota
+    return quota(name).status()["used_today"]
+
+
 def ai_status() -> dict:
     return {
         "groq": {"configured": bool(os.environ.get("GROQ_API_KEY")), "problem": _problem["groq"],
-                 "today": _usage["groq"]["count"]},
+                 "today": _q("groq")},
         "cloudflare": {"configured": bool(os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_AI_TOKEN")),
-                       "problem": _problem["cloudflare"], "today": _usage["cloudflare"]["count"]},
+                       "problem": _problem["cloudflare"], "today": _q("cloudflare")},
         "gemini": {"configured": bool(os.environ.get("GEMINI_API_KEY")), "problem": _problem["gemini"]},
         "enabled": os.environ.get("AI_REVIEW", "on").lower() != "off",
     }

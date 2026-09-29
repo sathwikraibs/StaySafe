@@ -479,6 +479,8 @@ export const reportEn = {
       "Almost there.",
       "A careful check takes a few seconds.",
       "We're still here, just a moment more.",
+      "Double-checking with more safety sources.",
+      "Taking extra care to get this right.",
     ],
     link: [
       "Reading the web address",

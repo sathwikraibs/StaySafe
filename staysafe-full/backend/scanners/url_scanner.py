@@ -33,6 +33,7 @@ import requests
 from flask import Blueprint, jsonify, request
 
 from scanners.security import guarded_fetch, install_connection_guard
+from scanners.quota import quota
 
 try:
     import whois  # python-whois
@@ -239,6 +240,11 @@ def _check(checks: list, cid: str, status: str, value=None) -> None:
 _CACHE: dict = {}
 _CACHE_LOCK = threading.Lock()
 CACHE_SECONDS = 3600
+# Answers that change slowly are kept longer, so the free daily allowances go further.
+CACHE_TTL = {"vt": 3 * 3600, "urlscan": 6 * 3600, "abuseip": 12 * 3600, "rdap": 24 * 3600,
+             "crt": 24 * 3600, "ipinfo": 24 * 3600, "whois": 24 * 3600}
+# A check that was skipped because a free limit was reached is never remembered as an answer.
+NOT_CHECKED = "_not_checked"
 
 
 _INFLIGHT: dict = {}
@@ -249,7 +255,7 @@ def _cached(key, fn):
     now = time.time()
     with _CACHE_LOCK:
         hit = _CACHE.get(key)
-        if hit and now - hit[0] < CACHE_SECONDS:
+        if hit and now - hit[0] < CACHE_TTL.get(key[0], CACHE_SECONDS):
             return hit[1]
         waiter = _INFLIGHT.get(key)
         if waiter is None:
@@ -267,7 +273,8 @@ def _cached(key, fn):
         return fn()
     try:
         value = fn()
-        if not (isinstance(value, dict) and value.get("error") and key[0] in ("gsb", "vt")):
+        if not (isinstance(value, dict) and (value.get(NOT_CHECKED)
+                                             or (value.get("error") and key[0] in ("gsb", "vt")))):
             with _CACHE_LOCK:
                 _CACHE[key] = (time.time(), value)
                 if len(_CACHE) > 2000:
@@ -578,6 +585,8 @@ def rdap_details(domain: str) -> dict:
         return {}
 
     def call():
+        if not quota("rdap").take(wait=5):
+            return {"error": True, NOT_CHECKED: True}
         try:
             resp = requests.get(f"https://rdap.org/domain/{domain}", timeout=8,
                                 headers={"Accept": "application/rdap+json", "User-Agent": "StaySafe/2.0"})
@@ -624,6 +633,8 @@ def first_certificate_days(host: str):
         return None
 
     def call():
+        if not quota("crtsh").take(wait=5):
+            return {"days": None, NOT_CHECKED: True}
         try:
             resp = requests.get("https://crt.sh/", params={"q": host, "output": "json", "exclude": "expired"},
                                 timeout=8, headers={"User-Agent": "StaySafe/2.0"})
@@ -694,6 +705,8 @@ def server_details(ip: str) -> dict:
         return {}
 
     def call():
+        if not quota("ip_api").take(wait=5):
+            return {"error": True, NOT_CHECKED: True}
         try:
             data = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,isp,org,hosting",
                                 timeout=5).json()
@@ -718,6 +731,8 @@ def check_safe_browsing(urls) -> dict:
     urls = list(dict.fromkeys(u for u in urls if u))
 
     def call():
+        if not quota("safe_browsing").take(wait=10, priority="high"):
+            return {"listed": None, "threats": [], "error": True}
         endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={GOOGLE_SAFE_BROWSING_API_KEY}"
         payload = {
             "client": {"clientId": "staysafe", "clientVersion": "2.0"},
@@ -740,6 +755,8 @@ def check_safe_browsing(urls) -> dict:
             except Exception:
                 msg = ""
             _PROBLEMS["safe_browsing"] = f"HTTP {resp.status_code}: {msg[:160]}"
+            if resp.status_code == 429:
+                quota("safe_browsing").cool_down(60)
             return {"listed": None, "threats": [], "error": True}
         _PROBLEMS["safe_browsing"] = None
         matches = resp.json().get("matches", [])
@@ -1007,6 +1024,8 @@ def check_abusech(url: str, host: str) -> dict:
         return {"status": "skip"}
 
     def call():
+        if not quota("abusech").take(wait=5, cost=3):
+            return {"status": "skip", NOT_CHECKED: True}
         headers = {"Auth-Key": key, "User-Agent": "StaySafe/2.0"}
         out = {"status": "pass"}
         try:
@@ -1044,13 +1063,17 @@ def check_urlscan(host: str) -> dict:
         return {"status": "skip"}
 
     def call():
+        if not quota("urlscan").take(wait=10):
+            return {"status": "skip", NOT_CHECKED: True}
         try:
             resp = requests.get("https://urlscan.io/api/v1/search/", timeout=8,
                                 params={"q": f'page.domain:"{host}" AND verdicts.malicious:true AND date:>now-90d', "size": 5},
                                 headers={"API-Key": key, "User-Agent": "StaySafe/2.0"})
             if resp.status_code != 200:
                 _PROBLEMS["urlscan"] = f"HTTP {resp.status_code}"
-                return {"status": "skip"}
+                if resp.status_code == 429:
+                    quota("urlscan").cool_down(60)
+                return {"status": "skip", NOT_CHECKED: True}
             data = resp.json()
         except Exception as e:
             _PROBLEMS["urlscan"] = type(e).__name__
@@ -1069,9 +1092,13 @@ def check_server_abuse(ip: str) -> dict:
         return {}
 
     def call():
+        if not quota("abuseipdb").take(wait=5):
+            return {"none": True, NOT_CHECKED: True}
         try:
             resp = requests.get("https://api.abuseipdb.com/api/v2/check", params={"ipAddress": ip, "maxAgeInDays": 90},
                                 headers={"Key": key, "Accept": "application/json"}, timeout=6)
+            if resp.status_code == 429:
+                quota("abuseipdb").close_day()
             d = resp.json().get("data", {}) if resp.status_code == 200 else {}
         except Exception:
             d = {}
@@ -1085,13 +1112,27 @@ def check_server_abuse(ip: str) -> dict:
 # ---------------------------------------------------------------------------
 # 5. VirusTotal
 # ---------------------------------------------------------------------------
-def _vt_get(path: str):
-    try:
-        resp = requests.get(f"https://www.virustotal.com/api/v3/{path}",
-                            headers={"x-apikey": VIRUSTOTAL_API_KEY}, timeout=6)
-    except Exception as e:
-        _PROBLEMS["virustotal"] = f"Could not connect: {type(e).__name__}"
-        return None, "error"
+VT_WAIT = 35.0   # VirusTotal's free plan allows 4 lookups a minute: wait for a free slot this long
+
+
+def _vt_get(path: str, wait: float = VT_WAIT, priority: str = "normal"):
+    """One VirusTotal lookup, waiting for a free slot of the 4-a-minute allowance if needed."""
+    deadline = time.time() + wait
+    for _attempt in range(2):
+        if not quota("virustotal").take(wait=max(0.0, deadline - time.time()), priority=priority):
+            return None, "busy"
+        try:
+            resp = requests.get(f"https://www.virustotal.com/api/v3/{path}",
+                                headers={"x-apikey": VIRUSTOTAL_API_KEY}, timeout=8)
+        except Exception as e:
+            _PROBLEMS["virustotal"] = f"Could not connect: {type(e).__name__}"
+            return None, "error"
+        if resp.status_code != 429:
+            break
+        # VirusTotal says "too many": wait for the next minute and try once more
+        quota("virustotal").cool_down(60)
+    if resp.status_code == 429:
+        return None, "busy"
     if resp.status_code == 404:
         return None, "not_found"
     if resp.status_code != 200:
@@ -1140,14 +1181,15 @@ def check_virustotal(url: str, domain: str) -> dict:
     def call():
         out = {"status": "not_found", "malicious": 0, "suspicious": 0, "harmless": 0,
                "engines": 0, "domain_malicious": 0, "created_days": None}
-        variants = [url] + ([url + "/"] if urlparse(url).path == "" else [])
+        # VirusTotal stores "https://site.com" as "https://site.com/": try that form first (saves a lookup)
+        variants = [url + "/", url] if urlparse(url).path == "" else [url]
         attrs, state = None, "not_found"
         for v in variants:
             url_id = base64.urlsafe_b64encode(v.encode()).decode().strip("=")
             attrs, state = _vt_get(f"urls/{url_id}")
             if state != "not_found":
                 break
-        if state == "error":
+        if state in ("error", "busy"):
             return {"status": "skip", "error": True}
         if attrs:
             stats = attrs.get("last_analysis_stats", {})
@@ -1157,7 +1199,7 @@ def check_virustotal(url: str, domain: str) -> dict:
         if out["status"] == "ok":
             return out
         # Link never seen: look at the whole website's reputation (also gives its age)
-        dattrs, dstate = _vt_get(f"domains/{domain}")
+        dattrs, dstate = _vt_get(f"domains/{domain}", wait=15)
         if dattrs:
             dstats = dattrs.get("last_analysis_stats", {})
             out["domain_malicious"] = dstats.get("malicious", 0)
@@ -1412,7 +1454,7 @@ def scan_url(url: str) -> dict:
         gsb2 = _run(check_safe_browsing, [final_url], timeout=6, default={"listed": None, "threats": []})
         if gsb2.get("listed"):
             gsb = gsb2
-    vt = result_of(vt_f, {"status": "skip"}, 18)
+    vt = result_of(vt_f, {"status": "skip"}, 60)
     age_days = result_of(whois_f, None, 12)
     if age_days is None and vt.get("created_days") is not None and not trusted:
         age_days = vt["created_days"]

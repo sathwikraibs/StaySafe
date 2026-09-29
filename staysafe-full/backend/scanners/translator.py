@@ -38,6 +38,8 @@ from datetime import date
 
 import requests
 
+from scanners.quota import quota
+
 GOOGLE_URL = "https://translation.googleapis.com/language/translate/v2"
 MYMEMORY_URL = "https://api.mymemory.translated.net/get"
 MAX_CHARS = 1500           # longest message we translate
@@ -91,14 +93,10 @@ def translation_status() -> dict:
 
 
 def _reserve_google(chars: int) -> bool:
-    with _lock:
-        today = date.today()
-        if _usage["day"] != today:
-            _usage["day"], _usage["chars"] = today, 0
-        if _usage["chars"] + chars > DAILY_LIMIT:
-            return False
-        _usage["chars"] += chars
-        return True
+    ok = quota("google_translate").take(cost=chars)
+    if ok:
+        _usage["chars"] = quota("google_translate").status()["used_today"]
+    return ok
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +152,11 @@ def _google(text: str, target: str):
         msg = f"HTTP {resp.status_code}"
     low = msg.lower()
     if resp.status_code == 429 or "quota" in low or "rate limit" in low:
-        _pause("google", 6 * 3600, "Daily limit reached. Using the free fallback for now")
+        if "minute" in low:
+            quota("google_translate").cool_down(60)
+        else:
+            quota("google_translate").close_day()
+        _problem["google"] = "Limit reached. Using the free fallback for now"
     elif resp.status_code in (401, 403) or "billing" in low or "api key" in low or "disabled" in low:
         # Trial ended / billing off / key wrong: stop calling Google, re-try occasionally
         _pause("google", 24 * 3600, msg[:200])
@@ -184,19 +186,24 @@ def _gemini_key() -> str:
     return os.environ.get("GEMINI_API_KEY", "")
 
 
-def _reserve_gemini() -> bool:
-    """Stay below the free limits ourselves, so Google never has to refuse us."""
-    with _lock:
-        now = time.time()
-        today = date.today()
-        if _GEMINI["day"] != today:
-            _GEMINI["day"], _GEMINI["day_count"] = today, 0
-        _GEMINI["minute"] = [t for t in _GEMINI["minute"] if now - t < 60]
-        if len(_GEMINI["minute"]) >= GEMINI_PER_MINUTE or _GEMINI["day_count"] >= GEMINI_DAILY_LIMIT:
-            return False
-        _GEMINI["minute"].append(now)
-        _GEMINI["day_count"] += 1
-        return True
+def _reserve_gemini(wait: float = 0.0, priority: str = "normal") -> bool:
+    """
+    Stay below the free limits ourselves, so Google never has to refuse us. When this minute's
+    requests are used, wait for the next free slot (up to `wait` seconds) instead of skipping.
+    """
+    ok = quota("gemini").take(wait=wait, priority=priority)
+    _GEMINI["day_count"] = quota("gemini").status()["used_today"]
+    return ok
+
+
+def gemini_limit_hit(status: int, msg: str) -> None:
+    """Google said 'too many': this minute or today is used up. Shared with the AI review."""
+    low = msg.lower()
+    if "per day" in low or "perday" in low.replace(" ", "") or "daily" in low:
+        quota("gemini").close_day()
+        _problem["gemini"] = "Free daily limit reached. Using the next free option for now"
+    else:
+        quota("gemini").cool_down(60)
 
 
 def _gemini_prompt(text: str, target: str) -> str:
@@ -212,10 +219,10 @@ def _gemini_prompt(text: str, target: str) -> str:
     )
 
 
-def _gemini(text: str, target: str):
+def _gemini(text: str, target: str, wait: float = 0.0, priority: str = "normal"):
     import json as _json
     key = _gemini_key()
-    if not key or not _available("gemini") or not _reserve_gemini():
+    if not key or not _available("gemini") or not _reserve_gemini(wait, priority):
         return None
     models = [os.environ["GEMINI_MODEL"]] if os.environ.get("GEMINI_MODEL") else (
         [_GEMINI["model"]] if _GEMINI["model"] else GEMINI_MODELS)
@@ -251,8 +258,7 @@ def _gemini(text: str, target: str):
             msg = f"HTTP {resp.status_code}"
         low = msg.lower()
         if resp.status_code == 429 or "quota" in low or "exhausted" in low:
-            day_limit = "per day" in low or "perday" in low.replace(" ", "")
-            _pause("gemini", 6 * 3600 if day_limit else 90, "Free limit reached. Using the next free option for now")
+            gemini_limit_hit(resp.status_code, msg)
         elif resp.status_code in (400, 401, 403):
             _pause("gemini", 6 * 3600, msg[:200])  # key wrong, or not offered in this region
         else:
@@ -300,6 +306,8 @@ def _bhashini(text: str, target: str):
         return None
     source = guess_language(text)
     if source == target or source not in BHASHINI_LANGS or target not in BHASHINI_LANGS:
+        return None
+    if not quota("bhashini").take(wait=5):
         return None
     try:
         url, auth, service_id = _bhashini_config(source, target)
@@ -402,7 +410,10 @@ def _mymemory(text: str, target: str):
     if os.environ.get("MYMEMORY_EMAIL"):
         params_base["de"] = os.environ["MYMEMORY_EMAIL"]
     out = []
-    for piece in _chunks(text, MYMEMORY_CHUNK_BYTES):
+    pieces = list(_chunks(text, MYMEMORY_CHUNK_BYTES))
+    if not quota("mymemory").take(cost=sum(len(p) for p in pieces)):
+        return None
+    for piece in pieces:
         try:
             resp = requests.get(MYMEMORY_URL, params={**params_base, "q": piece}, timeout=8)
             data = resp.json()
@@ -411,7 +422,8 @@ def _mymemory(text: str, target: str):
         translated = (data.get("responseData") or {}).get("translatedText") or ""
         status = str(data.get("responseStatus", resp.status_code))
         if status == "429" or data.get("quotaFinished") or "MYMEMORY WARNING" in translated.upper():
-            _pause("mymemory", 6 * 3600, "Free daily limit used. Try again later")
+            quota("mymemory").close_day()
+            _problem["mymemory"] = "Free daily limit used. Try again later"
             return None
         if status != "200" or not translated:
             return None
@@ -453,10 +465,27 @@ def unmask_personal(text: str, secrets) -> str:
     return text
 
 
-def translate(text: str, target: str):
+def remember(text: str, target: str, result: dict) -> None:
+    """Keep a translation made elsewhere (the combined Gemini call) so it isn't asked for again."""
+    text = (text or "").strip()[:MAX_CHARS]
+    if text and result and result.get("text"):
+        with _lock:
+            _cache[(text, target)] = result
+            while len(_cache) > 500:
+                _cache.popitem(last=False)
+
+
+def cached_translation(text: str, target: str):
+    with _lock:
+        return _cache.get(((text or "").strip()[:MAX_CHARS], target))
+
+
+def translate(text: str, target: str, priority: str = "normal", wait: float = 20.0):
     """
     Translate `text` into `target` ("en", "kn", ...). Returns
     {"text", "from", "to", "provider"} or None when no free translation is available.
+    `priority` and `wait` say how important this is and how long we may wait for a free
+    Gemini slot (see quota.py).
     """
     text = (text or "").strip()[:MAX_CHARS]
     if not text:
@@ -469,7 +498,7 @@ def translate(text: str, target: str):
         if hit:
             return hit
         masked, secrets = mask_personal(text)
-        out = _gemini(masked, target)
+        out = _gemini(masked, target, wait, priority)
         if out:
             out = dict(out, text=unmask_personal(out["text"], secrets))
             with _lock:
@@ -487,7 +516,7 @@ def translate(text: str, target: str):
     # card numbers, email addresses and UPI IDs are swapped for placeholders like [#1] before
     # translating, and put back afterwards.
     masked, secrets = mask_personal(text)
-    result = (_google(masked, target) or _gemini(masked, target)
+    result = (_google(masked, target) or _gemini(masked, target, wait, priority)
               or _bhashini(masked, target) or _mymemory(masked, target))
     if result:
         result = dict(result, text=unmask_personal(result["text"], secrets))

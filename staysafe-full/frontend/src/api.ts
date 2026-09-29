@@ -4,7 +4,7 @@ import type { ScanHistoryItem } from "./types";
 export const NETWORK_ERROR_MSG =
   "We couldn't connect right now. Please check your internet and try again.";
 
-const TIMEOUT_MS = 115_000; // thorough checks with many sources can take a while
+const TIMEOUT_MS = 170_000; // careful checks may wait for a free slot on a checking service; the server stops at 180 s
 
 /** An error the server explained to us — safe to show to the user as-is. */
 export class ApiError extends Error {

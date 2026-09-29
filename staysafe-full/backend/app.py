@@ -19,6 +19,7 @@ from scanners.email_analyzer import email_analyzer_bp
 from scanners.knowledge_base import knowledge_base_bp
 from scanners.translator import translation_status
 from scanners.ai_review import ai_status
+from scanners.quota import quota_status
 from scanners.security import (check_rate_limit, allowed_origins, add_security_headers,
                                has_status_key)
 
@@ -63,6 +64,7 @@ def home():
                        "ipinfo": bool(os.environ.get("IPINFO_TOKEN")),
                        "abuseipdb": bool(os.environ.get("ABUSEIPDB_KEY"))},
         "link_checks": link_check_status(),
+        "allowances": quota_status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }
 

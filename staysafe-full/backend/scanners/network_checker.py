@@ -37,6 +37,9 @@ def get_client_ip() -> str:
 
 def _ip_api(ip: str) -> dict:
     """ip-api.com free tier: last fallback (plain HTTP, non-commercial use only)."""
+    from scanners.quota import quota
+    if not quota("ip_api").take(wait=10):
+        return {}
     resp = requests.get(
         f"http://ip-api.com/json/{ip}?fields=status,message,country,countryCode,regionName,city,"
         "isp,org,as,proxy,hosting,mobile,timezone,query",
@@ -54,8 +57,14 @@ def _proxycheck(ip: str) -> dict:
     params = {"vpn": 1, "asn": 1}
     if os.environ.get("PROXYCHECK_KEY"):
         params["key"] = os.environ["PROXYCHECK_KEY"]
+    from scanners.quota import quota
+    if not quota("proxycheck").take(wait=10, priority="high"):
+        return {}
     resp = requests.get(f"https://proxycheck.io/v2/{ip}", params=params, timeout=6)
     data = resp.json()
+    if str(data.get("status", "")).lower() == "denied":
+        quota("proxycheck").close_day()   # today's free allowance is used; ip-api answers instead
+        return {}
     info = data.get(ip) if isinstance(data, dict) else None
     if data.get("status") not in ("ok", "warning") or not isinstance(info, dict):
         return {}
@@ -87,7 +96,29 @@ def _ipinfo(ip: str) -> dict:
             "isp": d.get("as_name", ""), "org": d.get("as_name", ""), "as": d.get("asn", "")}
 
 
+_IP_CACHE: dict = {}   # ip -> (time, answer): the same visitor checking again costs nothing
+_IP_TTL = 6 * 3600
+
+
+def _ip_cached(kind: str, ip: str, fn):
+    now = time.time()
+    hit = _IP_CACHE.get((kind, ip))
+    if hit and now - hit[0] < _IP_TTL:
+        return hit[1]
+    value = fn(ip)
+    if value:
+        _IP_CACHE[(kind, ip)] = (now, value)
+        if len(_IP_CACHE) > 3000:
+            for k in list(_IP_CACHE)[:1000]:
+                _IP_CACHE.pop(k, None)
+    return value
+
+
 def lookup_ip(ip: str) -> dict:
+    return _ip_cached("lookup", ip, _lookup_ip)
+
+
+def _lookup_ip(ip: str) -> dict:
     """Combine the free sources: proxycheck.io (+ ipinfo for the network owner), else ip-api."""
     data = {}
     try:
@@ -115,10 +146,15 @@ def lookup_ip(ip: str) -> dict:
 
 
 def abuse_report(ip: str) -> dict:
+    return _ip_cached("abuse", ip, _abuse_report) if ip else {}
+
+
+def _abuse_report(ip: str) -> dict:
     """AbuseIPDB (free key ABUSEIPDB_KEY, 1,000 checks a day): has this address been reported for attacks?"""
     import os
+    from scanners.quota import quota
     key = os.environ.get("ABUSEIPDB_KEY", "")
-    if not key or not ip:
+    if not key or not ip or not quota("abuseipdb").take(wait=5):
         return {}
     try:
         resp = requests.get("https://api.abuseipdb.com/api/v2/check", params={"ipAddress": ip, "maxAgeInDays": 90},
