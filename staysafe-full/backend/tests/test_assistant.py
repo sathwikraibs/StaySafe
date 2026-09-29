@@ -225,6 +225,8 @@ def test_better_gemini_model_answers_indian_languages_and_steps_aside_when_busy(
     QUOTAS["gemini_answers"].reset()
     assistant._answer_model["name"] = None
     assistant._answer_gone.clear()
+    assistant._answer_extra.clear()
+    assistant.ANSWER_MODELS[:] = ["gemini-2.5-flash", "gemini-flash-latest"]
     os.environ["GEMINI_API_KEY"] = "g"
     calls = []
 
@@ -360,6 +362,45 @@ def test_a_failed_fix_up_keeps_the_first_answer_and_waits_stay_within_the_time_b
     finally:
         assistant._until.end = None
     assert assistant._wait() == assistant.WAIT
+
+
+def test_retired_better_model_hands_over_to_the_one_google_names_and_emails_are_never_shown():
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    QUOTAS["gemini_answers"].reset()
+    assistant._answer_model["name"] = None
+    assistant._answer_gone.clear()
+    assistant._answer_extra.clear()
+    saved = list(assistant.ANSWER_MODELS)
+    assistant.ANSWER_MODELS[:] = ["gemini-old-flash"]
+    os.environ["GEMINI_API_KEY"] = "g"
+    calls = []
+
+    class R:
+        def __init__(self, status, text=""):
+            self.status_code, self.text, self.headers = status, text, {}
+
+        def json(self):
+            body = json.dumps({"reply": "Ittene 1930 g call malpule. Email support@fakehelp.com or help@ now.", "urgent": True,
+                               "actions": []})
+            return {"candidates": [{"content": {"parts": [{"text": body}]}}]}
+
+    def post(url, **kw):
+        calls.append(url)
+        if "gemini-old-flash" in url:
+            return R(404, '{"error": {"message": "This model models/gemini-old-flash is no longer available to new users. '
+                          'Please update your code to use models/gemini-9-flash for the latest features"}}')
+        return R(200)
+    groq_client.requests.post = post
+    try:
+        d = c.post("/api/assistant", json={"message": "yenk call battund, duddu poyind", "lang": "tcy"}).get_json()
+        assert "gemini-9-flash" in calls[1] and assistant._answer_model["name"] == "gemini-9-flash", calls
+        assert "@" not in d["reply"] and "1930" in d["reply"], d
+    finally:
+        assistant.ANSWER_MODELS[:] = saved
+        assistant._answer_extra.clear()
+        assistant._answer_model["name"] = None
+        os.environ.pop("GEMINI_API_KEY", None)
+        QUOTAS["gemini_answers"].reset()
 
 
 if __name__ == "__main__":
