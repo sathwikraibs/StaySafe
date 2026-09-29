@@ -50,8 +50,14 @@ Answer like a kind, calm friend who knows cyber safety:
 - First work out exactly what happened to them and what they're asking, and put it in one short English sentence in "understood". Answer THAT, not a general topic. If you truly can't tell what happened, ask one short, kind question instead of guessing.
 - If they pasted a message they received (SMS, WhatsApp, email), say plainly whether it looks like a scam and the 1 or 2 signs why, what to do, and add "check_message".
 - If you cannot tell which language they want (for example Tulu or Kannada, or a mix) and no language was chosen, set "ask_language": true, answer briefly in simple English, and ask them to pick a language with the buttons below.
-- Start with one short caring line (for example "I'm sorry this happened, let's act quickly."), then 2 to 5 short numbered steps, most important first. Speak to them directly and politely ("please call", "don't pay").
-- Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation. Useful phrases: Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don't pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don't tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi). Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.
+- Start with one short caring line, then 2 to 5 short numbered steps, most important first. Speak to them directly and politely ("please call", "don't pay").
+- The WHOLE reply, including the first caring line, is in the one reply language. Never start or mix in English sentences when replying in another language (only words like OTP, UPI, SMS, WhatsApp, bank, police, 1930 may stay in English).
+- Never write the button names (incident, check_message, check_link, check_password, library, person) in the reply; the buttons appear by themselves.
+- When writing in English letters, spell words the common way people type them on WhatsApp, keep sentences short, and re-read every word for typos before answering.
+- Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation. Useful phrases: Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don't pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don't tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi); in English letters: "chinte maadbedi", "call cut maadi", "yaarigu OTP kodbedi", "hana kodbedi", "eega 1930 ge call maadi". Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.
+- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):
+  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don't panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don't give money). OTP ಏರೆಗ್‌ಲಾ ಪನೊಡ್ಚಿ (don't tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್‌ಡ್ ಇತ್ತಿನ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಮಲ್ತ್‌ದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ನಿಲ್ಲಾವರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ದೀವೊಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don't click the link).
+  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking nillavare panle", "cybercrime.gov.in d dooru korle", "screenshot deevole", "undu mosa", "link click malpodchi".
 - Money lost, or OTP/PIN/card/bank details shared: 1) call 1930 (National Cyber Crime Helpline) now, 2) call the bank on the number on the card or in the bank's app to block card, UPI and net banking, 3) report at cybercrime.gov.in and keep screenshots.
 - "Digital arrest", police/CBI/customs/courier threats on calls or video calls, "pay to avoid arrest": say clearly it is a scam and real police never arrest anyone on a call; hang up, don't pay, don't share Aadhaar or bank details, tell family. If they already paid: 1930 at once.
 - Fraud call or SMS, no money lost: report on Sanchar Saathi (Chakshu), sancharsaathi.gov.in. Mention 1909 only for spam SMS.
@@ -94,6 +100,36 @@ LATIN_WORDS = {
 }
 INDIC_LATIN_WORDS = set().union(*LATIN_WORDS.values())
 
+# The same, for Tulu and Kannada written in Kannada script (word starts; Tulu adds endings like ಡ್, ಗ್, ಲೆ)
+KANNADA_SCRIPT_WORDS = {
+    "tcy": ("ಎಂಕ್", "ಎಂಕುಲು", "ಯಾನ್", "ಎನ್ನ", "ಈರ್", "ಇರೆನ", "ಈರೆನ", "ಒಂಜಿ", "ಇಜ್ಜಿ", "ಉಂಡು", "ಉಲ್ಲೆ", "ಬತ್ತ್", "ಬತ್ತ್‌",
+            "ಪಂಡ್", "ಪನ್ಪೆ", "ಪನ್ಲೆ", "ಮಲ್ಪು", "ಮಲ್ತ್", "ಮಲ್ಪೊಡು", "ದಾದ", "ಎಂಚ", "ಆಂಡ್", "ಆಂಡು", "ಪೋಂಡ್", "ಪೋಂಡು",
+            "ಕೊರ್ಡೆ", "ಕೊರ್ಪೆ", "ಕೊರೊಡು", "ಕೇಂಡೆ", "ಕೇಂಡೆರ್", "ಬೊಕ್ಕ", "ಇತ್ತೆ", "ಓಲು", "ಏರ್", "ಅಯಿತ", "ಕಟ್ಟೊಡು", "ಇಪ್ಪುಂಡು"),
+    "kn": ("ನನಗೆ", "ನನ್ನ", "ನಾನು", "ನೀವು", "ನಿಮ್ಮ", "ಇಲ್ಲ", "ಇದೆ", "ಮಾಡಿ", "ಮಾಡಲಿ", "ಮಾಡ್", "ಏನು", "ಹೋಯ್ತು", "ಹೋಗಿದೆ",
+           "ಬೇಕು", "ಬಂತು", "ಬಂದಿದೆ", "ಒಂದು", "ಹೇಳಿ", "ಹೇಳ್", "ಹಣ", "ಯಾಕೆ", "ಗೊತ್ತಿಲ್ಲ", "ಅಂದ್ರು", "ಅಂತ", "ಕೊಟ್ಟೆ", "ಕೇಳಿದ"),
+}
+
+
+def kannada_script_hint(text: str):
+    """'tcy' or 'kn' when Kannada-script text clearly leans one way, else None."""
+    words = re.findall(r"[\u0C80-\u0CFF\u200c\u200d]+", text)
+    scores = {lang: sum(1 for w in words if any(w.startswith(st) for st in stems))
+              for lang, stems in KANNADA_SCRIPT_WORDS.items()}
+    if scores["tcy"] >= 2 and scores["tcy"] > scores["kn"]:
+        return "tcy"
+    if scores["kn"] >= 2 and scores["kn"] > scores["tcy"]:
+        return "kn"
+    return None
+
+
+def language_hint(text: str):
+    """(language, script) guessed from the words: script is 'latin' or 'kannada'. (None, None) if unclear."""
+    if _script_share(text, "kn") >= 0.4:
+        h = kannada_script_hint(text)
+        return (h, "kannada") if h else (None, None)
+    h = latin_language_hint(text)
+    return (h, "latin") if h else (None, None)
+
 
 def latin_language_hint(text: str):
     """'tcy', 'kn' or 'hi' when a message in English letters clearly leans one way, else None."""
@@ -112,15 +148,20 @@ def _looks_indic_in_latin(text: str) -> bool:
 
 
 def system_prompt(site_lang: str, chosen: str = "", hint=None) -> str:
-    """The instructions, with the language rule for this visitor."""
+    """The instructions, with the language rule for this visitor. `hint` is a code or (code, script)."""
     names = {"tcy": "Tulu", "kn": "Kannada", "hi": "Hindi", "en": "English"}
+    code, script = hint if isinstance(hint, tuple) else (hint, "latin" if hint else None)
     if chosen:
         rule = f"they chose {LANG_NAMES[chosen]}: always reply in {LANG_NAMES[chosen]}."
     else:
         rule = (f"reply in the language they write in (Kannada in Kannada, Tulu in Tulu, Hindi in Hindi). "
                 f"If you can't tell, use {LANG_NAMES.get(site_lang, 'English')}.")
-        if hint:
-            rule += f" Our word check says their message is most likely {names[hint]} written in English letters."
+        if code:
+            where = "Kannada script" if script == "kannada" else "English letters"
+            rule += (f" Our word check says their message is most likely {names[code]} written in {where}, "
+                     f"so reply in {names[code]} in {where}.")
+        if site_lang == "tcy":
+            rule += " The site is set to Tulu: text in Kannada script is most likely Tulu, unless it is clearly Kannada."
     return SYSTEM.format(lang_rule=rule)
 
 
@@ -200,8 +241,61 @@ def _gemini_call(messages, key):
     return None
 
 
+# Better (slower) Gemini models for answers in Indian languages, best first. Each has its own
+# free allowance at Google; set GEMINI_ANSWER_MODELS on Render to change them.
+ANSWER_MODELS = [m.strip() for m in os.environ.get("GEMINI_ANSWER_MODELS", "gemini-2.5-flash,gemini-flash-latest").split(",") if m.strip()]
+_answer_model = {"name": None}
+_answer_gone: set = set()
+
+
+def _gemini_smart(messages):
+    """Kannada, Hindi and Tulu answers from a stronger Gemini model, thinking a little first."""
+    from scanners import translator as tr
+    key = tr._gemini_key()
+    q = quota("gemini_answers")
+    if not key or not q.take(wait=8.0, priority="normal"):
+        return None
+    system = messages[0]["content"]
+    contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
+                for m in messages[1:]]
+    body = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents,
+            "generationConfig": {"temperature": 0.3, "responseMimeType": "application/json", "maxOutputTokens": 2500,
+                                 "thinkingConfig": {"thinkingBudget": 1024}}}
+    names = [_answer_model["name"]] if _answer_model["name"] else [m for m in ANSWER_MODELS if m not in _answer_gone]
+    for model in names:
+        try:
+            r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=40)
+            if r.status_code == 400 and "think" in r.text.lower():
+                body["generationConfig"].pop("thinkingConfig", None)
+                r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=40)
+        except Exception:
+            return None
+        if r.status_code == 404:
+            _answer_gone.add(model)
+            _answer_model["name"] = None
+            continue
+        if r.status_code == 429:
+            low = r.text.lower()
+            q.close_day() if ("per day" in low or "perday" in low.replace(" ", "") or "daily" in low) else q.cool_down(60)
+            return None
+        if r.status_code != 200:
+            return None
+        try:
+            parts = r.json()["candidates"][0]["content"]["parts"]
+            text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+        except Exception:
+            return None
+        if text.strip():
+            _answer_model["name"] = model
+            return text
+    return None
+
+
 def _gemini_native(messages):
     """Gemini first for answers in Kannada, Hindi or Tulu (normal priority: a visitor is waiting)."""
+    better = _gemini_smart(messages)
+    if better and _parse(better):
+        return better
     from scanners import translator as tr
     key = tr._gemini_key()
     if not key or not tr._available("gemini") or not tr._reserve_gemini(WAIT, "normal"):
@@ -257,9 +351,10 @@ def _parse(raw: str):
             "understood": str(data.get("understood") or "")[:300]}
 
 
-def _generate(messages, message: str, lang: str):
+def _generate(messages, message: str, lang: str, hint=None):
     """The answer and which service wrote it. (None, None) when no free service could answer."""
     want = _script_of(message)
+    tulu = lang == "tcy" or (isinstance(hint, tuple) and hint[0] == "tcy")
     # Gemini writes Indian languages more naturally; Groq is best for English. Each falls back to the other.
     native = want is not None or lang in ("kn", "hi", "tcy") or _looks_indic_in_latin(message)
     order = (_gemini_native, _groq, _cloudflare) if native else (_groq, _gemini, _cloudflare)
@@ -275,8 +370,9 @@ def _generate(messages, message: str, lang: str):
             return None, None
         # They wrote in Kannada/Hindi script but the answer isn't in it: ask once more, clearly
         if want and _script_share(out["reply"], want) < 0.3 and attempt == 0:
+            target = "Tulu, written in Kannada script" if (want == "kn" and tulu) else SCRIPT_NAMES[want]
             messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
-                                   {"role": "user", "content": f"Please give the same answer in {SCRIPT_NAMES[want]}, as JSON."}]
+                                   {"role": "user", "content": f"Please give the same answer in {target}, as JSON."}]
             continue
         break
     return out, used
@@ -317,7 +413,8 @@ def assistant_route():
     for i in range(len(s), 0, -1):   # highest first, so [#1] -> [#3] can't clash with [#3]
         masked = masked.replace(f"[#{i}]", f"[#{len(secrets) + i}]")
     secrets += s
-    system = system_prompt(lang, chosen, None if chosen else latin_language_hint(message))
+    hint = None if chosen else language_hint(message)
+    system = system_prompt(lang, chosen, hint)
     messages = [{"role": "system", "content": system}] + turns + \
                [{"role": "user", "content": f"<visitor>\n{masked}\n</visitor>"}]
 
@@ -329,7 +426,7 @@ def assistant_route():
         if hit and time.time() - hit[0] < ANSWER_CACHE_S:
             return jsonify(dict(hit[1], reply=_clean(hit[1]["reply"], secrets)))
 
-    out, _provider = _generate(messages, message, chosen or lang)
+    out, _provider = _generate(messages, message, chosen or lang, hint)
     if chosen:
         out = dict(out, ask_language=False)   # they already picked a language
     if not out:
@@ -373,14 +470,15 @@ def assistant_selftest_route():
     results = []
     for lang, q, chosen in cases:
         chosen = chosen if chosen in LANG_NAMES else ""
-        hint = None if chosen else latin_language_hint(q)
+        hint = None if chosen else language_hint(q)
         messages = [{"role": "system", "content": system_prompt(lang, chosen, hint)},
                     {"role": "user", "content": f"<visitor>\n{q}\n</visitor>"}]
         t = time.time()
-        out, used = _generate(messages, q, chosen or lang)
-        results.append({"asked": q, "site_lang": lang, "word_hint": hint, "answered_by": used,
+        out, used = _generate(messages, q, chosen or lang, hint)
+        results.append({"asked": q, "site_lang": lang, "word_hint": hint[0] if hint else None, "answered_by": used,
                         "seconds": round(time.time() - t, 1),
                         "understood": out and out.get("understood"), "detected_language": out and out.get("language"),
                         "asks_which_language": out and out.get("ask_language"),
                         "reply": out and _clean(out["reply"], []), "actions": out and out["actions"]})
-    return jsonify({"groq_configured": groq_client.configured(), "results": results, "groq": groq_client.status()})
+    return jsonify({"groq_configured": groq_client.configured(), "results": results, "groq": groq_client.status(),
+                    "better_model": _answer_model["name"], "better_model_allowance": quota("gemini_answers").status()})

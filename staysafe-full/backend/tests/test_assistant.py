@@ -199,6 +199,72 @@ def test_tulu_in_english_letters_is_recognised_and_hinted():
     assert "most likely Tulu" in seen[0]["messages"][0]["content"]
 
 
+def test_tulu_in_kannada_script_is_recognised_not_taken_for_kannada():
+    from scanners.assistant import kannada_script_hint, language_hint, system_prompt
+    assert kannada_script_hint("ಎಂಕ್ ಒಂಜಿ ಮೆಸೇಜ್ ಬತ್ತ್ಂಡ್, ಲಾಟರಿ ಬತ್ತ್ಂಡ್ ಪಂಡ್ದ್, ದುಡ್ಡು ಕಟ್ಟೊಡು ಪನ್ಪೆರ್") == "tcy"
+    assert kannada_script_hint("ನನಗೆ ಒಂದು ಕರೆ ಬಂತು, ಪೊಲೀಸ್ ಅಂತ ಹೇಳಿ ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್ ಮಾಡ್ತೀವಿ ಅಂದ್ರು, ಏನು ಮಾಡಲಿ") == "kn"
+    assert language_hint("enna whatsapp hack aand, dada malpodu") == ("tcy", "latin")
+    assert language_hint("someone hacked my whatsapp") == (None, None)
+    p = system_prompt("tcy", "", ("tcy", "kannada"))
+    assert "Tulu written in Kannada script" in p and "The site is set to Tulu" in p
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    c.post("/api/assistant", json={"message": "ಎಂಕ್ ಒಂಜಿ ಮೆಸೇಜ್ ಬತ್ತ್ಂಡ್, ದುಡ್ಡು ಕಟ್ಟೊಡು ಪನ್ಪೆರ್", "lang": "en"})
+    assert "most likely Tulu written in Kannada script" in seen[0]["messages"][0]["content"]
+
+
+def test_one_language_rule_and_no_button_names_in_the_instructions():
+    from scanners.assistant import system_prompt
+    p = system_prompt("en")
+    assert "Never start or mix in English sentences" in p and "Never write the button names" in p
+    assert "ದುಡ್ಡು ಕೊರೊಡ್ಚಿ" in p and "duddu korodchi" in p
+
+
+def test_better_gemini_model_answers_indian_languages_and_steps_aside_when_busy():
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    QUOTAS["gemini_answers"].reset()
+    assistant._answer_model["name"] = None
+    assistant._answer_gone.clear()
+    os.environ["GEMINI_API_KEY"] = "g"
+    calls = []
+
+    def make(status, url, text=""):
+        class R:
+            status_code = status
+            headers = {}
+
+            def json(self):
+                body = json.dumps({"reply": "ಗಾಬರಿ ಆವೊಡ್ಚಿ. ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.", "urgent": True, "actions": []},
+                                  ensure_ascii=False)
+                return {"candidates": [{"content": {"parts": [{"text": "thinking...", "thought": True}, {"text": body}]}}]}
+        R.text = text
+        return R()
+
+    try:
+        # first better model doesn't exist: the next one answers; its thoughts are never shown
+        def post(url, **kw):
+            calls.append(url)
+            if "gemini-2.5-flash:" in url:
+                return make(404, url)
+            return make(200, url)
+        groq_client.requests.post = post
+        d = c.post("/api/assistant", json={"message": "ಎಂಕ್ ಒಂಜಿ ಕಾಲ್ ಬತ್ತ್ಂಡ್, ದುಡ್ಡು ಪೋಂಡು", "lang": "tcy"}).get_json()
+        assert "gemini-flash-latest" in calls[1] and "ಇತ್ತೆನೇ" in d["reply"] and "thinking" not in d["reply"], (calls, d)
+        assert assistant._answer_model["name"] == "gemini-flash-latest"
+        # busy (429): that model rests, and the usual Gemini model answers instead
+        calls.clear()
+        assistant._answers.clear()
+
+        def busy(url, **kw):
+            calls.append(url)
+            return make(429, url, "rate limit per minute") if "gemini-flash-latest" in url else make(200, url)
+        groq_client.requests.post = busy
+        d = c.post("/api/assistant", json={"message": "ಎಂಕ್ ಒಂಜಿ ಮೆಸೇಜ್ ಬತ್ತ್ಂಡ್, ಲಾಟರಿ ಪನ್ಪೆರ್", "lang": "tcy"}).get_json()
+        assert d.get("reply") and QUOTAS["gemini_answers"].status()["paused_for_s"] > 0, (calls, d)
+    finally:
+        os.environ.pop("GEMINI_API_KEY", None)
+        QUOTAS["gemini_answers"].reset()
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

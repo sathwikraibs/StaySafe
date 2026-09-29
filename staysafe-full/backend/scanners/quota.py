@@ -219,6 +219,10 @@ PACIFIC = -8
 # Each can be changed on Render with the environment variable shown.
 QUOTAS = {
     "gemini": Quota("gemini", _env_int("GEMINI_PER_MINUTE", 8), _env_int("GEMINI_DAILY_LIMIT", 800), PACIFIC),
+    # A better Gemini model only for the Helper's answers in Indian languages. Google counts each
+    # model separately, so this never takes anything away from message checks.
+    "gemini_answers": Quota("gemini_answers", _env_int("GEMINI_ANSWER_PER_MINUTE", 4),
+                            _env_int("GEMINI_ANSWER_DAILY_LIMIT", 200), PACIFIC),
     "virustotal": Quota("virustotal", _env_int("VT_PER_MINUTE", 4), _env_int("VT_DAILY_LIMIT", 480)),
     "urlscan": Quota("urlscan", _env_int("URLSCAN_PER_MINUTE", 60), _env_int("URLSCAN_DAILY_LIMIT", 900)),
     "safe_browsing": Quota("safe_browsing", 300, _env_int("GSB_DAILY_LIMIT", 9000)),
