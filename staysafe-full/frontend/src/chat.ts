@@ -1,135 +1,19 @@
-// Live chat (tawk.to) — loaded once, controlled from React.
-//
-// We hide tawk.to's own floating bubble and use our own StaySafe-styled
-// "Need help?" button instead, so it sits in the right place on phones
-// (above the bottom menu) and matches the site's look.
-//
-// Set these in Vercel → Settings → Environment Variables, then redeploy:
-//   VITE_TAWK_PROPERTY_ID  and  VITE_TAWK_WIDGET_ID
-// (from the tawk.to embed code: https://embed.tawk.to/PROPERTY_ID/WIDGET_ID)
-import { useEffect, useState } from "react";
+// "Talk to a person" everywhere on the site opens the StaySafe Helper (its AI answers, and a
+// form that reaches the StaySafe team). No outside chat service is loaded.
 
-type ChatStatus = "online" | "away" | "offline" | "unknown";
+export type HelperMode = "home" | "person";
+const EVENT = "staysafe:helper";
 
-interface TawkApi {
-  onLoad?: () => void;
-  onStatusChange?: (status: string) => void;
-  onChatMaximized?: () => void;
-  onChatMinimized?: () => void;
-  onChatStarted?: () => void;
-  onChatEnded?: () => void;
-  onUnreadCountChanged?: (count: number) => void;
-  hideWidget?: () => void;
-  showWidget?: () => void;
-  maximize?: () => void;
-  minimize?: () => void;
-  getStatus?: () => string;
-  customStyle?: Record<string, unknown>;
+/** Open the StaySafe Helper, optionally straight at "Talk to a person". */
+export function openHelper(mode: HelperMode = "person"): void {
+  try {
+    window.dispatchEvent(new CustomEvent<HelperMode>(EVENT, { detail: mode }));
+  } catch { /* ignore */ }
 }
 
-declare global {
-  interface Window {
-    Tawk_API?: TawkApi;
-    Tawk_LoadStart?: Date;
-  }
-}
-
-const PROPERTY_ID = import.meta.env.VITE_TAWK_PROPERTY_ID;
-const WIDGET_ID = import.meta.env.VITE_TAWK_WIDGET_ID;
-
-export const CHAT_ENABLED = Boolean(PROPERTY_ID && WIDGET_ID);
-const USED_KEY = "staysafe.chatUsed.v1";
-
-/** Has this visitor chatted before? Then load chat early so replies reach them. */
-export function hasChattedBefore(): boolean {
-  try { return localStorage.getItem(USED_KEY) === "1"; } catch { return false; }
-}
-
-interface ChatState {
-  ready: boolean;
-  open: boolean;
-  status: ChatStatus;
-  unread: number;
-}
-
-let state: ChatState = { ready: false, open: false, status: "unknown", unread: 0 };
-let requested = false;
-let openWhenReady = false;
-const listeners = new Set<(s: ChatState) => void>();
-
-function setState(patch: Partial<ChatState>) {
-  state = { ...state, ...patch };
-  listeners.forEach((l) => l(state));
-}
-
-function normaliseStatus(s: string | undefined): ChatStatus {
-  return s === "online" || s === "away" || s === "offline" ? s : "unknown";
-}
-
-/** Inject the tawk.to script (once). Safe to call many times. */
-export function loadChat(): void {
-  if (!CHAT_ENABLED || requested || typeof window === "undefined") return;
-  requested = true;
-
-  const api: TawkApi = (window.Tawk_API = window.Tawk_API || {});
-  window.Tawk_LoadStart = new Date();
-  api.customStyle = { zIndex: 1000 };
-
-  api.onLoad = () => {
-    api.hideWidget?.(); // we show our own button instead
-    setState({ ready: true, status: normaliseStatus(api.getStatus?.()) });
-    if (openWhenReady) {
-      openWhenReady = false;
-      openChat();
-    }
-  };
-  api.onStatusChange = (s) => setState({ status: normaliseStatus(s) });
-  api.onChatMaximized = () => setState({ open: true, unread: 0 });
-  api.onChatMinimized = () => {
-    api.hideWidget?.();
-    setState({ open: false });
-  };
-  api.onUnreadCountChanged = (count) => setState({ unread: state.open ? 0 : count });
-  api.onChatStarted = () => {
-    try { localStorage.setItem(USED_KEY, "1"); } catch { /* ignore */ }
-  };
-
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://embed.tawk.to/${PROPERTY_ID}/${WIDGET_ID}`;
-  script.charset = "UTF-8";
-  script.setAttribute("crossorigin", "*");
-  document.body.appendChild(script);
-}
-
-/** Open the chat window (loads it first if needed). */
-export function openChat(): void {
-  if (!CHAT_ENABLED) return;
-  if (!state.ready) {
-    openWhenReady = true;
-    loadChat();
-    return;
-  }
-  const api = window.Tawk_API;
-  api?.showWidget?.();
-  api?.maximize?.();
-  setState({ open: true, unread: 0 });
-}
-
-/** React hook: current chat state + an `open` function. */
-export function useChat() {
-  const [snapshot, setSnapshot] = useState<ChatState>(state);
-  useEffect(() => {
-    listeners.add(setSnapshot);
-    setSnapshot(state);
-    return () => {
-      listeners.delete(setSnapshot);
-    };
-  }, []);
-  return { enabled: CHAT_ENABLED, ...snapshot, openChat };
-}
-
-/** Translation key describing the chat status. */
-export function statusKey(status: ChatStatus): string {
-  return `chat.${status}`;
+/** For the floating button: run `fn` whenever some page asks for the Helper. */
+export function onHelperRequest(fn: (mode: HelperMode) => void): () => void {
+  const handler = (e: Event) => fn(((e as CustomEvent<HelperMode>).detail) || "home");
+  window.addEventListener(EVENT, handler);
+  return () => window.removeEventListener(EVENT, handler);
 }

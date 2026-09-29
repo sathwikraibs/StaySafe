@@ -4,7 +4,7 @@ import { verdictTone, verdictLabelKey, type Tone } from "@/verdict";
 import { IconArrowRight, IconChat, IconCheck, IconWarning, IconClose, IconSearch, IconInfo, IconShield } from "@/icons";
 import { Section } from "@/components/Section";
 import type { Check, ScorePart, Verdict } from "@/types";
-import { useChat } from "@/chat";
+import { openHelper } from "@/chat";
 
 export type ReportTool = "link" | "message" | "qr" | "file" | "password" | "network" | "email";
 
@@ -218,7 +218,6 @@ interface ResultReportProps {
 /** The result for any tool: a clear summary, what to do, then the details in tidy sections. */
 export function ResultReport({ tool, verdict, riskScore, subject, checks, findings, parts, onNavigate, children }: ResultReportProps) {
   const { t, ts } = useI18n();
-  const { openChat } = useChat();
   const tone = verdictTone(verdict);
   const style = TONE_STYLE[tone];
   const top = useRef<HTMLDivElement>(null);
@@ -300,7 +299,7 @@ export function ResultReport({ tool, verdict, riskScore, subject, checks, findin
             </button>
           )}
           <button
-            onClick={openChat}
+            onClick={() => openHelper("person")}
             className={`btn-press flex items-center justify-between gap-3 rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3.5 text-left font-body text-sm font-bold text-sage-700 hover:bg-sage-100 ${tone === "caution" ? "sm:col-span-2" : ""}`}
           >
             <span>{t("report.askUs")}</span>

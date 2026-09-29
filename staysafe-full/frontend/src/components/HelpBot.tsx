@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useChat } from "@/chat";
+import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
 import { IconChat, IconClose, IconLock, IconShield } from "@/icons";
 import { HELP_TEXTS, helpTopics, understand, setPrefill, announcePrefill, type HelpAction, type HelpTopic } from "@/helpBot";
@@ -8,7 +8,6 @@ import { API_BASE } from "@/config";
 
 type Button = HelpAction
   | { kind: "check"; what: "url" | "message"; value: string; label: string }
-  | { kind: "live"; label: string }
   | { kind: "form"; label: string };
 interface Bubble { from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean; ai?: boolean; typing?: boolean }
 type Turn = { role: "user" | "assistant"; text: string };
@@ -17,15 +16,15 @@ interface AiAnswer { reply: string; urgent: boolean; actions: string[] }
 /**
  * StaySafe Helper: answers the most common questions straight away, day or night, in the
  * site's language. A pasted link or message is sent to the right check. "Talk to a person"
- * opens the live chat (which takes a message when nobody is online).
+ * opens a short form that reaches the StaySafe team's phone straight away.
  */
-export function HelpBot({ onClose, onNavigate, currentPath }: {
+export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }: {
+  startWith?: HelperMode;
   onClose: () => void;
   onNavigate: (p: string) => void;
   currentPath: string;
 }) {
   const { lang, ts } = useI18n();
-  const chat = useChat();
   const tx = HELP_TEXTS[lang] ?? HELP_TEXTS.en;
   const topics = helpTopics(lang);
   const [bubbles, setBubbles] = useState<Bubble[]>([{ from: "bot", lines: [tx.hello, tx.pick], topics: true }]);
@@ -107,23 +106,24 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
       { from: "bot", lines: topic.a, buttons: [...(topic.actions ?? []), { kind: "person", label: tx.person }] });
   }
 
-  /**
-   * Someone wants a real person: live chat when the team is online, otherwise the message form
-   * (it reaches the team's phone at once). The live chat's own offline form is the last resort.
-   */
-  function person() {
+  /** Someone wants a real person: the short form, which reaches the team's phone at once. */
+  function person(ready = formReady) {
     const me: Bubble = { from: "me", lines: [tx.person] };
-    if (chat.enabled && chat.status === "online") {
-      say(me, { from: "bot", lines: [tx.personOnline],
-        buttons: [{ kind: "live", label: tx.chatNow }, ...(formReady ? [{ kind: "form", label: tx.writeToUs } as Button] : [])] });
-    } else if (formReady) {
+    if (ready) {
       say(me, { from: "bot", lines: [tx.formIntro], buttons: [{ kind: "form", label: tx.writeToUs }] });
-    } else if (chat.enabled) {
-      say(me, { from: "bot", lines: [tx.personOffline], buttons: [{ kind: "live", label: tx.writeToUs }] });
     } else {
       say(me, { from: "bot", lines: [tx.personNotReady] });
     }
   }
+
+  // Opened from a "talk to us" button on a page: go straight to "Talk to a person"
+  const started = useRef(false);
+  useEffect(() => {
+    if (startWith === "person" && formReady !== null && !started.current) {
+      started.current = true;
+      person(formReady);
+    }
+  }, [formReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function sent(ref: string, lost: string) {
     setForm(false);
@@ -142,9 +142,6 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
       onClose();
     } else if (b.kind === "form") {
       setForm(true);
-    } else if (b.kind === "live" && chat.enabled) {
-      chat.openChat();
-      onClose();
     } else {
       person();
     }

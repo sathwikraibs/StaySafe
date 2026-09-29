@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { PageHeader } from "@/components/PageBits";
-import { useChat, statusKey } from "@/chat";
+import { openHelper } from "@/chat";
 import { IconAlert, IconArrowRight, IconBook, IconCheck, IconGlobe, IconLock, IconPhone, IconChat } from "@/icons";
 import { useI18n } from "@/i18n";
 
@@ -26,8 +26,6 @@ function Section({ accent, icon, title, children, delay = 0 }: {
 
 export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const { t, tl } = useI18n();
-  const chat = useChat();
-  const online = chat.status === "online";
 
   return (
     <div className="space-y-4">
@@ -49,17 +47,13 @@ export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void })
 
       {/* 2. Talk to a person */}
       <Section accent="#647A4F" icon={<IconChat className="h-4 w-4" />} title={t("chat.title")} delay={60}>
-        <p className="flex items-center gap-2 font-body text-xs font-semibold text-sage-700">
-          <span className={`h-2 w-2 rounded-full ${online ? "bg-[#4CAF50]" : "bg-cream-300"}`} />
-          {chat.enabled ? t(statusKey(chat.status)) : t("chat.notReady")}
-        </p>
+        <p className="font-body text-xs font-semibold text-sage-700">{t("chat.unknown")}</p>
         <p className="mt-2 font-body text-sm text-ink-700">{t("chat.intro")}</p>
         <button
-          onClick={chat.openChat}
-          disabled={!chat.enabled}
-          className="btn-press mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600 disabled:opacity-60"
+          onClick={() => openHelper("person")}
+          className="btn-press mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600"
         >
-          <IconChat className="h-5 w-5" /> {chat.unread > 0 ? t("chat.openNew", { count: chat.unread }) : t("chat.start")}
+          <IconChat className="h-5 w-5" /> {t("chat.start")}
         </button>
         <p className="mt-2.5 flex items-center gap-1.5 font-body text-xs text-dustyblue-600">
           <IconLock className="h-3.5 w-3.5 shrink-0" /> {t("chat.never")}

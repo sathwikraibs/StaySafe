@@ -3,7 +3,6 @@ import { ALL_NAV, HOME_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from
 import { IconShield, IconChevronRight, IconAlert, IconSettings } from "@/icons";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { FloatingHelpButton } from "@/components/ChatWidgets";
-import { loadChat, hasChattedBefore } from "@/chat";
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,15 +19,6 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
   const { t, lang } = useI18n();
   const crumbs = buildCrumbs(currentPath);
   const langShort = LANGUAGES.find((l) => l.code === lang)?.short ?? "EN";
-
-  // Load live chat early only where people are likely to need it (or if they've chatted before),
-  // so the rest of the site stays fast. It also loads instantly when someone taps "Need help?".
-  useEffect(() => {
-    if (currentPath === "/help" || currentPath === "/incident" || hasChattedBefore()) {
-      const t = setTimeout(loadChat, 800);
-      return () => clearTimeout(t);
-    }
-  }, [currentPath]);
 
   return (
     <div className="min-h-screen bg-cream-50">

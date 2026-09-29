@@ -4,7 +4,7 @@ import {
   IconArrowRight, IconArrowLeft, IconCheck, IconAlert, IconPhone, IconGlobe, IconLink, IconKey, IconLock,
   IconMessage, IconFile, IconNetwork, IconShield, IconChat, IconChevronRight,
 } from "@/icons";
-import { useChat } from "@/chat";
+import { openHelper } from "@/chat";
 import { useI18n } from "@/i18n";
 import { STEP_RESOURCES, type Resource } from "@/incidentResources";
 import { INCIDENT_PLANS_EN } from "@/incidentPlans";
@@ -108,7 +108,6 @@ function UrgentBar() {
 
 export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, content } = useI18n();
-  const chat = useChat();
   const [stage, setStage] = useState<"intro" | "pick" | "plan">("intro");
   const [planId, setPlanId] = useState<string | null>(null);
   const [done, setDone] = useState<Record<number, boolean>>({});
@@ -151,7 +150,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
           <p className="mb-2 px-1 font-body text-xs font-bold uppercase tracking-wide text-rust-600">{t("incidentX.lostMoney")}</p>
           <UrgentBar />
         </div>
-        <button onClick={chat.openChat} disabled={!chat.enabled} className="btn-press flex w-full items-center gap-3 rounded-2xl border-2 border-sage-300 bg-cream-50 p-4 text-left hover:bg-sage-100 disabled:opacity-60">
+        <button onClick={() => openHelper("person")} className="btn-press flex w-full items-center gap-3 rounded-2xl border-2 border-sage-300 bg-cream-50 p-4 text-left hover:bg-sage-100 disabled:opacity-60">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-500 text-cream-50"><IconChat className="h-5 w-5" /></span>
           <span className="min-w-0 flex-1">
             <span className="block font-body text-sm font-bold text-ink-900">{t("incident.chatScared")}</span>
@@ -184,7 +183,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
             );
           })}
         </div>
-        <button onClick={chat.openChat} disabled={!chat.enabled} className="btn-press mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-sage-700 disabled:opacity-60">
+        <button onClick={() => openHelper("person")} className="btn-press mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-sage-700 disabled:opacity-60">
           <IconChat className="h-4 w-4" /> {t("incident.chatNotListed")}
         </button>
       </div>
@@ -254,7 +253,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
 
       <div className="grid gap-2.5 sm:grid-cols-2">
         {!MONEY.has(plan.id) && <div className="sm:col-span-2"><UrgentBar /></div>}
-        <button onClick={chat.openChat} disabled={!chat.enabled} className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-sage-500 px-4 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm disabled:opacity-60">
+        <button onClick={() => openHelper("person")} className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-sage-500 px-4 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm disabled:opacity-60">
           <IconChat className="h-4 w-4" /> {t("incident.chatStillWorried")}
         </button>
         {onNavigate && (
