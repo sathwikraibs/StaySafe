@@ -11,19 +11,10 @@ import type { Check, ScanMessageResponse } from "@/types";
 import { verdictTone } from "@/verdict";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 import { CheckedLinks } from "@/components/WebsiteDetails";
-import { IconInfo, IconLanguage, IconCheck, IconImage } from "@/icons";
+import { IconInfo, IconCheck } from "@/icons";
+import { TranslationPanel } from "@/components/TranslationPanel";
 import { Section } from "@/components/Section";
 import { useI18n } from "@/i18n";
-
-/** "Tamil", "ತಮಿಳು", "तमिल"… — the name of a language code, in the website language. */
-function languageName(code: string, uiLang: string): string {
-  try {
-    const names = new Intl.DisplayNames([uiLang === "tcy" ? "kn" : uiLang], { type: "language" });
-    return names.of(code) || code;
-  } catch {
-    return code;
-  }
-}
 
 /** The "What we checked" list for a message, worked out from the result. */
 function messageChecks(r: ScanMessageResponse): Check[] {
@@ -46,7 +37,7 @@ function messageChecks(r: ScanMessageResponse): Check[] {
 }
 
 export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) => void }) {
-  const { t, ts, lang } = useI18n();
+  const { t, ts } = useI18n();
   const pace = usePace();
   const [text, setText] = useState("");
   const [sender, setSender] = useState("");
@@ -158,18 +149,14 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
           findings={result.patterns_detected}
           onNavigate={onNavigate}
         >
-          {result.translation && (
-            <Section icon={<IconLanguage className="h-5 w-5" />} title={t("message.meaningTitle")} tone="good" defaultOpen
-              summary={languageName(result.translation.from, lang)}>
-              <p className="font-body text-xs text-dustyblue-600">
-                {t("message.translatedFrom", { lang: languageName(result.translation.from, lang) })}
-                {lang === "tcy" && result.translation.to === "kn" ? `, ${t("message.shownInKannada")}` : ""}
-              </p>
-              <p className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-base text-ink-800">
-                {result.translation.text}
-              </p>
-              <p className="mt-2 font-body text-xs text-dustyblue-500">{t("message.meaningNoteSimple")}</p>
-            </Section>
+          {result.text_analyzed && result.text_analyzed.trim() && (
+            <TranslationPanel
+              key={result.text_analyzed}
+              original={result.text_analyzed}
+              sourceLang={result.message_language}
+              initial={result.translation}
+              fromScreenshot={fromScreenshot}
+            />
           )}
           {result.notes && result.notes.length > 0 && (
             <Section icon={<IconInfo className="h-5 w-5" />} title={t("message.notesTitle")} tone="info" defaultOpen summary={String(result.notes.length)}>
@@ -191,12 +178,6 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
           )}
           {result.links_checked && result.links_checked.length > 0 && (
             <CheckedLinks links={result.links_checked} title={t("message.linksTitle")} note={t("message.linksNote")} />
-          )}
-          {fromScreenshot && result.text_analyzed && (
-            <Section icon={<IconImage className="h-5 w-5" />} title={t("message.ocrTitle")}>
-              <p className="whitespace-pre-wrap break-words rounded-xl bg-cream-100 p-3 font-body text-sm text-ink-800">{result.text_analyzed}</p>
-              <p className="mt-2 font-body text-xs text-dustyblue-600">{t("message.ocrNote")}</p>
-            </Section>
           )}
         </ResultReport>
       )}

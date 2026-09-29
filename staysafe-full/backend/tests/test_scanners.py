@@ -1013,6 +1013,30 @@ def test_screenshot_link_dot_fix_only_for_names_that_dont_exist():
         url_scanner.resolve_host = real
 
 
+def test_translate_route_and_message_language():
+    import app as appmod
+    from scanners import translator
+    c = appmod.app.test_client()
+    real = translator.translate
+    try:
+        translator.translate = lambda text, to: {"text": "Your account will be blocked", "from": "kn", "to": to}
+        r = c.post("/api/translate", json={"text": "ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ", "to": "en"})
+        assert r.status_code == 200 and r.get_json()["text"] == "Your account will be blocked", r.get_json()
+        assert c.post("/api/translate", json={"text": "hi", "to": "xx"}).status_code == 400
+        translator.translate = lambda text, to: None
+        assert c.post("/api/translate", json={"text": "hi", "to": "kn"}).status_code == 503
+    finally:
+        translator.translate = real
+    from scanners.message_scanner import add_translation, analyze_text
+    translator_real = translator.translate
+    try:
+        translator.translate = lambda text, to: None
+        assert add_translation(analyze_text("ನಿಮ್ಮ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ"), "en")["message_language"] == "kn"
+        assert add_translation(analyze_text("Your parcel is waiting"), "kn")["message_language"] == "en"
+    finally:
+        translator.translate = translator_real
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

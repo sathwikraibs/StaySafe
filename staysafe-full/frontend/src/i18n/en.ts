@@ -97,6 +97,12 @@ const enBase = {
     translatedFrom: "Automatically translated from {lang}",
     meaningNote: "Automatic translation by {provider}. It may not be perfect.",
     shownInKannada: "shown in Kannada (Tulu isn't available for translation yet)",
+    trTitle: "Translation",
+    trOriginal: "Original message",
+    trShowIn: "Show it in",
+    trBusy: "Translating...",
+    trPick: "Pick a language to read this message in it.",
+    trFailed: "We couldn't translate this right now. Please try again in a moment.",
   },
 
   qr: {

@@ -867,7 +867,32 @@ def add_translation(result: dict, ui_lang: str) -> dict:
     if meaning and meaning.get("from") and meaning["from"].split("-")[0] != target \
             and meaning["text"].strip().lower() != text.strip().lower():
         result["translation"] = meaning
+
+    # Which language the message is in, so the page can offer translations
+    from scanners.translator import guess_language
+    detected = ((english or meaning or {}).get("from") or "").split("-")[0].lower()
+    result["message_language"] = detected if re.fullmatch(r"[a-z]{2,3}", detected) else guess_language(text)
     return result
+
+
+TRANSLATE_TARGETS = {"en", "kn", "hi", "tcy"}
+
+
+@message_scanner_bp.route("/api/translate", methods=["POST"])
+def translate_route():
+    """Translate a message the visitor already checked into another website language."""
+    from scanners.translator import translate
+    data = request.get_json(silent=True) or {}
+    text = str(data.get("text") or "").strip()[:1500]
+    target = str(data.get("to") or "").strip().lower()
+    if not text:
+        return jsonify({"error": "Please paste the message you want to check."}), 400
+    if target not in TRANSLATE_TARGETS:
+        return jsonify({"error": "That language isn't available."}), 400
+    out = translate(text, target)
+    if not out or not out.get("text", "").strip():
+        return jsonify({"error": "We couldn't translate this right now. Please try again in a moment."}), 503
+    return jsonify({"text": out["text"], "from": (out.get("from") or "").split("-")[0], "to": out.get("to", target)})
 
 
 # ---------------------------------------------------------------------------

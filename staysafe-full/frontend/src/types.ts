@@ -56,6 +56,8 @@ export interface ScanMessageResponse {
   notes?: string[];
   /** "What this message says" — automatic translation into the website language */
   translation?: { text: string; from: string; to: string; provider?: string };
+  /** Language the message is written in ("kn", "en", ...) */
+  message_language?: string;
   ai_review?: { verdict: "scam" | "suspicious" | "safe" | "unsure"; category: string; provider: string };
   sender?: string;
 }
