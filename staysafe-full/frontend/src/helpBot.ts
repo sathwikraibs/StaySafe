@@ -36,6 +36,25 @@ export interface HelpTexts {
   close: string;
   never: string;
   urgent: string;
+  formIntro: string;
+  chatNow: string;
+  writeToUs: string;
+  formTitle: string;
+  formName: string;
+  formEmail: string;
+  formPhone: string;
+  formEither: string;
+  formLost: string;
+  lostYes: string;
+  lostNo: string;
+  lostUnsure: string;
+  formMessage: string;
+  formMessagePh: string;
+  formSend: string;
+  formSending: string;
+  formBack: string;
+  sent: string;
+  sentUrgent: string;
 }
 
 /** Words that mean the same in every language (numbers, English words people mix in). */
@@ -357,6 +376,25 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "Other questions", close: "Close",
     never: "We will never ask for your OTP, PIN, password or bank details.",
     urgent: "Lost money? Call 1930 now",
+    formIntro: "Our team isn't online right now. Write to us here and we'll reply personally by email or WhatsApp, usually within a few hours. If you lost money, call 1930 now, don't wait for us.",
+    chatNow: "Chat live now",
+    writeToUs: "Write to us",
+    formTitle: "Write to the StaySafe team",
+    formName: "Your name (optional)",
+    formEmail: "Email",
+    formPhone: "WhatsApp number",
+    formEither: "Give at least one, so we can reply to you.",
+    formLost: "Did you lose money?",
+    lostYes: "Yes",
+    lostNo: "No",
+    lostUnsure: "Not sure",
+    formMessage: "What happened?",
+    formMessagePh: "Tell us in your own words, in any language.",
+    formSend: "Send message",
+    formSending: "Sending...",
+    formBack: "Back",
+    sent: "Thank you. Your message has reached our team. Your reference is {ref}. We'll reply to you personally, usually within a few hours.",
+    sentUrgent: "Since money was lost, please also call 1930 right now. The first hours matter most.",
   },
   hi: {
     title: "StaySafe सहायक", subtitle: "तुरंत जवाब, कभी भी",
@@ -375,6 +413,25 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "दूसरे सवाल", close: "बंद करें",
     never: "हम कभी आपका OTP, PIN, पासवर्ड या बैंक की जानकारी नहीं माँगेंगे।",
     urgent: "पैसे कटे? अभी 1930 पर कॉल करें",
+    formIntro: "हमारी टीम अभी ऑनलाइन नहीं है। यहाँ हमें लिखें, हम ईमेल या WhatsApp पर खुद जवाब देंगे, आमतौर पर कुछ घंटों में। पैसे कटे हों तो हमारा इंतज़ार न करें, अभी 1930 पर कॉल करें।",
+    chatNow: "अभी लाइव चैट करें",
+    writeToUs: "हमें लिखें",
+    formTitle: "StaySafe टीम को लिखें",
+    formName: "आपका नाम (ज़रूरी नहीं)",
+    formEmail: "ईमेल",
+    formPhone: "WhatsApp नंबर",
+    formEither: "कम से कम एक दें, ताकि हम आपको जवाब दे सकें।",
+    formLost: "क्या आपके पैसे कटे?",
+    lostYes: "हाँ",
+    lostNo: "नहीं",
+    lostUnsure: "पक्का नहीं",
+    formMessage: "क्या हुआ?",
+    formMessagePh: "अपने शब्दों में, किसी भी भाषा में बताएँ।",
+    formSend: "मैसेज भेजें",
+    formSending: "भेज रहे हैं...",
+    formBack: "वापस",
+    sent: "धन्यवाद। आपका मैसेज हमारी टीम तक पहुँच गया है। आपका रेफ़रेंस नंबर {ref} है। हम आमतौर पर कुछ घंटों में खुद जवाब देंगे।",
+    sentUrgent: "पैसे कटे हैं, इसलिए अभी 1930 पर भी कॉल करें। शुरुआती घंटे सबसे ज़रूरी हैं।",
   },
   kn: {
     title: "StaySafe ಸಹಾಯಕ", subtitle: "ತಕ್ಷಣದ ಉತ್ತರ, ಯಾವಾಗ ಬೇಕಾದರೂ",
@@ -393,6 +450,25 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "ಬೇರೆ ಪ್ರಶ್ನೆಗಳು", close: "ಮುಚ್ಚಿ",
     never: "ನಾವು ಎಂದಿಗೂ ನಿಮ್ಮ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅಥವಾ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇಳುವುದಿಲ್ಲ.",
     urgent: "ಹಣ ಹೋಯಿತೇ? ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ",
+    formIntro: "ನಮ್ಮ ತಂಡ ಈಗ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಇಲ್ಲಿ ನಮಗೆ ಬರೆಯಿರಿ, ಇಮೇಲ್ ಅಥವಾ WhatsApp ನಲ್ಲಿ ನಾವೇ ಉತ್ತರಿಸುತ್ತೇವೆ, ಸಾಮಾನ್ಯವಾಗಿ ಕೆಲವು ಗಂಟೆಗಳಲ್ಲಿ. ಹಣ ಹೋಗಿದ್ದರೆ ನಮಗಾಗಿ ಕಾಯಬೇಡಿ, ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ.",
+    chatNow: "ಈಗ ಲೈವ್ ಚಾಟ್ ಮಾಡಿ",
+    writeToUs: "ನಮಗೆ ಬರೆಯಿರಿ",
+    formTitle: "StaySafe ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
+    formName: "ನಿಮ್ಮ ಹೆಸರು (ಐಚ್ಛಿಕ)",
+    formEmail: "ಇಮೇಲ್",
+    formPhone: "WhatsApp ಸಂಖ್ಯೆ",
+    formEither: "ನಾವು ಉತ್ತರಿಸಲು ಕನಿಷ್ಠ ಒಂದನ್ನು ನೀಡಿ.",
+    formLost: "ನಿಮ್ಮ ಹಣ ಹೋಯಿತೇ?",
+    lostYes: "ಹೌದು",
+    lostNo: "ಇಲ್ಲ",
+    lostUnsure: "ಖಚಿತವಿಲ್ಲ",
+    formMessage: "ಏನಾಯಿತು?",
+    formMessagePh: "ನಿಮ್ಮ ಮಾತುಗಳಲ್ಲೇ, ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಹೇಳಿ.",
+    formSend: "ಮೆಸೇಜ್ ಕಳುಹಿಸಿ",
+    formSending: "ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
+    formBack: "ಹಿಂದೆ",
+    sent: "ಧನ್ಯವಾದ. ನಿಮ್ಮ ಮೆಸೇಜ್ ನಮ್ಮ ತಂಡಕ್ಕೆ ತಲುಪಿದೆ. ನಿಮ್ಮ ರೆಫರೆನ್ಸ್ ಸಂಖ್ಯೆ {ref}. ಸಾಮಾನ್ಯವಾಗಿ ಕೆಲವು ಗಂಟೆಗಳಲ್ಲಿ ನಾವೇ ಉತ್ತರಿಸುತ್ತೇವೆ.",
+    sentUrgent: "ಹಣ ಹೋಗಿರುವುದರಿಂದ ಈಗಲೇ 1930 ಗೂ ಕರೆ ಮಾಡಿ. ಮೊದಲ ಗಂಟೆಗಳು ತುಂಬಾ ಮುಖ್ಯ.",
   },
   tcy: {
     title: "StaySafe ಸಹಾಯಕ", subtitle: "ಬೇಗದ ಉತ್ತರ, ಏಪ ಬೋಡಾಂಡಲಾ",
@@ -411,6 +487,25 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "ಬೇತೆ ಪ್ರಶ್ನೆಲು", close: "ಮುಚ್ಚುಲೆ",
     never: "ಎಂಕುಲು ಏಪಲಾ ಈರೆನ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇನುಜ.",
     urgent: "ದುಡ್ಡು ಪೋಂಡಾ? ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ",
+    formIntro: "ಎಂಕ್ಲೆನ ತಂಡ ಇತ್ತೆ ಆನ್‌ಲೈನ್‌ಡ್ ಇಜ್ಜಿ. ಮುಲ್ಪ ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ, ಇಮೇಲ್ ಅತ್ತಂಡ WhatsApp ಡ್ ಎಂಕ್ಲೆನೇ ಉತ್ತರ ಕೊರ್ಪ, ಸಾಮಾನ್ಯವಾದ್ ಕೆಲವು ಗಂಟೆಡ್. ದುಡ್ಡು ಪೋದಿತ್ತುಂಡ ಎಂಕ್ಲೆಗಾದ್ ಕಾಪೊಡ್ಚಿ, ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.",
+    chatNow: "ಇತ್ತೆ ಲೈವ್ ಚಾಟ್ ಮಲ್ಪುಲೆ",
+    writeToUs: "ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ",
+    formTitle: "StaySafe ತಂಡೊಗು ಬರೆಲೆ",
+    formName: "ಈರೆನ ಪುದರ್ (ಬೋಡಾಂಡ ಮಾತ್ರ)",
+    formEmail: "ಇಮೇಲ್",
+    formPhone: "WhatsApp ನಂಬರ್",
+    formEither: "ಎಂಕುಲು ಉತ್ತರ ಕೊರೆರೆ ಕಡಿಮೆಡ್ ಒಂಜಿನ್ ಕೊರ್ಲೆ.",
+    formLost: "ಈರೆನ ದುಡ್ಡು ಪೋಂಡಾ?",
+    lostYes: "ಅಂದ್",
+    lostNo: "ಇಜ್ಜಿ",
+    lostUnsure: "ಗೊತ್ತಿಜ್ಜಿ",
+    formMessage: "ದಾದ ಆಂಡ್?",
+    formMessagePh: "ಈರೆನ ಪಾತೆರೊಡೇ, ಓವು ಭಾಷೆಡ್‌ಲಾ ಪನ್ಲೆ.",
+    formSend: "ಮೆಸೇಜ್ ಕಡಪುಡ್ಲೆ",
+    formSending: "ಕಡಪುಡೊಂದುಲ್ಲ...",
+    formBack: "ಪಿರ",
+    sent: "ಧನ್ಯವಾದ. ಈರೆನ ಮೆಸೇಜ್ ಎಂಕ್ಲೆನ ತಂಡೊಗು ಎತ್ತ್‌ದ್ಂಡ್. ಈರೆನ ರೆಫರೆನ್ಸ್ ನಂಬರ್ {ref}. ಸಾಮಾನ್ಯವಾದ್ ಕೆಲವು ಗಂಟೆಡ್ ಎಂಕ್ಲೆನೇ ಉತ್ತರ ಕೊರ್ಪ.",
+    sentUrgent: "ದುಡ್ಡು ಪೋತಿನೆಡ್ದಾವರ ಇತ್ತೆನೇ 1930 ಗ್‌ಲಾ ಕಾಲ್ ಮಲ್ಪುಲೆ. ಸುರುತ ಗಂಟೆಲು ಮಸ್ತ್ ಮುಖ್ಯ.",
   },
 };
 

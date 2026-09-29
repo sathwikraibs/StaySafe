@@ -3,8 +3,13 @@ import { useChat } from "@/chat";
 import { useI18n } from "@/i18n";
 import { IconChat, IconClose, IconLock, IconShield } from "@/icons";
 import { HELP_TEXTS, helpTopics, understand, setPrefill, announcePrefill, type HelpAction, type HelpTopic } from "@/helpBot";
+import { apiGet, apiPostJSON, errorMessage } from "@/api";
+import { API_BASE } from "@/config";
 
-type Button = HelpAction | { kind: "check"; what: "url" | "message"; value: string; label: string };
+type Button = HelpAction
+  | { kind: "check"; what: "url" | "message"; value: string; label: string }
+  | { kind: "live"; label: string }
+  | { kind: "form"; label: string };
 interface Bubble { from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean }
 
 /**
@@ -17,7 +22,7 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
   onNavigate: (p: string) => void;
   currentPath: string;
 }) {
-  const { lang } = useI18n();
+  const { lang, ts } = useI18n();
   const chat = useChat();
   const tx = HELP_TEXTS[lang] ?? HELP_TEXTS.en;
   const topics = helpTopics(lang);
@@ -25,6 +30,15 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
   const [input, setInput] = useState("");
   const list = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLInputElement>(null);
+  const [formReady, setFormReady] = useState<boolean | null>(null);
+  const [form, setForm] = useState(false);
+  const [lastTopic, setLastTopic] = useState("");
+
+  // Can visitors write to the team here? (asked once; the answer never names any service)
+  useEffect(() => {
+    apiGet<{ available: boolean }>(`${API_BASE}/api/contact/status`)
+      .then((r) => setFormReady(!!r.available)).catch(() => setFormReady(false));
+  }, []);
 
   // new language: start again in that language
   useEffect(() => {
@@ -49,13 +63,32 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
   const say = (...add: Bubble[]) => setBubbles((b) => [...b, ...add]);
 
   function answer(topic: HelpTopic) {
+    setLastTopic(topic.id);
     say({ from: "me", lines: [topic.q] },
       { from: "bot", lines: topic.a, buttons: [...(topic.actions ?? []), { kind: "person", label: tx.person }] });
   }
 
+  /**
+   * Someone wants a real person: live chat when the team is online, otherwise the message form
+   * (it reaches the team's phone at once). The live chat's own offline form is the last resort.
+   */
   function person() {
-    const line = !chat.enabled ? tx.personNotReady : chat.status === "online" ? tx.personOnline : tx.personOffline;
-    say({ from: "me", lines: [tx.person] }, { from: "bot", lines: [line], buttons: chat.enabled ? [{ kind: "person", label: tx.person }] : [] });
+    const me: Bubble = { from: "me", lines: [tx.person] };
+    if (chat.enabled && chat.status === "online") {
+      say(me, { from: "bot", lines: [tx.personOnline],
+        buttons: [{ kind: "live", label: tx.chatNow }, ...(formReady ? [{ kind: "form", label: tx.writeToUs } as Button] : [])] });
+    } else if (formReady) {
+      say(me, { from: "bot", lines: [tx.formIntro], buttons: [{ kind: "form", label: tx.writeToUs }] });
+    } else if (chat.enabled) {
+      say(me, { from: "bot", lines: [tx.personOffline], buttons: [{ kind: "live", label: tx.writeToUs }] });
+    } else {
+      say(me, { from: "bot", lines: [tx.personNotReady] });
+    }
+  }
+
+  function sent(ref: string, lost: string) {
+    setForm(false);
+    say({ from: "bot", lines: [tx.sent.replace("{ref}", ref), ...(lost === "yes" ? [tx.sentUrgent] : [])] });
   }
 
   function press(b: Button) {
@@ -68,7 +101,9 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
       if (currentPath === path) announcePrefill();
       onNavigate(path);
       onClose();
-    } else if (chat.enabled) {
+    } else if (b.kind === "form") {
+      setForm(true);
+    } else if (b.kind === "live" && chat.enabled) {
       chat.openChat();
       onClose();
     } else {
@@ -118,8 +153,19 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
         {tx.urgent}
       </a>
 
+      {form && (
+        <ContactForm
+          tx={tx}
+          onBack={() => setForm(false)}
+          onSent={sent}
+          send={(body) => apiPostJSON<{ ok: boolean; ref: string }>(`${API_BASE}/api/contact`,
+            { ...body, lang, topic: lastTopic, page: currentPath })}
+          errorText={(e) => ts(errorMessage(e))}
+        />
+      )}
+
       {/* conversation */}
-      <div ref={list} className="relative flex-1 space-y-3 overflow-y-auto px-3 py-4 scrollbar-warm">
+      <div ref={list} hidden={form} className="relative flex-1 space-y-3 overflow-y-auto px-3 py-4 scrollbar-warm">
         {bubbles.map((b, i) => (
           <div key={i} data-me={b.from === "me" ? "" : undefined} className={b.from === "me" ? "flex justify-end" : "flex justify-start"}>
             <div className={`max-w-[88%] ${b.from === "me" ? "rounded-2xl rounded-br-md bg-sage-500 px-3.5 py-2.5 text-cream-50" : "rounded-2xl rounded-bl-md bg-cream-100 px-3.5 py-2.5 text-ink-800"}`}>
@@ -166,7 +212,7 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
       </div>
 
       {/* typing box */}
-      <form onSubmit={submit} className="border-t border-cream-200 bg-cream-50 p-2.5">
+      <form onSubmit={submit} hidden={form} className="border-t border-cream-200 bg-cream-50 p-2.5">
         <div className="flex items-center gap-2">
           <input ref={box} value={input} onChange={(e) => setInput(e.target.value)} placeholder={tx.placeholder}
             maxLength={5000}
@@ -181,5 +227,92 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
         </p>
       </form>
     </div>
+  );
+}
+
+type Texts = (typeof HELP_TEXTS)["en"];
+
+/** The short "write to us" form: reply address, did you lose money, what happened. */
+function ContactForm({ tx, onBack, onSent, send, errorText }: {
+  tx: Texts;
+  onBack: () => void;
+  onSent: (ref: string, lost: string) => void;
+  send: (body: Record<string, string>) => Promise<{ ok: boolean; ref: string }>;
+  errorText: (e: unknown) => string;
+}) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [lost, setLost] = useState("");
+  const [message, setMessage] = useState("");
+  const [trap, setTrap] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const canSend = message.trim().length >= 5 && (email.trim() || phone.trim()) && !busy;
+
+  async function go(e: { preventDefault(): void }) {
+    e.preventDefault();
+    if (!canSend) return;
+    setBusy(true); setError("");
+    try {
+      const r = await send({ name, email, phone, lost, message, website: trap });
+      onSent(r.ref, lost);
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const field = "mt-1 w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-3 py-2 font-body text-base text-ink-800 outline-none focus:border-sage-400";
+  const label = "block font-body text-xs font-bold text-ink-800";
+  return (
+    <form onSubmit={go} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 scrollbar-warm">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-heading text-base font-bold text-ink-900">{tx.formTitle}</p>
+        <button type="button" onClick={onBack} className="rounded-full bg-cream-200 px-3 py-1 font-body text-xs font-bold text-ink-700 hover:bg-cream-300">{tx.formBack}</button>
+      </div>
+      <label className={label}>{tx.formName}
+        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" className={field} />
+      </label>
+      <div>
+        <div className="grid grid-cols-2 gap-2">
+          <label className={label}>{tx.formEmail}
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" maxLength={120} autoComplete="email" className={field} />
+          </label>
+          <label className={label}>{tx.formPhone}
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" maxLength={16} autoComplete="tel" className={field} />
+          </label>
+        </div>
+        <p className="mt-1 font-body text-[11px] text-dustyblue-600">{tx.formEither}</p>
+      </div>
+      <div>
+        <p className={label}>{tx.formLost}</p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {([["yes", tx.lostYes], ["no", tx.lostNo], ["unsure", tx.lostUnsure]] as const).map(([v, t]) => (
+            <button key={v} type="button" onClick={() => setLost(lost === v ? "" : v)} aria-pressed={lost === v}
+              className={`rounded-full px-3.5 py-1.5 font-body text-sm font-bold transition-colors ${
+                lost === v ? (v === "yes" ? "bg-rust-500 text-cream-50" : "bg-sage-500 text-cream-50") : "bg-cream-200 text-ink-800 hover:bg-cream-300"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className={label}>{tx.formMessage}
+        <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} maxLength={1500}
+          placeholder={tx.formMessagePh} className={`${field} resize-none`} />
+      </label>
+      {/* hidden from people; only spam bots fill it in */}
+      <input value={trap} onChange={(e) => setTrap(e.target.value)} name="website" tabIndex={-1} autoComplete="off"
+        aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 opacity-0" />
+      <p className="flex items-start gap-1.5 rounded-xl bg-terracotta-300/20 p-2.5 font-body text-xs text-terracotta-700">
+        <IconLock className="mt-0.5 h-3.5 w-3.5 shrink-0" />{tx.never}
+      </p>
+      {error && <p className="rounded-xl bg-rust-400/15 p-2.5 font-body text-sm text-rust-600">{error}</p>}
+      <button type="submit" disabled={!canSend}
+        className="w-full rounded-2xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 transition-colors hover:bg-sage-600 disabled:opacity-50">
+        {busy ? tx.formSending : tx.formSend}
+      </button>
+    </form>
   );
 }
