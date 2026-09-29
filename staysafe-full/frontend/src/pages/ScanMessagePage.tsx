@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePrefill } from "@/helpBot";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
@@ -40,6 +41,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
   const { t, ts } = useI18n();
   const pace = usePace();
   const [text, setText] = useState("");
+  usePrefill("message", setText);
   const [sender, setSender] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);

@@ -1,21 +1,27 @@
 import { useChat, statusKey } from "@/chat";
 import { useI18n } from "@/i18n";
+import { useState } from "react";
 import { IconChat, IconLock } from "@/icons";
+import { HelpBot } from "@/components/HelpBot";
 
 /** Floating "Need help?" button — sits above the phone menu, bottom-right on laptops. */
 export function FloatingHelpButton({ onNavigate, currentPath }: { onNavigate: (p: string) => void; currentPath: string }) {
   const chat = useChat();
   const { t } = useI18n();
+  const [helper, setHelper] = useState(false);
   if (chat.open) return null; // the chat window is showing
+  if (helper) return <HelpBot onClose={() => setHelper(false)} onNavigate={onNavigate} currentPath={currentPath} />;
   // These pages already show a big chat card, so the floating button would just cover it
   if (currentPath === "/help" || currentPath === "/incident") return null;
 
-  const handleClick = () => (chat.enabled ? chat.openChat() : onNavigate("/help"));
+  // A reply from our team is waiting: go straight to the chat. Otherwise the helper answers first.
+  const handleClick = () => (chat.unread > 0 ? chat.openChat() : setHelper(true));
 
   return (
     <button
       onClick={handleClick}
       aria-label={t("chat.floatingAria")}
+      data-help-fab
       className="btn-press fixed bottom-[5.25rem] right-4 z-40 flex items-center gap-2 rounded-full bg-sage-500 py-3 pl-3 pr-3 text-cream-50 shadow-warm-lg transition-colors hover:bg-sage-600 sm:pr-5 lg:bottom-6 lg:right-6"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >

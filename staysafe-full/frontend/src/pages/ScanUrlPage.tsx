@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePrefill } from "@/helpBot";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
@@ -15,6 +16,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
   const { t } = useI18n();
   const pace = usePace();
   const [url, setUrl] = useState("");
+  usePrefill("url", setUrl);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanUrlResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
