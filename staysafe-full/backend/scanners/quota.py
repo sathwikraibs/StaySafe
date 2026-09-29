@@ -40,7 +40,8 @@ class Quota:
         self.normal_reserve = normal_reserve
         self.low_spread = low_spread
         self._lock = threading.Lock()
-        self._minute = deque()        # times of calls in the last 60 s (one entry per unit of cost)
+        self._minute = deque()        # [time, amount] of calls in the last window (amount = cost)
+        self._minute_sum = 0
         self._day_key = None
         self._day_used = 0
         self._blocked_until = 0.0     # the service told us to slow down
@@ -78,17 +79,24 @@ class Quota:
                 return False
         return True
 
+    def _prune(self, now):
+        while self._minute and now - self._minute[0][0] >= self.window:
+            self._minute_sum -= self._minute.popleft()[1]
+
     def _minute_wait(self, now, cost):
-        """Seconds until `cost` more calls fit into the per-minute limit (0 = go now)."""
-        while self._minute and now - self._minute[0] >= self.window:
-            self._minute.popleft()
+        """Seconds until `cost` more fits into the per-minute limit (0 = go now)."""
+        self._prune(now)
         wait = max(0.0, self._blocked_until - now)
         if self.per_minute and cost > self.per_minute:
             return float("inf")
-        if self.per_minute and len(self._minute) + cost > self.per_minute:
-            # the slot frees when the oldest call that must drop out turns 60 s old
-            idx = len(self._minute) + cost - self.per_minute - 1
-            wait = max(wait, self._minute[idx] + self.window - now)
+        if self.per_minute and self._minute_sum + cost > self.per_minute:
+            # it fits once enough of the oldest calls have turned one window old
+            need, freed = self._minute_sum + cost - self.per_minute, 0
+            for t, amount in self._minute:
+                freed += amount
+                if freed >= need:
+                    wait = max(wait, t + self.window - now)
+                    break
         return wait
 
     # -- the one call everybody uses ------------------------------------------
@@ -107,7 +115,8 @@ class Quota:
                     return False
                 need = self._minute_wait(now, cost)
                 if need <= 0:
-                    self._minute.extend([now] * cost)
+                    self._minute.append([now, cost])
+                    self._minute_sum += cost
                     self._day_used += cost
                     return True
                 if now + need > deadline or self._waiting >= self.max_waiters:
@@ -133,16 +142,54 @@ class Quota:
             self._day_closed = True
 
     def refund(self, cost: int = 1) -> None:
-        """A counted call was never sent (e.g. we found the answer in the cache after waiting)."""
+        """A counted call was never sent, or used less than we counted."""
+        self.adjust(-cost)
+
+    def adjust(self, delta: int) -> None:
+        """Correct the last count by `delta` (e.g. real tokens used vs. our estimate)."""
+        if not delta:
+            return
         with self._lock:
-            self._day_used = max(0, self._day_used - cost)
-            for _ in range(min(cost, len(self._minute))):
-                self._minute.pop()
+            self._day_used = max(0, self._day_used + delta)
+            if self._minute:
+                last = self._minute[-1]
+                change = max(delta, -last[1])
+                last[1] += change
+                self._minute_sum += change
+            elif delta > 0:
+                self._minute.append([time.time(), delta])
+                self._minute_sum += delta
+
+    def sync(self, day_limit=None, day_remaining=None, minute_limit=None, minute_remaining=None,
+             minute_reset_s=None) -> None:
+        """
+        Learn the real numbers from what the service reports back (e.g. Groq's x-ratelimit headers).
+        Our own counts only ever become MORE careful from this, never less.
+        """
+        with self._lock:
+            now = time.time()
+            self._roll_day(now)
+            if day_limit:
+                self.per_day = min(self.per_day, day_limit) if self.per_day else day_limit
+            if day_limit and day_remaining is not None:
+                self._day_used = max(self._day_used, day_limit - day_remaining)
+            if minute_limit:
+                self.per_minute = min(self.per_minute, minute_limit) if self.per_minute else minute_limit
+            if minute_remaining is not None and self.per_minute:
+                self._prune(now)
+                seen_used = self.per_minute - minute_remaining
+                if seen_used > self._minute_sum:
+                    extra = seen_used - self._minute_sum
+                    self._minute.append([now, extra])
+                    self._minute_sum += extra
+                if minute_remaining <= 0 and minute_reset_s:
+                    self._blocked_until = max(self._blocked_until, now + minute_reset_s)
 
     def reset(self) -> None:
         """Forget all counts (used by the tests)."""
         with self._lock:
             self._minute.clear()
+            self._minute_sum = 0
             self._day_key, self._day_used, self._day_closed = None, 0, False
             self._blocked_until, self.refused_today, self.waited_total = 0.0, 0, 0.0
 
@@ -150,10 +197,9 @@ class Quota:
         with self._lock:
             now = time.time()
             self._roll_day(now)
-            while self._minute and now - self._minute[0] >= self.window:
-                self._minute.popleft()
+            self._prune(now)
             return {"used_today": self._day_used, "per_day": self.per_day,
-                    "last_minute": len(self._minute), "per_minute": self.per_minute,
+                    "last_minute": self._minute_sum, "per_minute": self.per_minute,
                     "day_closed": self._day_closed, "paused_for_s": max(0, round(self._blocked_until - now)),
                     "refused_today": self.refused_today, "waited_s": round(self.waited_total)}
 
@@ -183,7 +229,6 @@ QUOTAS = {
     "mymemory": Quota("mymemory", None, _env_int("MYMEMORY_DAILY_CHARS",
                                                  48000 if os.environ.get("MYMEMORY_EMAIL") else 4800)),
     "google_translate": Quota("google_translate", None, _env_int("TRANSLATE_DAILY_CHAR_LIMIT", 15000), PACIFIC),
-    "groq": Quota("groq", _env_int("GROQ_PER_MINUTE", 20), _env_int("GROQ_DAILY_LIMIT", 900)),
     "cloudflare": Quota("cloudflare", 20, _env_int("CLOUDFLARE_AI_DAILY_LIMIT", 300)),
     "bhashini": Quota("bhashini", 30, None),
     "ocrspace": Quota("ocrspace", 10, _env_int("OCRSPACE_DAILY_LIMIT", 800)),

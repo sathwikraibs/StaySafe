@@ -64,7 +64,10 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
     setThinking(true);
     say({ from: "bot", lines: [tx.typing], typing: true });
     try {
+      const started = Date.now();
       const r = await apiPostJSON<AiAnswer>(`${API_BASE}/api/assistant`, { message: text, lang, history: turns.slice(-6) });
+      const rest = 1800 - (Date.now() - started);   // a careful answer shouldn't pop up instantly
+      if (rest > 0) await new Promise((ok) => setTimeout(ok, rest));
       setBubbles((b) => [...b.filter((x) => !x.typing),
         { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions) }]);
       setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: r.reply }].slice(-8));
@@ -215,6 +218,11 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
         {bubbles.map((b, i) => (
           <div key={i} data-me={b.from === "me" ? "" : undefined} className={b.from === "me" ? "flex justify-end" : "flex justify-start"}>
             <div className={`max-w-[88%] ${b.from === "me" ? "rounded-2xl rounded-br-md bg-sage-500 px-3.5 py-2.5 text-cream-50" : "rounded-2xl rounded-bl-md bg-cream-100 px-3.5 py-2.5 text-ink-800"}`}>
+              {b.ai && (
+                <p className="mb-1.5 flex items-center gap-1.5 font-body text-[11px] font-bold uppercase tracking-wide text-sage-700">
+                  <IconShield className="h-3.5 w-3.5" />{tx.aiName}
+                </p>
+              )}
               {b.typing ? (
                 <p className="flex items-center gap-2 font-body text-sm text-dustyblue-600">
                   <span className="flex gap-1">
@@ -228,9 +236,7 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
                 <p key={j} className={`whitespace-pre-wrap break-words font-body text-sm leading-relaxed ${j ? "mt-1.5" : ""}`}>{l}</p>
               ))}
               {b.ai && (
-                <p className="mt-2 flex items-start gap-1.5 border-t border-cream-200 pt-2 font-body text-[11px] leading-snug text-dustyblue-600">
-                  <IconShield className="mt-px h-3.5 w-3.5 shrink-0" />{tx.aiLabel}
-                </p>
+                <p className="mt-2 border-t border-cream-200 pt-2 font-body text-[11px] leading-snug text-dustyblue-600">{tx.aiLabel}</p>
               )}
               {b.buttons && b.buttons.length > 0 && (
                 <div className="mt-2.5 flex flex-col gap-1.5">

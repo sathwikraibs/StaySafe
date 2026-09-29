@@ -115,29 +115,14 @@ GROQ_MODELS = ["openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-in
 
 
 def _groq(prompt: str):
-    key = os.environ.get("GROQ_API_KEY", "")
-    if not key or time.time() < _paused["groq"] or not _reserve("groq"):
+    """Quick yes/no review on Groq's smaller, faster models, each within its own free allowance."""
+    from scanners import groq_client
+    if time.time() < _paused["groq"]:
         return None
-    models = [os.environ["GROQ_MODEL"]] if os.environ.get("GROQ_MODEL") else GROQ_MODELS
-    for model in models:
-        try:
-            resp = requests.post("https://api.groq.com/openai/v1/chat/completions", timeout=12,
-                                 headers={"Authorization": f"Bearer {key}"},
-                                 json={"model": model, "temperature": 0, "max_tokens": 300,
-                                       "response_format": {"type": "json_object"},
-                                       "messages": [{"role": "user", "content": prompt}]})
-        except Exception:
-            return None
-        if resp.status_code in (400, 404) and "model" in resp.text.lower():
-            continue
-        if resp.status_code != 200:
-            _handle_error("groq", resp.status_code, resp.text[:200])
-            return None
-        try:
-            return _parse(resp.json()["choices"][0]["message"]["content"])
-        except Exception:
-            return None
-    return None
+    models = [os.environ["GROQ_MODEL"]] if os.environ.get("GROQ_MODEL") else groq_client.REVIEW_MODELS
+    out = groq_client.chat([{"role": "user", "content": prompt}], models, max_tokens=200, json_mode=True,
+                           wait=REVIEW_WAIT, priority="normal", effort="low", temperature=0)
+    return _parse(out["text"]) if out else None
 
 
 def _cloudflare(prompt: str):
@@ -185,6 +170,11 @@ def _gemini(prompt: str):
     return None
 
 
+def _groq_status():
+    from scanners import groq_client
+    return groq_client.status()
+
+
 def _q(name):
     from scanners.quota import quota
     return quota(name).status()["used_today"]
@@ -192,8 +182,7 @@ def _q(name):
 
 def ai_status() -> dict:
     return {
-        "groq": {"configured": bool(os.environ.get("GROQ_API_KEY")), "problem": _problem["groq"],
-                 "today": _q("groq")},
+        "groq": _groq_status(),
         "cloudflare": {"configured": bool(os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_AI_TOKEN")),
                        "problem": _problem["cloudflare"], "today": _q("cloudflare")},
         "gemini": {"configured": bool(os.environ.get("GEMINI_API_KEY")), "problem": _problem["gemini"]},

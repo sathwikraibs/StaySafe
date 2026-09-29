@@ -7,20 +7,24 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import scanners.url_scanner as url_scanner  # noqa: E402
 url_scanner.OFFLINE = True
 from app import app  # noqa: E402
-from scanners import assistant  # noqa: E402
+from scanners import assistant, groq_client  # noqa: E402
 from scanners.quota import QUOTAS  # noqa: E402
 
 c = app.test_client()
 seen = []
 
 
-def fake(reply_obj, status=200):
+def fake(reply_obj, status=200, headers=None, usage=900):
     class R:
         status_code = status
         text = ""
 
+        def __init__(self):
+            self.headers = headers or {}
+
         def json(self):
-            return {"choices": [{"message": {"content": json.dumps(reply_obj)}}]}
+            return {"choices": [{"message": {"content": json.dumps(reply_obj, ensure_ascii=False)}}],
+                    "usage": {"total_tokens": usage}}
 
     def post(url, **kw):
         seen.append(kw.get("json"))
@@ -31,10 +35,13 @@ def fake(reply_obj, status=200):
 def setup(reply_obj):
     seen.clear()
     assistant._ip_hits.clear()
+    assistant._answers.clear()
+    groq_client._models.clear()
+    groq_client._gone.clear()
     for q in QUOTAS.values():
         q.reset()
     os.environ["GROQ_API_KEY"] = "k"
-    assistant.requests.post = fake(reply_obj)
+    groq_client.requests.post = fake(reply_obj)
 
 
 def test_answers_with_safe_steps_and_buttons():
@@ -65,7 +72,7 @@ def test_reply_language_and_history_are_sent():
     c.post("/api/assistant", json={"message": "ನನ್ನ ಹಣ ಹೋಯ್ತು", "lang": "kn",
                                    "history": [{"role": "user", "text": "hi"}, {"role": "assistant", "text": "Hello"}]})
     msgs = seen[0]["messages"]
-    assert "Reply in Kannada" in msgs[0]["content"] and len(msgs) == 4 and "<visitor>" in msgs[-1]["content"]
+    assert "reply in Kannada" in msgs[0]["content"] and len(msgs) == 4 and "<visitor>" in msgs[-1]["content"]
 
 
 def test_not_available_and_flood_limits():
@@ -77,6 +84,55 @@ def test_not_available_and_flood_limits():
     codes = [c.post("/api/assistant", json={"message": "question"}, headers={"CF-Connecting-IP": "203.0.113.77"}).status_code
              for _ in range(7)]
     assert codes[:6] == [200] * 6 and codes[6] == 429, codes
+
+
+def test_groq_limits_learned_from_headers_and_real_tokens_counted():
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    groq_client.requests.post = fake({"reply": "ok", "urgent": False, "actions": []}, usage=1234, headers={
+        "x-ratelimit-limit-requests": "1000", "x-ratelimit-remaining-requests": "990",
+        "x-ratelimit-limit-tokens": "6000", "x-ratelimit-remaining-tokens": "4000", "x-ratelimit-reset-tokens": "7.5s"})
+    c.post("/api/assistant", json={"message": "is this call a scam", "lang": "en"})
+    m = groq_client.model(seen[0]["model"])
+    assert m.requests.status()["used_today"] >= 10                   # Groq said 10 used today
+    assert m.tokens.status()["per_minute"] == 6000                    # learned the real per-minute limit
+    assert m.tokens.status()["used_today"] == 1234                    # real tokens, not our guess
+    assert seen[0].get("reasoning_effort") == "medium" and seen[0]["model"] == "openai/gpt-oss-120b"
+
+
+def test_moves_to_next_model_when_one_is_used_up_today():
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    groq_client.model("openai/gpt-oss-120b").tokens.close_day()
+    c.post("/api/assistant", json={"message": "is this call a scam", "lang": "en"})
+    assert seen[0]["model"] == "llama-3.3-70b-versatile"
+
+
+def test_thinks_less_when_allowance_runs_low():
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    m = groq_client.model("openai/gpt-oss-120b")
+    m.tokens.take(priority="high", cost=1)
+    m.tokens._day_used = int(m.tokens.per_day * 0.8)
+    c.post("/api/assistant", json={"message": "is this call a scam", "lang": "en"})
+    assert seen[0].get("reasoning_effort") == "low"
+
+
+def test_kannada_question_gets_kannada_answer():
+    setup({"reply": "Please call 1930", "urgent": True, "actions": []})
+    replies = iter([{"reply": "Please call 1930", "urgent": True, "actions": []},
+                    {"reply": "ದಯವಿಟ್ಟು ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ", "urgent": True, "actions": []}])
+
+    def post(url, **kw):
+        seen.append(kw.get("json"))
+        return fake(next(replies))(url, **kw)
+    groq_client.requests.post = post
+    d = c.post("/api/assistant", json={"message": "ನನ್ನ ಹಣ ಹೋಯ್ತು ಏನು ಮಾಡಲಿ", "lang": "en"}).get_json()
+    assert "ಕರೆ" in d["reply"], d
+
+
+def test_same_question_is_answered_from_memory():
+    setup({"reply": "It is a scam.", "urgent": False, "actions": []})
+    for _ in range(3):
+        c.post("/api/assistant", json={"message": "is digital arrest real", "lang": "en"})
+    assert len(seen) == 1
 
 
 if __name__ == "__main__":

@@ -56,6 +56,7 @@ export interface HelpTexts {
   sent: string;
   sentUrgent: string;
   aiLabel: string;
+  aiName: string;
   typing: string;
   actIncident: string;
   actCheckMessage: string;
@@ -402,7 +403,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "Back",
     sent: "Your message has been passed to a real person. Your reference is {ref}. They'll reply by email or WhatsApp when they're free. We can't promise when, but you won't be forgotten.",
     sentUrgent: "Since money was lost, please also call 1930 right now. The first hours matter most.",
-    aiLabel: "Automatic answer from StaySafe's assistant, not a person. It can make mistakes.",
+    aiLabel: "This is StaySafe AI Assistant's answer, not a person's. It can make mistakes.",
+    aiName: "StaySafe AI Assistant",
     typing: "Thinking...",
     actIncident: "Recovery steps",
     actCheckMessage: "Check a message",
@@ -446,7 +448,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "वापस",
     sent: "आपका मैसेज एक असली व्यक्ति तक पहुँचा दिया गया है। आपका रेफ़रेंस नंबर {ref} है। वे खाली होने पर ईमेल या WhatsApp पर जवाब देंगे। समय का वादा नहीं कर सकते, पर आपको भुलाया नहीं जाएगा।",
     sentUrgent: "पैसे कटे हैं, इसलिए अभी 1930 पर भी कॉल करें। शुरुआती घंटे सबसे ज़रूरी हैं।",
-    aiLabel: "यह StaySafe सहायक का अपने-आप दिया गया जवाब है, किसी व्यक्ति का नहीं। इसमें गलती हो सकती है।",
+    aiLabel: "यह StaySafe AI सहायक का जवाब है, किसी व्यक्ति का नहीं। इसमें गलती हो सकती है।",
+    aiName: "StaySafe AI सहायक",
     typing: "सोच रहा है...",
     actIncident: "रिकवरी के कदम",
     actCheckMessage: "मैसेज जाँचें",
@@ -490,7 +493,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "ಹಿಂದೆ",
     sent: "ನಿಮ್ಮ ಮೆಸೇಜ್ ಒಬ್ಬ ನಿಜವಾದ ವ್ಯಕ್ತಿಗೆ ತಲುಪಿದೆ. ನಿಮ್ಮ ರೆಫರೆನ್ಸ್ ಸಂಖ್ಯೆ {ref}. ಅವರು ಬಿಡುವಾದಾಗ ಇಮೇಲ್ ಅಥವಾ WhatsApp ನಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ. ಯಾವಾಗ ಎಂದು ಹೇಳಲಾಗದು, ಆದರೆ ನಿಮ್ಮನ್ನು ಮರೆಯುವುದಿಲ್ಲ.",
     sentUrgent: "ಹಣ ಹೋಗಿರುವುದರಿಂದ ಈಗಲೇ 1930 ಗೂ ಕರೆ ಮಾಡಿ. ಮೊದಲ ಗಂಟೆಗಳು ತುಂಬಾ ಮುಖ್ಯ.",
-    aiLabel: "ಇದು StaySafe ಸಹಾಯಕನ ಸ್ವಯಂಚಾಲಿತ ಉತ್ತರ, ವ್ಯಕ್ತಿಯದಲ್ಲ. ಇದರಲ್ಲಿ ತಪ್ಪುಗಳಿರಬಹುದು.",
+    aiLabel: "ಇದು StaySafe AI ಸಹಾಯಕನ ಉತ್ತರ, ವ್ಯಕ್ತಿಯದಲ್ಲ. ಇದರಲ್ಲಿ ತಪ್ಪುಗಳಿರಬಹುದು.",
+    aiName: "StaySafe AI ಸಹಾಯಕ",
     typing: "ಯೋಚಿಸುತ್ತಿದೆ...",
     actIncident: "ಚೇತರಿಕೆಯ ಹಂತಗಳು",
     actCheckMessage: "ಮೆಸೇಜ್ ಪರಿಶೀಲಿಸಿ",
@@ -534,7 +538,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "ಪಿರ",
     sent: "ಈರೆನ ಮೆಸೇಜ್ ಒರಿ ನಿಜವಾಯಿನ ವ್ಯಕ್ತಿಗ್ ಎತ್ತ್‌ದ್ಂಡ್. ಈರೆನ ರೆಫರೆನ್ಸ್ ನಂಬರ್ {ref}. ಅಕುಲು ಪುರುಸೊತ್ತು ಆನಗ ಇಮೇಲ್ ಅತ್ತಂಡ WhatsApp ಡ್ ಉತ್ತರ ಕೊರ್ಪೆರ್. ಏಪ ಪಂದ್ ಪನರೆ ಆಪುಜಿ, ಆಂಡ ಈರೆನ್ ಮದಪುಜ.",
     sentUrgent: "ದುಡ್ಡು ಪೋತಿನೆಡ್ದಾವರ ಇತ್ತೆನೇ 1930 ಗ್‌ಲಾ ಕಾಲ್ ಮಲ್ಪುಲೆ. ಸುರುತ ಗಂಟೆಲು ಮಸ್ತ್ ಮುಖ್ಯ.",
-    aiLabel: "ಉಂದು StaySafe ಸಹಾಯಕನ ಸ್ವಯಂಚಾಲಿತ ಉತ್ತರ, ವ್ಯಕ್ತಿದ್ ಅತ್ತ್. ಅಯಿಟ್ ತಪ್ಪು ಇಪ್ಪೊಲಿ.",
+    aiLabel: "ಉಂದು StaySafe AI ಸಹಾಯಕನ ಉತ್ತರ, ವ್ಯಕ್ತಿದ್ ಅತ್ತ್. ಅಯಿಟ್ ತಪ್ಪು ಇಪ್ಪೊಲಿ.",
+    aiName: "StaySafe AI ಸಹಾಯಕ",
     typing: "ಯೋಚನೆ ಮಲ್ಪುಂಡು...",
     actIncident: "ಚೇತರಿಕೆದ ಹಂತೊಲು",
     actCheckMessage: "ಮೆಸೇಜ್ ಪರಿಶೀಲನೆ",
