@@ -216,7 +216,8 @@ def test_one_language_rule_and_no_button_names_in_the_instructions():
     from scanners.assistant import system_prompt
     p = system_prompt("en")
     assert "Never start or mix in English sentences" in p and "Never write the button names" in p
-    assert "ದುಡ್ಡು ಕೊರೊಡ್ಚಿ" in p and "duddu korodchi" in p
+    t = system_prompt("tcy")
+    assert "ದುಡ್ಡು ಕೊರೊಡ್ಚಿ" in t and "duddu korodchi" in t and "-odchi means DON'T" in t
 
 
 def test_better_gemini_model_answers_indian_languages_and_steps_aside_when_busy():
@@ -263,6 +264,43 @@ def test_better_gemini_model_answers_indian_languages_and_steps_aside_when_busy(
     finally:
         os.environ.pop("GEMINI_API_KEY", None)
         QUOTAS["gemini_answers"].reset()
+
+
+def test_tulu_dont_on_a_must_do_step_is_corrected():
+    # first answer says "don't file a complaint"; the AI is asked once to fix it
+    replies = [{"reply": "ಉಂದು ಮೋಸ. 1. ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ. 2. cybercrime.gov.in ಡ್ ದೂರು ಕೊರೊಡ್ಚಿ.", "urgent": False, "actions": []},
+               {"reply": "ಉಂದು ಮೋಸ. 1. ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ. 2. cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ.", "urgent": False, "actions": []}]
+    setup(replies[0])
+    sent = []
+
+    class R:
+        status_code = 200
+        headers = {}
+        text = ""
+
+        def __init__(self, obj):
+            self.obj = obj
+
+        def json(self):
+            return {"choices": [{"message": {"content": json.dumps(self.obj, ensure_ascii=False)}}], "usage": {"total_tokens": 900}}
+
+    def post(url, **kw):
+        sent.append(kw["json"])
+        return R(replies[min(len(sent) - 1, 1)])
+    groq_client.requests.post = post
+    d = c.post("/api/assistant", json={"message": "ಎಂಕ್ ಒಂಜಿ ಮೆಸೇಜ್ ಬತ್ತ್ಂಡ್", "lang": "en"}).get_json()
+    assert len(sent) == 2 and "ದೂರು ಕೊರ್ಲೆ" in d["reply"] and "ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ" in d["reply"], (len(sent), d)
+    # still wrong after asking: fixed in place, other "don't"s untouched
+    from scanners.assistant import _fix_dont
+    assert _fix_dont("Ittene 1930 g call malpodchi. OTP yereglaa panodchi.") == "Ittene 1930 g call malpule. OTP yereglaa panodchi."
+
+
+def test_phrases_are_sent_only_for_the_languages_needed():
+    from scanners.assistant import system_prompt
+    en = system_prompt("en", "", None, "my bank called me")
+    assert "ದುಡ್ಡು ಕೊರೊಡ್ಚಿ" not in en and "कॉल काट" not in en
+    assert "ದುಡ್ಡು ಕೊರೊಡ್ಚಿ" in system_prompt("en", "", ("tcy", "latin"), "yenk call battund")
+    assert "कॉल काट" in system_prompt("en", "", ("hi", "latin"), "mera paisa gaya")
 
 
 if __name__ == "__main__":

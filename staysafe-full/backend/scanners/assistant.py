@@ -54,11 +54,8 @@ Answer like a kind, calm friend who knows cyber safety:
 - The WHOLE reply, including the first caring line, is in the one reply language. Never start or mix in English sentences when replying in another language (only words like OTP, UPI, SMS, WhatsApp, bank, police, 1930 may stay in English).
 - Never write the button names (incident, check_message, check_link, check_password, library, person) in the reply; the buttons appear by themselves.
 - When writing in English letters, spell words the common way people type them on WhatsApp, keep sentences short, and re-read every word for typos before answering.
-- Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation. Useful phrases: Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don't pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don't tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi); in English letters: "chinte maadbedi", "call cut maadi", "yaarigu OTP kodbedi", "hana kodbedi", "eega 1930 ge call maadi". Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.
-- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):
-  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don't panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don't give money). OTP ಏರೆಗ್‌ಲಾ ಪನೊಡ್ಚಿ (don't tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್‌ಡ್ ಇತ್ತಿನ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಮಲ್ತ್‌ದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ನಿಲ್ಲಾವರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ದೀವೊಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don't click the link).
-  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking nillavare panle", "cybercrime.gov.in d dooru korle", "screenshot deevole", "undu mosa", "link click malpodchi".
-- Money lost, or OTP/PIN/card/bank details shared: 1) call 1930 (National Cyber Crime Helpline) now, 2) call the bank on the number on the card or in the bank's app to block card, UPI and net banking, 3) report at cybercrime.gov.in and keep screenshots.
+- Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation.
+{phrases}- Money lost, or OTP/PIN/card/bank details shared: 1) call 1930 (National Cyber Crime Helpline) now, 2) call the bank on the number on the card or in the bank's app to block card, UPI and net banking, 3) report at cybercrime.gov.in and keep screenshots.
 - "Digital arrest", police/CBI/customs/courier threats on calls or video calls, "pay to avoid arrest": say clearly it is a scam and real police never arrest anyone on a call; hang up, don't pay, don't share Aadhaar or bank details, tell family. If they already paid: 1930 at once.
 - Fraud call or SMS, no money lost: report on Sanchar Saathi (Chakshu), sancharsaathi.gov.in. Mention 1909 only for spam SMS.
 - Mention 112 only if someone is in physical danger right now. If they sound hopeless or mention hurting themselves: be gentle, suggest Tele-MANAS 14416 (free, 24x7) or someone they trust.
@@ -72,11 +69,17 @@ Answer like a kind, calm friend who knows cyber safety:
 Reply with JSON only: {{"understood": "<what they said, in one short English sentence>", "reply": "<answer>", "language": "<language of their message: en, kn, tcy, hi or other>", "ask_language": true|false, "urgent": true|false, "actions": [up to 3 of "incident", "check_message", "check_link", "check_password", "library", "person"]}}
 urgent = money lost or at risk right now. actions = helpful buttons: incident (recovery steps), check_message, check_link, check_password (password/email leaks), library (learn about scams), person (talk to a real person)."""
 
+PHRASES = {
+    "kn": "- Useful " + 'Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don\'t pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don\'t tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi); in English letters: "chinte maadbedi", "call cut maadi", "yaarigu OTP kodbedi", "hana kodbedi", "eega 1930 ge call maadi".' + "\n",
+    "hi": "- Useful " + 'Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.' + "\n",
+    "tcy": '- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):\n  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don\'t panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don\'t give money). OTP ಏರೆಗ್\u200cಲಾ ಪನೊಡ್ಚಿ (don\'t tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್\u200cಡ್ ಇತ್ತಿನ ನಂಬರ್\u200cಗ್ ಕಾಲ್ ಮಲ್ತ್\u200cದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ನಿಲ್ಲಾವರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್\u200cಶಾಟ್ ದೀವೊಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don\'t click the link).\n  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking nillavare panle", "cybercrime.gov.in d dooru korle", "screenshot deevole", "undu mosa", "link click malpodchi".' + "\n  Careful: -le means DO it (ಕೊರ್ಲೆ = please give/file, ಮಲ್ಪುಲೆ = please do); -odchi means DON'T (ಕೊರೊಡ್ಚಿ = don't give). Never write -odchi for a step they SHOULD do (calling 1930, calling the bank, filing a complaint, keeping screenshots).\n",
+}
+
 _ip_hits: "defaultdict[str, deque]" = defaultdict(deque)
 _lock = threading.Lock()
 PER_IP_HOUR = 30
 PER_IP_MINUTE = 6
-WAIT = 20.0   # may wait this long for a free slot; the visitor sees "thinking..."
+WAIT = 70.0   # may wait this long for a free slot (per-minute limits clear within a minute); the visitor sees "thinking..."
 
 
 # Same question, same language, no earlier conversation: reuse the answer for a few hours
@@ -147,10 +150,28 @@ def _looks_indic_in_latin(text: str) -> bool:
     return len(words & INDIC_LATIN_WORDS) >= 2
 
 
-def system_prompt(site_lang: str, chosen: str = "", hint=None) -> str:
+def _phrase_langs(site_lang: str, chosen: str, code, message: str) -> list:
+    """Which language's example phrases this answer needs (only those, to keep each question small)."""
+    if chosen:
+        return [chosen]
+    langs = {code} if code else set()
+    if site_lang in PHRASES:
+        langs.add(site_lang)
+    script = _script_of(message) if message else None
+    if script == "kn" and not code:
+        langs |= {"kn", "tcy"}
+    elif script == "hi":
+        langs.add("hi")
+    elif message and not code and _looks_indic_in_latin(message):
+        langs |= {"kn", "tcy", "hi"}
+    return [lang for lang in ("kn", "tcy", "hi") if lang in langs]
+
+
+def system_prompt(site_lang: str, chosen: str = "", hint=None, message: str = "") -> str:
     """The instructions, with the language rule for this visitor. `hint` is a code or (code, script)."""
     names = {"tcy": "Tulu", "kn": "Kannada", "hi": "Hindi", "en": "English"}
     code, script = hint if isinstance(hint, tuple) else (hint, "latin" if hint else None)
+    phrases = "".join(PHRASES[lang] for lang in _phrase_langs(site_lang, chosen, code, message))
     if chosen:
         rule = f"they chose {LANG_NAMES[chosen]}: always reply in {LANG_NAMES[chosen]}."
     else:
@@ -162,7 +183,7 @@ def system_prompt(site_lang: str, chosen: str = "", hint=None) -> str:
                      f"so reply in {names[code]} in {where}.")
         if site_lang == "tcy":
             rule += " The site is set to Tulu: text in Kannada script is most likely Tulu, unless it is clearly Kannada."
-    return SYSTEM.format(lang_rule=rule)
+    return SYSTEM.format(lang_rule=rule, phrases=phrases)
 
 
 def _script_share(text: str, script: str) -> float:
@@ -244,7 +265,7 @@ def _gemini_call(messages, key):
 # Better (slower) Gemini models for answers in Indian languages, best first. Each has its own
 # free allowance at Google; set GEMINI_ANSWER_MODELS on Render to change them.
 ANSWER_MODELS = [m.strip() for m in os.environ.get("GEMINI_ANSWER_MODELS", "gemini-2.5-flash,gemini-flash-latest").split(",") if m.strip()]
-_answer_model = {"name": None}
+_answer_model = {"name": None, "problem": None}
 _answer_gone: set = set()
 
 
@@ -270,12 +291,18 @@ def _gemini_smart(messages):
                 r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=40)
         except Exception:
             return None
-        if r.status_code == 404:
-            _answer_gone.add(model)
+        if r.status_code != 200:
+            _answer_model["problem"] = f"{model}: HTTP {r.status_code} {str(getattr(r, 'text', ''))[:200]}"
+        if r.status_code in (400, 403, 404):
+            _answer_gone.add(model)          # not offered to this key: use the others
             _answer_model["name"] = None
             continue
         if r.status_code == 429:
-            low = r.text.lower()
+            low = str(getattr(r, "text", "")).lower()
+            if "limit: 0" in low or "limit:0" in low:
+                _answer_gone.add(model)      # no free allowance for this model on this key
+                _answer_model["name"] = None
+                continue
             q.close_day() if ("per day" in low or "perday" in low.replace(" ", "") or "daily" in low) else q.cool_down(60)
             return None
         if r.status_code != 200:
@@ -286,7 +313,7 @@ def _gemini_smart(messages):
         except Exception:
             return None
         if text.strip():
-            _answer_model["name"] = model
+            _answer_model["name"], _answer_model["problem"] = model, None
             return text
     return None
 
@@ -351,6 +378,27 @@ def _parse(raw: str):
             "understood": str(data.get("understood") or "")[:300]}
 
 
+# Steps a visitor MUST do (1930, complaint, screenshots) written with Tulu's "don't" ending (-odchi)
+_MUST_DO = r"(?:1930|cybercrime\.gov\.in|sancharsaathi\.gov\.in|ದೂರು|dooru|duru|ಸ್ಕ್ರೀನ್‌?ಶಾಟ್|screenshot)"
+_WRONG_DONT = re.compile(_MUST_DO + r"(?:(?!OTP|PIN|ಪಾಸ್|password)[^.\n!?]){0,35}?(?:ಕೊರೊಡ್ಚಿ|ಮಲ್ಪೊಡ್ಚಿ|ದೀವೊಡ್ಚಿ|korodchi|malpodchi|deevodchi)", re.I)
+_DO_FORM = {"ಕೊರೊಡ್ಚಿ": "ಕೊರ್ಲೆ", "ಮಲ್ಪೊಡ್ಚಿ": "ಮಲ್ಪುಲೆ", "ದೀವೊಡ್ಚಿ": "ದೀವೊಲೆ",
+            "korodchi": "korle", "malpodchi": "malpule", "deevodchi": "deevole"}
+
+
+def _wrong_dont(reply: str) -> bool:
+    return bool(_WRONG_DONT.search(reply or ""))
+
+
+def _fix_dont(reply: str) -> str:
+    """Last resort: turn the wrong "don't" in a must-do step into "please do"."""
+    def fix(m):
+        text = m.group(0)
+        for bad, good in _DO_FORM.items():
+            text = re.sub(bad, good, text, flags=re.I)
+        return text
+    return _WRONG_DONT.sub(fix, reply)
+
+
 def _generate(messages, message: str, lang: str, hint=None):
     """The answer and which service wrote it. (None, None) when no free service could answer."""
     want = _script_of(message)
@@ -374,7 +422,16 @@ def _generate(messages, message: str, lang: str, hint=None):
             messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
                                    {"role": "user", "content": f"Please give the same answer in {target}, as JSON."}]
             continue
+        # Tulu: a step they must do was written as "don't" (e.g. "don't file a complaint"): ask once to fix it
+        if _wrong_dont(out["reply"]) and attempt == 0:
+            messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
+                                   {"role": "user", "content": "Check your answer: a step they SHOULD do (call 1930, file the complaint, "
+                                    "keep screenshots) is written with the Tulu 'don't' ending -odchi (e.g. ದೂರು ಕೊರೊಡ್ಚಿ = don't complain). "
+                                    "Write the whole answer again with those steps as 'please do' (-le: ದೂರು ಕೊರ್ಲೆ, ಕಾಲ್ ಮಲ್ಪುಲೆ), as JSON."}]
+            continue
         break
+    if out and _wrong_dont(out["reply"]):
+        out = dict(out, reply=_fix_dont(out["reply"]))
     return out, used
 
 
@@ -414,7 +471,7 @@ def assistant_route():
         masked = masked.replace(f"[#{i}]", f"[#{len(secrets) + i}]")
     secrets += s
     hint = None if chosen else language_hint(message)
-    system = system_prompt(lang, chosen, hint)
+    system = system_prompt(lang, chosen, hint, message)
     messages = [{"role": "system", "content": system}] + turns + \
                [{"role": "user", "content": f"<visitor>\n{masked}\n</visitor>"}]
 
@@ -465,13 +522,20 @@ def assistant_selftest_route():
     if not has_status_key():
         return jsonify({"error": "Not found"}), 404
     cases = SELFTEST_CASES
+    if request.args.get("case"):   # &case=2 or &case=2,3,8 (numbers from 1)
+        picked = [int(n) for n in re.findall(r"\d+", request.args["case"]) if 1 <= int(n) <= len(SELFTEST_CASES)]
+        cases = [SELFTEST_CASES[n - 1] for n in picked] or cases
     if request.args.get("q"):   # try your own: &q=...&lang=en&reply_lang=tcy
         cases = [(str(request.args.get("lang") or "en")[:3], request.args["q"][:500], str(request.args.get("reply_lang") or "")[:3])]
     results = []
+    began = time.time()
     for lang, q, chosen in cases:
+        if time.time() - began > 120:   # the server stops a request at 180 s
+            results.append({"asked": q, "reply": "(not asked this time, to stay within the time limit; open again with &case=... for the rest)"})
+            continue
         chosen = chosen if chosen in LANG_NAMES else ""
         hint = None if chosen else language_hint(q)
-        messages = [{"role": "system", "content": system_prompt(lang, chosen, hint)},
+        messages = [{"role": "system", "content": system_prompt(lang, chosen, hint, q)},
                     {"role": "user", "content": f"<visitor>\n{q}\n</visitor>"}]
         t = time.time()
         out, used = _generate(messages, q, chosen or lang, hint)
@@ -481,4 +545,4 @@ def assistant_selftest_route():
                         "asks_which_language": out and out.get("ask_language"),
                         "reply": out and _clean(out["reply"], []), "actions": out and out["actions"]})
     return jsonify({"groq_configured": groq_client.configured(), "results": results, "groq": groq_client.status(),
-                    "better_model": _answer_model["name"], "better_model_allowance": quota("gemini_answers").status()})
+                    "better_model": _answer_model["name"], "better_model_problem": _answer_model["problem"], "better_model_allowance": quota("gemini_answers").status()})

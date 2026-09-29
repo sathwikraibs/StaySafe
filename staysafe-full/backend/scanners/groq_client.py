@@ -48,6 +48,7 @@ _models: dict = {}
 _lock = threading.Lock()
 _problem = {"last": None}
 _gone: set = set()   # model names Groq says don't exist (any more) for this account
+_why_gone: dict = {}
 
 
 class _Model:
@@ -184,18 +185,20 @@ def chat(messages, models=None, max_tokens=600, json_mode=True, wait=20.0, prior
                 m.tokens.cool_down(float(retry))
             _problem["last"] = f"{name}: limit reached"
             continue
-        if r.status_code in (400, 404) and ("model" in body_text and ("not" in body_text or "decommission" in body_text)):
+        if r.status_code in (400, 404) and ("model_not_found" in body_text or "decommission" in body_text
+                                            or "does not exist" in body_text or ("model" in body_text and "not found" in body_text)):
             _gone.add(name)
+            _why_gone[name] = body_text[:160]
             continue
         if r.status_code in (401, 403):
             _problem["last"] = "key rejected"
             return None
-        _problem["last"] = f"{name}: HTTP {r.status_code}"
+        _problem["last"] = f"{name}: HTTP {r.status_code} {body_text[:120]}"
     return None
 
 
 def status() -> dict:
     with _lock:
         names = list(_models)
-    return {"configured": configured(), "problem": _problem["last"], "unavailable_models": sorted(_gone),
+    return {"configured": configured(), "problem": _problem["last"], "unavailable_models": sorted(_gone), "why_unavailable": dict(_why_gone),
             "models": {n: {"requests": model(n).requests.status(), "tokens": model(n).tokens.status()} for n in names}}
