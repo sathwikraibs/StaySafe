@@ -643,6 +643,12 @@ export const reportKn: ReportDict = {
   },
 
   homeX: {
+    askTitle: "ಏನಾಯಿತು? StaySafe AI ಕೇಳಿ",
+    askIntro: "ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಹೇಳಿ, ಅಥವಾ ಬಂದ ಮೆಸೇಜ್ ಅಥವಾ ಲಿಂಕ್ ಪೇಸ್ಟ್ ಮಾಡಿ. ತಕ್ಷಣ ಉತ್ತರ ಸಿಗುತ್ತದೆ.",
+    askPlaceholder: "ಉದಾ: ಯಾರೋ ಕರೆ ಮಾಡಿ ನನ್ನ OTP ಕೇಳಿದರು...",
+    askButton: "ಕೇಳಿ",
+    checkTitle: "ಅಥವಾ ನೀವೇ ಪರಿಶೀಲಿಸಿ",
+    moreTitle: "ಇನ್ನಷ್ಟು ಸಾಧನಗಳು",
     chip1: "ಸೈನ್-ಅಪ್ ಬೇಡ",
     chip2: "ಖಾಸಗಿ",
     chip3: "4 ಭಾಷೆಗಳು",

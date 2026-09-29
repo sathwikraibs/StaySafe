@@ -72,7 +72,7 @@ def test_reply_language_and_history_are_sent():
     c.post("/api/assistant", json={"message": "ನನ್ನ ಹಣ ಹೋಯ್ತು", "lang": "kn",
                                    "history": [{"role": "user", "text": "hi"}, {"role": "assistant", "text": "Hello"}]})
     msgs = seen[0]["messages"]
-    assert "reply in Kannada" in msgs[0]["content"] and len(msgs) == 4 and "<visitor>" in msgs[-1]["content"]
+    assert "use Kannada" in msgs[0]["content"] and len(msgs) == 4 and "<visitor>" in msgs[-1]["content"]
 
 
 def test_not_available_and_flood_limits():
@@ -167,6 +167,25 @@ def test_indian_language_answers_go_to_gemini_first_english_to_groq():
         assert "groq.com" in urls[0], urls
     finally:
         os.environ.pop("GEMINI_API_KEY", None)
+
+
+def test_tulu_or_kannada_unsure_asks_then_uses_the_chosen_language():
+    setup({"reply": "Is this Tulu or Kannada?", "urgent": False, "actions": [], "ask_language": True, "language": "kn"})
+    d = c.post("/api/assistant", json={"message": "yenk ondu message bandh", "lang": "en"}).get_json()
+    assert d["ask_language"] is True
+    assert "Tulu signs" in seen[0]["messages"][0]["content"]
+    setup({"reply": "ಈ ಮೆಸೇಜ್ ಮೋಸ ಆದುಪ್ಪು", "urgent": False, "actions": [], "ask_language": True})
+    d = c.post("/api/assistant", json={"message": "yenk ondu message bandh", "lang": "en", "reply_lang": "tcy"}).get_json()
+    assert d["ask_language"] is False                                   # already chosen: never asks again
+    assert "always reply in Tulu" in seen[0]["messages"][0]["content"]
+
+
+def test_kannada_or_hindi_in_english_letters_goes_to_the_indian_language_writer():
+    from scanners.assistant import _looks_indic_in_latin
+    assert _looks_indic_in_latin("nanna account inda hana hoytu enu maadli")
+    assert _looks_indic_in_latin("yenk paisa ponda dada malpu")
+    assert _looks_indic_in_latin("mera paisa kat gaya kya karo")
+    assert not _looks_indic_in_latin("someone called me about my bank account")
 
 
 if __name__ == "__main__":

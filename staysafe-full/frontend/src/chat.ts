@@ -1,19 +1,20 @@
-// "Talk to a person" everywhere on the site opens the StaySafe Helper (its AI answers, and a
-// form that reaches the StaySafe team). No outside chat service is loaded.
+// "Ask StaySafe AI" / "Talk to a person" everywhere on the site opens the StaySafe Helper
+// (AI answers first, and a form that reaches the StaySafe team). No outside chat service is used.
 
 export type HelperMode = "home" | "person";
+export interface HelperRequest { mode: HelperMode; question?: string }
 const EVENT = "staysafe:helper";
 
-/** Open the StaySafe Helper, optionally straight at "Talk to a person". */
-export function openHelper(mode: HelperMode = "person"): void {
+/** Open the StaySafe Helper; with `question`, the AI starts answering it straight away. */
+export function openHelper(mode: HelperMode = "home", question?: string): void {
   try {
-    window.dispatchEvent(new CustomEvent<HelperMode>(EVENT, { detail: mode }));
+    window.dispatchEvent(new CustomEvent<HelperRequest>(EVENT, { detail: { mode, question } }));
   } catch { /* ignore */ }
 }
 
 /** For the floating button: run `fn` whenever some page asks for the Helper. */
-export function onHelperRequest(fn: (mode: HelperMode) => void): () => void {
-  const handler = (e: Event) => fn(((e as CustomEvent<HelperMode>).detail) || "home");
+export function onHelperRequest(fn: (req: HelperRequest) => void): () => void {
+  const handler = (e: Event) => fn((e as CustomEvent<HelperRequest>).detail || { mode: "home" });
   window.addEventListener(EVENT, handler);
   return () => window.removeEventListener(EVENT, handler);
 }

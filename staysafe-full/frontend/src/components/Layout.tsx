@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ALL_NAV, HOME_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from "@/nav";
-import { IconShield, IconChevronRight, IconAlert, IconSettings } from "@/icons";
+import { useEffect, useState, type ReactNode } from "react";
+import { ALL_NAV, MAIN_TOOLS, MORE_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from "@/nav";
+import { IconShield, IconChevronRight, IconAlert, IconSettings, IconChat, IconClose, IconHome, IconMessage, IconLink } from "@/icons";
+import { openHelper } from "@/chat";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { FloatingHelpButton } from "@/components/ChatWidgets";
 
@@ -10,10 +11,29 @@ interface LayoutProps {
   onNavigate: (path: string) => void;
 }
 
-const MAIN_NAV: NavItem[] = [ALL_NAV[0], ...HOME_TOOLS];
-
-// Phone bottom menu: every tool, in a row you can swipe sideways.
-const PHONE_NAV: NavItem[] = ALL_NAV;
+/** A labelled group of links in the laptop sidebar. */
+function SideGroup({ title, items, currentPath, onNavigate }: { title?: string; items: NavItem[]; currentPath: string; onNavigate: (p: string) => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="mb-3">
+      {title && <p className="px-3.5 pb-1 pt-2 font-body text-[11px] font-bold uppercase tracking-wider text-dustyblue-500">{title}</p>}
+      {items.map((item) => {
+        const active = currentPath === item.path;
+        return (
+          <button
+            key={item.path}
+            onClick={() => onNavigate(item.path)}
+            className={`btn-press mb-0.5 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left font-body text-sm font-semibold
+              ${active ? "bg-sage-200 text-sage-700" : "text-ink-700 hover:bg-cream-200"}`}
+          >
+            <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-sage-600" : "text-dustyblue-500"}`} />
+            <span>{t(item.label)}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
   const { t, lang } = useI18n();
@@ -34,21 +54,17 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
           </div>
         </button>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-2 scrollbar-warm">
-          {MAIN_NAV.map((item) => {
-            const active = currentPath === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => onNavigate(item.path)}
-                className={`btn-press mb-1 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left font-body text-sm font-semibold
-                  ${active ? "bg-sage-200 text-sage-700" : "text-ink-700 hover:bg-cream-200"}`}
-              >
-                <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-sage-600" : "text-dustyblue-500"}`} />
-                <span>{t(item.label)}</span>
-              </button>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-1 scrollbar-warm">
+          <SideGroup items={[ALL_NAV[0]]} currentPath={currentPath} onNavigate={onNavigate} />
+          <button
+            onClick={() => openHelper("home")}
+            className="btn-press mb-3 flex w-full items-center gap-3 rounded-xl bg-sage-500 px-3.5 py-2.5 text-left font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600"
+          >
+            <IconChat className="h-5 w-5 shrink-0" />
+            <span>{t("chat.floating")}</span>
+          </button>
+          <SideGroup title={t("nav.checkGroup")} items={MAIN_TOOLS} currentPath={currentPath} onNavigate={onNavigate} />
+          <SideGroup title={t("nav.moreGroup")} items={MORE_TOOLS} currentPath={currentPath} onNavigate={onNavigate} />
         </nav>
 
         {/* Help section — always visible at the bottom of the sidebar */}
@@ -90,7 +106,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
 
             {/* Phone: always-visible emergency shortcut + settings */}
             <div className="ml-auto flex items-center gap-2 lg:hidden">
-            {currentPath !== "/incident" && (
+            {currentPath !== "/incident" && currentPath !== "/" && (
               <button
                 onClick={() => onNavigate("/incident")}
                 className="btn-press flex items-center gap-1.5 rounded-full bg-rust-500 px-3 py-2 font-body text-xs font-bold text-cream-50 shadow-warm-sm"
@@ -142,64 +158,89 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
   );
 }
 
+/**
+ * Phone bottom menu: five fixed buttons, no sideways scrolling. "Ask AI" opens StaySafe AI;
+ * "More" opens a sheet with every other tool, help, settings and privacy.
+ */
 function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigate: (p: string) => void }) {
   const { t } = useI18n();
-  const row = useRef<HTMLDivElement>(null);
-  const [moreLeft, setMoreLeft] = useState(false);
-  const [moreRight, setMoreRight] = useState(true);
+  const [more, setMore] = useState(false);
+  useEffect(() => setMore(false), [currentPath]);
+  const inMore = [...MORE_TOOLS, ...HELP_NAV, ...EXTRA_NAV, MAIN_TOOLS[2], MAIN_TOOLS[3]].some((i) => i.path === currentPath);
 
-  const updateHints = () => {
-    const el = row.current;
-    if (!el) return;
-    setMoreLeft(el.scrollLeft > 8);
-    setMoreRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
-  };
-
-  // Keep the current page's button in view
-  useEffect(() => {
-    const el = row.current?.querySelector<HTMLElement>(`[data-path="${currentPath}"]`);
-    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-    const timer = setTimeout(updateHints, 400);
-    return () => clearTimeout(timer);
-  }, [currentPath]);
+  const tab = (key: string, label: string, Icon: NavItem["icon"], active: boolean, onClick: () => void, strong = false) => (
+    <button key={key} onClick={onClick}
+      className={`btn-press relative flex flex-1 flex-col items-center gap-1 px-1 pb-2.5 pt-2.5 ${
+        strong ? "text-sage-700" : active ? "text-sage-700" : "text-dustyblue-500"} ${active ? "bg-cream-200/80" : ""}`}>
+      {active && <span className="absolute left-3 right-3 top-0 h-[3px] rounded-b-full bg-current" />}
+      {strong ? (
+        <span className="-mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-sage-500 text-cream-50 shadow-warm-sm"><Icon className="h-5 w-5" /></span>
+      ) : <Icon className="h-5 w-5" />}
+      <span className="whitespace-nowrap font-body text-[10px] font-semibold">{label}</span>
+    </button>
+  );
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-30 border-t border-cream-200 bg-cream-100/95 backdrop-blur-md lg:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <div className="relative">
-        <div ref={row} onScroll={updateHints} className="no-scrollbar flex snap-x overflow-x-auto">
-          {PHONE_NAV.map((item) => {
-            const active = currentPath === item.path;
-            const color =
-              item.tone === "urgent" ? (active ? "text-rust-600" : "text-rust-500") :
-              item.tone === "help" ? (active ? "text-sage-700" : "text-sage-600") :
-              active ? "text-sage-700" : "text-dustyblue-500";
-            return (
-              <button
-                key={item.path}
-                data-path={item.path}
-                onClick={() => onNavigate(item.path)}
-                className={`btn-press relative flex min-w-[4.6rem] shrink-0 snap-start flex-col items-center gap-1 px-2 pb-2.5 pt-2.5 ${color}
-                  ${active ? "bg-cream-200/80" : ""}`}
-              >
-                {active && <span className="absolute left-3 right-3 top-0 h-[3px] rounded-b-full bg-current" />}
-                <item.icon className="h-5 w-5" />
-                <span className="whitespace-nowrap font-body text-[10px] font-semibold">{t(item.short)}</span>
-              </button>
-            );
-          })}
-        </div>
-        {/* soft edges show there are more tools to swipe to */}
-        {moreLeft && <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-cream-100 to-transparent" />}
-        {moreRight && (
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-end bg-gradient-to-l from-cream-100 via-cream-100/80 to-transparent pr-1">
-            <IconChevronRight className="h-4 w-4 text-dustyblue-500" />
+    <>
+      {more && (
+        <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMore(false)}>
+          <div className="absolute inset-0 bg-ink-900/30" />
+          <div onClick={(e) => e.stopPropagation()}
+            className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-cream-50 px-4 pb-24 pt-4 shadow-warm-lg animate-fade-up">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-heading text-base font-bold text-ink-900">{t("nav.moreTitle")}</p>
+              <button onClick={() => setMore(false)} aria-label={t("common.close")} className="rounded-full p-2 hover:bg-cream-200"><IconClose className="h-5 w-5" /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[...MAIN_TOOLS.slice(2), ...MORE_TOOLS].map((item) => (
+                <button key={item.path} onClick={() => onNavigate(item.path)}
+                  className={`flex items-center gap-2.5 rounded-xl px-3 py-3 text-left font-body text-sm font-semibold ${
+                    currentPath === item.path ? "bg-sage-200 text-sage-700" : "bg-cream-100 text-ink-800"}`}>
+                  <item.icon className="h-5 w-5 shrink-0 text-dustyblue-500" />{t(item.label)}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid gap-2">
+              {HELP_NAV.map((item) => (
+                <button key={item.path} onClick={() => onNavigate(item.path)}
+                  className={`flex items-center gap-2.5 rounded-xl px-3 py-3 text-left font-body text-sm font-bold ${
+                    item.tone === "urgent" ? "bg-rust-500 text-cream-50" : "border-2 border-sage-300 text-sage-700"}`}>
+                  <item.icon className="h-5 w-5 shrink-0" />{t(item.label)}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 flex gap-2">
+              {EXTRA_NAV.map((item) => (
+                <button key={item.path} onClick={() => onNavigate(item.path)}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-cream-100 px-3 py-2.5 font-body text-xs font-semibold text-dustyblue-600">
+                  <item.icon className="h-4 w-4" />{t(item.label)}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-    </nav>
+        </div>
+      )}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-cream-200 bg-cream-100/95 backdrop-blur-md lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        {tab("home", t("nav.home"), IconHome, currentPath === "/", () => onNavigate("/"))}
+        {tab("msg", t("nav.messageShort"), IconMessage, currentPath === "/scan-message", () => onNavigate("/scan-message"))}
+        {tab("ai", t("nav.ask"), IconChat, false, () => openHelper("home"), true)}
+        {tab("link", t("nav.linkShort"), IconLink, currentPath === "/scan-url", () => onNavigate("/scan-url"))}
+        {tab("more", t("nav.more"), IconMore, more || inMore, () => setMore(!more))}
+      </nav>
+    </>
+  );
+}
+
+/** Four squares: "more tools". */
+function IconMore({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.8" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.8" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.8" />
+    </svg>
   );
 }
 

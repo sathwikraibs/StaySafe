@@ -7,6 +7,7 @@ const enBase = {
   meta: { name: "English", native: "English" },
 
   common: {
+    close: "Close",
     appName: "StaySafe",
     tagline: "Your safety checkup",
     checking: "Checking...",
@@ -29,6 +30,11 @@ const enBase = {
   },
 
   nav: {
+    ask: "Ask AI",
+    more: "More",
+    moreTitle: "All tools and help",
+    checkGroup: "Check",
+    moreGroup: "More tools",
     home: "Home",
     link: "Check a Link", linkShort: "Link",
     message: "Check a Message", messageShort: "Message",
@@ -244,6 +250,17 @@ const enBase = {
     footer: "Please don't share personal documents or passwords with anyone, including us.",
   },
 
+  crop: {
+    title: "Crop the picture",
+    hint: "Drag the box or its corners to keep only the message or QR code.",
+    whole: "Whole picture",
+    cancel: "Cancel",
+    use: "Use this part",
+    button: "Crop",
+    again: "Crop again",
+    tip: "Tip: crop to just the message or QR code for a more accurate check.",
+  },
+
   chat: {
     title: "Talk to the StaySafe team",
     online: "We're online now",
@@ -255,9 +272,10 @@ const enBase = {
     start: "Write to us",
     openNew: "Open chat ({count} new)",
     never: "We will never ask for your OTP, PIN, password or bank details.",
-    floating: "Need help?",
+    floating: "Ask StaySafe AI",
     floatingAria: "Need help? Open the StaySafe Helper",
     chatInEnglish: "You can write in any language you're comfortable with.",
+    askAi: "Ask StaySafe AI now",
   },
 
   library: {

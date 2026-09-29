@@ -9,17 +9,25 @@ import { API_BASE } from "@/config";
 type Button = HelpAction
   | { kind: "check"; what: "url" | "message"; value: string; label: string }
   | { kind: "form"; label: string };
-interface Bubble { from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean; ai?: boolean; typing?: boolean }
+interface Bubble {
+  from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean; ai?: boolean; typing?: boolean;
+  team?: boolean;        // show the small "Still need a person? Write to our team" line under it
+  langPick?: boolean;    // show language buttons (the AI wasn't sure which language to answer in)
+}
 type Turn = { role: "user" | "assistant"; text: string };
-interface AiAnswer { reply: string; urgent: boolean; actions: string[] }
+interface AiAnswer { reply: string; urgent: boolean; actions: string[]; ask_language?: boolean }
+
+/** Languages someone can pick when the AI isn't sure (Tulu and Kannada look alike). */
+const LANG_CHOICES: [string, string][] = [["kn", "ಕನ್ನಡ"], ["tcy", "ತುಳು"], ["en", "English"], ["hi", "हिन्दी"]];
 
 /**
- * StaySafe Helper: answers the most common questions straight away, day or night, in the
- * site's language. A pasted link or message is sent to the right check. "Talk to a person"
- * opens a short form that reaches the StaySafe team's phone straight away.
+ * StaySafe Helper, AI first: people type their problem in any language and StaySafe AI answers
+ * straight away. Common questions are one tap. Writing to the team is offered only as the next
+ * step, after the AI has answered (or when the AI can't be reached).
  */
-export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }: {
+export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", question }: {
   startWith?: HelperMode;
+  question?: string;
   onClose: () => void;
   onNavigate: (p: string) => void;
   currentPath: string;
@@ -27,18 +35,21 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }
   const { lang, ts } = useI18n();
   const tx = HELP_TEXTS[lang] ?? HELP_TEXTS.en;
   const topics = helpTopics(lang);
-  const [bubbles, setBubbles] = useState<Bubble[]>([{ from: "bot", lines: [tx.hello, tx.pick], topics: true }]);
+  const [bubbles, setBubbles] = useState<Bubble[]>([{ from: "bot", lines: [tx.hello] }]);
   const [input, setInput] = useState("");
   const list = useRef<HTMLDivElement>(null);
-  const box = useRef<HTMLInputElement>(null);
+  const box = useRef<HTMLTextAreaElement>(null);
   const [formReady, setFormReady] = useState<boolean | null>(null);
+  const [aiReady, setAiReady] = useState<boolean | null>(null);
   const [form, setForm] = useState(false);
   const [lastTopic, setLastTopic] = useState("");
-  const [aiReady, setAiReady] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [thinking, setThinking] = useState(false);
+  const [replyLang, setReplyLang] = useState<string>("");
+  const pending = useRef<string>("");          // last question, to answer again in a picked language
+  const started = useRef(false);
 
-  // Can visitors write to the team here? (asked once; the answer never names any service)
+  // What's available (asked once; the answers never name any service)
   useEffect(() => {
     apiGet<{ available: boolean }>(`${API_BASE}/api/contact/status`)
       .then((r) => setFormReady(!!r.available)).catch(() => setFormReady(false));
@@ -46,42 +57,18 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }
       .then((r) => setAiReady(!!r.available)).catch(() => setAiReady(false));
   }, []);
 
-  /** Buttons the assistant suggested, as real buttons on our pages. */
-  function aiButtons(actions: string[]): Button[] {
-    const map: Record<string, Button> = {
-      incident: { kind: "go", path: "/incident", label: tx.actIncident },
-      check_message: { kind: "go", path: "/scan-message", label: tx.actCheckMessage },
-      check_link: { kind: "go", path: "/scan-url", label: tx.actCheckLink },
-      check_password: { kind: "go", path: "/check-password", label: tx.actPassword },
-      library: { kind: "go", path: "/scam-library", label: tx.actLibrary },
-    };
-    return [...actions.filter((a) => map[a]).map((a) => map[a]), { kind: "person", label: tx.person }];
-  }
-
-  /** Ask the automatic assistant; if it can't answer, fall back to the ready answers. */
-  async function askAssistant(text: string, fallback: () => void) {
-    setThinking(true);
-    say({ from: "bot", lines: [tx.typing], typing: true });
-    try {
-      const started = Date.now();
-      const r = await apiPostJSON<AiAnswer>(`${API_BASE}/api/assistant`, { message: text, lang, history: turns.slice(-6) });
-      const rest = 1800 - (Date.now() - started);   // a careful answer shouldn't pop up instantly
-      if (rest > 0) await new Promise((ok) => setTimeout(ok, rest));
-      setBubbles((b) => [...b.filter((x) => !x.typing),
-        { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions) }]);
-      setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: r.reply }].slice(-8));
-    } catch {
-      setBubbles((b) => b.filter((x) => !x.typing));
-      fallback();
-    } finally {
-      setThinking(false);
-    }
-  }
-
-  // new language: start again in that language
+  // On computers, the typing box is ready at once (on phones we don't pop the keyboard up uninvited)
   useEffect(() => {
-    setBubbles([{ from: "bot", lines: [tx.hello, tx.pick], topics: true }]);
-  }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (window.matchMedia?.("(pointer: fine)").matches) box.current?.focus();
+  }, []);
+
+  // Opened with a question (from the home page box) or straight at "Talk to a person"
+  useEffect(() => {
+    if (started.current || aiReady === null || formReady === null) return;
+    started.current = true;
+    if (question) ask(question);
+    else if (startWith === "person") person();
+  }, [aiReady, formReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show each new answer from its start (long answers shouldn't open at their last line)
   useEffect(() => {
@@ -100,30 +87,81 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }
 
   const say = (...add: Bubble[]) => setBubbles((b) => [...b, ...add]);
 
-  function answer(topic: HelpTopic) {
+  /** Buttons the AI suggested, as real buttons on our pages. */
+  function aiButtons(actions: string[]): Button[] {
+    const map: Record<string, Button> = {
+      incident: { kind: "go", path: "/incident", label: tx.actIncident },
+      check_message: { kind: "go", path: "/scan-message", label: tx.actCheckMessage },
+      check_link: { kind: "go", path: "/scan-url", label: tx.actCheckLink },
+      check_password: { kind: "go", path: "/check-password", label: tx.actPassword },
+      library: { kind: "go", path: "/scam-library", label: tx.actLibrary },
+    };
+    return actions.filter((a) => map[a]).map((a) => map[a]);
+  }
+
+  /** Ready answer (used when the AI can't be reached). */
+  function readyAnswer(topic: HelpTopic) {
     setLastTopic(topic.id);
-    say({ from: "me", lines: [topic.q] },
-      { from: "bot", lines: topic.a, buttons: [...(topic.actions ?? []), { kind: "person", label: tx.person }] });
+    say({ from: "bot", lines: topic.a, buttons: topic.actions ?? [], team: true });
+  }
+
+  /** Ask StaySafe AI. If it can't answer, fall back to the ready answers. */
+  async function askAssistant(text: string, fallback: () => void, pickedLang?: string) {
+    setThinking(true);
+    pending.current = text;
+    say({ from: "bot", lines: [tx.typing], typing: true });
+    try {
+      const started = Date.now();
+      const r = await apiPostJSON<AiAnswer>(`${API_BASE}/api/assistant`, {
+        message: text, lang, reply_lang: pickedLang || replyLang || undefined, history: turns.slice(-6),
+      });
+      const rest = 1800 - (Date.now() - started);   // a careful answer shouldn't pop up instantly
+      if (rest > 0) await new Promise((ok) => setTimeout(ok, rest));
+      setBubbles((b) => [...b.filter((x) => !x.typing),
+        { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions),
+          team: !r.ask_language, langPick: !!r.ask_language }]);
+      setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: r.reply }].slice(-8));
+    } catch {
+      setBubbles((b) => b.filter((x) => !x.typing));
+      fallback();
+    } finally {
+      setThinking(false);
+    }
+  }
+
+  /** Anything typed or tapped goes here: links and pasted messages go to the right check, the rest to the AI. */
+  function ask(text: string, topic?: HelpTopic) {
+    if (thinking) return;
+    const r = understand(text, lang);
+    say({ from: "me", lines: [text.length > 220 ? text.slice(0, 220) + "..." : text] });
+    if (r.kind === "link") {
+      say({ from: "bot", lines: [tx.linkSeen], buttons: [{ kind: "check", what: "url", value: r.link, label: tx.checkThisLink }], team: true });
+      return;
+    }
+    if (r.kind === "message") {
+      say({ from: "bot", lines: [tx.messageSeen], buttons: [{ kind: "check", what: "message", value: r.text, label: tx.checkThisMessage }], team: true });
+      return;
+    }
+    const known = topic ?? (r.kind === "topic" ? r.topic : undefined);
+    if (known) setLastTopic(known.id);
+    const fallback = () => (known ? readyAnswer(known) : say({ from: "bot", lines: [tx.noMatch], topics: true, team: true }));
+    if (aiReady) void askAssistant(text, fallback);
+    else fallback();
   }
 
   /** Someone wants a real person: the short form, which reaches the team's phone at once. */
-  function person(ready = formReady) {
-    const me: Bubble = { from: "me", lines: [tx.person] };
-    if (ready) {
-      say(me, { from: "bot", lines: [tx.formIntro], buttons: [{ kind: "form", label: tx.writeToUs }] });
-    } else {
-      say(me, { from: "bot", lines: [tx.personNotReady] });
-    }
+  function person() {
+    const me: Bubble = { from: "me", lines: [tx.writeTeam] };
+    if (formReady) say(me, { from: "bot", lines: [tx.formIntro], buttons: [{ kind: "form", label: tx.writeToUs }] });
+    else say(me, { from: "bot", lines: [tx.personNotReady] });
   }
 
-  // Opened from a "talk to us" button on a page: go straight to "Talk to a person"
-  const started = useRef(false);
-  useEffect(() => {
-    if (startWith === "person" && formReady !== null && !started.current) {
-      started.current = true;
-      person(formReady);
-    }
-  }, [formReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  function pickLanguage(code: string) {
+    setReplyLang(code);
+    const name = LANG_CHOICES.find(([c]) => c === code)?.[1] ?? code;
+    say({ from: "me", lines: [name] });
+    if (pending.current) void askAssistant(pending.current, () => say({ from: "bot", lines: [tx.noMatch], topics: true }), code);
+  }
 
   function sent(ref: string, lost: string) {
     setForm(false);
@@ -150,37 +188,19 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }
   function submit(e: { preventDefault(): void }) {
     e.preventDefault();
     const text = input.trim();
-    if (!text) return;
+    if (!text || thinking) return;
     setInput("");
-    const r = understand(text, lang);
-    const me: Bubble = { from: "me", lines: [text.length > 220 ? text.slice(0, 220) + "..." : text] };
-    if (thinking) return;
-    if (aiReady && r.kind !== "link" && r.kind !== "message") {
-      say(me);
-      void askAssistant(text, () => {
-        if (r.kind === "topic") say({ from: "bot", lines: r.topic.a, buttons: [...(r.topic.actions ?? []), { kind: "person", label: tx.person }] });
-        else say({ from: "bot", lines: [tx.noMatch], topics: true });
-      });
-      return;
-    }
-    if (r.kind === "topic") {
-      say(me, { from: "bot", lines: r.topic.a, buttons: [...(r.topic.actions ?? []), { kind: "person", label: tx.person }] });
-    } else if (r.kind === "link") {
-      say(me, { from: "bot", lines: [tx.linkSeen], buttons: [{ kind: "check", what: "url", value: r.link, label: tx.checkThisLink }] });
-    } else if (r.kind === "message") {
-      say(me, { from: "bot", lines: [tx.messageSeen], buttons: [{ kind: "check", what: "message", value: r.text, label: tx.checkThisMessage }] });
-    } else {
-      say(me, { from: "bot", lines: [tx.noMatch], topics: true });
-    }
+    ask(text);
   }
 
-  const last = bubbles.length - 1;
+  const noAnswerYet = bubbles.length === 1;
+  const teamOnly = aiReady === false;   // AI can't be reached: offer the team up front
 
   return (
     <div
       role="dialog"
       aria-label={tx.title}
-      className="fixed inset-x-2 bottom-[5.25rem] z-50 flex max-h-[min(78vh,640px)] flex-col overflow-hidden rounded-3xl bg-cream-50 shadow-warm-lg ring-1 ring-cream-200 animate-fade-up sm:inset-x-auto sm:right-4 sm:w-[390px] lg:bottom-6 lg:right-6"
+      className="fixed inset-x-2 bottom-[5.25rem] z-50 flex max-h-[min(80vh,660px)] flex-col overflow-hidden rounded-3xl bg-cream-50 shadow-warm-lg ring-1 ring-cream-200 animate-fade-up sm:inset-x-auto sm:right-4 sm:w-[400px] lg:bottom-6 lg:right-6"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
       {/* header */}
@@ -213,7 +233,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }
       {/* conversation */}
       <div ref={list} hidden={form} className="relative flex-1 space-y-3 overflow-y-auto px-3 py-4 scrollbar-warm">
         {bubbles.map((b, i) => (
-          <div key={i} data-me={b.from === "me" ? "" : undefined} className={b.from === "me" ? "flex justify-end" : "flex justify-start"}>
+          <div key={i} data-me={b.from === "me" ? "" : undefined} className={b.from === "me" ? "flex justify-end" : "flex flex-col items-start"}>
             <div className={`max-w-[88%] ${b.from === "me" ? "rounded-2xl rounded-br-md bg-sage-500 px-3.5 py-2.5 text-cream-50" : "rounded-2xl rounded-bl-md bg-cream-100 px-3.5 py-2.5 text-ink-800"}`}>
               {b.ai && (
                 <p className="mb-1.5 flex items-center gap-1.5 font-body text-[11px] font-bold uppercase tracking-wide text-sage-700">
@@ -235,53 +255,81 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home" }
               {b.ai && (
                 <p className="mt-2 border-t border-cream-200 pt-2 font-body text-[11px] leading-snug text-dustyblue-600">{tx.aiLabel}</p>
               )}
+              {b.langPick && (
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  {LANG_CHOICES.map(([code, name]) => (
+                    <button key={code} type="button" onClick={() => pickLanguage(code)} disabled={thinking}
+                      className="rounded-full bg-sage-500 px-3.5 py-1.5 font-body text-sm font-bold text-cream-50 hover:bg-sage-600 disabled:opacity-50">
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
               {b.buttons && b.buttons.length > 0 && (
                 <div className="mt-2.5 flex flex-col gap-1.5">
                   {b.buttons.map((btn, k) => (
                     <button key={k} type="button" onClick={() => press(btn)}
                       className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 font-body text-sm font-bold transition-colors ${
-                        btn.kind === "person" ? "bg-cream-50 text-sage-700 ring-1 ring-sage-300 hover:bg-sage-100" : "bg-sage-500 text-cream-50 hover:bg-sage-600"}`}>
-                      {btn.kind === "person" && <IconChat className="h-4 w-4" />}
+                        btn.kind === "person" || btn.kind === "form" ? "bg-cream-50 text-sage-700 ring-1 ring-sage-300 hover:bg-sage-100" : "bg-sage-500 text-cream-50 hover:bg-sage-600"}`}>
+                      {(btn.kind === "person" || btn.kind === "form") && <IconChat className="h-4 w-4" />}
                       {btn.label}
                     </button>
                   ))}
                 </div>
               )}
               {b.topics && (
-                <div className="mt-2.5 flex flex-col gap-1.5">
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {topics.map((tp) => (
-                    <button key={tp.id} type="button" onClick={() => answer(tp)}
-                      className="rounded-xl bg-cream-50 px-3 py-2 text-left font-body text-sm font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-sage-100 hover:ring-sage-300">
+                    <button key={tp.id} type="button" onClick={() => ask(tp.q, tp)} disabled={thinking}
+                      className="rounded-full bg-cream-50 px-3 py-1.5 text-left font-body text-[13px] font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-sage-100 hover:ring-sage-300 disabled:opacity-50">
                       {tp.q}
                     </button>
                   ))}
-                  <button type="button" onClick={person}
-                    className="flex items-center gap-1.5 rounded-xl bg-cream-50 px-3 py-2 text-left font-body text-sm font-bold text-sage-700 ring-1 ring-sage-300 hover:bg-sage-100">
-                    <IconChat className="h-4 w-4" />{tx.person}
-                  </button>
                 </div>
               )}
             </div>
+            {/* writing to the team: a quiet second option, after an answer */}
+            {b.team && i === bubbles.length - 1 && !thinking && (
+              <button type="button" onClick={person}
+                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-dustyblue-600 hover:text-sage-700">
+                <IconChat className="h-3.5 w-3.5" />{tx.stillNeed} <span className="underline underline-offset-2">{tx.writeTeam}</span>
+              </button>
+            )}
           </div>
         ))}
-        {!bubbles[last]?.topics && !thinking && (
-          <div className="flex justify-start">
-            <button type="button" onClick={() => say({ from: "bot", lines: [tx.pick], topics: true })}
-              className="rounded-full bg-cream-200 px-3 py-1.5 font-body text-xs font-bold text-ink-700 hover:bg-cream-300">
-              {tx.more}
-            </button>
+
+        {/* first screen: common questions (they go to the AI too) */}
+        {noAnswerYet && (
+          <div className="pt-1">
+            <p className="mb-2 px-1 font-body text-xs font-bold uppercase tracking-wide text-dustyblue-500">{tx.commonTitle}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {topics.map((tp) => (
+                <button key={tp.id} type="button" onClick={() => ask(tp.q, tp)} disabled={thinking}
+                  className="rounded-full bg-cream-100 px-3 py-1.5 text-left font-body text-[13px] font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-sage-100 hover:ring-sage-300 disabled:opacity-50">
+                  {tp.q}
+                </button>
+              ))}
+            </div>
+            {teamOnly && (
+              <button type="button" onClick={person}
+                className="mt-3 flex items-center gap-1.5 px-1 font-body text-sm font-bold text-sage-700 underline underline-offset-2">
+                <IconChat className="h-4 w-4" />{tx.writeTeam}
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* typing box */}
+      {/* typing box: the main way to use the Helper */}
       <form onSubmit={submit} hidden={form} className="border-t border-cream-200 bg-cream-50 p-2.5">
-        <div className="flex items-center gap-2">
-          <input ref={box} value={input} onChange={(e) => setInput(e.target.value)} placeholder={tx.placeholder}
-            maxLength={5000}
-            className="min-w-0 flex-1 rounded-2xl border-2 border-cream-200 bg-cream-100 px-3.5 py-2.5 font-body text-base text-ink-800 outline-none focus:border-sage-400" />
+        <div className="flex items-end gap-2">
+          <textarea ref={box} value={input} onChange={(e) => setInput(e.target.value)} placeholder={tx.placeholder}
+            rows={2} maxLength={5000}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(e); } }}
+            className={`min-w-0 flex-1 resize-none rounded-2xl border-2 bg-cream-100 px-3.5 py-2.5 font-body text-base text-ink-800 outline-none focus:border-sage-500 ${
+              noAnswerYet ? "border-sage-400 ring-4 ring-sage-200/60" : "border-cream-200"}`} />
           <button type="submit" disabled={!input.trim() || thinking}
-            className="shrink-0 rounded-2xl bg-sage-500 px-4 py-2.5 font-body text-sm font-bold text-cream-50 transition-colors hover:bg-sage-600 disabled:opacity-50">
+            className="shrink-0 rounded-2xl bg-sage-500 px-4 py-3 font-body text-sm font-bold text-cream-50 transition-colors hover:bg-sage-600 disabled:opacity-50">
             {tx.send}
           </button>
         </div>

@@ -299,7 +299,7 @@ export function ResultReport({ tool, verdict, riskScore, subject, checks, findin
             </button>
           )}
           <button
-            onClick={() => openHelper("person")}
+            onClick={() => openHelper("home")}
             className={`btn-press flex items-center justify-between gap-3 rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3.5 text-left font-body text-sm font-bold text-sage-700 hover:bg-sage-100 ${tone === "caution" ? "sm:col-span-2" : ""}`}
           >
             <span>{t("report.askUs")}</span>

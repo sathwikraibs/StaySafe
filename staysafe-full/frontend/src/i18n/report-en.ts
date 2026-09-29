@@ -650,6 +650,12 @@ export const reportEn = {
   },
 
   homeX: {
+    askTitle: "What happened? Ask StaySafe AI",
+    askIntro: "Describe your problem in any language, or paste a message or link you got. You'll get an answer right away.",
+    askPlaceholder: "For example: someone called and asked for my OTP...",
+    askButton: "Ask",
+    checkTitle: "Or check something yourself",
+    moreTitle: "More tools",
     chip1: "No sign-up",
     chip2: "Private",
     chip3: "4 languages",

@@ -643,6 +643,12 @@ export const reportHi: ReportDict = {
   },
 
   homeX: {
+    askTitle: "क्या हुआ? StaySafe AI से पूछें",
+    askIntro: "किसी भी भाषा में अपनी समस्या बताएँ, या मिला हुआ मैसेज या लिंक पेस्ट करें। तुरंत जवाब मिलेगा।",
+    askPlaceholder: "जैसे: किसी ने कॉल करके मेरा OTP माँगा...",
+    askButton: "पूछें",
+    checkTitle: "या खुद कुछ जाँचें",
+    moreTitle: "और टूल",
     chip1: "साइन-अप नहीं",
     chip2: "निजी",
     chip3: "4 भाषाएँ",

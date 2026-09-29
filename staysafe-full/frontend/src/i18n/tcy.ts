@@ -7,6 +7,7 @@ const tcyBase: BaseDict = {
   meta: { name: "Tulu", native: "ತುಳು" },
 
   common: {
+    close: "ಮುಚ್ಚುಲೆ",
     appName: "StaySafe",
     tagline: "ಈರೆನ ಸುರಕ್ಷತೆದ ಪರಿಶೀಲನೆ",
     checking: "ಪರಿಶೀಲನೆ ಆವೊಂದುಂಡು...",
@@ -29,6 +30,11 @@ const tcyBase: BaseDict = {
   },
 
   nav: {
+    ask: "AI ಕೇನುಲೆ",
+    more: "ಬೇತೆ",
+    moreTitle: "ಮಾತಾ ಸಾಧನೊಲು ಬೊಕ್ಕ ಸಹಾಯ",
+    checkGroup: "ಪರಿಶೀಲನೆ",
+    moreGroup: "ಬೇತೆ ಸಾಧನೊಲು",
     home: "ಮುಖಪುಟ",
     link: "ಲಿಂಕ್ ಪರಿಶೀಲನೆ", linkShort: "ಲಿಂಕ್",
     message: "ಮೆಸೇಜ್ ಪರಿಶೀಲನೆ", messageShort: "ಮೆಸೇಜ್",
@@ -243,6 +249,17 @@ const tcyBase: BaseDict = {
     footer: "ದಯಮಲ್ತ್ ಸ್ವಂತ ಡಾಕ್ಯುಮೆಂಟ್ ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಏರೆಡಲಾ ಪಟ್ಟೊಡ್ಚಿ, ಎಂಕ್ಲೆಡ್‌ಲಾ.",
   },
 
+  crop: {
+    title: "ಪಟೊನು ಕತ್ತರಿಸಲೆ",
+    hint: "ಮೆಸೇಜ್ ಅತ್ತಂಡ QR ಕೋಡ್ ಮಾತ್ರ ದೀವೆರೆ ಬಾಕ್ಸ್ ಅತ್ತಂಡ ಅಯಿತ ಮೂಲೆಲೆನ್ ಎಳೆಲೆ.",
+    whole: "ಪೂರ್ತಿ ಪಟ",
+    cancel: "ರದ್ದ್ ಮಲ್ಪುಲೆ",
+    use: "ಈ ಭಾಗ ಬಳಸಲೆ",
+    button: "ಕತ್ತರಿಸಲೆ",
+    again: "ಕುಡೊರ ಕತ್ತರಿಸಲೆ",
+    tip: "ಸಲಹೆ: ಜಾಸ್ತಿ ಸರಿಯಾಯಿನ ಪರಿಶೀಲನೆಗ್ ಮೆಸೇಜ್ ಅತ್ತಂಡ QR ಕೋಡ್ ಭಾಗ ಮಾತ್ರ ಕತ್ತರಿಸಲೆ.",
+  },
+
   chat: {
     title: "StaySafe ತಂಡದೊಟ್ಟುಗು ಪಾತೆರ್ಲೆ",
     online: "ಎಂಕುಲು ಇತ್ತೆ ಆನ್‌ಲೈನ್‌ಡ್ ಉಲ್ಲ",
@@ -254,9 +271,10 @@ const tcyBase: BaseDict = {
     start: "ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ",
     openNew: "ಚಾಟ್ ತೆರೆಲೆ ({count} ಪೊಸತ್)",
     never: "ಎಂಕುಲು ಒರಿಲಾ ಈರೆನ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇಣುಜಿ.",
-    floating: "ಸಹಾಯ ಬೋಡಾ?",
+    floating: "StaySafe AI ಕೇನುಲೆ",
     floatingAria: "ಸಹಾಯ ಬೋಡಾ? StaySafe ಸಹಾಯಕನ್ ತೆರೆಲೆ",
     chatInEnglish: "ಈರೆಗ್ ಸುಲಭ ಆಪುನ ಓವುಲಾ ಭಾಷೆಡ್ ಬರೆವೊಲಿ.",
+    askAi: "ಇತ್ತೆ StaySafe AI ಕೇನುಲೆ",
   },
 
   library: {

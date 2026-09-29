@@ -15,17 +15,24 @@ export interface NavItem {
   tone?: "urgent" | "help";
 }
 
-export const HOME_TOOLS: NavItem[] = [
-  { path: "/scan-url", label: "nav.link", short: "nav.linkShort", icon: IconLink },
+/** The checks most people need: shown big on the home page and first in the menus. */
+export const MAIN_TOOLS: NavItem[] = [
   { path: "/scan-message", label: "nav.message", short: "nav.messageShort", icon: IconMessage },
+  { path: "/scan-url", label: "nav.link", short: "nav.linkShort", icon: IconLink },
   { path: "/scan-qr", label: "nav.qr", short: "nav.qrShort", icon: IconQr },
   { path: "/scan-file", label: "nav.file", short: "nav.fileShort", icon: IconFile },
+];
+
+/** Everything else, kept one step away so the first screen stays simple. */
+export const MORE_TOOLS: NavItem[] = [
+  { path: "/scan-email", label: "nav.email", short: "nav.emailShort", icon: IconEmail },
   { path: "/check-password", label: "nav.password", short: "nav.passwordShort", icon: IconKey },
   { path: "/check-network", label: "nav.network", short: "nav.networkShort", icon: IconNetwork },
-  { path: "/scan-email", label: "nav.email", short: "nav.emailShort", icon: IconEmail },
-  { path: "/dashboard", label: "nav.dashboard", short: "nav.dashboardShort", icon: IconDashboard },
   { path: "/scam-library", label: "nav.library", short: "nav.libraryShort", icon: IconBook },
+  { path: "/dashboard", label: "nav.dashboard", short: "nav.dashboardShort", icon: IconDashboard },
 ];
+
+export const HOME_TOOLS: NavItem[] = [...MAIN_TOOLS, ...MORE_TOOLS];
 
 export const HELP_NAV: NavItem[] = [
   { path: "/incident", label: "nav.incident", short: "nav.incidentShort", icon: IconAlert, tone: "urgent" },

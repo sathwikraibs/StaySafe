@@ -77,6 +77,7 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
           </div>
         )}
         <UploadZone
+          crop
           accept="image/*"
           label={t("qr.uploadLabel")}
           camera={false}

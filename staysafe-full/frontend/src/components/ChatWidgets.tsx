@@ -1,4 +1,4 @@
-import { openHelper, onHelperRequest, type HelperMode } from "@/chat";
+import { openHelper, onHelperRequest, type HelperRequest } from "@/chat";
 import { useI18n } from "@/i18n";
 import { useEffect, useState } from "react";
 import { IconChat, IconLock } from "@/icons";
@@ -7,26 +7,27 @@ import { HelpBot } from "@/components/HelpBot";
 /** Floating "Need help?" button: opens the StaySafe Helper (sits above the phone menu). */
 export function FloatingHelpButton({ onNavigate, currentPath }: { onNavigate: (p: string) => void; currentPath: string }) {
   const { t } = useI18n();
-  const [helper, setHelper] = useState<HelperMode | null>(null);
-  useEffect(() => onHelperRequest((mode) => setHelper(mode)), []);
+  const [helper, setHelper] = useState<(HelperRequest & { n: number }) | null>(null);
+  useEffect(() => onHelperRequest((req) => setHelper({ ...req, n: Date.now() })), []);
   if (helper) {
-    return <HelpBot key={helper} startWith={helper} onClose={() => setHelper(null)} onNavigate={onNavigate} currentPath={currentPath} />;
+    return <HelpBot key={helper.n} startWith={helper.mode} question={helper.question}
+      onClose={() => setHelper(null)} onNavigate={onNavigate} currentPath={currentPath} />;
   }
-  // These pages already show a big "talk to us" card, so the floating button would just cover it
+  // On phones "Ask AI" is in the bottom menu; these pages also show their own big card
   if (currentPath === "/help" || currentPath === "/incident") return null;
 
   return (
     <button
-      onClick={() => setHelper("home")}
+      onClick={() => setHelper({ mode: "home", n: Date.now() })}
       aria-label={t("chat.floatingAria")}
       data-help-fab
-      className="btn-press fixed bottom-[5.25rem] right-4 z-40 flex items-center gap-2 rounded-full bg-sage-500 py-3 pl-3 pr-3 text-cream-50 shadow-warm-lg transition-colors hover:bg-sage-600 sm:pr-5 lg:bottom-6 lg:right-6"
+      className="btn-press fixed bottom-6 right-6 z-40 hidden items-center gap-2 rounded-full bg-sage-500 py-3 pl-3 pr-5 text-cream-50 shadow-warm-lg transition-colors hover:bg-sage-600 lg:flex"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
       <span className="relative flex h-7 w-7 items-center justify-center">
         <IconChat className="h-6 w-6" />
       </span>
-      <span className="hidden font-body text-sm font-bold sm:inline">{t("chat.floating")}</span>
+      <span className="font-body text-sm font-bold">{t("chat.floating")}</span>
     </button>
   );
 }
@@ -47,10 +48,13 @@ export function ChatCard({ title, compact = false }: { title?: string; compact?:
       </div>
       {!compact && <p className="mt-4 font-body text-sm leading-relaxed text-cream-50/90">{t("chat.intro")}</p>}
       <button
-        onClick={() => openHelper("person")}
+        onClick={() => openHelper("home")}
         className="btn-press mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cream-50 px-6 py-3.5 font-body text-base font-bold text-sage-700 shadow-warm transition-colors hover:bg-cream-100"
       >
         <IconChat className="h-5 w-5" />
+        {t("chat.askAi")}
+      </button>
+      <button onClick={() => openHelper("person")} className="mt-2.5 w-full text-center font-body text-sm font-semibold text-cream-50 underline underline-offset-2">
         {t("chat.start")}
       </button>
       <p className="mt-3 flex items-center justify-center gap-1.5 font-body text-xs text-cream-50/80">

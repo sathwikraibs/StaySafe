@@ -120,6 +120,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("message.uploadTitle")}</h3>
         <UploadZone
+          crop
           accept="image/*"
           label={t("message.uploadLabel")}
           compress

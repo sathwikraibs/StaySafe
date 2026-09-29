@@ -6,6 +6,7 @@ const knBase: BaseDict = {
   meta: { name: "Kannada", native: "ಕನ್ನಡ" },
 
   common: {
+    close: "ಮುಚ್ಚಿ",
     appName: "StaySafe",
     tagline: "ನಿಮ್ಮ ಸುರಕ್ಷತಾ ತಪಾಸಣೆ",
     checking: "ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...",
@@ -28,6 +29,11 @@ const knBase: BaseDict = {
   },
 
   nav: {
+    ask: "AI ಕೇಳಿ",
+    more: "ಇನ್ನಷ್ಟು",
+    moreTitle: "ಎಲ್ಲಾ ಸಾಧನಗಳು ಮತ್ತು ಸಹಾಯ",
+    checkGroup: "ಪರಿಶೀಲಿಸಿ",
+    moreGroup: "ಇನ್ನಷ್ಟು ಸಾಧನಗಳು",
     home: "ಮುಖಪುಟ",
     link: "ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ", linkShort: "ಲಿಂಕ್",
     message: "ಮೆಸೇಜ್ ಪರಿಶೀಲಿಸಿ", messageShort: "ಮೆಸೇಜ್",
@@ -242,6 +248,17 @@ const knBase: BaseDict = {
     footer: "ದಯವಿಟ್ಟು ವೈಯಕ್ತಿಕ ಡಾಕ್ಯುಮೆಂಟ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಬೇಡಿ, ನಮ್ಮೊಂದಿಗೂ ಸಹ.",
   },
 
+  crop: {
+    title: "ಚಿತ್ರವನ್ನು ಕತ್ತರಿಸಿ",
+    hint: "ಮೆಸೇಜ್ ಅಥವಾ QR ಕೋಡ್ ಮಾತ್ರ ಉಳಿಸಲು ಬಾಕ್ಸ್ ಅಥವಾ ಅದರ ಮೂಲೆಗಳನ್ನು ಎಳೆಯಿರಿ.",
+    whole: "ಪೂರ್ತಿ ಚಿತ್ರ",
+    cancel: "ರದ್ದುಮಾಡಿ",
+    use: "ಈ ಭಾಗ ಬಳಸಿ",
+    button: "ಕತ್ತರಿಸಿ",
+    again: "ಮತ್ತೆ ಕತ್ತರಿಸಿ",
+    tip: "ಸಲಹೆ: ಹೆಚ್ಚು ನಿಖರ ಪರಿಶೀಲನೆಗೆ ಮೆಸೇಜ್ ಅಥವಾ QR ಕೋಡ್ ಭಾಗವನ್ನು ಮಾತ್ರ ಕತ್ತರಿಸಿ.",
+  },
+
   chat: {
     title: "StaySafe ತಂಡದೊಂದಿಗೆ ಮಾತನಾಡಿ",
     online: "ನಾವು ಈಗ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೇವೆ",
@@ -253,9 +270,10 @@ const knBase: BaseDict = {
     start: "ನಮಗೆ ಬರೆಯಿರಿ",
     openNew: "ಚಾಟ್ ತೆರೆಯಿರಿ ({count} ಹೊಸದು)",
     never: "ನಾವು ಎಂದಿಗೂ ನಿಮ್ಮ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅಥವಾ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇಳುವುದಿಲ್ಲ.",
-    floating: "ಸಹಾಯ ಬೇಕೇ?",
+    floating: "StaySafe AI ಕೇಳಿ",
     floatingAria: "ಸಹಾಯ ಬೇಕೇ? StaySafe ಸಹಾಯಕ ತೆರೆಯಿರಿ",
     chatInEnglish: "ನಿಮಗೆ ಸುಲಭವಾದ ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಬರೆಯಬಹುದು.",
+    askAi: "ಈಗ StaySafe AI ಕೇಳಿ",
   },
 
   library: {

@@ -57,6 +57,10 @@ export interface HelpTexts {
   sentUrgent: string;
   aiLabel: string;
   aiName: string;
+  stillNeed: string;
+  writeTeam: string;
+  langAsk: string;
+  commonTitle: string;
   typing: string;
   actIncident: string;
   actCheckMessage: string;
@@ -368,11 +372,11 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
 
 export const HELP_TEXTS: Record<Lang, HelpTexts> = {
   en: {
-    title: "StaySafe Helper", subtitle: "Quick answers, any time",
-    hello: "Hi! I can help you right away. What happened?",
-    pick: "Choose a topic, or type your question below. You can also paste a link or a message you got.",
-    placeholder: "Type your question here",
-    send: "Send",
+    title: "Ask StaySafe AI", subtitle: "Answers any time, in your language",
+    hello: "Hi! Tell me what happened, in any language. I'll help you right away.",
+    pick: "Type below, or tap a common question.",
+    placeholder: "Type your problem here...",
+    send: "Ask",
     noMatch: "I'm not sure I understood. Here are the things I can help with, or you can talk to a person.",
     linkSeen: "I see a web address. Let's check if it's safe.",
     messageSeen: "That looks like a message you received. Let's check it for scam signs.",
@@ -411,13 +415,17 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     actCheckLink: "Check a link",
     actPassword: "Check my password and email",
     actLibrary: "Learn about scams",
+    stillNeed: "Still need a person?",
+    writeTeam: "Write to our team",
+    langAsk: "Which language would you like me to answer in?",
+    commonTitle: "Common questions",
   },
   hi: {
-    title: "StaySafe सहायक", subtitle: "तुरंत जवाब, कभी भी",
-    hello: "नमस्ते! मैं अभी मदद कर सकता हूँ। क्या हुआ?",
-    pick: "कोई विषय चुनें, या नीचे अपना सवाल लिखें। आप मिला हुआ लिंक या मैसेज भी पेस्ट कर सकते हैं।",
-    placeholder: "अपना सवाल यहाँ लिखें",
-    send: "भेजें",
+    title: "StaySafe AI से पूछें", subtitle: "कभी भी, आपकी भाषा में जवाब",
+    hello: "नमस्ते! किसी भी भाषा में बताइए क्या हुआ। मैं तुरंत मदद करूँगा।",
+    pick: "नीचे लिखें, या कोई आम सवाल चुनें।",
+    placeholder: "अपनी समस्या यहाँ लिखें...",
+    send: "पूछें",
     noMatch: "मैं ठीक से समझ नहीं पाया। इनमें से किसी में मदद कर सकता हूँ, या आप किसी व्यक्ति से बात कर सकते हैं।",
     linkSeen: "इसमें एक वेब पता है। चलिए देखते हैं कि यह सुरक्षित है या नहीं।",
     messageSeen: "यह आपको मिला हुआ मैसेज लगता है। चलिए इसमें धोखे के संकेत देखते हैं।",
@@ -456,13 +464,17 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     actCheckLink: "लिंक जाँचें",
     actPassword: "पासवर्ड और ईमेल जाँचें",
     actLibrary: "धोखों के बारे में जानें",
+    stillNeed: "फिर भी किसी व्यक्ति से बात करनी है?",
+    writeTeam: "हमारी टीम को लिखें",
+    langAsk: "मैं किस भाषा में जवाब दूँ?",
+    commonTitle: "आम सवाल",
   },
   kn: {
-    title: "StaySafe ಸಹಾಯಕ", subtitle: "ತಕ್ಷಣದ ಉತ್ತರ, ಯಾವಾಗ ಬೇಕಾದರೂ",
-    hello: "ನಮಸ್ಕಾರ! ನಾನು ಈಗಲೇ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ. ಏನಾಯಿತು?",
-    pick: "ಒಂದು ವಿಷಯ ಆಯ್ಕೆ ಮಾಡಿ, ಅಥವಾ ಕೆಳಗೆ ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ. ನಿಮಗೆ ಬಂದ ಲಿಂಕ್ ಅಥವಾ ಮೆಸೇಜ್ ಅನ್ನೂ ಪೇಸ್ಟ್ ಮಾಡಬಹುದು.",
-    placeholder: "ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಇಲ್ಲಿ ಬರೆಯಿರಿ",
-    send: "ಕಳುಹಿಸಿ",
+    title: "StaySafe AI ಕೇಳಿ", subtitle: "ಯಾವಾಗ ಬೇಕಾದರೂ, ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರ",
+    hello: "ನಮಸ್ಕಾರ! ಏನಾಯಿತು ಎಂದು ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಹೇಳಿ. ನಾನು ತಕ್ಷಣ ಸಹಾಯ ಮಾಡುತ್ತೇನೆ.",
+    pick: "ಕೆಳಗೆ ಬರೆಯಿರಿ, ಅಥವಾ ಒಂದು ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆ ಆಯ್ಕೆ ಮಾಡಿ.",
+    placeholder: "ನಿಮ್ಮ ಸಮಸ್ಯೆ ಇಲ್ಲಿ ಬರೆಯಿರಿ...",
+    send: "ಕೇಳಿ",
     noMatch: "ನನಗೆ ಸರಿಯಾಗಿ ಅರ್ಥವಾಗಲಿಲ್ಲ. ಇವುಗಳಲ್ಲಿ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ, ಅಥವಾ ಒಬ್ಬ ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಮಾತನಾಡಬಹುದು.",
     linkSeen: "ಇದರಲ್ಲಿ ಒಂದು ವೆಬ್ ವಿಳಾಸ ಇದೆ. ಅದು ಸುರಕ್ಷಿತವೇ ನೋಡೋಣ.",
     messageSeen: "ಇದು ನಿಮಗೆ ಬಂದ ಮೆಸೇಜ್‌ನಂತೆ ಕಾಣುತ್ತಿದೆ. ಅದರಲ್ಲಿ ಮೋಸದ ಲಕ್ಷಣಗಳಿವೆಯೇ ನೋಡೋಣ.",
@@ -501,13 +513,17 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     actCheckLink: "ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ",
     actPassword: "ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ",
     actLibrary: "ಮೋಸಗಳ ಬಗ್ಗೆ ತಿಳಿಯಿರಿ",
+    stillNeed: "ಇನ್ನೂ ಒಬ್ಬ ವ್ಯಕ್ತಿಯ ಸಹಾಯ ಬೇಕೇ?",
+    writeTeam: "ನಮ್ಮ ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
+    langAsk: "ನಾನು ಯಾವ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರಿಸಲಿ?",
+    commonTitle: "ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳು",
   },
   tcy: {
-    title: "StaySafe ಸಹಾಯಕ", subtitle: "ಬೇಗದ ಉತ್ತರ, ಏಪ ಬೋಡಾಂಡಲಾ",
-    hello: "ನಮಸ್ಕಾರ! ಯಾನ್ ಇತ್ತೆನೇ ಸಹಾಯ ಮಲ್ಪುವೆ. ದಾದ ಆಂಡ್?",
-    pick: "ಒಂಜಿ ವಿಷಯ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ತಿರ್ತ್ ಈರೆನ ಪ್ರಶ್ನೆ ಬರೆಲೆ. ಈರೆಗ್ ಬತ್ತಿನ ಲಿಂಕ್ ಅತ್ತಂಡ ಮೆಸೇಜ್‌ಲಾ ಪೇಸ್ಟ್ ಮಲ್ಪೊಲಿ.",
-    placeholder: "ಈರೆನ ಪ್ರಶ್ನೆ ಮುಲ್ಪ ಬರೆಲೆ",
-    send: "ಕಡಪುಡ್ಲೆ",
+    title: "StaySafe AI ಕೇನುಲೆ", subtitle: "ಏಪ ಬೋಡಾಂಡಲಾ, ಈರೆನ ಭಾಷೆಡ್ ಉತ್ತರ",
+    hello: "ನಮಸ್ಕಾರ! ದಾದ ಆಂಡ್ ಪಂದ್ ಓವು ಭಾಷೆಡ್‌ಲಾ ಪನ್ಲೆ. ಯಾನ್ ಇತ್ತೆನೇ ಸಹಾಯ ಮಲ್ಪುವೆ.",
+    pick: "ತಿರ್ತ್ ಬರೆಲೆ, ಅತ್ತಂಡ ಒಂಜಿ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ.",
+    placeholder: "ಈರೆನ ಸಮಸ್ಯೆ ಮುಲ್ಪ ಬರೆಲೆ...",
+    send: "ಕೇನುಲೆ",
     noMatch: "ಎಂಕ್ ಸರಿಯಾದ್ ಅರ್ಥ ಆಯಿಜಿ. ಉಂದೆಟ್ ಸಹಾಯ ಮಲ್ಪುವೆ, ಅತ್ತಂಡ ಒರಿ ವ್ಯಕ್ತಿನೊಟ್ಟುಗು ಪಾತೆರೊಲಿ.",
     linkSeen: "ಉಂದೆಟ್ ಒಂಜಿ ವೆಬ್ ವಿಳಾಸ ಉಂಡು. ಅವು ಸುರಕ್ಷಿತನಾ ತೂಕ.",
     messageSeen: "ಉಂದು ಈರೆಗ್ ಬತ್ತಿನ ಮೆಸೇಜ್ ಲೆಕ್ಕ ತೋಜುಂಡು. ಅಯಿಟ್ ಮೋಸದ ಲಕ್ಷಣೊಲು ಉಂಡಾ ತೂಕ.",
@@ -546,6 +562,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     actCheckLink: "ಲಿಂಕ್ ಪರಿಶೀಲನೆ",
     actPassword: "ಪಾಸ್‌ವರ್ಡ್ ಬೊಕ್ಕ ಇಮೇಲ್ ಪರಿಶೀಲನೆ",
     actLibrary: "ಮೋಸೊಲೆನ ಬಗ್ಗೆ ತೆರಿಯೊನ್ಲೆ",
+    stillNeed: "ನನಲಾ ಒರಿ ವ್ಯಕ್ತಿನ ಸಹಾಯ ಬೋಡಾ?",
+    writeTeam: "ಎಂಕ್ಲೆನ ತಂಡೊಗು ಬರೆಲೆ",
+    langAsk: "ಯಾನ್ ಓವು ಭಾಷೆಡ್ ಉತ್ತರ ಕೊರೊಡು?",
+    commonTitle: "ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಲು",
   },
 };
 

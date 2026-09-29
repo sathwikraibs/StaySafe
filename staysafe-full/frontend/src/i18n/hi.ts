@@ -6,6 +6,7 @@ const hiBase: BaseDict = {
   meta: { name: "Hindi", native: "हिन्दी" },
 
   common: {
+    close: "बंद करें",
     appName: "StaySafe",
     tagline: "आपकी सुरक्षा जाँच",
     checking: "जाँच हो रही है...",
@@ -28,6 +29,11 @@ const hiBase: BaseDict = {
   },
 
   nav: {
+    ask: "AI से पूछें",
+    more: "और",
+    moreTitle: "सभी टूल और मदद",
+    checkGroup: "जाँचें",
+    moreGroup: "और टूल",
     home: "होम",
     link: "लिंक जाँचें", linkShort: "लिंक",
     message: "मैसेज जाँचें", messageShort: "मैसेज",
@@ -242,6 +248,17 @@ const hiBase: BaseDict = {
     footer: "कृपया निजी डॉक्यूमेंट या पासवर्ड किसी के साथ साझा न करें, हमारे साथ भी नहीं।",
   },
 
+  crop: {
+    title: "फ़ोटो काटें",
+    hint: "सिर्फ़ मैसेज या QR कोड रखने के लिए बॉक्स या उसके कोने खींचें।",
+    whole: "पूरी फ़ोटो",
+    cancel: "रद्द करें",
+    use: "यह हिस्सा इस्तेमाल करें",
+    button: "काटें",
+    again: "फिर से काटें",
+    tip: "सुझाव: ज़्यादा सही जाँच के लिए सिर्फ़ मैसेज या QR कोड वाला हिस्सा काटें।",
+  },
+
   chat: {
     title: "StaySafe टीम से बात करें",
     online: "हम अभी ऑनलाइन हैं",
@@ -253,9 +270,10 @@ const hiBase: BaseDict = {
     start: "हमें लिखें",
     openNew: "चैट खोलें ({count} नए)",
     never: "हम कभी आपका OTP, PIN, पासवर्ड या बैंक की जानकारी नहीं माँगेंगे।",
-    floating: "मदद चाहिए?",
+    floating: "StaySafe AI से पूछें",
     floatingAria: "मदद चाहिए? StaySafe सहायक खोलें",
     chatInEnglish: "आप जिस भाषा में सहज हों, उसमें लिख सकते हैं।",
+    askAi: "अभी StaySafe AI से पूछें",
   },
 
   library: {

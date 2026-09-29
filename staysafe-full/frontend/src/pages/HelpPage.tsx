@@ -50,10 +50,13 @@ export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void })
         <p className="font-body text-xs font-semibold text-sage-700">{t("chat.unknown")}</p>
         <p className="mt-2 font-body text-sm text-ink-700">{t("chat.intro")}</p>
         <button
-          onClick={() => openHelper("person")}
+          onClick={() => openHelper("home")}
           className="btn-press mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600"
         >
-          <IconChat className="h-5 w-5" /> {t("chat.start")}
+          <IconChat className="h-5 w-5" /> {t("chat.askAi")}
+        </button>
+        <button onClick={() => openHelper("person")} className="mt-2 w-full text-center font-body text-sm font-semibold text-sage-700 underline underline-offset-2">
+          {t("chat.start")}
         </button>
         <p className="mt-2.5 flex items-center gap-1.5 font-body text-xs text-dustyblue-600">
           <IconLock className="h-3.5 w-3.5 shrink-0" /> {t("chat.never")}
