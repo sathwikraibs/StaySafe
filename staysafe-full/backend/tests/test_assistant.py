@@ -303,6 +303,65 @@ def test_phrases_are_sent_only_for_the_languages_needed():
     assert "कॉल काट" in system_prompt("en", "", ("hi", "latin"), "mera paisa gaya")
 
 
+def test_tulu_asked_but_kannada_answered_is_rewritten_in_tulu():
+    kannada = {"reply": "ಗಾಬರಿ ಆಗಬೇಡಿ. ನಿಮ್ಮ ವಾಟ್ಸಾಪ್ ಹ್ಯಾಕ್ ಆಗಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗೆ ಹೋಗಿ ಲಾಗ್ ಔಟ್ ಮಾಡಿ, ನಿಮ್ಮ ಸ್ನೇಹಿತರಿಗೆ ಹೇಳಿ.", "urgent": False, "actions": []}
+    tulu = {"reply": "ಗಾಬರಿ ಆವೊಡ್ಚಿ. ಸೆಟ್ಟಿಂಗ್‌ಗ್ ಪೋದು ಲಾಗ್ ಔಟ್ ಮಲ್ಪುಲೆ, ಇರೆನ ಫ್ರೆಂಡ್‌ಲೆಗ್ ಪನ್ಲೆ.", "urgent": False, "actions": []}
+    setup(kannada)
+    sent = []
+
+    class R:
+        status_code = 200
+        headers = {}
+        text = ""
+
+        def __init__(self, obj):
+            self.obj = obj
+
+        def json(self):
+            return {"choices": [{"message": {"content": json.dumps(self.obj, ensure_ascii=False)}}], "usage": {"total_tokens": 900}}
+
+    def post(url, **kw):
+        sent.append(kw["json"])
+        return R(kannada if len(sent) == 1 else tulu)
+    groq_client.requests.post = post
+    d = c.post("/api/assistant", json={"message": "enna whatsapp hack aand, dada malpodu", "lang": "en", "reply_lang": "tcy"}).get_json()
+    assert len(sent) == 2 and "ಮಲ್ಪುಲೆ" in d["reply"], (len(sent), d)
+    assert "(not Kannada)" in sent[0]["messages"][0]["content"] and "same letters they typed" in sent[0]["messages"][0]["content"]
+
+
+def test_a_failed_fix_up_keeps_the_first_answer_and_waits_stay_within_the_time_budget():
+    import time as _t
+    kannada = {"reply": "ನಿಮ್ಮ ವಾಟ್ಸಾಪ್ ಹ್ಯಾಕ್ ಆಗಿದೆ. ಲಾಗ್ ಔಟ್ ಮಾಡಿ, ನಿಮ್ಮ ಸ್ನೇಹಿತರಿಗೆ ಹೇಳಿ.", "urgent": False, "actions": []}
+    setup(kannada)
+    n = []
+
+    class Bad:
+        status_code = 500
+        headers = {}
+        text = "server error"
+
+    class Good:
+        status_code = 200
+        headers = {}
+        text = ""
+
+        def json(self):
+            return {"choices": [{"message": {"content": json.dumps(kannada, ensure_ascii=False)}}], "usage": {"total_tokens": 900}}
+
+    def post(url, **kw):
+        n.append(url)
+        return Good() if len(n) == 1 else Bad()
+    groq_client.requests.post = post
+    d = c.post("/api/assistant", json={"message": "enna whatsapp hack aand", "lang": "en", "reply_lang": "tcy"}).get_json()
+    assert d.get("reply") == kannada["reply"], d          # better than nothing
+    assistant._until.end = _t.time() + 40
+    try:
+        assert assistant._wait() <= 5.1
+    finally:
+        assistant._until.end = None
+    assert assistant._wait() == assistant.WAIT
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

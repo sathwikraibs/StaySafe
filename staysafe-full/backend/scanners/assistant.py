@@ -80,6 +80,15 @@ _lock = threading.Lock()
 PER_IP_HOUR = 30
 PER_IP_MINUTE = 6
 WAIT = 70.0   # may wait this long for a free slot (per-minute limits clear within a minute); the visitor sees "thinking..."
+BUDGET = 140.0   # all tries for one question together (the server stops a request at 180 s)
+_until = threading.local()
+
+
+def _wait() -> float:
+    """How long the next service may wait for a free slot: never past this question's time budget."""
+    end = getattr(_until, "end", None)
+    left = WAIT if end is None else end - time.time() - 35   # keep time for the answer itself
+    return max(0.0, min(WAIT, left))
 
 
 # Same question, same language, no earlier conversation: reuse the answer for a few hours
@@ -173,7 +182,9 @@ def system_prompt(site_lang: str, chosen: str = "", hint=None, message: str = ""
     code, script = hint if isinstance(hint, tuple) else (hint, "latin" if hint else None)
     phrases = "".join(PHRASES[lang] for lang in _phrase_langs(site_lang, chosen, code, message))
     if chosen:
-        rule = f"they chose {LANG_NAMES[chosen]}: always reply in {LANG_NAMES[chosen]}."
+        rule = (f"they chose {names[chosen]}: always reply in {names[chosen]}"
+                + (" (not Kannada)" if chosen == "tcy" else "")
+                + ", using the same letters they typed with (English letters, or their language's own script).")
     else:
         rule = (f"reply in the language they write in (Kannada in Kannada, Tulu in Tulu, Hindi in Hindi). "
                 f"If you can't tell, use {LANG_NAMES.get(site_lang, 'English')}.")
@@ -223,7 +234,7 @@ def _allowed(ip: str) -> bool:
 def _groq(messages):
     from scanners import groq_client
     out = groq_client.chat(messages, groq_client.CHAT_MODELS, max_tokens=600, json_mode=True,
-                           wait=WAIT, priority="normal", effort="medium")
+                           wait=_wait(), priority="normal", effort="medium")
     return out["text"] if out else None
 
 
@@ -231,7 +242,7 @@ def _gemini(messages):
     from scanners import translator as tr
     key = tr._gemini_key()
     # "low": as a backup for English answers it never takes Gemini away from message checks
-    if not key or not tr._available("gemini") or not tr._reserve_gemini(WAIT, "low"):
+    if not key or not tr._available("gemini") or not tr._reserve_gemini(_wait(), "low"):
         return None
     return _gemini_call(messages, key)
 
@@ -267,6 +278,7 @@ def _gemini_call(messages, key):
 ANSWER_MODELS = [m.strip() for m in os.environ.get("GEMINI_ANSWER_MODELS", "gemini-2.5-flash,gemini-flash-latest").split(",") if m.strip()]
 _answer_model = {"name": None, "problem": None}
 _answer_gone: set = set()
+_answer_problems: dict = {}
 
 
 def _gemini_smart(messages):
@@ -274,7 +286,7 @@ def _gemini_smart(messages):
     from scanners import translator as tr
     key = tr._gemini_key()
     q = quota("gemini_answers")
-    if not key or not q.take(wait=8.0, priority="normal"):
+    if not key or _wait() < 20 or not q.take(wait=min(8.0, _wait()), priority="normal"):
         return None
     system = messages[0]["content"]
     contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
@@ -293,6 +305,9 @@ def _gemini_smart(messages):
             return None
         if r.status_code != 200:
             _answer_model["problem"] = f"{model}: HTTP {r.status_code} {str(getattr(r, 'text', ''))[:200]}"
+            _answer_problems[model] = _answer_model["problem"]
+        if r.status_code in (500, 502, 503, 504):
+            continue                         # busy at Google right now: try the next better model
         if r.status_code in (400, 403, 404):
             _answer_gone.add(model)          # not offered to this key: use the others
             _answer_model["name"] = None
@@ -325,14 +340,14 @@ def _gemini_native(messages):
         return better
     from scanners import translator as tr
     key = tr._gemini_key()
-    if not key or not tr._available("gemini") or not tr._reserve_gemini(WAIT, "normal"):
+    if not key or not tr._available("gemini") or not tr._reserve_gemini(_wait(), "normal"):
         return None
     return _gemini_call(messages, key)
 
 
 def _cloudflare(messages):
     acct, token = os.environ.get("CLOUDFLARE_ACCOUNT_ID", ""), os.environ.get("CLOUDFLARE_AI_TOKEN", "")
-    if not acct or not token or not quota("cloudflare").take(wait=WAIT):
+    if not acct or not token or not quota("cloudflare").take(wait=_wait()):
         return None
     model = os.environ.get("CLOUDFLARE_CHAT_MODEL", "@cf/meta/llama-3.3-70b-instruct-fp8-fast")
     try:
@@ -385,6 +400,13 @@ _DO_FORM = {"ಕೊರೊಡ್ಚಿ": "ಕೊರ್ಲೆ", "ಮಲ್ಪೊ�
             "korodchi": "korle", "malpodchi": "malpule", "deevodchi": "deevole"}
 
 
+def _reads_as_kannada(reply: str) -> bool:
+    """The answer is clearly Kannada (not Tulu), in either Kannada script or English letters."""
+    if _script_share(reply, "kn") >= 0.4:
+        return kannada_script_hint(reply) == "kn"
+    return latin_language_hint(reply) == "kn"
+
+
 def _wrong_dont(reply: str) -> bool:
     return bool(_WRONG_DONT.search(reply or ""))
 
@@ -401,8 +423,18 @@ def _fix_dont(reply: str) -> str:
 
 def _generate(messages, message: str, lang: str, hint=None):
     """The answer and which service wrote it. (None, None) when no free service could answer."""
+    _until.end = time.time() + BUDGET
+    try:
+        return _generate_in_time(messages, message, lang, hint)
+    finally:
+        _until.end = None
+
+
+def _generate_in_time(messages, message: str, lang: str, hint=None):
     want = _script_of(message)
-    tulu = lang == "tcy" or (isinstance(hint, tuple) and hint[0] == "tcy")
+    code = hint[0] if isinstance(hint, tuple) else hint
+    tulu = code == "tcy" or (lang == "tcy" and code != "kn")
+    first, first_used = None, None
     # Gemini writes Indian languages more naturally; Groq is best for English. Each falls back to the other.
     native = want is not None or lang in ("kn", "hi", "tcy") or _looks_indic_in_latin(message)
     order = (_gemini_native, _groq, _cloudflare) if native else (_groq, _gemini, _cloudflare)
@@ -415,12 +447,20 @@ def _generate(messages, message: str, lang: str, hint=None):
                 used = provider.__name__.strip("_").replace("_native", "")
                 break
         if not out:
-            return None, None
+            return (first, first_used) if first else (None, None)   # a fix-up failed: keep the first answer
+        if attempt == 0:
+            first, first_used = out, used
         # They wrote in Kannada/Hindi script but the answer isn't in it: ask once more, clearly
         if want and _script_share(out["reply"], want) < 0.3 and attempt == 0:
             target = "Tulu, written in Kannada script" if (want == "kn" and tulu) else SCRIPT_NAMES[want]
             messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
                                    {"role": "user", "content": f"Please give the same answer in {target}, as JSON."}]
+            continue
+        # They need Tulu but the answer came in Kannada (the two look alike): ask once for Tulu
+        if tulu and attempt == 0 and _reads_as_kannada(out["reply"]):
+            messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
+                                   {"role": "user", "content": "That answer is in Kannada, but they need Tulu. Write the same answer again in "
+                                    "Tulu (with the same letters they used), following the Tulu model sentences, as JSON."}]
             continue
         # Tulu: a step they must do was written as "don't" (e.g. "don't file a complaint"): ask once to fix it
         if _wrong_dont(out["reply"]) and attempt == 0:
@@ -530,7 +570,7 @@ def assistant_selftest_route():
     results = []
     began = time.time()
     for lang, q, chosen in cases:
-        if time.time() - began > 120:   # the server stops a request at 180 s
+        if time.time() - began > 45:   # the server stops a request at 180 s, and one question may take up to 140 s
             results.append({"asked": q, "reply": "(not asked this time, to stay within the time limit; open again with &case=... for the rest)"})
             continue
         chosen = chosen if chosen in LANG_NAMES else ""
@@ -545,4 +585,5 @@ def assistant_selftest_route():
                         "asks_which_language": out and out.get("ask_language"),
                         "reply": out and _clean(out["reply"], []), "actions": out and out["actions"]})
     return jsonify({"groq_configured": groq_client.configured(), "results": results, "groq": groq_client.status(),
-                    "better_model": _answer_model["name"], "better_model_problem": _answer_model["problem"], "better_model_allowance": quota("gemini_answers").status()})
+                    "better_model": _answer_model["name"], "better_model_problem": _answer_model["problem"],
+                    "better_model_problems": dict(_answer_problems), "better_models_not_offered": sorted(_answer_gone), "better_model_allowance": quota("gemini_answers").status()})
