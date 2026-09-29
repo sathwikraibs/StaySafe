@@ -135,6 +135,40 @@ def test_same_question_is_answered_from_memory():
     assert len(seen) == 1
 
 
+def test_indian_language_answers_go_to_gemini_first_english_to_groq():
+    setup({"reply": "ok", "urgent": False, "actions": []})
+    os.environ["GEMINI_API_KEY"] = "g"
+    urls = []
+
+    class R:
+        status_code = 200
+        headers = {}
+        text = ""
+
+        def __init__(self, url):
+            self.url = url
+
+        def json(self):
+            body = json.dumps({"reply": "ಕರೆ ಕಡಿತಗೊಳಿಸಿ, ಹಣ ಕೊಡಬೇಡಿ.", "urgent": False, "actions": []}, ensure_ascii=False)
+            if "generativelanguage" in self.url:
+                return {"candidates": [{"content": {"parts": [{"text": body}]}}]}
+            return {"choices": [{"message": {"content": json.dumps({"reply": "Hang up.", "urgent": False, "actions": []})}}],
+                    "usage": {"total_tokens": 800}}
+
+    def post(url, **kw):
+        urls.append(url)
+        return R(url)
+    groq_client.requests.post = post
+    try:
+        d = c.post("/api/assistant", json={"message": "ಪೊಲೀಸ್ ಕರೆ ಬಂತು ಏನು ಮಾಡಲಿ", "lang": "kn"}).get_json()
+        assert "generativelanguage" in urls[0] and "ಕರೆ" in d["reply"], (urls, d)
+        urls.clear()
+        c.post("/api/assistant", json={"message": "police called me what to do", "lang": "en"})
+        assert "groq.com" in urls[0], urls
+    finally:
+        os.environ.pop("GEMINI_API_KEY", None)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

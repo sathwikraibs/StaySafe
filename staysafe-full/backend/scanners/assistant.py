@@ -45,11 +45,12 @@ People may be scared or may have just lost money. They may write in any language
 
 Answer like a kind, calm friend who knows cyber safety:
 - Language: reply in {reply_lang}. If they clearly write in another language, reply in theirs (Kannada in Kannada script, Hindi in Devanagari). Simple everyday words, no jargon.
-- Short: 2 to 6 short sentences or numbered steps, most important first. Acknowledge their worry in a few words.
+- Start with one short caring line (for example "I'm sorry this happened, let's act quickly."), then 2 to 5 short numbered steps, most important first. Speak to them directly and politely ("please call", "don't pay").
+- Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation. Useful phrases: Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don't pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don't tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi). Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.
 - Money lost, or OTP/PIN/card/bank details shared: 1) call 1930 (National Cyber Crime Helpline) now, 2) call the bank on the number on the card or in the bank's app to block card, UPI and net banking, 3) report at cybercrime.gov.in and keep screenshots.
-- "Digital arrest", police/CBI/customs/courier threats on calls or video calls, "pay to avoid arrest": it is a scam, there is no digital arrest, hang up, don't pay.
-- Fraud call or SMS, no money lost: report on Sanchar Saathi (Chakshu), sancharsaathi.gov.in. Spam SMS: forward to 1909.
-- Danger to life: call 112. If they sound hopeless or mention hurting themselves: be gentle, suggest Tele-MANAS 14416 (free, 24x7) or someone they trust.
+- "Digital arrest", police/CBI/customs/courier threats on calls or video calls, "pay to avoid arrest": say clearly it is a scam and real police never arrest anyone on a call; hang up, don't pay, don't share Aadhaar or bank details, tell family. If they already paid: 1930 at once.
+- Fraud call or SMS, no money lost: report on Sanchar Saathi (Chakshu), sancharsaathi.gov.in. Mention 1909 only for spam SMS.
+- Mention 112 only if someone is in physical danger right now. If they sound hopeless or mention hurting themselves: be gentle, suggest Tele-MANAS 14416 (free, 24x7) or someone they trust.
 - Unsure if something is a scam: suggest checking it on StaySafe (message, link, QR code, file or email check).
 - Never ask for OTPs, PINs, passwords, CVV, card, account or Aadhaar numbers. If they shared one, tell them not to share it again and to change it.
 - Never promise money will come back. You are not the police, a bank or a lawyer. If unsure, say so.
@@ -119,14 +120,19 @@ def _groq(messages):
 def _gemini(messages):
     from scanners import translator as tr
     key = tr._gemini_key()
-    # "low": the assistant never takes Gemini away from message checks
+    # "low": as a backup for English answers it never takes Gemini away from message checks
     if not key or not tr._available("gemini") or not tr._reserve_gemini(WAIT, "low"):
         return None
+    return _gemini_call(messages, key)
+
+
+def _gemini_call(messages, key):
+    from scanners import translator as tr
     system = messages[0]["content"]
     contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
                 for m in messages[1:]]
     body = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents,
-            "generationConfig": {"temperature": 0.3, "responseMimeType": "application/json", "maxOutputTokens": 800}}
+            "generationConfig": {"temperature": 0.3, "responseMimeType": "application/json", "maxOutputTokens": 900}}
     for model in ([tr._GEMINI["model"]] if tr._GEMINI["model"] else tr.GEMINI_MODELS):
         try:
             r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=20)
@@ -144,6 +150,15 @@ def _gemini(messages):
         except Exception:
             return None
     return None
+
+
+def _gemini_native(messages):
+    """Gemini first for answers in Kannada, Hindi or Tulu (normal priority: a visitor is waiting)."""
+    from scanners import translator as tr
+    key = tr._gemini_key()
+    if not key or not tr._available("gemini") or not tr._reserve_gemini(WAIT, "normal"):
+        return None
+    return _gemini_call(messages, key)
 
 
 def _cloudflare(messages):
@@ -174,6 +189,7 @@ def _clean(reply: str, secrets) -> str:
                    keep, reply, flags=re.I)
     reply = unmask_personal(reply, secrets)
     reply = reply.replace("—", ", ").replace("–", "-")   # no long dashes on the site
+    reply = reply.replace("\u202f", " ").replace("\u00a0", " ")
     return re.sub(r"[ \t]{2,}", " ", reply).strip()[:1500]
 
 
@@ -189,6 +205,31 @@ def _parse(raw: str):
         return None
     actions = [a for a in (data.get("actions") or []) if isinstance(a, str) and a in ACTIONS][:3]
     return {"reply": reply, "urgent": bool(data.get("urgent")), "actions": actions}
+
+
+def _generate(messages, message: str, lang: str):
+    """The answer and which service wrote it. (None, None) when no free service could answer."""
+    want = _script_of(message)
+    # Gemini writes Indian languages more naturally; Groq is best for English. Each falls back to the other.
+    native = want is not None or lang in ("kn", "hi", "tcy")
+    order = (_gemini_native, _groq, _cloudflare) if native else (_groq, _gemini, _cloudflare)
+    out, used = None, None
+    for attempt in range(2):
+        for provider in order:
+            raw = provider(messages)
+            out = _parse(raw) if raw else None
+            if out:
+                used = provider.__name__.strip("_").replace("_native", "")
+                break
+        if not out:
+            return None, None
+        # They wrote in Kannada/Hindi script but the answer isn't in it: ask once more, clearly
+        if want and _script_share(out["reply"], want) < 0.3 and attempt == 0:
+            messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
+                                   {"role": "user", "content": f"Please give the same answer in {SCRIPT_NAMES[want]}, as JSON."}]
+            continue
+        break
+    return out, used
 
 
 @assistant_bp.route("/api/assistant/status", methods=["GET"])
@@ -236,22 +277,9 @@ def assistant_route():
         if hit and time.time() - hit[0] < ANSWER_CACHE_S:
             return jsonify(dict(hit[1], reply=_clean(hit[1]["reply"], secrets)))
 
-    want = _script_of(message)
-    out = None
-    for attempt in range(2):
-        for provider in (_groq, _gemini, _cloudflare):
-            raw = provider(messages)
-            out = _parse(raw) if raw else None
-            if out:
-                break
-        if not out:
-            return jsonify({"error": "unavailable"}), 503
-        # They wrote in Kannada/Hindi script but the answer isn't in it: ask once more, clearly
-        if want and _script_share(out["reply"], want) < 0.3 and attempt == 0:
-            messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
-                                   {"role": "user", "content": f"Please give the same answer in {SCRIPT_NAMES[want]}, as JSON."}]
-            continue
-        break
+    out, _provider = _generate(messages, message, lang)
+    if not out:
+        return jsonify({"error": "unavailable"}), 503
     if cache_key:
         with _lock:
             _answers[cache_key] = (time.time(), out)
@@ -274,12 +302,13 @@ def assistant_selftest_route():
         return jsonify({"error": "Not found"}), 404
     results = []
     for lang, q in (("en", "sir someone call and say my sbi acount block i give otp now money gone what do"),
-                    ("kn", "ನನಗೆ ಒಂದು ಕರೆ ಬಂತು, ಪೊಲೀಸ್ ಅಂತ ಹೇಳಿ ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್ ಮಾಡ್ತೀವಿ ಅಂದ್ರು, ಏನು ಮಾಡಲಿ")):
+                    ("kn", "ನನಗೆ ಒಂದು ಕರೆ ಬಂತು, ಪೊಲೀಸ್ ಅಂತ ಹೇಳಿ ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್ ಮಾಡ್ತೀವಿ ಅಂದ್ರು, ಏನು ಮಾಡಲಿ"),
+                    ("hi", "bhai ek call aaya bola aapke parcel me drugs mila hai paise bhejo warna arrest hoga"),
+                    ("tcy", "ಎಂಕ್ ಒಂಜಿ ಮೆಸೇಜ್ ಬತ್ತ್ಂಡ್, ಲಾಟರಿ ಬತ್ತ್ಂಡ್ ಪಂಡ್ದ್, ದುಡ್ಡು ಕಟ್ಟೊಡು ಪನ್ಪೆರ್")):
         system = SYSTEM.format(reply_lang=LANG_NAMES[lang])
         messages = [{"role": "system", "content": system}, {"role": "user", "content": f"<visitor>\n{q}\n</visitor>"}]
         t = time.time()
-        out = groq_client.chat(messages, groq_client.CHAT_MODELS, max_tokens=600, wait=20, effort="medium")
-        parsed = _parse(out["text"]) if out else None
-        results.append({"lang": lang, "model": out and out["model"], "seconds": round(time.time() - t, 1),
-                        "reply": parsed and _clean(parsed["reply"], []), "actions": parsed and parsed["actions"]})
+        out, used = _generate(messages, q, lang)
+        results.append({"lang": lang, "answered_by": used, "seconds": round(time.time() - t, 1),
+                        "reply": out and _clean(out["reply"], []), "actions": out and out["actions"]})
     return jsonify({"groq_configured": groq_client.configured(), "results": results, "groq": groq_client.status()})
