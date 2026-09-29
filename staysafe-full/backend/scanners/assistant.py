@@ -303,6 +303,9 @@ def _gemini_smart(messages):
             if r.status_code == 400 and "think" in r.text.lower():
                 body["generationConfig"].pop("thinkingConfig", None)
                 r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=40)
+            if r.status_code in (500, 503) and _wait() >= 25:
+                time.sleep(3)                # "high demand" spikes are usually over in seconds: ask once more
+                r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=40)
         except Exception:
             return None
         if r.status_code != 200:
