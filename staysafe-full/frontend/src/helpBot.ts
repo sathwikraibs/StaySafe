@@ -55,6 +55,13 @@ export interface HelpTexts {
   formBack: string;
   sent: string;
   sentUrgent: string;
+  aiLabel: string;
+  typing: string;
+  actIncident: string;
+  actCheckMessage: string;
+  actCheckLink: string;
+  actPassword: string;
+  actLibrary: string;
 }
 
 /** Words that mean the same in every language (numbers, English words people mix in). */
@@ -376,7 +383,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "Other questions", close: "Close",
     never: "We will never ask for your OTP, PIN, password or bank details.",
     urgent: "Lost money? Call 1930 now",
-    formIntro: "Our team isn't online right now. Write to us here and we'll reply personally by email or WhatsApp, usually within a few hours. If you lost money, call 1930 now, don't wait for us.",
+    formIntro: "I'll pass your message to a real person from the StaySafe team. Please be patient: they reply when they're free, which may take a few hours or longer, and we can't promise a time. If you lost money, don't wait for us, call 1930 now.",
     chatNow: "Chat live now",
     writeToUs: "Write to us",
     formTitle: "Write to the StaySafe team",
@@ -393,8 +400,15 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formSend: "Send message",
     formSending: "Sending...",
     formBack: "Back",
-    sent: "Thank you. Your message has reached our team. Your reference is {ref}. We'll reply to you personally, usually within a few hours.",
+    sent: "Your message has been passed to a real person. Your reference is {ref}. They'll reply by email or WhatsApp when they're free. We can't promise when, but you won't be forgotten.",
     sentUrgent: "Since money was lost, please also call 1930 right now. The first hours matter most.",
+    aiLabel: "Automatic answer from StaySafe's assistant, not a person. It can make mistakes.",
+    typing: "Thinking...",
+    actIncident: "Recovery steps",
+    actCheckMessage: "Check a message",
+    actCheckLink: "Check a link",
+    actPassword: "Check my password and email",
+    actLibrary: "Learn about scams",
   },
   hi: {
     title: "StaySafe सहायक", subtitle: "तुरंत जवाब, कभी भी",
@@ -413,7 +427,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "दूसरे सवाल", close: "बंद करें",
     never: "हम कभी आपका OTP, PIN, पासवर्ड या बैंक की जानकारी नहीं माँगेंगे।",
     urgent: "पैसे कटे? अभी 1930 पर कॉल करें",
-    formIntro: "हमारी टीम अभी ऑनलाइन नहीं है। यहाँ हमें लिखें, हम ईमेल या WhatsApp पर खुद जवाब देंगे, आमतौर पर कुछ घंटों में। पैसे कटे हों तो हमारा इंतज़ार न करें, अभी 1930 पर कॉल करें।",
+    formIntro: "मैं आपका मैसेज StaySafe टीम के एक असली व्यक्ति तक पहुँचा दूँगा। कृपया धैर्य रखें: वे खाली होने पर जवाब देते हैं, इसमें कुछ घंटे या ज़्यादा लग सकते हैं, और हम समय का वादा नहीं कर सकते। पैसे कटे हों तो हमारा इंतज़ार न करें, अभी 1930 पर कॉल करें।",
     chatNow: "अभी लाइव चैट करें",
     writeToUs: "हमें लिखें",
     formTitle: "StaySafe टीम को लिखें",
@@ -430,8 +444,15 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formSend: "मैसेज भेजें",
     formSending: "भेज रहे हैं...",
     formBack: "वापस",
-    sent: "धन्यवाद। आपका मैसेज हमारी टीम तक पहुँच गया है। आपका रेफ़रेंस नंबर {ref} है। हम आमतौर पर कुछ घंटों में खुद जवाब देंगे।",
+    sent: "आपका मैसेज एक असली व्यक्ति तक पहुँचा दिया गया है। आपका रेफ़रेंस नंबर {ref} है। वे खाली होने पर ईमेल या WhatsApp पर जवाब देंगे। समय का वादा नहीं कर सकते, पर आपको भुलाया नहीं जाएगा।",
     sentUrgent: "पैसे कटे हैं, इसलिए अभी 1930 पर भी कॉल करें। शुरुआती घंटे सबसे ज़रूरी हैं।",
+    aiLabel: "यह StaySafe सहायक का अपने-आप दिया गया जवाब है, किसी व्यक्ति का नहीं। इसमें गलती हो सकती है।",
+    typing: "सोच रहा है...",
+    actIncident: "रिकवरी के कदम",
+    actCheckMessage: "मैसेज जाँचें",
+    actCheckLink: "लिंक जाँचें",
+    actPassword: "पासवर्ड और ईमेल जाँचें",
+    actLibrary: "धोखों के बारे में जानें",
   },
   kn: {
     title: "StaySafe ಸಹಾಯಕ", subtitle: "ತಕ್ಷಣದ ಉತ್ತರ, ಯಾವಾಗ ಬೇಕಾದರೂ",
@@ -450,7 +471,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "ಬೇರೆ ಪ್ರಶ್ನೆಗಳು", close: "ಮುಚ್ಚಿ",
     never: "ನಾವು ಎಂದಿಗೂ ನಿಮ್ಮ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅಥವಾ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇಳುವುದಿಲ್ಲ.",
     urgent: "ಹಣ ಹೋಯಿತೇ? ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ",
-    formIntro: "ನಮ್ಮ ತಂಡ ಈಗ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಇಲ್ಲಿ ನಮಗೆ ಬರೆಯಿರಿ, ಇಮೇಲ್ ಅಥವಾ WhatsApp ನಲ್ಲಿ ನಾವೇ ಉತ್ತರಿಸುತ್ತೇವೆ, ಸಾಮಾನ್ಯವಾಗಿ ಕೆಲವು ಗಂಟೆಗಳಲ್ಲಿ. ಹಣ ಹೋಗಿದ್ದರೆ ನಮಗಾಗಿ ಕಾಯಬೇಡಿ, ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ.",
+    formIntro: "ನಿಮ್ಮ ಮೆಸೇಜ್ ಅನ್ನು StaySafe ತಂಡದ ಒಬ್ಬ ನಿಜವಾದ ವ್ಯಕ್ತಿಗೆ ತಲುಪಿಸುತ್ತೇನೆ. ದಯವಿಟ್ಟು ತಾಳ್ಮೆಯಿಂದಿರಿ: ಅವರು ಬಿಡುವಾದಾಗ ಉತ್ತರಿಸುತ್ತಾರೆ, ಕೆಲವು ಗಂಟೆ ಅಥವಾ ಹೆಚ್ಚು ಸಮಯ ಆಗಬಹುದು, ಸಮಯದ ಭರವಸೆ ನೀಡಲಾಗದು. ಹಣ ಹೋಗಿದ್ದರೆ ನಮಗಾಗಿ ಕಾಯಬೇಡಿ, ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ.",
     chatNow: "ಈಗ ಲೈವ್ ಚಾಟ್ ಮಾಡಿ",
     writeToUs: "ನಮಗೆ ಬರೆಯಿರಿ",
     formTitle: "StaySafe ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
@@ -467,8 +488,15 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formSend: "ಮೆಸೇಜ್ ಕಳುಹಿಸಿ",
     formSending: "ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
     formBack: "ಹಿಂದೆ",
-    sent: "ಧನ್ಯವಾದ. ನಿಮ್ಮ ಮೆಸೇಜ್ ನಮ್ಮ ತಂಡಕ್ಕೆ ತಲುಪಿದೆ. ನಿಮ್ಮ ರೆಫರೆನ್ಸ್ ಸಂಖ್ಯೆ {ref}. ಸಾಮಾನ್ಯವಾಗಿ ಕೆಲವು ಗಂಟೆಗಳಲ್ಲಿ ನಾವೇ ಉತ್ತರಿಸುತ್ತೇವೆ.",
+    sent: "ನಿಮ್ಮ ಮೆಸೇಜ್ ಒಬ್ಬ ನಿಜವಾದ ವ್ಯಕ್ತಿಗೆ ತಲುಪಿದೆ. ನಿಮ್ಮ ರೆಫರೆನ್ಸ್ ಸಂಖ್ಯೆ {ref}. ಅವರು ಬಿಡುವಾದಾಗ ಇಮೇಲ್ ಅಥವಾ WhatsApp ನಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ. ಯಾವಾಗ ಎಂದು ಹೇಳಲಾಗದು, ಆದರೆ ನಿಮ್ಮನ್ನು ಮರೆಯುವುದಿಲ್ಲ.",
     sentUrgent: "ಹಣ ಹೋಗಿರುವುದರಿಂದ ಈಗಲೇ 1930 ಗೂ ಕರೆ ಮಾಡಿ. ಮೊದಲ ಗಂಟೆಗಳು ತುಂಬಾ ಮುಖ್ಯ.",
+    aiLabel: "ಇದು StaySafe ಸಹಾಯಕನ ಸ್ವಯಂಚಾಲಿತ ಉತ್ತರ, ವ್ಯಕ್ತಿಯದಲ್ಲ. ಇದರಲ್ಲಿ ತಪ್ಪುಗಳಿರಬಹುದು.",
+    typing: "ಯೋಚಿಸುತ್ತಿದೆ...",
+    actIncident: "ಚೇತರಿಕೆಯ ಹಂತಗಳು",
+    actCheckMessage: "ಮೆಸೇಜ್ ಪರಿಶೀಲಿಸಿ",
+    actCheckLink: "ಲಿಂಕ್ ಪರಿಶೀಲಿಸಿ",
+    actPassword: "ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ",
+    actLibrary: "ಮೋಸಗಳ ಬಗ್ಗೆ ತಿಳಿಯಿರಿ",
   },
   tcy: {
     title: "StaySafe ಸಹಾಯಕ", subtitle: "ಬೇಗದ ಉತ್ತರ, ಏಪ ಬೋಡಾಂಡಲಾ",
@@ -487,7 +515,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "ಬೇತೆ ಪ್ರಶ್ನೆಲು", close: "ಮುಚ್ಚುಲೆ",
     never: "ಎಂಕುಲು ಏಪಲಾ ಈರೆನ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇನುಜ.",
     urgent: "ದುಡ್ಡು ಪೋಂಡಾ? ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ",
-    formIntro: "ಎಂಕ್ಲೆನ ತಂಡ ಇತ್ತೆ ಆನ್‌ಲೈನ್‌ಡ್ ಇಜ್ಜಿ. ಮುಲ್ಪ ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ, ಇಮೇಲ್ ಅತ್ತಂಡ WhatsApp ಡ್ ಎಂಕ್ಲೆನೇ ಉತ್ತರ ಕೊರ್ಪ, ಸಾಮಾನ್ಯವಾದ್ ಕೆಲವು ಗಂಟೆಡ್. ದುಡ್ಡು ಪೋದಿತ್ತುಂಡ ಎಂಕ್ಲೆಗಾದ್ ಕಾಪೊಡ್ಚಿ, ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.",
+    formIntro: "ಈರೆನ ಮೆಸೇಜ್‌ನ್ StaySafe ತಂಡದ ಒರಿ ನಿಜವಾಯಿನ ವ್ಯಕ್ತಿಗ್ ಎತ್ತಾವೆ. ತಾಳ್ಮೆಡ್ ಇಪ್ಪುಲೆ: ಅಕುಲು ಪುರುಸೊತ್ತು ಆನಗ ಉತ್ತರ ಕೊರ್ಪೆರ್, ಕೆಲವು ಗಂಟೆ ಅತ್ತಂಡ ಜಾಸ್ತಿ ಆವೊಲಿ, ಪೊರ್ತುದ ಭರವಸೆ ಕೊರೆರೆ ಆಪುಜಿ. ದುಡ್ಡು ಪೋದಿತ್ತುಂಡ ಎಂಕ್ಲೆಗಾದ್ ಕಾಪೊಡ್ಚಿ, ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.",
     chatNow: "ಇತ್ತೆ ಲೈವ್ ಚಾಟ್ ಮಲ್ಪುಲೆ",
     writeToUs: "ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ",
     formTitle: "StaySafe ತಂಡೊಗು ಬರೆಲೆ",
@@ -504,8 +532,15 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formSend: "ಮೆಸೇಜ್ ಕಡಪುಡ್ಲೆ",
     formSending: "ಕಡಪುಡೊಂದುಲ್ಲ...",
     formBack: "ಪಿರ",
-    sent: "ಧನ್ಯವಾದ. ಈರೆನ ಮೆಸೇಜ್ ಎಂಕ್ಲೆನ ತಂಡೊಗು ಎತ್ತ್‌ದ್ಂಡ್. ಈರೆನ ರೆಫರೆನ್ಸ್ ನಂಬರ್ {ref}. ಸಾಮಾನ್ಯವಾದ್ ಕೆಲವು ಗಂಟೆಡ್ ಎಂಕ್ಲೆನೇ ಉತ್ತರ ಕೊರ್ಪ.",
+    sent: "ಈರೆನ ಮೆಸೇಜ್ ಒರಿ ನಿಜವಾಯಿನ ವ್ಯಕ್ತಿಗ್ ಎತ್ತ್‌ದ್ಂಡ್. ಈರೆನ ರೆಫರೆನ್ಸ್ ನಂಬರ್ {ref}. ಅಕುಲು ಪುರುಸೊತ್ತು ಆನಗ ಇಮೇಲ್ ಅತ್ತಂಡ WhatsApp ಡ್ ಉತ್ತರ ಕೊರ್ಪೆರ್. ಏಪ ಪಂದ್ ಪನರೆ ಆಪುಜಿ, ಆಂಡ ಈರೆನ್ ಮದಪುಜ.",
     sentUrgent: "ದುಡ್ಡು ಪೋತಿನೆಡ್ದಾವರ ಇತ್ತೆನೇ 1930 ಗ್‌ಲಾ ಕಾಲ್ ಮಲ್ಪುಲೆ. ಸುರುತ ಗಂಟೆಲು ಮಸ್ತ್ ಮುಖ್ಯ.",
+    aiLabel: "ಉಂದು StaySafe ಸಹಾಯಕನ ಸ್ವಯಂಚಾಲಿತ ಉತ್ತರ, ವ್ಯಕ್ತಿದ್ ಅತ್ತ್. ಅಯಿಟ್ ತಪ್ಪು ಇಪ್ಪೊಲಿ.",
+    typing: "ಯೋಚನೆ ಮಲ್ಪುಂಡು...",
+    actIncident: "ಚೇತರಿಕೆದ ಹಂತೊಲು",
+    actCheckMessage: "ಮೆಸೇಜ್ ಪರಿಶೀಲನೆ",
+    actCheckLink: "ಲಿಂಕ್ ಪರಿಶೀಲನೆ",
+    actPassword: "ಪಾಸ್‌ವರ್ಡ್ ಬೊಕ್ಕ ಇಮೇಲ್ ಪರಿಶೀಲನೆ",
+    actLibrary: "ಮೋಸೊಲೆನ ಬಗ್ಗೆ ತೆರಿಯೊನ್ಲೆ",
   },
 };
 

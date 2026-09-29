@@ -18,6 +18,7 @@ from scanners.network_checker import network_checker_bp
 from scanners.email_analyzer import email_analyzer_bp
 from scanners.knowledge_base import knowledge_base_bp
 from scanners.contact import contact_bp, contact_status
+from scanners.assistant import assistant_bp, assistant_ready
 from scanners.translator import translation_status
 from scanners.ai_review import ai_status
 from scanners.quota import quota_status
@@ -35,6 +36,7 @@ app.after_request(add_security_headers)
 
 app.register_blueprint(url_scanner_bp)
 app.register_blueprint(contact_bp)
+app.register_blueprint(assistant_bp)
 app.register_blueprint(message_scanner_bp)
 app.register_blueprint(risk_engine_bp)
 app.register_blueprint(qr_scanner_bp)
@@ -68,6 +70,7 @@ def home():
         "link_checks": link_check_status(),
         "allowances": quota_status(),
         "contact_form": contact_status(),
+        "assistant": assistant_ready(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }
 

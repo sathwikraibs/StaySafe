@@ -10,7 +10,9 @@ type Button = HelpAction
   | { kind: "check"; what: "url" | "message"; value: string; label: string }
   | { kind: "live"; label: string }
   | { kind: "form"; label: string };
-interface Bubble { from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean }
+interface Bubble { from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean; ai?: boolean; typing?: boolean }
+type Turn = { role: "user" | "assistant"; text: string };
+interface AiAnswer { reply: string; urgent: boolean; actions: string[] }
 
 /**
  * StaySafe Helper: answers the most common questions straight away, day or night, in the
@@ -33,12 +35,46 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
   const [formReady, setFormReady] = useState<boolean | null>(null);
   const [form, setForm] = useState(false);
   const [lastTopic, setLastTopic] = useState("");
+  const [aiReady, setAiReady] = useState(false);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [thinking, setThinking] = useState(false);
 
   // Can visitors write to the team here? (asked once; the answer never names any service)
   useEffect(() => {
     apiGet<{ available: boolean }>(`${API_BASE}/api/contact/status`)
       .then((r) => setFormReady(!!r.available)).catch(() => setFormReady(false));
+    apiGet<{ available: boolean }>(`${API_BASE}/api/assistant/status`)
+      .then((r) => setAiReady(!!r.available)).catch(() => setAiReady(false));
   }, []);
+
+  /** Buttons the assistant suggested, as real buttons on our pages. */
+  function aiButtons(actions: string[]): Button[] {
+    const map: Record<string, Button> = {
+      incident: { kind: "go", path: "/incident", label: tx.actIncident },
+      check_message: { kind: "go", path: "/scan-message", label: tx.actCheckMessage },
+      check_link: { kind: "go", path: "/scan-url", label: tx.actCheckLink },
+      check_password: { kind: "go", path: "/check-password", label: tx.actPassword },
+      library: { kind: "go", path: "/scam-library", label: tx.actLibrary },
+    };
+    return [...actions.filter((a) => map[a]).map((a) => map[a]), { kind: "person", label: tx.person }];
+  }
+
+  /** Ask the automatic assistant; if it can't answer, fall back to the ready answers. */
+  async function askAssistant(text: string, fallback: () => void) {
+    setThinking(true);
+    say({ from: "bot", lines: [tx.typing], typing: true });
+    try {
+      const r = await apiPostJSON<AiAnswer>(`${API_BASE}/api/assistant`, { message: text, lang, history: turns.slice(-6) });
+      setBubbles((b) => [...b.filter((x) => !x.typing),
+        { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions) }]);
+      setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: r.reply }].slice(-8));
+    } catch {
+      setBubbles((b) => b.filter((x) => !x.typing));
+      fallback();
+    } finally {
+      setThinking(false);
+    }
+  }
 
   // new language: start again in that language
   useEffect(() => {
@@ -118,6 +154,15 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
     setInput("");
     const r = understand(text, lang);
     const me: Bubble = { from: "me", lines: [text.length > 220 ? text.slice(0, 220) + "..." : text] };
+    if (thinking) return;
+    if (aiReady && r.kind !== "link" && r.kind !== "message") {
+      say(me);
+      void askAssistant(text, () => {
+        if (r.kind === "topic") say({ from: "bot", lines: r.topic.a, buttons: [...(r.topic.actions ?? []), { kind: "person", label: tx.person }] });
+        else say({ from: "bot", lines: [tx.noMatch], topics: true });
+      });
+      return;
+    }
     if (r.kind === "topic") {
       say(me, { from: "bot", lines: r.topic.a, buttons: [...(r.topic.actions ?? []), { kind: "person", label: tx.person }] });
     } else if (r.kind === "link") {
@@ -158,6 +203,7 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
           tx={tx}
           onBack={() => setForm(false)}
           onSent={sent}
+          initialMessage={turns.filter((t) => t.role === "user").map((t) => t.text).join("\n").slice(0, 1500)}
           send={(body) => apiPostJSON<{ ok: boolean; ref: string }>(`${API_BASE}/api/contact`,
             { ...body, lang, topic: lastTopic, page: currentPath })}
           errorText={(e) => ts(errorMessage(e))}
@@ -169,9 +215,23 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
         {bubbles.map((b, i) => (
           <div key={i} data-me={b.from === "me" ? "" : undefined} className={b.from === "me" ? "flex justify-end" : "flex justify-start"}>
             <div className={`max-w-[88%] ${b.from === "me" ? "rounded-2xl rounded-br-md bg-sage-500 px-3.5 py-2.5 text-cream-50" : "rounded-2xl rounded-bl-md bg-cream-100 px-3.5 py-2.5 text-ink-800"}`}>
-              {b.lines.map((l, j) => (
+              {b.typing ? (
+                <p className="flex items-center gap-2 font-body text-sm text-dustyblue-600">
+                  <span className="flex gap-1">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-dustyblue-400" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-dustyblue-400 [animation-delay:150ms]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-dustyblue-400 [animation-delay:300ms]" />
+                  </span>
+                  {b.lines[0]}
+                </p>
+              ) : b.lines.map((l, j) => (
                 <p key={j} className={`whitespace-pre-wrap break-words font-body text-sm leading-relaxed ${j ? "mt-1.5" : ""}`}>{l}</p>
               ))}
+              {b.ai && (
+                <p className="mt-2 flex items-start gap-1.5 border-t border-cream-200 pt-2 font-body text-[11px] leading-snug text-dustyblue-600">
+                  <IconShield className="mt-px h-3.5 w-3.5 shrink-0" />{tx.aiLabel}
+                </p>
+              )}
               {b.buttons && b.buttons.length > 0 && (
                 <div className="mt-2.5 flex flex-col gap-1.5">
                   {b.buttons.map((btn, k) => (
@@ -201,7 +261,7 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
             </div>
           </div>
         ))}
-        {!bubbles[last]?.topics && (
+        {!bubbles[last]?.topics && !thinking && (
           <div className="flex justify-start">
             <button type="button" onClick={() => say({ from: "bot", lines: [tx.pick], topics: true })}
               className="rounded-full bg-cream-200 px-3 py-1.5 font-body text-xs font-bold text-ink-700 hover:bg-cream-300">
@@ -217,7 +277,7 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
           <input ref={box} value={input} onChange={(e) => setInput(e.target.value)} placeholder={tx.placeholder}
             maxLength={5000}
             className="min-w-0 flex-1 rounded-2xl border-2 border-cream-200 bg-cream-100 px-3.5 py-2.5 font-body text-base text-ink-800 outline-none focus:border-sage-400" />
-          <button type="submit" disabled={!input.trim()}
+          <button type="submit" disabled={!input.trim() || thinking}
             className="shrink-0 rounded-2xl bg-sage-500 px-4 py-2.5 font-body text-sm font-bold text-cream-50 transition-colors hover:bg-sage-600 disabled:opacity-50">
             {tx.send}
           </button>
@@ -233,8 +293,9 @@ export function HelpBot({ onClose, onNavigate, currentPath }: {
 type Texts = (typeof HELP_TEXTS)["en"];
 
 /** The short "write to us" form: reply address, did you lose money, what happened. */
-function ContactForm({ tx, onBack, onSent, send, errorText }: {
+function ContactForm({ tx, onBack, onSent, send, errorText, initialMessage = "" }: {
   tx: Texts;
+  initialMessage?: string;
   onBack: () => void;
   onSent: (ref: string, lost: string) => void;
   send: (body: Record<string, string>) => Promise<{ ok: boolean; ref: string }>;
@@ -244,7 +305,7 @@ function ContactForm({ tx, onBack, onSent, send, errorText }: {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [lost, setLost] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const [trap, setTrap] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
