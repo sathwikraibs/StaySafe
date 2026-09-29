@@ -176,6 +176,7 @@ _GEMINI = {"model": None, "minute": [], "day": date.today(), "day_count": 0}
 LANGUAGE_NAMES = {
     "en": "English", "hi": "Hindi", "kn": "Kannada", "ta": "Tamil", "te": "Telugu", "ml": "Malayalam",
     "mr": "Marathi", "bn": "Bengali", "gu": "Gujarati", "pa": "Punjabi", "or": "Odia", "ur": "Urdu",
+    "tcy": "Tulu (the language of coastal Karnataka), written in Kannada script. Use everyday spoken Tulu, not Kannada",
 }
 
 
@@ -355,6 +356,8 @@ def _looks_like_translation(source: str, translated: str, target: str) -> bool:
     """Reject empty, unchanged or wildly short/long results."""
     if not translated or _same_text(source, translated):
         return False
+    if target == "tcy" and len(re.findall(r"[\u0C80-\u0CFF]", translated)) < 2:
+        return False
     if target == "en":
         letters = len(re.findall(r"[A-Za-z]", translated))
         src_letters = len(re.findall(r"\w", source))
@@ -456,9 +459,23 @@ def translate(text: str, target: str):
     {"text", "from", "to", "provider"} or None when no free translation is available.
     """
     text = (text or "").strip()[:MAX_CHARS]
-    target = TARGET_FALLBACK.get(target, target)
     if not text:
         return None
+    if target in TARGET_FALLBACK:
+        # Tulu: only Gemini can write it. If Gemini isn't available, give Kannada instead
+        # (Tulu readers read Kannada script); the answer's "to" then says "kn".
+        with _lock:
+            hit = _cache.get((text, target))
+        if hit:
+            return hit
+        masked, secrets = mask_personal(text)
+        out = _gemini(masked, target)
+        if out:
+            out = dict(out, text=unmask_personal(out["text"], secrets))
+            with _lock:
+                _cache[(text, target)] = out
+            return out
+        target = TARGET_FALLBACK[target]
 
     cache_key = (text, target)
     with _lock:

@@ -1037,6 +1037,26 @@ def test_translate_route_and_message_language():
         translator.translate = translator_real
 
 
+def test_tulu_translation_uses_gemini_then_kannada():
+    from scanners import translator
+    real = translator._gemini, translator._google, translator._mymemory, translator._bhashini
+    try:
+        translator._cache.clear()
+        translator._gemini = lambda text, target: {"text": "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಪುಂಡು", "from": "en", "to": target, "provider": "gemini"}
+        out = translator.translate("Your account will be blocked", "tcy")
+        assert out["to"] == "tcy" and out["text"].startswith("ಈರೆನ"), out
+        translator._cache.clear()
+        translator._gemini = lambda text, target: None
+        translator._google = translator._bhashini = lambda text, target: None
+        translator._mymemory = lambda text, target: {"text": "ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ", "from": "en", "to": target, "provider": "mymemory"}
+        out = translator.translate("Your account will be blocked today", "tcy")
+        assert out["to"] == "kn", out
+        assert "tcy" in translator.LANGUAGE_NAMES and not translator._looks_like_translation("abc", "hello there", "tcy")
+    finally:
+        translator._gemini, translator._google, translator._mymemory, translator._bhashini = real
+        translator._cache.clear()
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

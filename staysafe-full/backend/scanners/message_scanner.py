@@ -833,7 +833,7 @@ def add_translation(result: dict, ui_lang: str) -> dict:
     2. If the message's language differs from the website's, add
        result["translation"] = {"text", "from", "to"} so we can show what it says.
     """
-    from scanners.translator import translate, TARGET_FALLBACK
+    from scanners.translator import translate
 
     text = result.get("text_analyzed", "")
     mix = script_mix(text)
@@ -859,12 +859,12 @@ def add_translation(result: dict, ui_lang: str) -> dict:
             result["notes"] = notes
 
     # "What this message says" in the visitor's language
-    target = TARGET_FALLBACK.get(ui_lang, ui_lang)
+    target = ui_lang
     meaning = english if (english and target == "en") else None
     if meaning is None and text.strip():
         if non_latin >= 0.2 or target != "en":
             meaning = translate(text, target)
-    if meaning and meaning.get("from") and meaning["from"].split("-")[0] != target \
+    if meaning and meaning.get("from") and meaning["from"].split("-")[0] not in (target, meaning.get("to")) \
             and meaning["text"].strip().lower() != text.strip().lower():
         result["translation"] = meaning
 
@@ -890,7 +890,8 @@ def translate_route():
     if target not in TRANSLATE_TARGETS:
         return jsonify({"error": "That language isn't available."}), 400
     out = translate(text, target)
-    if not out or not out.get("text", "").strip():
+    src = (out or {}).get("from", "").split("-")[0]
+    if not out or not out.get("text", "").strip() or (src and src == out.get("to")):
         return jsonify({"error": "We couldn't translate this right now. Please try again in a moment."}), 503
     return jsonify({"text": out["text"], "from": (out.get("from") or "").split("-")[0], "to": out.get("to", target)})
 

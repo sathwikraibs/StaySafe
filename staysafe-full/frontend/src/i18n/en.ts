@@ -103,6 +103,7 @@ const enBase = {
     trBusy: "Translating...",
     trPick: "Pick a language to read this message in it.",
     trFailed: "We couldn't translate this right now. Please try again in a moment.",
+    tuluAsKannada: "Tulu wasn't available just now, so this is shown in Kannada.",
   },
 
   qr: {

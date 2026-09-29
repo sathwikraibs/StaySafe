@@ -6,13 +6,17 @@ import { Section } from "@/components/Section";
 import { useI18n } from "@/i18n";
 
 /** Languages a message can be shown in, with their own names so anyone can find theirs. */
-const TARGETS: [string, string][] = [["en", "English"], ["kn", "ಕನ್ನಡ"], ["hi", "हिन्दी"]];
+const TARGETS: [string, string][] = [["en", "English"], ["kn", "ಕನ್ನಡ"], ["tcy", "ತುಳು"], ["hi", "हिन्दी"]];
+
+/** Browsers often don't know Tulu's name, so we give it ourselves. */
+const TULU: Record<string, string> = { en: "Tulu", kn: "ತುಳು", tcy: "ತುಳು", hi: "तुलु" };
 
 type Done = { text: string; from: string; to: string };
 type Slot = Done | "busy" | { error: string };
 
 /** "Kannada", "ಕನ್ನಡ", "कन्नड़"… the name of a language code, in the website language. */
 export function languageName(code: string, uiLang: string): string {
+  if (code === "tcy") return TULU[uiLang] ?? "Tulu";
   try {
     const names = new Intl.DisplayNames([uiLang === "tcy" ? "kn" : uiLang], { type: "language" });
     return names.of(code) || code;
@@ -34,7 +38,7 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
   fromScreenshot?: boolean;
 }) {
   const { t, lang } = useI18n();
-  const uiTarget = lang === "tcy" ? "kn" : lang;
+  const uiTarget = lang;
   const source = (initial?.from || sourceLang || "").split("-")[0];
   const [slots, setSlots] = useState<Record<string, Slot>>(initial ? { [initial.to]: initial } : {});
   const [picked, setPicked] = useState<string | null>(initial ? initial.to : null);
@@ -120,6 +124,7 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
 
       <p className="mt-2 font-body text-xs text-dustyblue-500">
         {done ? t("message.meaningNoteSimple") : ""}
+        {done && picked === "tcy" && done.to !== "tcy" ? ` ${t("message.tuluAsKannada")}` : ""}
         {fromScreenshot ? `${done ? " " : ""}${t("message.ocrNote")}` : ""}
       </p>
     </Section>
