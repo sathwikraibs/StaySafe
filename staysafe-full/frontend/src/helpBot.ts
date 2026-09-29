@@ -576,10 +576,30 @@ export function helpTopics(lang: Lang): HelpTopic[] {
 const LINK_RE = /\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|in|net|org|xyz|top|info|co|app|site|online|link|live|shop|club|io|me|cc|ly)\b(?:\/\S*)?/i;
 
 export type BotReply =
-  | { kind: "topic"; topic: HelpTopic }
+  | { kind: "topic"; topic: HelpTopic; strong: boolean }
   | { kind: "link"; link: string }
   | { kind: "message"; text: string }
   | { kind: "none" };
+
+const SMS_SIGNS = /\b(dear (customer|user|sir|madam)|your (a\/c|account|card|parcel|order|kyc|number|sim)|a\/c|kyc|click (here|on|the)|verify|update (your|now)|otp (is|for)|blocked|suspended|won|winner|prize|lottery|refund|cashback|electricity|disconnect|last date|immediately|call (on|us)|rs\.?\s?\d|inr\s?\d|₹\s?\d|https?:\/\/|www\.)/gi;
+
+/**
+ * Does this look like a message someone RECEIVED and pasted (an SMS/WhatsApp), rather than a
+ * question they typed? Long questions in any language are NOT treated as pasted messages.
+ */
+export function looksLikePastedMessage(text: string): boolean {
+  if (text.length < 50) return false;
+  const signs = new Set((text.match(SMS_SIGNS) || []).map((s) => s.toLowerCase().slice(0, 6))).size;
+  const hasLink = LINK_RE.test(text);
+  return (hasLink && signs >= 1) || signs >= 3;
+}
+
+/** Just a web address (maybe with a few words like "is this safe?"). */
+export function justALink(text: string): string | null {
+  const link = text.match(LINK_RE)?.[0];
+  if (!link) return null;
+  return text.replace(link, "").trim().length <= 30 ? link : null;
+}
 
 /**
  * Understands what someone typed: a pasted link or message goes to the matching check;
@@ -588,8 +608,7 @@ export type BotReply =
 export function understand(input: string, lang: Lang): BotReply {
   const text = input.trim();
   const low = ` ${text.toLowerCase()} `;
-  const link = text.match(LINK_RE)?.[0];
-  const looksLikeReceivedMessage = text.length > 90 || /\b(dear customer|click|kyc|verify|account|blocked|won|prize|₹|rs\.?\s?\d)/i.test(text) && text.length > 50;
+  const link = justALink(text);
 
   const topics = helpTopics(lang);
   let best: HelpTopic | null = null;
@@ -606,10 +625,9 @@ export function understand(input: string, lang: Lang): BotReply {
     if (score > bestScore) { bestScore = score; best = tp; }
   }
 
-  if (link && (!best || bestScore < 3)) return { kind: "link", link };
-  if (looksLikeReceivedMessage && (!best || bestScore < 4)) return { kind: "message", text };
-  if (best && bestScore > 0) return { kind: "topic", topic: best };
   if (link) return { kind: "link", link };
+  if (looksLikePastedMessage(text)) return { kind: "message", text };
+  if (best && bestScore > 0) return { kind: "topic", topic: best, strong: bestScore >= 4 };
   return { kind: "none" };
 }
 

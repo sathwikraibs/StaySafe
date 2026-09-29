@@ -27,7 +27,7 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
     if (!v) return;
     const r = understand(v, lang);
     if (r.kind === "link") { setPrefill("url", r.link); onNavigate("/scan-url"); return; }
-    if (r.kind === "message") { setPrefill("message", r.text); onNavigate("/scan-message"); return; }
+    // a pasted message goes to the AI too: it explains it and offers the full check with the text filled in
     openHelper("home", v);
     setText("");
   }

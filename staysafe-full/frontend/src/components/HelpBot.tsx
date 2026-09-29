@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
 import { IconChat, IconClose, IconLock, IconShield } from "@/icons";
-import { HELP_TEXTS, helpTopics, understand, setPrefill, announcePrefill, type HelpAction, type HelpTopic } from "@/helpBot";
+import { HELP_TEXTS, helpTopics, understand, setPrefill, announcePrefill, looksLikePastedMessage, type HelpAction, type HelpTopic } from "@/helpBot";
 import { apiGet, apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 
@@ -88,11 +88,16 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
   const say = (...add: Bubble[]) => setBubbles((b) => [...b, ...add]);
 
   /** Buttons the AI suggested, as real buttons on our pages. */
-  function aiButtons(actions: string[]): Button[] {
+  function aiButtons(actions: string[], asked = ""): Button[] {
+    const link = asked.match(/\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|in|net|org|xyz|top|info|co|app|site|online|link|live|shop|club|io|me|cc|ly)\b(?:\/\S*)?/i)?.[0];
     const map: Record<string, Button> = {
       incident: { kind: "go", path: "/incident", label: tx.actIncident },
-      check_message: { kind: "go", path: "/scan-message", label: tx.actCheckMessage },
-      check_link: { kind: "go", path: "/scan-url", label: tx.actCheckLink },
+      check_message: looksLikePastedMessage(asked)
+        ? { kind: "check", what: "message", value: asked, label: tx.actCheckMessage }
+        : { kind: "go", path: "/scan-message", label: tx.actCheckMessage },
+      check_link: link
+        ? { kind: "check", what: "url", value: link, label: tx.actCheckLink }
+        : { kind: "go", path: "/scan-url", label: tx.actCheckLink },
       check_password: { kind: "go", path: "/check-password", label: tx.actPassword },
       library: { kind: "go", path: "/scam-library", label: tx.actLibrary },
     };
@@ -118,7 +123,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       const rest = 1800 - (Date.now() - started);   // a careful answer shouldn't pop up instantly
       if (rest > 0) await new Promise((ok) => setTimeout(ok, rest));
       setBubbles((b) => [...b.filter((x) => !x.typing),
-        { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions),
+        { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions, text),
           team: !r.ask_language, langPick: !!r.ask_language }]);
       setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: r.reply }].slice(-8));
     } catch {
@@ -139,10 +144,13 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       return;
     }
     if (r.kind === "message") {
-      say({ from: "bot", lines: [tx.messageSeen], buttons: [{ kind: "check", what: "message", value: r.text, label: tx.checkThisMessage }], team: true });
+      // A pasted SMS/WhatsApp: the full check is one tap away, and the AI explains it meanwhile
+      const check: Bubble = { from: "bot", lines: [tx.messageSeen], buttons: [{ kind: "check", what: "message", value: r.text, label: tx.checkThisMessage }] };
+      if (aiReady) { say(check); void askAssistant(text, () => undefined); } else say({ ...check, team: true });
       return;
     }
-    const known = topic ?? (r.kind === "topic" ? r.topic : undefined);
+    // Only a sure keyword match may stand in for the AI; otherwise we say we didn't understand
+    const known = topic ?? (r.kind === "topic" && r.strong ? r.topic : undefined);
     if (known) setLastTopic(known.id);
     const fallback = () => (known ? readyAnswer(known) : say({ from: "bot", lines: [tx.noMatch], topics: true, team: true }));
     if (aiReady) void askAssistant(text, fallback);

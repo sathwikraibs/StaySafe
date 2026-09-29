@@ -173,7 +173,7 @@ def test_tulu_or_kannada_unsure_asks_then_uses_the_chosen_language():
     setup({"reply": "Is this Tulu or Kannada?", "urgent": False, "actions": [], "ask_language": True, "language": "kn"})
     d = c.post("/api/assistant", json={"message": "yenk ondu message bandh", "lang": "en"}).get_json()
     assert d["ask_language"] is True
-    assert "Tulu signs" in seen[0]["messages"][0]["content"]
+    assert "Tulu words" in seen[0]["messages"][0]["content"]
     setup({"reply": "ಈ ಮೆಸೇಜ್ ಮೋಸ ಆದುಪ್ಪು", "urgent": False, "actions": [], "ask_language": True})
     d = c.post("/api/assistant", json={"message": "yenk ondu message bandh", "lang": "en", "reply_lang": "tcy"}).get_json()
     assert d["ask_language"] is False                                   # already chosen: never asks again
@@ -186,6 +186,17 @@ def test_kannada_or_hindi_in_english_letters_goes_to_the_indian_language_writer(
     assert _looks_indic_in_latin("yenk paisa ponda dada malpu")
     assert _looks_indic_in_latin("mera paisa kat gaya kya karo")
     assert not _looks_indic_in_latin("someone called me about my bank account")
+
+
+def test_tulu_in_english_letters_is_recognised_and_hinted():
+    from scanners.assistant import latin_language_hint
+    assert latin_language_hint("yenk onji call battund, OTP kender, yan korde, ipo duddu poyind") == "tcy"
+    assert latin_language_hint("nanage ondu call banthu enu madli") == "kn"
+    assert latin_language_hint("mera paisa kat gaya kya karu") == "hi"
+    assert latin_language_hint("someone called me about my bank") is None
+    setup({"reply": "ok", "understood": "They gave the OTP and lost money", "urgent": True, "actions": []})
+    c.post("/api/assistant", json={"message": "yenk onji call battund, OTP kender, yan korde, ipo duddu poyind", "lang": "en"})
+    assert "most likely Tulu" in seen[0]["messages"][0]["content"]
 
 
 if __name__ == "__main__":
