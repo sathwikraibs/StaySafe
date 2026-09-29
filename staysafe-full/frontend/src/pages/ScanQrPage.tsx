@@ -7,12 +7,13 @@ import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
 import { apiPostForm, apiPostJSON, errorMessage } from "@/api";
 import { QrCameraScanner } from "@/components/QrCameraScanner";
+import { ChoiceTabs } from "@/components/ChoiceTabs";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { Section } from "@/components/Section";
 import { LinkDetails } from "@/components/WebsiteDetails";
-import { IconQr, IconCamera } from "@/icons";
+import { IconQr, IconCamera, IconImage } from "@/icons";
 
 export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
@@ -53,48 +54,46 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
   return (
     <div>
       <ToolHeader path="/scan-qr" title={t("qr.title")} subtitle={t("qr.subtitle")} />
+      {/* Two ways: upload a photo, or point the camera (one at a time) */}
+      <ChoiceTabs
+        value={camera ? "camera" : "upload"}
+        onChange={(v) => { setResult(null); setError(null); setCamera(v === "camera"); }}
+        disabled={loading}
+        choices={[
+          { id: "upload", label: t("tabs.qrUpload"), icon: IconImage },
+          { id: "camera", label: t("tabs.qrCamera"), icon: IconCamera },
+        ]}
+      />
       {camera ? (
-        <div className="mb-4">
+        <div className="mb-4 animate-fade-up">
           <QrCameraScanner
             onText={checkText}
             onPhoto={(f) => { setCamera(false); setFile(f); handleCheck(f); }}
             onClose={() => setCamera(false)}
           />
         </div>
-      ) : null}
-      <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-        {!camera && (
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <p className="font-body text-sm text-ink-700">{t("qrCam.openHint")}</p>
-            <button
-              type="button"
-              onClick={() => { setResult(null); setError(null); setCamera(true); }}
-              disabled={loading}
-              className="btn-press inline-flex items-center gap-2 rounded-full border-2 border-[#8C6A9B] bg-cream-50 px-4 py-2 font-body text-sm font-bold text-[#6E4E7C] hover:bg-[#8C6A9B]/10 disabled:opacity-60"
-            >
-              <IconCamera className="h-4 w-4" /> {t("qrCam.open")}
-            </button>
-          </div>
-        )}
-        <UploadZone
-          crop
-          accept="image/*"
-          label={t("qr.uploadLabel")}
-          camera={false}
-          compress
-          hint={t("qr.uploadHint")}
-          onFile={setFile}
-          onClear={() => setFile(null)}
-          disabled={loading}
-        />
-        {file && (
-          <div className="mt-4">
-            <Button onClick={() => handleCheck()} disabled={loading} fullWidth>
-              {loading ? t("common.checking") : t("qr.button")}
-            </Button>
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up">
+          <UploadZone
+            crop
+            accept="image/*"
+            label={t("qr.uploadLabel")}
+            camera={false}
+            compress
+            hint={t("qr.uploadHint")}
+            onFile={setFile}
+            onClear={() => setFile(null)}
+            disabled={loading}
+          />
+          {file && (
+            <div className="mt-4">
+              <Button onClick={() => handleCheck()} disabled={loading} fullWidth>
+                {loading ? t("common.checking") : t("qr.button")}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {loading && <LoadingSteps tool="qr" />}
 

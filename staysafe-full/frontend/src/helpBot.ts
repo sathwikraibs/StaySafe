@@ -576,6 +576,7 @@ export function helpTopics(lang: Lang): HelpTopic[] {
 const LINK_RE = /\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|in|net|org|xyz|top|info|co|app|site|online|link|live|shop|club|io|me|cc|ly)\b(?:\/\S*)?/i;
 
 export type BotReply =
+  | { kind: "tool"; tools: ToolId[] }
   | { kind: "topic"; topic: HelpTopic; strong: boolean }
   | { kind: "link"; link: string }
   | { kind: "message"; text: string }
@@ -627,9 +628,124 @@ export function understand(input: string, lang: Lang): BotReply {
 
   if (link) return { kind: "link", link };
   if (looksLikePastedMessage(text)) return { kind: "message", text };
+  const tools = toolRequest(text);
+  if (tools) return { kind: "tool", tools };
   if (best && bestScore > 0) return { kind: "topic", topic: best, strong: bestScore >= 4 };
   return { kind: "none" };
 }
+
+// ---- "Check this mail / message / link": point to the tool, no AI needed ----
+export type ToolId = "message" | "link" | "email" | "qr" | "file" | "password" | "leak" | "network";
+
+export const TOOL_PATHS: Record<ToolId, string> = {
+  message: "/scan-message", link: "/scan-url", email: "/scan-email", qr: "/scan-qr", file: "/scan-file",
+  password: "/check-password", leak: "/check-password", network: "/check-network",
+};
+
+/** Tools that live on a tab of a shared page. */
+export const TOOL_TABS: Partial<Record<ToolId, [string, string]>> = {
+  leak: ["password", "email"],
+  password: ["password", "password"],
+};
+
+/** Words for each tool, in English, Hindi, Kannada and Tulu (and typed in English letters). Most specific first. */
+const TOOL_WORDS: [ToolId, RegExp][] = [
+  ["leak", /(leak|breach|pwned|hacked|exposed).{0,25}(e-?mail|mail|account)|(e-?mail|mail|account).{0,25}(leak|breach|pwned|exposed)|लीक|ಲೀಕ್/],
+  ["qr", /\bq\.?r\b|qr ?code|क्यूआर|ಕ್ಯೂ ?ಆರ್/],
+  ["password", /pass ?word|passcode|पासवर्ड|ಪಾಸ್‌?ವರ್ಡ್|ಪಾಸ್ ವರ್ಡ್/],
+  ["network", /wi-?fi|wireless|hotspot|\bvpn\b|network|internet connection|my connection|नेटवर्क|वाई-?फ़?फाई|ವೈ-?ಫೈ|ನೆಟ್‌?ವರ್ಕ್/],
+  ["file", /\bapk\b|\bfiles?\b|\bpdf\b|attachment|document|फ़ाइल|फाइल|ಫೈಲ್|ಎಪಿಕೆ/],
+  ["email", /e-?mail|\bmails?\b|gmail|inbox|ईमेल|ई-मेल|मेल|ಇ-?ಮೇಲ್|ಮೇಲ್/],
+  ["message", /messages?|\bmsg\b|\bsms\b|whats ?app|\btexts?\b|screen ?shot|मैसेज|मेसेज|संदेश|एसएमएस|व्हाट्सएप|ಮೆಸೇಜ್|ಮೆಸೆಜ್|ಸಂದೇಶ|ಎಸ್‌?ಎಂಎಸ್|ವಾಟ್ಸ್|ಸ್ಕ್ರೀನ್‌?ಶಾಟ್/],
+  ["link", /\blinks?\b|\burls?\b|website|web site|\bsite\b|लिंक|वेबसाइट|ಲಿಂಕ್|ವೆಬ್‌?ಸೈಟ್/],
+];
+
+/** Asking to check something ("check", "is it safe", "how can I check", Hindi/Kannada/Tulu words too). */
+const CHECK_WORDS = /check|chek|chk|scan|verify|test|safe|genuine|legit|fake|real|trust|is (this|it)|jaa?n?ch|dekh|nodi|nodu|parishil|pariks|malpu|maadi|madi|tupu|toole|where|how (can|do|to|i)|kaise|hege|yencha|enchi|जाँच|जांच|चेक|देख|सुरक्षित|असली|नकली|कैसे|कहाँ|ಚೆಕ್|ಪರಿಶೀಲ|ಪರೀಕ್ಷ|ನೋಡ|ಸುರಕ್ಷಿತ|ಸೇಫ್|ನಕಲಿ|ಅಸಲಿ|ಮಲ್ಪು|ತೂಲೆ|ತೂಪು|ಹೇಗೆ|ಎಂಚ|ಎಲ್ಲಿ|ಓಲು/;
+
+/** Signs of a real problem or a question the tool can't answer: those always go to StaySafe AI. */
+const NEEDS_AI = /lost|paid|\bpay|sent (the )?money|transfer|debit|deduct|\botp\b|\bpin\b|cvv|clicked|shared|gave|told|police|1930|complain|report|what (should|to|do|now)|\bwhy\b|what does|mean|result|said|says|show|how does|\bwork(s|ing|ed)?\b|error|not (open|work|load)|help me|scared|worried|money|saying|asking|asked|lottery|\bwon\b|prize|\bjob\b|\bkyc\b|\bbank|arrest|parcel|courier|refund|\bloan|rupees|\brs\b|₹|पैसे|पैसा|कट|क्यों|मतलब|डर|ಹಣ|ದುಡ್ಡು|ಕಳೆದ|ಕ್ಲಿಕ್|ಏಕೆ|ಯಾಕೆ|ಅರ್ಥ|ಭಯ|ದಾಯೆ|ಬಾರ್ನ/;
+
+/**
+ * A short request to use one of our checks ("check this mail", "ee message check maadi",
+ * "is this QR safe?"). Returns the matching tools (at most two) or null. Anything longer,
+ * or about something that happened, is left for StaySafe AI.
+ */
+export function toolRequest(input: string): ToolId[] | null {
+  const text = input.trim().toLowerCase();
+  if (!text || text.length > 100 || text.split(/\s+/).length > 16) return null;
+  if (LINK_RE.test(text)) return null;
+  if (NEEDS_AI.test(text)) return null;
+  // "was my email leaked?" is a request by itself; everything else needs a "check / is it safe" word
+  if (!CHECK_WORDS.test(text) && !TOOL_WORDS[0][1].test(text)) return null;
+  const found: ToolId[] = [];
+  for (const [id, re] of TOOL_WORDS) {
+    if (re.test(text) && !found.includes(id) && !(id === "email" && found.includes("leak"))) found.push(id);
+    if (found.length === 2) break;
+  }
+  return found.length ? found : null;
+}
+
+export interface ToolTexts { intro: string; hint: Record<ToolId, string>; askAi: string }
+
+export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
+  en: {
+    intro: "You can check this yourself right here on StaySafe. Tap the button below to open it.",
+    hint: {
+      message: "Paste the message there, or upload a screenshot of it.",
+      link: "Paste the link there and we'll check it carefully.",
+      email: "Paste the email there, or its full details, to see if it's a scam.",
+      qr: "Upload a photo of the QR code there, or scan it with your camera.",
+      file: "Choose the file there. We check it without opening it.",
+      password: "Type the password there to see if it's strong and safe.",
+      leak: "Enter your email there to see if it showed up in a data leak.",
+      network: "Open it while you're on the Wi-Fi or network you want to check.",
+    },
+    askAi: "Ask StaySafe AI instead",
+  },
+  hi: {
+    intro: "आप इसे यहीं StaySafe पर खुद जाँच सकते हैं। खोलने के लिए नीचे का बटन दबाएँ।",
+    hint: {
+      message: "वहाँ मैसेज पेस्ट करें, या उसका स्क्रीनशॉट अपलोड करें।",
+      link: "वहाँ लिंक पेस्ट करें, हम उसे ध्यान से जाँचेंगे।",
+      email: "वहाँ ईमेल या उसकी पूरी जानकारी पेस्ट करें, ताकि पता चले कि यह धोखा है या नहीं।",
+      qr: "वहाँ QR कोड की फ़ोटो अपलोड करें, या कैमरे से स्कैन करें।",
+      file: "वहाँ फ़ाइल चुनें। हम उसे खोले बिना जाँचते हैं।",
+      password: "वहाँ पासवर्ड लिखें और देखें कि वह मज़बूत और सुरक्षित है या नहीं।",
+      leak: "वहाँ अपना ईमेल डालें और देखें कि वह किसी डेटा लीक में आया है या नहीं।",
+      network: "जिस वाई-फ़ाई या नेटवर्क को जाँचना है, उस पर रहते हुए इसे खोलें।",
+    },
+    askAi: "इसके बजाय StaySafe AI से पूछें",
+  },
+  kn: {
+    intro: "ಇದನ್ನು ನೀವೇ ಇಲ್ಲೇ StaySafe ನಲ್ಲಿ ಪರಿಶೀಲಿಸಬಹುದು. ತೆರೆಯಲು ಕೆಳಗಿನ ಬಟನ್ ಒತ್ತಿ.",
+    hint: {
+      message: "ಅಲ್ಲಿ ಮೆಸೇಜ್ ಅಂಟಿಸಿ, ಅಥವಾ ಅದರ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.",
+      link: "ಅಲ್ಲಿ ಲಿಂಕ್ ಅಂಟಿಸಿ, ನಾವು ಅದನ್ನು ಜಾಗ್ರತೆಯಿಂದ ಪರಿಶೀಲಿಸುತ್ತೇವೆ.",
+      email: "ಅದು ಮೋಸವೇ ಎಂದು ತಿಳಿಯಲು ಅಲ್ಲಿ ಇಮೇಲ್ ಅಥವಾ ಅದರ ಪೂರ್ತಿ ವಿವರ ಅಂಟಿಸಿ.",
+      qr: "ಅಲ್ಲಿ QR ಕೋಡ್‌ನ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ, ಅಥವಾ ಕ್ಯಾಮೆರಾದಿಂದ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.",
+      file: "ಅಲ್ಲಿ ಫೈಲ್ ಆರಿಸಿ. ನಾವು ಅದನ್ನು ತೆರೆಯದೆ ಪರಿಶೀಲಿಸುತ್ತೇವೆ.",
+      password: "ಪಾಸ್‌ವರ್ಡ್ ಬಲವಾಗಿದೆಯೇ, ಸುರಕ್ಷಿತವೇ ಎಂದು ನೋಡಲು ಅಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ.",
+      leak: "ನಿಮ್ಮ ಇಮೇಲ್ ಯಾವುದಾದರೂ ಡೇಟಾ ಲೀಕ್‌ನಲ್ಲಿ ಬಂದಿದೆಯೇ ಎಂದು ನೋಡಲು ಅಲ್ಲಿ ಹಾಕಿ.",
+      network: "ಪರಿಶೀಲಿಸಬೇಕಾದ ವೈ-ಫೈ ಅಥವಾ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಇರುವಾಗಲೇ ಇದನ್ನು ತೆರೆಯಿರಿ.",
+    },
+    askAi: "ಬದಲಿಗೆ StaySafe AI ಕೇಳಿ",
+  },
+  tcy: {
+    intro: "ಉಂದೆನ್ ಈರ್ ಮಾತ್ರ ಇಡೆಗೇ StaySafe ಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪೊಲಿ. ದೆಪ್ಪೆರೆ ತಿರ್ತ್‌ದ ಬಟನ್ ಒತ್ತುಲೆ.",
+    hint: {
+      message: "ಅಲ್ಪ ಮೆಸೇಜ್ ಅಂಟಿಸಲೆ, ಇಜ್ಜಂಡ ಅಯಿತ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",
+      link: "ಅಲ್ಪ ಲಿಂಕ್ ಅಂಟಿಸಲೆ, ಎಂಕುಲು ಜಾಗ್ರತೆಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪುವ.",
+      email: "ಅವು ಮೋಸನಾ ಪಂದ್ ತೆರಿಯೆರೆ ಅಲ್ಪ ಇಮೇಲ್ ಇಜ್ಜಂಡ ಅಯಿತ ಪೂರ ವಿವರ ಅಂಟಿಸಲೆ.",
+      qr: "ಅಲ್ಪ QR ಕೋಡ್‌ದ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ, ಇಜ್ಜಂಡ ಕ್ಯಾಮೆರಾಡ್ ಸ್ಕ್ಯಾನ್ ಮಲ್ಪುಲೆ.",
+      file: "ಅಲ್ಪ ಫೈಲ್ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ. ಎಂಕುಲು ಅವೆನ್ ದೆಪ್ಪಂದೆ ಪರಿಶೀಲನೆ ಮಲ್ಪುವ.",
+      password: "ಪಾಸ್‌ವರ್ಡ್ ಗಟ್ಟಿ ಉಂಡಾ, ಸುರಕ್ಷಿತ ಉಂಡಾ ಪಂದ್ ತೂಯೆರೆ ಅಲ್ಪ ಟೈಪ್ ಮಲ್ಪುಲೆ.",
+      leak: "ಇರೆನ ಇಮೇಲ್ ಏರೆನಾಂಡಲ ಡೇಟಾ ಲೀಕ್‌ಡ್ ಬೈದ್ಂಡಾ ಪಂದ್ ತೂಯೆರೆ ಅಲ್ಪ ಪಾಡ್ಲೆ.",
+      network: "ಪರಿಶೀಲನೆ ಮಲ್ಪೊಡಾಯಿನ ವೈ-ಫೈ ಇಜ್ಜಂಡ ನೆಟ್‌ವರ್ಕ್‌ಡ್ ಉಪ್ಪುನಗನೇ ಉಂದೆನ್ ದೆಪ್ಪುಲೆ.",
+    },
+    askAi: "ಅವೆತ ಬದಲ್ StaySafe AI ಡ್ ಕೇನುಲೆ",
+  },
+};
 
 // ---- Hand a link or message over to the check pages ----
 const PREFILL_KEY = "staysafe.prefill.v1";
@@ -669,4 +785,31 @@ export function usePrefill(kind: "url" | "message", fill: (value: string) => voi
     return () => window.removeEventListener("staysafe:prefill", apply);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
+}
+
+// ---- Open a page on the right tab (e.g. "was my email leaked" -> the email tab) ----
+const TAB_KEY = "staysafe.tab.v1";
+
+export function setStartTab(page: string, tab: string): void {
+  try { sessionStorage.setItem(TAB_KEY, JSON.stringify({ page, tab })); } catch { /* ignore */ }
+}
+
+/** For pages with tabs: switch to the tab the helper asked for (now and later). */
+export function useStartTab(page: string, pick: (tab: string) => void): void {
+  useEffect(() => {
+    const apply = () => {
+      try {
+        const raw = sessionStorage.getItem(TAB_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw) as { page: string; tab: string };
+        if (data.page !== page) return;
+        sessionStorage.removeItem(TAB_KEY);
+        if (data.tab) pick(data.tab);
+      } catch { /* ignore */ }
+    };
+    apply();
+    window.addEventListener("staysafe:prefill", apply);
+    return () => window.removeEventListener("staysafe:prefill", apply);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 }

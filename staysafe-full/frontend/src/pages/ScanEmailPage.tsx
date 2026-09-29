@@ -10,6 +10,15 @@ import { API_BASE } from "@/config";
 import type { ScanEmailResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { IconEmail, IconChevronRight } from "@/icons";
+import { ChoiceTabs } from "@/components/ChoiceTabs";
+
+function IconCode({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M8 7l-5 5 5 5M16 7l5 5-5 5" />
+    </svg>
+  );
+}
 import { Section } from "@/components/Section";
 
 const FIND_EMAIL = /[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
@@ -119,18 +128,14 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
       <ToolHeader path="/scan-email" title={t("email.title")} subtitle={t("email.subtitle")} />
 
       {/* Form or full source */}
-      <div className="mb-3 grid grid-cols-2 gap-1 rounded-2xl bg-cream-200/70 p-1">
-        {(["form", "source"] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            className={`btn-press rounded-xl px-3 py-2.5 font-body text-sm font-bold transition-colors
-              ${mode === m ? "bg-cream-50 text-ink-900 shadow-warm-sm" : "text-dustyblue-600 hover:text-ink-800"}`}
-          >
-            {m === "form" ? t("emailForm.simple") : t("emailForm.advanced")}
-          </button>
-        ))}
-      </div>
+      <ChoiceTabs
+        value={mode}
+        onChange={setMode}
+        choices={[
+          { id: "form", label: t("emailForm.simple"), icon: IconEmail },
+          { id: "source", label: t("emailForm.advanced"), icon: IconCode },
+        ]}
+      />
 
       <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
         {mode === "form" ? (

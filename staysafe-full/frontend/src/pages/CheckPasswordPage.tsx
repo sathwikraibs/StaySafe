@@ -9,6 +9,9 @@ import { API_BASE } from "@/config";
 import type { CheckPasswordResponse } from "@/types";
 import { useI18n } from "@/i18n";
 import { EmailLeakCheck } from "@/components/EmailLeakCheck";
+import { ChoiceTabs } from "@/components/ChoiceTabs";
+import { useStartTab } from "@/helpBot";
+import { IconKey, IconEmail } from "@/icons";
 
 /** Big coloured strength bar: Weak / Moderate / Strong. */
 function StrengthBar({ result }: { result: CheckPasswordResponse }) {
@@ -46,6 +49,8 @@ function StrengthBar({ result }: { result: CheckPasswordResponse }) {
 
 export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
+  const [tab, setTab] = useState<"password" | "email">("password");
+  useStartTab("password", (v) => { if (v === "email" || v === "password") setTab(v); });
   const pace = usePace();
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -65,7 +70,18 @@ export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) 
   return (
     <div>
       <ToolHeader path="/check-password" title={t("password.title")} subtitle={t("password.subtitle")} />
-      <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
+      {/* Two checks: how strong a password is, or whether an email was in a data leak */}
+      <ChoiceTabs
+        value={tab}
+        onChange={setTab}
+        disabled={loading}
+        choices={[
+          { id: "password", label: t("tabs.password"), icon: IconKey },
+          { id: "email", label: t("tabs.email"), icon: IconEmail },
+        ]}
+      />
+      {tab === "email" ? <EmailLeakCheck /> : (<>
+      <div className="rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up">
         <label className="mb-2 block font-body text-sm font-semibold text-ink-800">{t("password.label")}</label>
         <div className="relative">
           <input
@@ -111,8 +127,7 @@ export function CheckPasswordPage({ onNavigate }: { onNavigate?: (path: string) 
           <StrengthBar result={result} />
         </ResultReport>
       )}
-
-      <EmailLeakCheck />
+      </>)}
     </div>
   );
 }

@@ -72,7 +72,12 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
     setFileName(original.name || t("upload.photo"));
     if (original.type.startsWith("image/")) {
       setPreview(URL.createObjectURL(original));
-      if (!fromCrop) { setPicture(original); setCropped(false); }
+      if (!fromCrop) {
+        setPicture(original);
+        setCropped(false);
+        // open the cropper straight away, so people can keep just the part that matters
+        if (crop && original.type !== "image/gif" && original.type !== "image/svg+xml") setCropping(true);
+      }
     }
     const file = compress ? await shrinkImage(original) : original;
     onFile(file);

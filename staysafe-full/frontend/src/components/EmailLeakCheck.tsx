@@ -31,7 +31,7 @@ export function EmailLeakCheck() {
   }
 
   return (
-    <div className="mt-6 rounded-2xl bg-cream-50 p-5 shadow-warm">
+    <div className="rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up">
       <h3 className="font-heading text-lg font-semibold text-ink-900">{t("leak.title")}</h3>
       <p className="mt-1 font-body text-sm text-dustyblue-600">{t("leak.subtitle")}</p>
       <input

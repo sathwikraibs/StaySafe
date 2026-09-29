@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePrefill } from "@/helpBot";
+import { usePrefill, useStartTab } from "@/helpBot";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
@@ -12,7 +12,8 @@ import type { Check, ScanMessageResponse } from "@/types";
 import { verdictTone } from "@/verdict";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 import { CheckedLinks } from "@/components/WebsiteDetails";
-import { IconInfo, IconCheck } from "@/icons";
+import { IconInfo, IconCheck, IconMessage, IconImage } from "@/icons";
+import { ChoiceTabs } from "@/components/ChoiceTabs";
 import { TranslationPanel } from "@/components/TranslationPanel";
 import { Section } from "@/components/Section";
 import { useI18n } from "@/i18n";
@@ -41,7 +42,9 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
   const { t, ts } = useI18n();
   const pace = usePace();
   const [text, setText] = useState("");
-  usePrefill("message", setText);
+  const [tab, setTab] = useState<"paste" | "shot">("paste");
+  usePrefill("message", (v) => { setText(v); setTab("paste"); });
+  useStartTab("message", (v) => { if (v === "paste" || v === "shot") setTab(v); });
   const [sender, setSender] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,70 +76,77 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
+  const senderField = (
+    <label className="mt-3 block">
+      <span className="flex items-center gap-2 font-body text-sm font-semibold text-ink-800">
+        {t("messageX.senderLabel")}
+        <span className="rounded-full bg-cream-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-dustyblue-600">{t("emailForm.optional")}</span>
+      </span>
+      <input
+        type="text"
+        value={sender}
+        onChange={(e) => setSender(e.target.value)}
+        placeholder={t("messageX.senderPh")}
+        autoCapitalize="characters"
+        className="mt-1.5 w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-2.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400"
+      />
+      <span className="mt-1 block font-body text-xs text-dustyblue-600">{t("messageX.senderHint")}</span>
+    </label>
+  );
+
   return (
     <div>
       <ToolHeader path="/scan-message" title={t("message.title")} subtitle={t("message.subtitle")} />
 
-      {/* Text tab */}
-      <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-        <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("message.pasteTitle")}</h3>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={5}
-          placeholder={t("message.placeholder")}
-          className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400 scrollbar-warm"
-        />
-        <label className="mt-3 block">
-          <span className="flex items-center gap-2 font-body text-sm font-semibold text-ink-800">
-            {t("messageX.senderLabel")}
-            <span className="rounded-full bg-cream-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-dustyblue-600">{t("emailForm.optional")}</span>
-          </span>
-          <input
-            type="text"
-            value={sender}
-            onChange={(e) => setSender(e.target.value)}
-            placeholder={t("messageX.senderPh")}
-            autoCapitalize="characters"
-            className="mt-1.5 w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-2.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400"
+      {/* Two ways to check: paste the text, or upload a screenshot (one at a time) */}
+      <ChoiceTabs
+        value={tab}
+        onChange={setTab}
+        disabled={loading}
+        choices={[
+          { id: "paste", label: t("message.pasteTitle"), icon: IconMessage },
+          { id: "shot", label: t("message.uploadTitle"), icon: IconImage },
+        ]}
+      />
+
+      {tab === "paste" ? (
+        <div className="rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={5}
+            placeholder={t("message.placeholder")}
+            className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400 scrollbar-warm"
           />
-          <span className="mt-1 block font-body text-xs text-dustyblue-600">{t("messageX.senderHint")}</span>
-        </label>
-        <div className="mt-4">
-          <Button onClick={handleCheckText} disabled={loading || !text.trim()} fullWidth>
-            {loading ? t("common.checking") : t("message.button")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-cream-200" />
-        <span className="font-body text-sm text-dustyblue-500">{t("message.or")}</span>
-        <div className="h-px flex-1 bg-cream-200" />
-      </div>
-
-      {/* Screenshot tab */}
-      <div className="rounded-2xl bg-cream-50 p-5 shadow-warm">
-        <h3 className="mb-3 font-heading text-base font-semibold text-ink-800">{t("message.uploadTitle")}</h3>
-        <UploadZone
-          crop
-          accept="image/*"
-          label={t("message.uploadLabel")}
-          compress
-          hint={t("message.uploadHint")}
-          onFile={setFile}
-          onClear={() => setFile(null)}
-          disabled={loading}
-        />
-        {file && (
+          {senderField}
           <div className="mt-4">
-            <Button onClick={handleCheckScreenshot} disabled={loading} fullWidth>
-              {loading ? t("common.checking") : t("message.uploadButton")}
+            <Button onClick={handleCheckText} disabled={loading || !text.trim()} fullWidth>
+              {loading ? t("common.checking") : t("message.button")}
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-cream-50 p-5 shadow-warm animate-fade-up">
+          <UploadZone
+            crop
+            accept="image/*"
+            label={t("message.uploadLabel")}
+            compress
+            hint={t("message.uploadHint")}
+            onFile={setFile}
+            onClear={() => setFile(null)}
+            disabled={loading}
+          />
+          {file && senderField}
+          {file && (
+            <div className="mt-4">
+              <Button onClick={handleCheckScreenshot} disabled={loading} fullWidth>
+                {loading ? t("common.checking") : t("message.uploadButton")}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {loading && <LoadingSteps tool={pendingTool} />}
 

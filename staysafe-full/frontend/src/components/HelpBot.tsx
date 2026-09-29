@@ -2,17 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
 import { IconChat, IconClose, IconLock, IconShield } from "@/icons";
-import { HELP_TEXTS, helpTopics, understand, setPrefill, announcePrefill, looksLikePastedMessage, type HelpAction, type HelpTopic } from "@/helpBot";
+import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
 import { apiGet, apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 
 type Button = HelpAction
+  | { kind: "tool"; path: string; label: string; tab?: [string, string] }
   | { kind: "check"; what: "url" | "message"; value: string; label: string }
   | { kind: "form"; label: string };
 interface Bubble {
   from: "bot" | "me"; lines: string[]; buttons?: Button[]; topics?: boolean; ai?: boolean; typing?: boolean;
   team?: boolean;        // show the small "Still need a person? Write to our team" line under it
   langPick?: boolean;    // show language buttons (the AI wasn't sure which language to answer in)
+  aiAnyway?: string;     // a question we answered with a tool button: it can still go to the AI
 }
 type Turn = { role: "user" | "assistant"; text: string };
 interface AiAnswer { reply: string; urgent: boolean; actions: string[]; ask_language?: boolean }
@@ -32,8 +34,13 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
   onNavigate: (p: string) => void;
   currentPath: string;
 }) {
-  const { lang, ts } = useI18n();
+  const { lang, ts, t } = useI18n();
   const tx = HELP_TEXTS[lang] ?? HELP_TEXTS.en;
+  const tt = TOOL_TEXTS[lang] ?? TOOL_TEXTS.en;
+  const TOOL_LABEL: Record<ToolId, string> = {
+    message: "nav.message", link: "nav.link", email: "nav.email", qr: "nav.qr", file: "nav.file",
+    password: "nav.password", leak: "nav.password", network: "nav.network",
+  };
   const topics = helpTopics(lang);
   const [bubbles, setBubbles] = useState<Bubble[]>([{ from: "bot", lines: [tx.hello] }]);
   const [input, setInput] = useState("");
@@ -149,6 +156,17 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       if (aiReady) { say(check); void askAssistant(text, () => undefined); } else say({ ...check, team: true });
       return;
     }
+    if (r.kind === "tool" && !topic) {
+      // "check this mail / message / QR": the tool does it, so open it (no AI needed)
+      say({
+        from: "bot",
+        lines: [tt.intro, ...r.tools.map((id) => tt.hint[id])],
+        buttons: r.tools.map((id) => ({ kind: "tool" as const, path: TOOL_PATHS[id], label: t(TOOL_LABEL[id]), tab: id === "message" && /screen ?shot|ಸ್ಕ್ರೀನ್|स्क्रीन|photo|image|picture|pic\b/i.test(text) ? ["message", "shot"] as [string, string] : TOOL_TABS[id] })),
+        aiAnyway: aiReady ? text : undefined,
+        team: !aiReady,
+      });
+      return;
+    }
     // Only a sure keyword match may stand in for the AI; otherwise we say we didn't understand
     const known = topic ?? (r.kind === "topic" && r.strong ? r.topic : undefined);
     if (known) setLastTopic(known.id);
@@ -178,6 +196,11 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
 
   function press(b: Button) {
     if (b.kind === "go") {
+      onNavigate(b.path);
+      onClose();
+    } else if (b.kind === "tool") {
+      if (b.tab) setStartTab(b.tab[0], b.tab[1]);
+      if (currentPath === b.path) announcePrefill();
       onNavigate(b.path);
       onClose();
     } else if (b.kind === "check") {
@@ -296,6 +319,12 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                 </div>
               )}
             </div>
+            {b.aiAnyway && i === bubbles.length - 1 && !thinking && (
+              <button type="button" onClick={() => { const q = b.aiAnyway!; setBubbles((all) => all.map((x) => x === b ? { ...x, aiAnyway: undefined } : x)); void askAssistant(q, () => say({ from: "bot", lines: [tx.noMatch], topics: true, team: true })); }}
+                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-sage-700 underline underline-offset-2 hover:text-sage-800">
+                <IconShield className="h-3.5 w-3.5" />{tt.askAi}
+              </button>
+            )}
             {/* writing to the team: a quiet second option, after an answer */}
             {b.team && i === bubbles.length - 1 && !thinking && (
               <button type="button" onClick={person}

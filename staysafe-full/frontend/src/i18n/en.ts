@@ -250,6 +250,12 @@ const enBase = {
     footer: "Please don't share personal documents or passwords with anyone, including us.",
   },
 
+  tabs: {
+    qrUpload: "Upload a photo",
+    qrCamera: "Use the camera",
+    password: "Check a password",
+    email: "Check my email for leaks",
+  },
   crop: {
     title: "Crop the picture",
     hint: "Drag the box or its corners to keep only the message or QR code.",

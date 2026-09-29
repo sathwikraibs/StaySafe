@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useI18n } from "@/i18n";
 
 type Box = { x: number; y: number; w: number; h: number };   // in 0..1 of the picture
@@ -24,7 +25,34 @@ export function ImageCropper({ file, onDone, onCancel }: {
   const img = useRef<HTMLImageElement>(null);
   const drag = useRef<Drag | null>(null);
 
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
+  const [room, setRoom] = useState<{ w: number; h: number } | null>(null);
+
   useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  // Measure the free space between the title and the buttons, so the picture always fits inside it.
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+      const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      setRoom({ w: Math.max(40, r.width - padX), h: Math.max(40, r.height - padY) });
+    };
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    window.addEventListener("resize", measure);
+    return () => { ro?.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
+  useEffect(() => {
+    const el = img.current;
+    if (el && el.complete && el.naturalWidth) setNatural({ w: el.naturalWidth, h: el.naturalHeight });
+  }, []);
+  const fit = natural && room
+    ? (() => { const k = Math.min(room.w / natural.w, room.h / natural.h); return { w: Math.floor(natural.w * k), h: Math.floor(natural.h * k) }; })()
+    : null;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onCancel(); };
     window.addEventListener("keydown", onKey);
@@ -95,10 +123,11 @@ export function ImageCropper({ file, onDone, onCancel }: {
     </span>
   );
 
-  return (
+  // Shown on top of everything (outside the page, so page animations and the phone menu can't cover it)
+  return createPortal(
     <div role="dialog" aria-modal="true" aria-label={t("crop.title")}
-      className="fixed inset-0 z-[60] flex flex-col bg-ink-900 animate-fade-up">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 text-cream-50">
+      className="fixed inset-0 z-[80] flex flex-col bg-ink-900">
+      <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-3 text-cream-50">
         <div className="min-w-0">
           <p className="font-heading text-base font-bold">{t("crop.title")}</p>
           <p className="font-body text-xs text-cream-50/80">{t("crop.hint")}</p>
@@ -109,11 +138,12 @@ export function ImageCropper({ file, onDone, onCancel }: {
         </button>
       </div>
 
-      <div ref={frame} className="flex min-h-0 flex-1 items-center justify-center px-4 pb-2"
+      <div ref={frame} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-4"
         onPointerMove={move} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}>
-        <div className="relative max-h-full max-w-full touch-none select-none">
+        <div className="relative touch-none select-none" style={fit ? { width: fit.w, height: fit.h } : { visibility: "hidden" }}>
           <img ref={img} src={url} alt="" draggable={false}
-            className="block max-h-[calc(100vh-11rem)] max-w-full select-none object-contain" />
+            onLoad={(e) => setNatural({ w: e.currentTarget.naturalWidth || 1, h: e.currentTarget.naturalHeight || 1 })}
+            className="block h-full w-full select-none" />
           {/* dim the parts that will be cut away */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute left-0 right-0 top-0 bg-ink-900/60" style={{ height: `${box.y * 100}%` }} />
@@ -142,7 +172,7 @@ export function ImageCropper({ file, onDone, onCancel }: {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 px-4 pb-4 pt-2" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+      <div className="relative z-20 grid shrink-0 grid-cols-2 gap-3 border-t border-cream-50/10 bg-ink-900 px-4 pb-4 pt-3" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
         <button type="button" onClick={onCancel}
           className="rounded-2xl border-2 border-cream-50/40 px-4 py-3 font-body text-base font-bold text-cream-50 hover:bg-cream-50/10">
           {t("crop.cancel")}
@@ -152,6 +182,7 @@ export function ImageCropper({ file, onDone, onCancel }: {
           {t("crop.use")}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
