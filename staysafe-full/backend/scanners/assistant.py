@@ -300,8 +300,8 @@ def _gemini_smart(messages):
         r = None
         try:
             for step in range(3):
-                t = _call_time(40)
-                if not t or (step and t < 20):
+                t = _call_time(25)       # a visitor is waiting: the usual model answers if this one is slow
+                if not t or (step and t < 15):
                     break
                 r = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=t)
                 if r.status_code == 400 and "think" in r.text.lower() and "thinkingConfig" in body["generationConfig"]:
@@ -311,7 +311,8 @@ def _gemini_smart(messages):
                     time.sleep(3)            # "high demand" spikes are usually over in seconds: ask once more
                     continue
                 break
-        except Exception:
+        except Exception as e:
+            _answer_model["problem"] = _answer_problems[model] = f"{model}: {type(e).__name__} (too slow right now)"
             r = None
         if r is None:
             return None

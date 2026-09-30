@@ -141,9 +141,11 @@ def chat(name: str, messages, kind: str = "chat", max_tokens: int = 1500, json_m
             return None
         if r.status_code == 429:
             if _day_limit(text):
-                q.close_day()
-            else:
-                q.cool_down(60)
+                q.close_day()           # the whole account's day is used up
+                return None
+            if re.search(r"upstream|provider returned error|temporarily", text, re.I):
+                continue                # only this model is busy at its source: try the next model
+            q.cool_down(60)
             return None
         if r.status_code in (400, 404) and re.search(r"model|not found|does not exist|no endpoints", text, re.I):
             gone.add(model)                 # not offered (any more): try the next model

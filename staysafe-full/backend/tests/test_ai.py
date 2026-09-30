@@ -348,6 +348,20 @@ def test_self_test_can_check_one_chosen_service_and_never_affects_visitors():
     os.environ.pop("STATUS_KEY")
 
 
+def test_openrouter_busy_model_hands_over_to_its_next_free_model():
+    fresh(OPENROUTER_API_KEY="o")
+    models = []
+
+    def fake(url, json=None, **kw):
+        models.append(json["model"])
+        if len(models) == 1:
+            return R(429, text='{"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"is temporarily rate-limited upstream"}}}')
+        return openai_ok('{"reply": "ok"}')
+    use(fake)
+    assert llm_pool.chat("openrouter", [{"role": "user", "content": "x"}]) == '{"reply": "ok"}'
+    assert len(models) == 2 and models[0] != models[1] and QUOTAS["openrouter"].status()["paused_for_s"] == 0
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
