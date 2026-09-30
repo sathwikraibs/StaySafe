@@ -364,8 +364,11 @@ def _gemini_native(messages):
 
 def _pool(name, messages):
     from scanners import llm_pool
-    return llm_pool.chat(name, messages, kind="chat", max_tokens=1500, json_mode=True, wait=min(20.0, _wait()),
-                         deadline=_finish_by())
+    raw = llm_pool.chat(name, messages, kind="chat", max_tokens=1500, json_mode=True, wait=min(20.0, _wait()),
+                        deadline=_finish_by())
+    if raw and not _parse(raw):
+        llm_pool._problem[name] = f"answer not in the expected form: {str(raw)[:120]}"   # shown on the self-test
+    return raw
 
 
 def _cloudflare(messages):

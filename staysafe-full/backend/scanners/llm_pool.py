@@ -108,6 +108,10 @@ def chat(name: str, messages, kind: str = "chat", max_tokens: int = 1500, json_m
         body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
         if json_mode:
             body["response_format"] = {"type": "json_object"}
+        if name == "openrouter":
+            # free models "think" first; keep that short and out of the answer, and leave room for the reply
+            body["reasoning"] = {"effort": "low", "exclude": True}
+            body["max_tokens"] = max(max_tokens, 4000)
         t = _time_for_call(deadline, 40)
         if not t:
             return None
@@ -128,10 +132,12 @@ def chat(name: str, messages, kind: str = "chat", max_tokens: int = 1500, json_m
                 choice = r.json()["choices"][0]
                 out = (choice.get("message") or {}).get("content") or ""
             except Exception:
+                _problem[name] = f"{model}: answer could not be read"
                 continue
             if isinstance(out, list):       # some services send the answer in parts
                 out = "".join(part.get("text", "") for part in out if isinstance(part, dict))
             if choice.get("finish_reason") == "length" or not str(out).strip():
+                _problem[name] = f"{model}: answer was {'cut off' if choice.get('finish_reason') == 'length' else 'empty'}"
                 continue                    # cut off or empty: never show half an answer
             _problem[name] = None
             return str(out)
