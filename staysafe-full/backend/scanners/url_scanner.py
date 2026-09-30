@@ -1444,6 +1444,10 @@ def scan_url(url: str) -> dict:
             return default
 
     dns = result_of(dns_f, {"exists": None, "ips": []}, 5)
+    # Protective DNS (Cloudflare 1.1.1.2, Quad9): do these security services refuse this website?
+    from scanners import protective_dns
+    pdns_f = None if (OFFLINE or trusted or is_ip(host) or dns["exists"] is False) else \
+        _POOL.submit(protective_dns.check, host, dns["exists"])
     page = result_of(page_f, {"ok": False, "error": "skipped", "final_url": url, "hops": [],
                               "ssl_error": False, "title": "", "has_password": False, "text": "",
                               "download": None, "blocked": False}, 16)
@@ -1599,6 +1603,9 @@ def scan_url(url: str) -> dict:
         ach = {"status": "pass"}
     if rank_order[ach["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and ach["status"] != "skip"):
         feed = ach
+    pdns = result_of(pdns_f, {"status": "skip"}, 10)
+    if rank_order[pdns["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and pdns["status"] != "skip"):
+        feed = pdns
     if feed["status"] == "fail":
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
         score = led.moved(findings, score, max(score + 50, 95))

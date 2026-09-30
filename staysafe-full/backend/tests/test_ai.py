@@ -293,6 +293,48 @@ def test_normal_answers_are_never_mistaken_for_code():
     assert assistant._parse('Report on "Sanchar Saathi" and use "Chakshu".')["reply"].startswith("Report")
 
 
+# ---- Protective DNS (Cloudflare 1.1.1.2, Quad9) ------------------------------------------------
+def _dns_answer(query: bytes, rcode=0, ips=()):
+    import struct as st
+    header = st.pack(">HHHHHH", 0, 0x8180 | rcode, 1, len(ips), 0, 0)
+    question = query[12:]
+    answers = b"".join(b"\xc0\x0c" + st.pack(">HHIH", 1, 1, 60, 4) + bytes(int(x) for x in ip.split(".")) for ip in ips)
+    return header + question + answers
+
+
+def test_protective_dns_reads_both_services_answers():
+    import base64 as b64
+    from scanners import protective_dns as pd
+    fresh()
+
+    def fake_for(cf_ips, q9_rcode, q9_ips=("93.184.216.34",)):
+        def get(url, params=None, **kw):
+            q = b64.urlsafe_b64decode(params["dns"] + "=" * (-len(params["dns"]) % 4))
+            class Resp:
+                status_code = 200
+                content = _dns_answer(q, 0, cf_ips) if "cloudflare" in url else _dns_answer(q, q9_rcode, () if q9_rcode else q9_ips)
+            return Resp()
+        return get
+    real_get = requests.get
+    try:
+        requests.get = fake_for(("0.0.0.0",), 3)
+        out = pd.check("bad-site.xyz", True)
+        assert out["status"] == "fail" and out["blocked_by"] == ["Cloudflare", "Quad9"], out
+        requests.get = fake_for(("0.0.0.0",), 0)
+        assert pd.check("maybe.xyz", True)["status"] == "warn"
+        requests.get = fake_for(("93.184.216.34",), 0)
+        assert pd.check("example.com", True)["status"] == "pass"
+        # the website really doesn't exist: Quad9's "no such website" is not a block
+        requests.get = fake_for((), 3)
+        assert pd.check("gone.xyz", False)["status"] == "pass"
+        # neither service reachable: not checked, never a false alarm
+        requests.get = lambda *a, **k: (_ for _ in ()).throw(requests.ConnectionError())
+        assert pd.check("x.xyz", True)["status"] == "skip"
+    finally:
+        requests.get = real_get
+    assert pd.parse_answer(_dns_answer(pd.build_query("a.b.com"), 0, ("1.2.3.4", "0.0.0.0")))["ips"] == ["1.2.3.4", "0.0.0.0"]
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

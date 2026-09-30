@@ -242,6 +242,8 @@ QUOTAS = {
     "bhashini": Quota("bhashini", 30, None),
     "ocrspace": Quota("ocrspace", 10, _env_int("OCRSPACE_DAILY_LIMIT", 800)),
     "crtsh": Quota("crtsh", 30, None),
+    # Cloudflare 1.1.1.2 and Quad9 public DNS (free, no key); each check asks both
+    "protective_dns": Quota("protective_dns", 240, None),
     "rdap": Quota("rdap", 60, None),
     "xposedornot": Quota("xposedornot", 20, _env_int("XON_DAILY_LIMIT", 90)),
     "leakcheck": Quota("leakcheck", 20, _env_int("LEAKCHECK_DAILY_LIMIT", 300)),
