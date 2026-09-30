@@ -76,7 +76,7 @@ urgent = money lost or at risk right now. actions = helpful buttons: incident (r
 PHRASES = {
     "kn": "- Useful " + 'Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don\'t pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don\'t tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi); in English letters: "chinte maadbedi", "call cut maadi", "yaarigu OTP kodbedi", "hana kodbedi", "eega 1930 ge call maadi".' + "\n",
     "hi": "- Useful " + 'Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.' + "\n",
-    "tcy": '- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):\n  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don\'t panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don\'t give money). OTP ಏರೆಗ್\u200cಲಾ ಪನೊಡ್ಚಿ (don\'t tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್\u200cಡ್ ಇತ್ತಿನ ನಂಬರ್\u200cಗ್ ಕಾಲ್ ಮಲ್ತ್\u200cದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ನಿಲ್ಲಾವರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್\u200cಶಾಟ್ ದೀವೊಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don\'t click the link).\n  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking nillavare panle", "cybercrime.gov.in d dooru korle", "screenshot deevole", "undu mosa", "link click malpodchi".' + "\n  Careful: -le means DO it (ಕೊರ್ಲೆ = please give/file, ಮಲ್ಪುಲೆ = please do); -odchi means DON'T (ಕೊರೊಡ್ಚಿ = don't give). Never write -odchi for a step they SHOULD do (calling 1930, calling the bank, filing a complaint, keeping screenshots).\n",
+    "tcy": '- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):\n  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don\'t panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don\'t give money). OTP ಏರೆಗ್\u200cಲಾ ಪನೊಡ್ಚಿ (don\'t tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್\u200cಡ್ ಇತ್ತಿನ ನಂಬರ್\u200cಗ್ ಕಾಲ್ ಮಲ್ತ್\u200cದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ನಿಲ್ಲಾವರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್\u200cಶಾಟ್ ದೀವೊಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don\'t click the link).\n  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking nillavare panle", "cybercrime.gov.in d dooru korle", "screenshot deevole", "undu mosa", "link click malpodchi".' + "\n  Careful: -le means DO it (ಕೊರ್ಲೆ = please give/file, ಮಲ್ಪುಲೆ = please do); -odchi means DON'T (ಕೊರೊಡ್ಚಿ = don't give). Never write -odchi for a step they SHOULD do (calling 1930, calling the bank, filing a complaint, keeping screenshots).\n  Use Tulu words, not Kannada ones: your = ಇರೆನ / eerena (not ನಿಮ್ಮ / nimma), you = ಈರ್ / eer, I = ಯಾನ್ / yaan, to you = ಇರೆಗ್ / eerege (not ಎಂಕ್ / enk, which means \"to me\"), and = ಬೊಕ್ಕ / bokka (not ಮತ್ತು), or = ಅತ್ತಂಡ / attanda (not ಅಥವಾ), these steps = ಈ ಹಂತೊಲೆನ್ (not ಈ ಕ್ರಮಗಳನ್ನು), please do = ಮಲ್ಪುಲೆ / malpule (not ಮಾಡಿ / maadi); leave out ದಯವಿಟ್ಟು.\n",
 }
 
 _ip_hits: "defaultdict[str, deque]" = defaultdict(deque)
@@ -596,6 +596,10 @@ def _generate_in_time(messages, message: str, lang: str, hint=None):
     native = want is not None or lang in ("kn", "hi", "tcy") or _looks_indic_in_latin(message)
     order = ((_gemini_native, _mistral, _groq, _cloudflare, _openrouter) if native
              else (_groq, _cloudflare, _mistral, _gemini, _openrouter))
+    forced = getattr(_until, "only", None)          # self-test: try just this one service
+    if forced:
+        order = tuple(p for p in (_groq, _gemini, _gemini_native, _cloudflare, _mistral, _openrouter)
+                      if p.__name__.strip("_") == forced)
     _until.hard = tulu or (want is None and _looks_indic_in_latin(message))   # worth the better model
     out, used = None, None
     for attempt in range(2):
@@ -739,6 +743,15 @@ def assistant_selftest_route():
     from scanners.security import has_status_key
     if not has_status_key():
         return jsonify({"error": "Not found"}), 404
+    only = str(request.args.get("via") or "").lower()   # &via=cloudflare / openrouter / groq / gemini / mistral
+    _until.only = only if only in ("groq", "gemini", "gemini_native", "cloudflare", "mistral", "openrouter") else None
+    try:
+        return _selftest(groq_client)
+    finally:
+        _until.only = None        # never affects real visitors' questions
+
+
+def _selftest(groq_client):
     cases = SELFTEST_CASES
     if request.args.get("case"):   # &case=2 or &case=2,3,8 (numbers from 1)
         picked = [int(n) for n in re.findall(r"\d+", request.args["case"]) if 1 <= int(n) <= len(SELFTEST_CASES)]
@@ -768,6 +781,7 @@ def assistant_selftest_route():
                         "asks_which_language": out and out.get("ask_language"),
                         "reply": out and _clean(out["reply"], []), "actions": out and out["actions"], "kind": out and out.get("kind")})
     return jsonify({"groq_configured": groq_client.configured(), "results": results, "groq": groq_client.status(),
+                    "only_service": getattr(_until, "only", None),
                     "better_model": _answer_model["name"], "better_model_problem": _answer_model["problem"],
                     "better_model_problems": dict(_answer_problems), "better_models_not_offered": sorted(_answer_gone),
                     "gemini": __import__("scanners.translator", fromlist=["translation_status"]).translation_status().get("gemini"),

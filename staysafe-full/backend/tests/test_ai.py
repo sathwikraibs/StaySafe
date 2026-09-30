@@ -14,7 +14,7 @@ from scanners.quota import QUOTAS  # noqa: E402
 
 c = app.test_client()
 REAL_POST = requests.post
-KEYS = ("GROQ_API_KEY", "GEMINI_API_KEY", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_AI_TOKEN", "MISTRAL_API_KEY",
+KEYS = ("STATUS_KEY", "GROQ_API_KEY", "GEMINI_API_KEY", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_AI_TOKEN", "MISTRAL_API_KEY",
         "OPENROUTER_API_KEY", "GEMINI_MODEL")
 
 
@@ -333,6 +333,19 @@ def test_protective_dns_reads_both_services_answers():
     finally:
         requests.get = real_get
     assert pd.parse_answer(_dns_answer(pd.build_query("a.b.com"), 0, ("1.2.3.4", "0.0.0.0")))["ips"] == ["1.2.3.4", "0.0.0.0"]
+
+
+def test_self_test_can_check_one_chosen_service_and_never_affects_visitors():
+    fresh(GROQ_API_KEY="k", CLOUDFLARE_ACCOUNT_ID="a", CLOUDFLARE_AI_TOKEN="t", STATUS_KEY="sk")
+    urls = []
+    use(lambda url, **kw: (urls.append(url), openai_ok('{"kind": "safety", "reply": "Call 1930 now."}'))[1])
+    d = c.get("/api/assistant/selftest?key=sk&case=16&via=cloudflare").get_json()
+    assert d["results"][0]["answered_by"] == "cloudflare" and all("cloudflare" in u for u in urls), (urls, d["results"])
+    assert assistant._until.__dict__.get("only") is None
+    urls.clear()
+    c.post("/api/assistant", json={"message": "is this call a scam", "lang": "en"})
+    assert "groq.com" in urls[0]                     # visitors use the normal order again
+    os.environ.pop("STATUS_KEY")
 
 
 if __name__ == "__main__":
