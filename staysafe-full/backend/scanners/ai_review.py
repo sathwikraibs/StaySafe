@@ -13,9 +13,10 @@ placeholders before the text leaves our server.
 
 Providers, first one available is used. All free with no card; each stops by itself at its
 free limit, and we also stay under those limits ourselves:
-  1. Groq            GROQ_API_KEY                                   (about 1,000 a day)
+  1. Groq            GROQ_API_KEY                                   (about 1,000 a day per model)
   2. Cloudflare AI   CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_AI_TOKEN    (10,000 "neurons" a day)
   3. Google Gemini   GEMINI_API_KEY (shared with translation)
+  4. Mistral         MISTRAL_API_KEY                                (free plan)
 """
 
 import hashlib
@@ -67,11 +68,6 @@ _problem = {"groq": None, "cloudflare": None, "gemini": None}
 REVIEW_WAIT = 25.0
 
 
-def _reserve(provider: str) -> bool:
-    from scanners.quota import quota
-    return quota(provider).take(wait=REVIEW_WAIT)
-
-
 def _parse(raw: str):
     raw = re.sub(r"^```(?:json)?|```$", "", (raw or "").strip()).strip()
     m = re.search(r"\{.*\}", raw, re.S)
@@ -93,81 +89,40 @@ def _parse(raw: str):
             "confidence": max(0, min(100, confidence))}
 
 
-def _handle_error(provider: str, status: int, msg: str):
-    low = msg.lower()
-    if status == 429 or "quota" in low or "rate limit" in low or "exhausted" in low:
-        from scanners.quota import quota
-        if provider == "gemini":
-            from scanners.translator import gemini_limit_hit
-            gemini_limit_hit(status, msg)
-        elif "day" in low:
-            quota(provider).close_day()
-        else:
-            quota(provider).cool_down(60)
-    elif status in (401, 403):
-        _paused[provider] = time.time() + 6 * 3600
-    else:
-        _paused[provider] = time.time() + 300
-    _problem[provider] = msg[:160] or f"HTTP {status}"
-
-
-GROQ_MODELS = ["openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
-
-
 def _groq(prompt: str):
     """Quick yes/no review on Groq's smaller, faster models, each within its own free allowance."""
     from scanners import groq_client
     if time.time() < _paused["groq"]:
         return None
     models = [os.environ["GROQ_MODEL"]] if os.environ.get("GROQ_MODEL") else groq_client.REVIEW_MODELS
-    out = groq_client.chat([{"role": "user", "content": prompt}], models, max_tokens=200, json_mode=True,
+    out = groq_client.chat([{"role": "user", "content": prompt}], models, max_tokens=500, json_mode=True,
                            wait=REVIEW_WAIT, priority="normal", effort="low", temperature=0)
     return _parse(out["text"]) if out else None
 
 
+def _pool(name: str, prompt: str):
+    from scanners import llm_pool
+    raw = llm_pool.chat(name, [{"role": "user", "content": prompt}], kind="review", max_tokens=500,
+                        json_mode=True, wait=REVIEW_WAIT, temperature=0)
+    return _parse(raw) if raw else None
+
+
 def _cloudflare(prompt: str):
-    acct, token = os.environ.get("CLOUDFLARE_ACCOUNT_ID", ""), os.environ.get("CLOUDFLARE_AI_TOKEN", "")
-    if not acct or not token or time.time() < _paused["cloudflare"] or not _reserve("cloudflare"):
-        return None
-    model = os.environ.get("CLOUDFLARE_AI_MODEL", "@cf/meta/llama-3.1-8b-instruct")
-    try:
-        resp = requests.post(f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/{model}", timeout=15,
-                             headers={"Authorization": f"Bearer {token}"},
-                             json={"messages": [{"role": "user", "content": prompt}], "max_tokens": 200})
-    except Exception:
-        return None
-    if resp.status_code != 200:
-        _handle_error("cloudflare", resp.status_code, resp.text[:200])
-        return None
-    try:
-        return _parse(resp.json()["result"]["response"])
-    except Exception:
-        return None
+    return _pool("cloudflare", prompt)
+
+
+def _mistral(prompt: str):
+    return _pool("mistral", prompt)
 
 
 def _gemini(prompt: str):
     from scanners import translator as tr
-    key = tr._gemini_key()
-    if not key or time.time() < _paused["gemini"] or not tr._available("gemini") or not tr._reserve_gemini(REVIEW_WAIT):
+    if time.time() < _paused["gemini"]:
         return None
     body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": 0, "responseMimeType": "application/json"}}
-    for model in ([tr._GEMINI["model"]] if tr._GEMINI["model"] else tr.GEMINI_MODELS):
-        try:
-            resp = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key}, json=body, timeout=15)
-        except Exception:
-            return None
-        if resp.status_code == 404:
-            continue
-        if resp.status_code != 200:
-            _handle_error("gemini", resp.status_code, resp.text[:200])
-            return None
-        try:
-            tr._GEMINI["model"] = model
-            return _parse(resp.json()["candidates"][0]["content"]["parts"][0]["text"])
-        except Exception:
-            return None
-    return None
+            "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "maxOutputTokens": 1024}}
+    raw = tr.gemini_generate(body, wait=REVIEW_WAIT, priority="normal", timeout=15)
+    return _parse(raw) if raw else None
 
 
 def _groq_status():
@@ -183,8 +138,7 @@ def _q(name):
 def ai_status() -> dict:
     return {
         "groq": _groq_status(),
-        "cloudflare": {"configured": bool(os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_AI_TOKEN")),
-                       "problem": _problem["cloudflare"], "today": _q("cloudflare")},
+        "more": __import__("scanners.llm_pool", fromlist=["status"]).status(),
         "gemini": {"configured": bool(os.environ.get("GEMINI_API_KEY")), "problem": _problem["gemini"]},
         "enabled": os.environ.get("AI_REVIEW", "on").lower() != "off",
     }
@@ -203,7 +157,7 @@ def review(text: str):
             return _cache[key]
     prompt = PROMPT.replace("{text}", masked)
     result = None
-    for name, fn in (("groq", _groq), ("cloudflare", _cloudflare), ("gemini", _gemini)):
+    for name, fn in (("groq", _groq), ("cloudflare", _cloudflare), ("gemini", _gemini), ("mistral", _mistral)):
         out = fn(prompt)
         if out:
             result = dict(out, provider=name)

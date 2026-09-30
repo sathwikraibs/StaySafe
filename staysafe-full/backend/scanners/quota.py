@@ -222,7 +222,7 @@ QUOTAS = {
     # A better Gemini model only for the Helper's answers in Indian languages. Google counts each
     # model separately, so this never takes anything away from message checks.
     "gemini_answers": Quota("gemini_answers", _env_int("GEMINI_ANSWER_PER_MINUTE", 4),
-                            _env_int("GEMINI_ANSWER_DAILY_LIMIT", 200), PACIFIC),
+                            _env_int("GEMINI_ANSWER_DAILY_LIMIT", 18), PACIFIC),   # flash: about 20 a day free
     "virustotal": Quota("virustotal", _env_int("VT_PER_MINUTE", 4), _env_int("VT_DAILY_LIMIT", 480)),
     "urlscan": Quota("urlscan", _env_int("URLSCAN_PER_MINUTE", 60), _env_int("URLSCAN_DAILY_LIMIT", 900)),
     "safe_browsing": Quota("safe_browsing", 300, _env_int("GSB_DAILY_LIMIT", 9000)),
@@ -233,7 +233,12 @@ QUOTAS = {
     "mymemory": Quota("mymemory", None, _env_int("MYMEMORY_DAILY_CHARS",
                                                  48000 if os.environ.get("MYMEMORY_EMAIL") else 4800)),
     "google_translate": Quota("google_translate", None, _env_int("TRANSLATE_DAILY_CHAR_LIMIT", 15000), PACIFIC),
-    "cloudflare": Quota("cloudflare", 20, _env_int("CLOUDFLARE_AI_DAILY_LIMIT", 300)),
+    # Cloudflare's free 10,000 "neurons" a day (resets 00:00 UTC) is roughly 150 to 300 answers
+    "cloudflare": Quota("cloudflare", _env_int("CLOUDFLARE_AI_PER_MINUTE", 20), _env_int("CLOUDFLARE_AI_DAILY_LIMIT", 250)),
+    # Mistral's free plan: about 1 request a second; we stay far below
+    "mistral": Quota("mistral", _env_int("MISTRAL_PER_MINUTE", 20), _env_int("MISTRAL_DAILY_LIMIT", 400)),
+    # OpenRouter's free models: 50 requests a day and 20 a minute without bought credits
+    "openrouter": Quota("openrouter", _env_int("OPENROUTER_PER_MINUTE", 15), _env_int("OPENROUTER_DAILY_LIMIT", 45)),
     "bhashini": Quota("bhashini", 30, None),
     "ocrspace": Quota("ocrspace", 10, _env_int("OCRSPACE_DAILY_LIMIT", 800)),
     "crtsh": Quota("crtsh", 30, None),

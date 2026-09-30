@@ -84,6 +84,7 @@ def translation_status() -> dict:
         },
         "gemini": {"configured": bool(_gemini_key()), "active": bool(_gemini_key()) and _available("gemini"),
                    "problem": _problem["gemini"], "model": _GEMINI["model"], "requests_today": _GEMINI["day_count"],
+                   "models_not_offered": sorted(_GEMINI_GONE), "models_done_today": sorted(m for m, d in _GEMINI_DAY_DONE.items() if d == _gemini_day_key()),
                    "daily_limit": GEMINI_DAILY_LIMIT},
         "bhashini": {"configured": _bhashini_ready(), "active": _bhashini_ready() and _available("bhashini"),
                      "problem": _problem["bhashini"]},
@@ -169,8 +170,11 @@ def _google(text: str, target: str):
 # Google Gemini (AI Studio free tier: no card, no billing account)
 # ---------------------------------------------------------------------------
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-# First one that exists is kept. Set GEMINI_MODEL to choose one yourself.
-GEMINI_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-2.5-flash"]
+# Google's free "lite" models, best first. Each has its OWN free daily allowance (about 500 a
+# day each in Sep 2026), so when one is used up for the day the next one takes over.
+# Set GEMINI_MODELS (comma separated) or GEMINI_MODEL on Render to choose yourself.
+GEMINI_MODELS = [m.strip() for m in os.environ.get(
+    "GEMINI_MODELS", "gemini-flash-lite-latest,gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",") if m.strip()]
 GEMINI_PER_MINUTE = int(os.environ.get("GEMINI_PER_MINUTE", "8"))      # free tier allows about 10 to 15
 GEMINI_DAILY_LIMIT = int(os.environ.get("GEMINI_DAILY_LIMIT", "800"))   # free tier allows about 1,000
 _GEMINI = {"model": None, "minute": [], "day": date.today(), "day_count": 0}
@@ -196,14 +200,153 @@ def _reserve_gemini(wait: float = 0.0, priority: str = "normal") -> bool:
     return ok
 
 
-def gemini_limit_hit(status: int, msg: str) -> None:
-    """Google said 'too many': this minute or today is used up. Shared with the AI review."""
+# Which lite models Google doesn't offer to this key, and which have used today's / this minute's allowance
+_GEMINI_GONE: set = set()
+_GEMINI_DAY_DONE: dict = {}      # model -> the quota day it was used up on
+_GEMINI_COOL: dict = {}          # model -> time until which its per-minute limit is full
+_GEMINI_EXTRA: list = []         # replacement models Google told us about
+_REPLACEMENT = re.compile(r"use models/([a-z0-9][a-z0-9.\-]*[a-z0-9])", re.I)
+
+
+def _is_day_limit(msg: str) -> bool:
     low = msg.lower()
-    if "per day" in low or "perday" in low.replace(" ", "") or "daily" in low:
+    return "per day" in low or "perday" in low.replace(" ", "") or "daily" in low
+
+
+def _no_free_allowance(msg: str) -> bool:
+    """Google's way of saying this model has no free allowance at all for this key."""
+    return bool(re.search(r"limit:\s*0\b", msg, re.I))
+
+
+def _gemini_day_key() -> int:
+    q = quota("gemini")
+    return int((time.time() + q.day_offset) // 86400)
+
+
+def _gemini_candidates() -> list:
+    today, now = _gemini_day_key(), time.time()
+    if os.environ.get("GEMINI_MODEL"):
+        forced = os.environ["GEMINI_MODEL"]
+        return [] if _GEMINI_DAY_DONE.get(forced) == today else [forced]
+    names = [m for m in dict.fromkeys(GEMINI_MODELS + _GEMINI_EXTRA)
+             if m not in _GEMINI_GONE and _GEMINI_DAY_DONE.get(m) != today and _GEMINI_COOL.get(m, 0) <= now]
+    if _GEMINI["model"] in names:          # the one that worked last time first
+        names.remove(_GEMINI["model"])
+        names.insert(0, _GEMINI["model"])
+    return names
+
+
+def gemini_limit_hit(status: int, msg: str, model: str = "") -> None:
+    """
+    Google said 'too many'. Each model has its OWN per-minute and per-day allowance, so only
+    that model rests (a minute, or until Google's day ends) and the next model takes over.
+    Gemini as a whole stops only when every model is resting.
+    """
+    if model:
+        if _is_day_limit(msg) or _no_free_allowance(msg):
+            _GEMINI_DAY_DONE[model] = _gemini_day_key()
+        else:
+            _GEMINI_COOL[model] = time.time() + 60
+        if _GEMINI["model"] == model:
+            _GEMINI["model"] = None
+        if _gemini_candidates():
+            return
+    if _is_day_limit(msg) and not any(_GEMINI_COOL.get(m, 0) > time.time() for m in GEMINI_MODELS):
         quota("gemini").close_day()
         _problem["gemini"] = "Free daily limit reached. Using the next free option for now"
     else:
         quota("gemini").cool_down(60)
+
+
+def _time_for_call(deadline, cap: float) -> float:
+    """How long the next request may take without passing the caller's deadline (0 = don't start it)."""
+    if deadline is None:
+        return cap
+    left = deadline - time.time() - 2
+    return min(cap, left) if left >= 6 else 0.0
+
+
+def gemini_generate(body: dict, wait: float = 0.0, priority: str = "normal", timeout: float = 20.0,
+                    reserve: bool = True, deadline=None):
+    """
+    The one way every part of the site asks Gemini (translation, message review, the Helper).
+    Stays inside the free limits, moves to the next free model when one is used up or retired,
+    and waits out Google's short "high demand" moments instead of giving up. Never runs past
+    `deadline` (a time.time() value), so a visitor's request always finishes in time.
+    Returns the answer text, or None (the caller then uses the other free services).
+    """
+    key = _gemini_key()
+    if not key or not _available("gemini") or not _gemini_candidates():
+        return None
+    if deadline is not None:
+        wait = max(0.0, min(wait, deadline - time.time() - 15))
+    if reserve and not _reserve_gemini(wait, priority):
+        return None
+    tried = set()
+    names = _gemini_candidates()
+    while names:
+        model = names.pop(0)
+        if model in tried:
+            continue
+        tried.add(model)
+        resp = None
+        for attempt in range(2):
+            t = _time_for_call(deadline, timeout)
+            if not t:
+                return None
+            try:
+                resp = requests.post(GEMINI_URL.format(model=model), headers={"x-goog-api-key": key},
+                                     json=body, timeout=t)
+            except Exception:
+                resp = None
+            if resp is not None and resp.status_code in (500, 502, 503, 504) and attempt == 0 \
+                    and _time_for_call(deadline, timeout) >= 10:
+                time.sleep(3)            # "high demand" usually passes in seconds
+                continue
+            break
+        if resp is None:
+            continue                     # timed out or no connection: try the next model
+        if resp.status_code == 200:
+            try:
+                cand = resp.json()["candidates"][0]
+                parts = cand.get("content", {}).get("parts", [])
+                text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+            except Exception:
+                return None
+            if cand.get("finishReason") == "MAX_TOKENS":
+                return None              # cut off: never show half an answer
+            _GEMINI["model"] = model
+            _problem["gemini"] = None
+            return text or None
+        full = str(getattr(resp, "text", ""))          # the details hold the limit's name (e.g. ...PerDay...)
+        try:
+            msg = resp.json().get("error", {}).get("message", "") or f"HTTP {resp.status_code}"
+        except Exception:
+            msg = f"HTTP {resp.status_code}"
+        low = msg.lower()
+        if resp.status_code in (401, 403) and ("api key" in low or "permission" in low) or "api key not valid" in low:
+            _pause("gemini", 6 * 3600, msg[:200])   # key wrong, or not offered in this region
+            return None
+        if resp.status_code == 404 or "no longer available" in low or ("model" in low and "not found" in low):
+            _GEMINI_GONE.add(model)
+            m = _REPLACEMENT.search(full)
+            if m and m.group(1) not in _GEMINI_GONE and m.group(1) not in _GEMINI_EXTRA:
+                _GEMINI_EXTRA.append(m.group(1))
+                names.append(m.group(1))
+            if not names:
+                names = [n for n in _gemini_candidates() if n not in tried]
+            continue
+        if resp.status_code == 429 or "quota" in low or "exhausted" in low:
+            gemini_limit_hit(resp.status_code, full or msg, model)
+            names = [n for n in _gemini_candidates() if n not in tried]
+            continue                     # the next model has its own allowance
+        if resp.status_code in (500, 502, 503, 504):
+            continue                     # still busy: try the next model
+        _problem["gemini"] = msg[:200]   # e.g. a request Google didn't like: just this one fails
+        return None
+    if not _gemini_candidates():
+        _problem["gemini"] = "No Gemini model available right now"
+    return None
 
 
 def _gemini_prompt(text: str, target: str) -> str:
@@ -221,51 +364,23 @@ def _gemini_prompt(text: str, target: str) -> str:
 
 def _gemini(text: str, target: str, wait: float = 0.0, priority: str = "normal"):
     import json as _json
-    key = _gemini_key()
-    if not key or not _available("gemini") or not _reserve_gemini(wait, priority):
-        return None
-    models = [os.environ["GEMINI_MODEL"]] if os.environ.get("GEMINI_MODEL") else (
-        [_GEMINI["model"]] if _GEMINI["model"] else GEMINI_MODELS)
     body = {
         "contents": [{"role": "user", "parts": [{"text": _gemini_prompt(text, target)}]}],
-        "generationConfig": {"temperature": 0, "responseMimeType": "application/json"},
+        "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "maxOutputTokens": 4000},
     }
-    for model in models:
-        try:
-            resp = requests.post(GEMINI_URL.format(model=model), headers={"x-goog-api-key": key},
-                                 json=body, timeout=15)
-        except Exception:
-            return None
-        if resp.status_code == 404:
-            continue  # this model name isn't offered (any more); try the next one
-        if resp.status_code == 200:
-            try:
-                data = resp.json()
-                raw = data["candidates"][0]["content"]["parts"][0]["text"]
-                raw = re.sub(r"^```(?:json)?|```$", "", raw.strip()).strip()
-                out = _json.loads(raw)
-                translated = str(out.get("translation", "")).strip()
-                source = str(out.get("source_language", "")).strip().lower()[:5] or guess_language(text)
-            except Exception:
-                return None
-            _GEMINI["model"] = model
-            if not _looks_like_translation(text, translated, target):
-                return None
-            return {"text": translated, "from": source, "to": target, "provider": "gemini"}
-        try:
-            msg = resp.json().get("error", {}).get("message", "") or f"HTTP {resp.status_code}"
-        except Exception:
-            msg = f"HTTP {resp.status_code}"
-        low = msg.lower()
-        if resp.status_code == 429 or "quota" in low or "exhausted" in low:
-            gemini_limit_hit(resp.status_code, msg)
-        elif resp.status_code in (400, 401, 403):
-            _pause("gemini", 6 * 3600, msg[:200])  # key wrong, or not offered in this region
-        else:
-            _pause("gemini", 10 * 60, msg[:200])
+    raw = gemini_generate(body, wait=wait, priority=priority, timeout=20)
+    if not raw:
         return None
-    _pause("gemini", 24 * 3600, "No Gemini model found. Set GEMINI_MODEL")
-    return None
+    try:
+        raw = re.sub(r"^```(?:json)?|```$", "", raw.strip()).strip()
+        out = _json.loads(re.search(r"\{.*\}", raw, re.S).group(0))
+        translated = str(out.get("translation", "")).strip()
+        source = str(out.get("source_language", "")).strip().lower()[:5] or guess_language(text)
+    except Exception:
+        return None
+    if not _looks_like_translation(text, translated, target):
+        return None
+    return {"text": translated, "from": source, "to": target, "provider": "gemini"}
 
 
 # ---------------------------------------------------------------------------

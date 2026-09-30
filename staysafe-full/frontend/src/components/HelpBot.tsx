@@ -3,7 +3,7 @@ import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
 import { IconChat, IconClose, IconLock, IconShield } from "@/icons";
 import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
-import { apiGet, apiPostJSON, errorMessage } from "@/api";
+import { apiGet, apiPostJSON, errorMessage, ApiError } from "@/api";
 import { API_BASE } from "@/config";
 
 type Button = HelpAction
@@ -15,9 +15,20 @@ interface Bubble {
   team?: boolean;        // show the small "Still need a person? Write to our team" line under it
   langPick?: boolean;    // show language buttons (the AI wasn't sure which language to answer in)
   aiAnyway?: string;     // a question we answered with a tool button: it can still go to the AI
+  note?: string;         // a small tip under the answer
 }
 type Turn = { role: "user" | "assistant"; text: string };
-interface AiAnswer { reply: string; urgent: boolean; actions: string[]; ask_language?: boolean }
+interface AiAnswer { reply: string; urgent: boolean; actions: string[]; ask_language?: boolean; kind?: string; language?: string }
+
+/** Never show program code or raw data as an answer (the server checks too; this is a second net). */
+function cleanReply(text: unknown): string | null {
+  let t = typeof text === "string" ? text.trim() : "";
+  if (t.startsWith("{")) {
+    try { const inner = JSON.parse(t); t = typeof inner?.reply === "string" ? inner.reply.trim() : ""; } catch { t = ""; }
+  }
+  if (!t || /```|<script|"\w+"\s*:\s*["{[\d]|\bfunction\s*\w*\s*\(|=>|console\.log/.test(t)) return null;
+  return t;
+}
 
 /** Languages someone can pick when the AI isn't sure (Tulu and Kannada look alike). */
 const LANG_CHOICES: [string, string][] = [["kn", "ಕನ್ನಡ"], ["tcy", "ತುಳು"], ["en", "English"], ["hi", "हिन्दी"]];
@@ -54,6 +65,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
   const [thinking, setThinking] = useState(false);
   const [replyLang, setReplyLang] = useState<string>("");
   const pending = useRef<string>("");          // last question, to answer again in a picked language
+  const tuluTipShown = useRef(false);
   const started = useRef(false);
 
   // What's available (asked once; the answers never name any service)
@@ -129,13 +141,23 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       });
       const rest = 1800 - (Date.now() - started);   // a careful answer shouldn't pop up instantly
       if (rest > 0) await new Promise((ok) => setTimeout(ok, rest));
+      const reply = cleanReply(r.reply);
+      if (!reply) {
+        setBubbles((b) => [...b.filter((x) => !x.typing), { from: "bot", lines: [tx.aiTrouble], topics: true, team: true }]);
+        return;
+      }
+      // Tulu typed in English letters: once, suggest Kannada letters for a more accurate answer
+      const tuluTip = r.language === "tcy" && !/[\u0C80-\u0CFF]/.test(text) && !tuluTipShown.current;
+      if (tuluTip) tuluTipShown.current = true;
       setBubbles((b) => [...b.filter((x) => !x.typing),
-        { from: "bot", lines: r.reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions, text),
-          team: !r.ask_language, langPick: !!r.ask_language }]);
-      setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: r.reply }].slice(-8));
-    } catch {
+        { from: "bot", lines: reply.split(/\n+/).filter(Boolean), ai: true, buttons: aiButtons(r.actions || [], text),
+          team: !r.ask_language && r.kind !== "other", langPick: !!r.ask_language, note: tuluTip ? tx.tuluTip : undefined }]);
+      setTurns((t) => [...t, { role: "user" as const, text }, { role: "assistant" as const, text: reply }].slice(-8));
+    } catch (e) {
       setBubbles((b) => b.filter((x) => !x.typing));
-      fallback();
+      // asked many questions very fast: show the "please wait a few minutes" message itself
+      if (e instanceof ApiError && e.status === 429) say({ from: "bot", lines: [ts(errorMessage(e))], team: true });
+      else fallback();
     } finally {
       setThinking(false);
     }
@@ -171,7 +193,9 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
     const known = topic ?? (r.kind === "topic" && r.strong ? r.topic : undefined);
     if (known) setLastTopic(known.id);
     const fallback = () => (known ? readyAnswer(known) : say({ from: "bot", lines: [tx.noMatch], topics: true, team: true }));
-    if (aiReady) void askAssistant(text, fallback);
+    // the AI couldn't answer this time: a ready answer if we have one, otherwise say so plainly
+    const aiDown = () => (known ? readyAnswer(known) : say({ from: "bot", lines: [tx.aiBusy], topics: true, team: true }));
+    if (aiReady) void askAssistant(text, aiDown);
     else fallback();
   }
 
@@ -283,6 +307,9 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
               ) : b.lines.map((l, j) => (
                 <p key={j} className={`whitespace-pre-wrap break-words font-body text-sm leading-relaxed ${j ? "mt-1.5" : ""}`}>{l}</p>
               ))}
+              {b.note && (
+                <p className="mt-2 rounded-lg bg-sage-100 px-2.5 py-1.5 font-body text-xs leading-snug text-sage-700">{b.note}</p>
+              )}
               {b.ai && (
                 <p className="mt-2 border-t border-cream-200 pt-2 font-body text-[11px] leading-snug text-dustyblue-600">{tx.aiLabel}</p>
               )}
@@ -321,7 +348,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
             </div>
             {b.aiAnyway && i === bubbles.length - 1 && !thinking && (
               <button type="button" onClick={() => { const q = b.aiAnyway!; setBubbles((all) => all.map((x) => x === b ? { ...x, aiAnyway: undefined } : x)); void askAssistant(q, () => say({ from: "bot", lines: [tx.noMatch], topics: true, team: true })); }}
-                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-sage-700 underline underline-offset-2 hover:text-sage-800">
+                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-sage-700 underline underline-offset-2 hover:text-sage-600">
                 <IconShield className="h-3.5 w-3.5" />{tt.askAi}
               </button>
             )}
@@ -338,6 +365,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
         {/* first screen: common questions (they go to the AI too) */}
         {noAnswerYet && (
           <div className="pt-1">
+            <p className="mb-3 rounded-xl bg-sage-100 px-3 py-2 font-body text-xs leading-snug text-sage-700">{tx.tip}</p>
             <p className="mb-2 px-1 font-body text-xs font-bold uppercase tracking-wide text-dustyblue-500">{tx.commonTitle}</p>
             <div className="flex flex-wrap gap-1.5">
               {topics.map((tp) => (

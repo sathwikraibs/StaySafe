@@ -559,6 +559,10 @@ def _use_fake_google(status=200, mymemory="ok", google_message="Cloud Translatio
     for k in ("GEMINI_API_KEY", "BHASHINI_USER_ID", "BHASHINI_API_KEY", "GEMINI_MODEL"):
         os.environ.pop(k, None)
     translator._GEMINI.update(model=None, minute=[], day_count=0)
+    translator._GEMINI_GONE.clear()
+    translator._GEMINI_DAY_DONE.clear()
+    translator._GEMINI_EXTRA.clear()
+    translator._GEMINI_COOL.clear()
     translator._BHASHINI_CFG.clear()
     translator.requests.post = fake_post
     translator.requests.get = fake_get
@@ -690,7 +694,7 @@ def test_gemini_translates_first_when_its_key_is_set():
     result = add_translation(analyze_text(KN_SCAM), "en")
     assert result["translation"]["provider"] == "gemini" and "blocked" in result["translation"]["text"]
     assert result["translation"]["from"] == "kn"
-    assert translator._GEMINI["model"] == "gemini-2.5-flash-lite"   # skipped the model name that didn't exist
+    assert translator._GEMINI["model"] == translator.GEMINI_MODELS[1]   # skipped the model name that didn't exist
     assert not any(c[0] == "mymemory" for c in calls)
 
 

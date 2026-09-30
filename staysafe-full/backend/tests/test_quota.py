@@ -94,10 +94,10 @@ def test_combined_gemini_request_fills_all_three_answers_with_one_call():
                 "translation": "आपका SBI खाता आज बंद हो जाएगा। अभी [#1] पर कॉल करें",
                 "verdict": "scam", "category": "bank", "confidence": 90})}]}}]}
 
-    real_post, real_key = gemini_combo.requests.post, os.environ.get("GEMINI_API_KEY")
+    real_post, real_key = translator.requests.post, os.environ.get("GEMINI_API_KEY")
     try:
         os.environ["GEMINI_API_KEY"] = "test"
-        gemini_combo.requests.post = lambda *a, **k: (calls.append(1), Resp())[1]
+        translator.requests.post = lambda *a, **k: (calls.append(1), Resp())[1]
         text = "ನಿಮ್ಮ SBI ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ಈಗಲೇ 9876543210 ಗೆ ಕರೆ ಮಾಡಿ"
         before = quota("gemini").status()["used_today"]
         assert gemini_combo.prefetch(text, "hi")
@@ -110,7 +110,7 @@ def test_combined_gemini_request_fills_all_three_answers_with_one_call():
         # nothing left to ask: no second request
         assert not gemini_combo.prefetch(text, "hi") and len(calls) == 1
     finally:
-        gemini_combo.requests.post = real_post
+        translator.requests.post = real_post
         if real_key is None:
             os.environ.pop("GEMINI_API_KEY", None)
         else:

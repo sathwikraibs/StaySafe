@@ -40,9 +40,11 @@ URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT = {"rpm": 30, "rpd": 1000, "tpm": 8000, "tpd": 200000}
 
 # Best first for the assistant (quality and languages), cheapest first for quick yes/no reviews.
-CHAT_MODELS = ["openai/gpt-oss-120b", "llama-3.3-70b-versatile", "qwen/qwen3.8-27b", "openai/gpt-oss-20b",
-               "llama-3.1-8b-instant"]
-REVIEW_MODELS = ["openai/gpt-oss-20b", "llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
+# (Groq took the Llama models off the free plan in Aug 2026.) Set GROQ_CHAT_MODELS / GROQ_REVIEW_MODELS to change.
+CHAT_MODELS = [m.strip() for m in os.environ.get(
+    "GROQ_CHAT_MODELS", "openai/gpt-oss-120b,qwen/qwen3.8-27b,openai/gpt-oss-20b").split(",") if m.strip()]
+REVIEW_MODELS = [m.strip() for m in os.environ.get(
+    "GROQ_REVIEW_MODELS", "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b").split(",") if m.strip()]
 
 _models: dict = {}
 _lock = threading.Lock()
@@ -122,15 +124,23 @@ def _extras(name: str, effort: str) -> dict:
 
 
 def chat(messages, models=None, max_tokens=600, json_mode=True, wait=20.0, priority="normal",
-         effort="medium", temperature=0.3):
+         effort="medium", temperature=0.3, finish_by=None):
     """
     Ask Groq, trying each model in turn within its own free allowance.
-    Returns {"text", "model"} or None.
+    Returns {"text", "model"} or None. Never runs past `finish_by` (a time.time() value).
     """
     key = os.environ.get("GROQ_API_KEY", "")
     if not key:
         return None
     deadline = time.time() + wait
+    if finish_by is not None:
+        deadline = min(deadline, finish_by - 15)
+
+    def time_for_call():
+        if finish_by is None:
+            return 30.0
+        left = finish_by - time.time() - 2
+        return min(30.0, left) if left >= 6 else 0.0
     for name in (models or CHAT_MODELS):
         if name in _gone:
             continue
@@ -139,7 +149,7 @@ def chat(messages, models=None, max_tokens=600, json_mode=True, wait=20.0, prior
         this_effort = effort
         if effort != "low" and m.left_today() < 0.35:
             this_effort = "low"
-        est = estimate_tokens(messages, max_tokens + (900 if this_effort == "high" else 500 if this_effort == "medium" else 150))
+        est = estimate_tokens(messages, max_tokens)   # max_tokens already includes the model's thinking
         left = max(0.0, deadline - time.time())
         if not m.requests.take(wait=left, priority=priority):
             continue
@@ -150,13 +160,21 @@ def chat(messages, models=None, max_tokens=600, json_mode=True, wait=20.0, prior
                 **_extras(name, this_effort)}
         if json_mode:
             body["response_format"] = {"type": "json_object"}
+        t = time_for_call()
+        if not t:
+            m.requests.refund()
+            m.tokens.refund(est)
+            return None
         try:
-            r = requests.post(URL, headers={"Authorization": f"Bearer {key}"}, json=body, timeout=30)
+            r = requests.post(URL, headers={"Authorization": f"Bearer {key}"}, json=body, timeout=t)
             if r.status_code == 400 and any(w in r.text.lower() for w in ("reasoning", "include_reasoning", "response_format", "json")):
                 # this model doesn't take one of the options: ask once more without them
                 for k in ("reasoning_effort", "include_reasoning", "reasoning_format", "response_format"):
                     body.pop(k, None)
-                r = requests.post(URL, headers={"Authorization": f"Bearer {key}"}, json=body, timeout=30)
+                t = time_for_call()
+                if not t:
+                    return None
+                r = requests.post(URL, headers={"Authorization": f"Bearer {key}"}, json=body, timeout=t)
         except Exception as e:
             _problem["last"] = f"{name}: {type(e).__name__}"
             m.tokens.refund(est)
@@ -166,11 +184,15 @@ def chat(messages, models=None, max_tokens=600, json_mode=True, wait=20.0, prior
             try:
                 data = r.json()
                 text = data["choices"][0]["message"].get("content") or ""
+                cut = data["choices"][0].get("finish_reason") == "length"
                 used = int((data.get("usage") or {}).get("total_tokens") or est)
             except Exception:
                 continue
             m.tokens.adjust(used - est)
             _problem["last"] = None
+            if cut:
+                _problem["last"] = f"{name}: answer was cut off"
+                continue          # never show half an answer: try the next model
             if text.strip():
                 return {"text": text, "model": name}
             continue

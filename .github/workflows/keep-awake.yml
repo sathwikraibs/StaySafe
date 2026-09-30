@@ -1,0 +1,27 @@
+# Keeps the free StaySafe server on Render awake, so the AI helper and checks answer at once,
+# day and night. Render's free plan sleeps after 15 minutes without visitors; a ping every
+# 10 minutes prevents that. StaySafe is the only Render service, so 24x7 (at most 744 hours a
+# month) stays inside Render's 750 free hours. GitHub Actions is free for public repositories.
+name: Keep StaySafe awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping the StaySafe server
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://staysafe-api.onrender.com/ || true)
+            echo "Try $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          echo "Server did not answer yet (it may be starting up); the next run will try again."

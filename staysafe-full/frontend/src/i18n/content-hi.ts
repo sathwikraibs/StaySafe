@@ -33,6 +33,7 @@ export const hiContent: LangContent = {
     "The server took too long to respond. Please try again in a moment.": "सर्वर ने जवाब देने में बहुत देर लगाई। थोड़ी देर बाद दोबारा कोशिश करें।",
     "That file is too big to upload.": "यह फ़ाइल अपलोड करने के लिए बहुत बड़ी है।",
     "Something went wrong on the server. Please try again.": "सर्वर पर कुछ गड़बड़ हुई। दोबारा कोशिश करें।",
+    "You've asked a lot of questions in a short time. Please wait a few minutes, or talk to a person.": "आपने कम समय में बहुत सारे सवाल पूछे हैं। कृपया कुछ मिनट रुकें, या किसी व्यक्ति से बात करें।",
     "Something went wrong on our side. Please try again.": "हमारी तरफ़ कुछ गड़बड़ हुई। दोबारा कोशिश करें।",
     "Request failed ({status}).": "रिक्वेस्ट नहीं हो पाई ({status})।",
     "That file is too big. Please upload something under {mb} MB.": "यह फ़ाइल बहुत बड़ी है। {mb} MB से छोटी फ़ाइल अपलोड करें।",

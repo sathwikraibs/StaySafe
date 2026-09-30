@@ -34,6 +34,7 @@ export const tcyContent: LangContent = {
     "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರ ಕೊರೆರೆ ಮಸ್ತ್ ಪೊರ್ತು ದೆತೊಂಡ್. ಇಜ್ಜೆರ್ ಪೊರ್ತು ಬೊಕ್ಕ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "That file is too big to upload.": "ಈ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪೆರೆ ಮಸ್ತ್ ಮಲ್ಲ ಉಂಡು.",
     "Something went wrong on the server. Please try again.": "ಸರ್ವರ್‌ಡ್ ದಾದಾಂಡಲ ತೊಂದರೆ ಆಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "You've asked a lot of questions in a short time. Please wait a few minutes, or talk to a person.": "ಈರ್ ಎಲ್ಯ ಪೊರ್ತುಡು ಮಸ್ತ್ ಪ್ರಶ್ನೆಲೆನ್ ಕೇಂಡರ್. ದಯದ್ ಕೆಲವು ನಿಮಿಷ ಕಾಪುಲೆ, ಅತ್ತಂಡ ಒರಿ ಆಳ್‌ನೊಟ್ಟುಗು ಪಾತೆರ್ಲೆ.",
     "Something went wrong on our side. Please try again.": "ಎಂಕ್ಲೆನ ಕಡೆಟ್ ದಾದಾಂಡಲ ತೊಂದರೆ ಆಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "Request failed ({status}).": "ಕೋರಿಕೆ ವಿಫಲ ಆಂಡ್ ({status}).",
     "That file is too big. Please upload something under {mb} MB.": "ಈ ಫೈಲ್ ಮಸ್ತ್ ಮಲ್ಲ. {mb} MB ಡ್ದ್ ಎಲ್ಯ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",

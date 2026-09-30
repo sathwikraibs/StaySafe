@@ -18,8 +18,6 @@ import json
 import os
 import re
 
-import requests
-
 from scanners import ai_review
 from scanners import translator as tr
 
@@ -83,38 +81,17 @@ def prefetch(text: str, ui_lang: str) -> bool:
     asks = int(need["en"]) + int(bool(need["ui"])) + int(need["review"])
     if asks < 2:
         return False  # one thing only: the normal code makes exactly that one request anyway
-    if not tr._reserve_gemini(COMBINED_WAIT, "high"):
-        return False
     masked, secrets = tr.mask_personal(text[:tr.MAX_CHARS])
     body = {"contents": [{"role": "user", "parts": [{"text": _prompt(masked, need)}]}],
-            "generationConfig": {"temperature": 0, "responseMimeType": "application/json"}}
-    models = [os.environ["GEMINI_MODEL"]] if os.environ.get("GEMINI_MODEL") else (
-        [tr._GEMINI["model"]] if tr._GEMINI["model"] else tr.GEMINI_MODELS)
+            "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "maxOutputTokens": 6000}}
+    raw = tr.gemini_generate(body, wait=COMBINED_WAIT, priority="high", timeout=25)
     data = None
-    for model in models:
+    if raw:
         try:
-            resp = requests.post(tr.GEMINI_URL.format(model=model), headers={"x-goog-api-key": key},
-                                 json=body, timeout=20)
-        except Exception:
-            return False
-        if resp.status_code == 404:
-            continue
-        if resp.status_code != 200:
-            try:
-                msg = resp.json().get("error", {}).get("message", "") or f"HTTP {resp.status_code}"
-            except Exception:
-                msg = f"HTTP {resp.status_code}"
-            if resp.status_code == 429 or "quota" in msg.lower() or "exhausted" in msg.lower():
-                tr.gemini_limit_hit(resp.status_code, msg)
-            return False
-        try:
-            raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
             raw = re.sub(r"^```(?:json)?|```$", "", raw.strip()).strip()
             data = json.loads(re.search(r"\{.*\}", raw, re.S).group(0))
         except Exception:
-            return False
-        tr._GEMINI["model"] = model
-        break
+            data = None
     if not isinstance(data, dict):
         return False
 

@@ -103,7 +103,7 @@ def test_moves_to_next_model_when_one_is_used_up_today():
     setup({"reply": "ok", "urgent": False, "actions": []})
     groq_client.model("openai/gpt-oss-120b").tokens.close_day()
     c.post("/api/assistant", json={"message": "is this call a scam", "lang": "en"})
-    assert seen[0]["model"] == "llama-3.3-70b-versatile"
+    assert seen[0]["model"] == groq_client.CHAT_MODELS[1]
 
 
 def test_thinks_less_when_allowance_runs_low():

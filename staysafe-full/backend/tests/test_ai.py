@@ -1,0 +1,311 @@
+"""Tests for how every AI part of the site behaves when services are busy, used up, cut off or off-topic.
+Run: python tests/test_ai.py"""
+import json
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import scanners.url_scanner as url_scanner  # noqa: E402
+url_scanner.OFFLINE = True
+import requests  # noqa: E402
+from app import app  # noqa: E402
+from scanners import assistant, groq_client, llm_pool, translator, ai_review  # noqa: E402
+from scanners.quota import QUOTAS  # noqa: E402
+
+c = app.test_client()
+REAL_POST = requests.post
+KEYS = ("GROQ_API_KEY", "GEMINI_API_KEY", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_AI_TOKEN", "MISTRAL_API_KEY",
+        "OPENROUTER_API_KEY", "GEMINI_MODEL")
+
+
+class R:
+    def __init__(self, status=200, data=None, text=""):
+        self.status_code, self._data, self.headers = status, data, {}
+        self.text = text or (json.dumps(data) if data is not None else "")
+
+    def json(self):
+        return self._data
+
+
+def gemini_ok(text, finish="STOP"):
+    return R(200, {"candidates": [{"finishReason": finish, "content": {"parts": [{"text": text}]}}]})
+
+
+def openai_ok(text, finish="stop"):
+    return R(200, {"choices": [{"finish_reason": finish, "message": {"content": text}}], "usage": {"total_tokens": 500}})
+
+
+def fresh(**env):
+    for k in KEYS:
+        os.environ.pop(k, None)
+    os.environ.update(env)
+    for q in QUOTAS.values():
+        q.reset()
+    translator._GEMINI.update(model=None)
+    translator._GEMINI_GONE.clear()
+    translator._GEMINI_DAY_DONE.clear()
+    translator._GEMINI_EXTRA.clear()
+    translator._GEMINI_COOL.clear()
+    translator._paused_until["gemini"] = 0
+    groq_client._models.clear()
+    groq_client._gone.clear()
+    llm_pool._gone.clear()
+    llm_pool._paused.clear()
+    assistant._answers.clear()
+    assistant._ip_hits.clear()
+    assistant._answer_model["name"] = None
+    assistant._answer_gone.clear()
+    ai_review._cache.clear()
+    translator.time.sleep = lambda s: None       # no real waiting in tests
+
+
+def use(fake):
+    requests.post = fake
+
+
+BODY = {"contents": [{"role": "user", "parts": [{"text": "hi"}]}]}
+
+
+# ---- Gemini: shared by translation, message review and the Helper -------------------------
+def test_gemini_moves_to_the_next_free_model_when_one_is_used_up_for_the_day():
+    fresh(GEMINI_API_KEY="g")
+    first, second = translator.GEMINI_MODELS[0], translator.GEMINI_MODELS[1]
+    calls = []
+
+    def fake(url, **kw):
+        calls.append(url)
+        if f"/{first}:" in url:
+            return R(429, {"error": {"message": "Quota exceeded for metric: GenerateRequestsPerDayPerProjectPerModel-FreeTier"}})
+        return gemini_ok('{"ok": 1}')
+    use(fake)
+    assert translator.gemini_generate(BODY) == '{"ok": 1}'
+    assert f"/{second}:" in calls[1] and not QUOTAS["gemini"].status()["day_closed"]
+    calls.clear()
+    assert translator.gemini_generate(BODY) and f"/{first}:" not in calls[0]     # the used-up one is skipped today
+
+
+def test_gemini_stops_for_the_day_only_when_every_model_is_used_up():
+    fresh(GEMINI_API_KEY="g")
+    use(lambda url, **kw: R(429, {"error": {"message": "limit per day reached (daily)"}}))
+    assert translator.gemini_generate(BODY) is None
+    assert QUOTAS["gemini"].status()["day_closed"]
+
+
+def test_gemini_high_demand_is_waited_out_not_a_ten_minute_pause():
+    fresh(GEMINI_API_KEY="g")
+    n = []
+
+    def fake(url, **kw):
+        n.append(url)
+        return R(503, {"error": {"message": "This model is currently experiencing high demand."}}) if len(n) == 1 else gemini_ok("fine")
+    use(fake)
+    assert translator.gemini_generate(BODY) == "fine" and len(n) == 2 and n[0] == n[1]   # same model, asked again
+    assert translator._available("gemini")
+    # busy twice: the next model answers
+    fresh(GEMINI_API_KEY="g")
+    n.clear()
+    use(lambda url, **kw: (n.append(url), R(503, {"error": {"message": "busy"}}) if len(n) <= 2 else gemini_ok("next"))[1])
+    assert translator.gemini_generate(BODY) == "next" and n[2] != n[0] and translator._available("gemini")
+
+
+def test_gemini_follows_googles_replacement_hint_and_never_returns_a_cut_off_answer():
+    fresh(GEMINI_API_KEY="g", GEMINI_MODEL="")
+    os.environ.pop("GEMINI_MODEL")
+    saved = list(translator.GEMINI_MODELS)
+    translator.GEMINI_MODELS[:] = ["gemini-old-lite"]
+    calls = []
+    try:
+        def fake(url, **kw):
+            calls.append(url)
+            if "gemini-old-lite" in url:
+                return R(404, {"error": {"message": "models/gemini-old-lite is no longer available to new users. "
+                                                    "Please update your code to use models/gemini-new-lite for the latest"}})
+            return gemini_ok("hello")
+        use(fake)
+        assert translator.gemini_generate(BODY) == "hello" and "gemini-new-lite" in calls[1]
+        use(lambda url, **kw: gemini_ok('{"reply": "half', finish="MAX_TOKENS"))
+        assert translator.gemini_generate(BODY) is None
+    finally:
+        translator.GEMINI_MODELS[:] = saved
+
+
+def test_a_bad_request_does_not_switch_gemini_off_for_hours():
+    fresh(GEMINI_API_KEY="g")
+    use(lambda url, **kw: R(400, {"error": {"message": "Request contains an invalid argument."}}))
+    assert translator.gemini_generate(BODY) is None and translator._available("gemini")
+    use(lambda url, **kw: R(400, {"error": {"message": "API key not valid. Please pass a valid API key."}}))
+    assert translator.gemini_generate(BODY) is None and not translator._available("gemini")
+
+
+# ---- The extra free services ------------------------------------------------------------------
+def test_extra_services_answer_skip_cut_off_answers_and_respect_limits():
+    fresh(CLOUDFLARE_ACCOUNT_ID="acct", CLOUDFLARE_AI_TOKEN="t", MISTRAL_API_KEY="m")
+    seen = []
+
+    def fake(url, json=None, **kw):
+        seen.append((url, json.get("model"), "response_format" in json))
+        if "cloudflare" in url and json["model"] == "@cf/openai/gpt-oss-120b":
+            return openai_ok('{"reply": "cut', finish="length")      # cut off: try the next model
+        if "cloudflare" in url and "response_format" in json:
+            return R(400, text="response_format is not supported for this model")
+        return openai_ok('{"reply": "Call 1930."}')
+    use(fake)
+    out = llm_pool.chat("cloudflare", [{"role": "user", "content": "x"}])
+    assert out == '{"reply": "Call 1930."}' and "ai/v1/chat/completions" in seen[0][0]
+    assert seen[-1][2] is False                         # asked again without JSON mode
+    use(lambda url, **kw: R(429, text="you have used up your daily free allocation of 10,000 neurons"))
+    assert llm_pool.chat("mistral", [{"role": "user", "content": "x"}]) is None
+    assert QUOTAS["mistral"].status()["day_closed"]
+    use(lambda url, **kw: R(401, text="bad key"))
+    assert llm_pool.chat("cloudflare", [{"role": "user", "content": "x"}]) is None and not llm_pool.ready("cloudflare")
+    assert llm_pool.chat("openrouter", [{"role": "user", "content": "x"}]) is None    # no key: not used
+
+
+# ---- The Helper --------------------------------------------------------------------------------
+def test_cut_off_or_broken_answer_is_never_shown_the_next_service_answers():
+    fresh(GROQ_API_KEY="k", CLOUDFLARE_ACCOUNT_ID="a", CLOUDFLARE_AI_TOKEN="t")
+
+    def fake(url, json=None, **kw):
+        if "groq.com" in url:
+            return openai_ok('{"understood": "lost money", "reply": "Please call 1930 and')   # broken JSON
+        return openai_ok('{"kind": "safety", "reply": "Please call 1930 now.", "actions": ["incident"]}')
+    use(fake)
+    d = c.post("/api/assistant", json={"message": "someone took my money after I shared OTP", "lang": "en"}).get_json()
+    assert d["reply"] == "Please call 1930 now." and "{" not in d["reply"], d
+
+
+def test_code_in_an_answer_is_replaced_by_the_safety_only_line():
+    fresh(GROQ_API_KEY="k")
+    use(lambda url, **kw: openai_ok(json.dumps({"kind": "safety", "reply": "```python\nprint('hello')\n```"})))
+    d = c.post("/api/assistant", json={"message": "how do I block a scam number", "lang": "en"}).get_json()
+    assert d["reply"] == assistant.OFF_TOPIC["en"] and d["kind"] == "other", d
+
+
+def test_off_topic_questions_get_the_safety_only_line_in_the_visitors_language():
+    fresh(GROQ_API_KEY="k", GEMINI_API_KEY="g")
+    sent = []
+    use(lambda url, **kw: (sent.append(url), openai_ok('{"kind": "other", "reply": "My girlfriend is..."}'))[1])
+    d = c.post("/api/assistant", json={"message": "nimma favourite cinema yavudu heli", "lang": "kn"}).get_json()
+    assert d["reply"] in (assistant.OFF_TOPIC["kn-latn"], assistant.OFF_TOPIC["kn"]) and d["actions"] == [], d
+    # clearly off-topic: answered at once, no AI used at all
+    sent.clear()
+    for q, lang, want in (("write me a python code for calculator", "en", "en"),
+                          ("tell me your girlfriend name", "en", "en"),
+                          ("ನಿಮ್ಮ girlfriend ಹೆಸರು ಏನು", "kn", "kn")):
+        d = c.post("/api/assistant", json={"message": q, "lang": lang}).get_json()
+        assert d["reply"] == assistant.OFF_TOPIC[want] and d["kind"] == "other", (q, d)
+    assert sent == []
+    # but a real problem that mentions a girlfriend is answered
+    use(lambda url, **kw: openai_ok('{"kind": "safety", "reply": "Tell her not to pay. Call 1930."}'))
+    d = c.post("/api/assistant", json={"message": "my girlfriend got a scam call asking money", "lang": "en"}).get_json()
+    assert "1930" in d["reply"]
+
+
+def test_small_talk_is_answered_normally():
+    fresh(GROQ_API_KEY="k")
+    use(lambda url, **kw: openai_ok('{"kind": "smalltalk", "reply": "Hi! I am StaySafe\'s AI assistant, an automatic helper."}'))
+    d = c.post("/api/assistant", json={"message": "who are you", "lang": "en"}).get_json()
+    assert "StaySafe" in d["reply"] and d["kind"] == "smalltalk"
+
+
+def test_the_helper_answers_when_groq_and_gemini_are_both_used_up():
+    fresh(GROQ_API_KEY="k", GEMINI_API_KEY="g", MISTRAL_API_KEY="m")
+    for name in groq_client.CHAT_MODELS:
+        groq_client.model(name).requests.close_day()
+    QUOTAS["gemini"].close_day()
+    QUOTAS["gemini_answers"].close_day()
+    urls = []
+    use(lambda url, **kw: (urls.append(url), openai_ok('{"kind": "safety", "reply": "ಕರೆ ಕಡಿತಗೊಳಿಸಿ, ಹಣ ಕೊಡಬೇಡಿ."}'))[1])
+    d = c.post("/api/assistant", json={"message": "ಪೊಲೀಸ್ ಅಂತ ಕರೆ ಬಂತು ಏನು ಮಾಡಲಿ", "lang": "kn"}).get_json()
+    assert "ಹಣ" in d["reply"] and all("mistral" in u for u in urls), (urls, d)
+
+
+# ---- Message review ------------------------------------------------------------------------------
+def test_message_review_uses_the_next_free_service():
+    fresh(CLOUDFLARE_ACCOUNT_ID="a", CLOUDFLARE_AI_TOKEN="t")
+    use(lambda url, **kw: openai_ok('{"verdict": "scam", "category": "bank", "confidence": 90}'))
+    out = ai_review.review("Dear customer your SBI account is blocked, update KYC now at http://sbi-kyc.xyz")
+    assert out and out["verdict"] == "scam" and out["provider"] == "cloudflare"
+
+
+def test_gemini_reads_the_day_limit_from_the_error_details_and_a_busy_minute_moves_to_the_next_model():
+    fresh(GEMINI_API_KEY="g")
+    first = translator.GEMINI_MODELS[0]
+    day_body = {"error": {"code": 429, "message": "You exceeded your current quota. limit: 20, model: x. Please retry in 30s.",
+                          "details": [{"violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]}}
+    use(lambda url, **kw: R(429, day_body) if f"/{first}:" in url else gemini_ok("next"))
+    assert translator.gemini_generate(BODY) == "next"
+    assert translator._GEMINI_DAY_DONE.get(first) == translator._gemini_day_key()      # rests until Google's day ends
+    assert QUOTAS["gemini"].status()["paused_for_s"] == 0                                # the others keep working
+    fresh(GEMINI_API_KEY="g")
+    minute_body = {"error": {"code": 429, "message": "Resource exhausted. Please retry in 20s.",
+                             "details": [{"violations": [{"quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"}]}]}}
+    use(lambda url, **kw: R(429, minute_body) if f"/{first}:" in url else gemini_ok("next"))
+    assert translator.gemini_generate(BODY) == "next" and first in translator._GEMINI_COOL
+    assert QUOTAS["gemini"].status()["paused_for_s"] == 0
+
+
+def test_replacement_hint_ending_a_sentence_is_read_correctly():
+    m = translator._REPLACEMENT.search("is no longer available. Please use models/gemini-3.1-flash-lite.")
+    assert m.group(1) == "gemini-3.1-flash-lite"
+
+
+def test_forced_model_rests_for_the_day_too():
+    fresh(GEMINI_API_KEY="g", GEMINI_MODEL="gemini-only")
+    calls = []
+    use(lambda url, **kw: (calls.append(url), R(429, {"error": {"message": "per day limit reached"}}))[1])
+    assert translator.gemini_generate(BODY) is None and len(calls) == 1
+    assert translator.gemini_generate(BODY) is None and len(calls) == 1          # not asked again today
+    os.environ.pop("GEMINI_MODEL")
+
+
+def test_no_call_is_started_that_could_run_past_the_time_limit():
+    import time as _t
+    fresh(GEMINI_API_KEY="g", GROQ_API_KEY="k", MISTRAL_API_KEY="m")
+    calls = []
+    use(lambda url, **kw: (calls.append(url), gemini_ok("x"))[1])
+    soon = _t.time() + 5
+    assert translator.gemini_generate(BODY, deadline=soon) is None
+    assert llm_pool.chat("mistral", [{"role": "user", "content": "x"}], deadline=soon) is None
+    assert groq_client.chat([{"role": "user", "content": "x"}], finish_by=soon) is None
+    assert calls == []
+    # and every request's own time limit is cut to what is left
+    seen = []
+    use(lambda url, timeout=None, **kw: (seen.append(timeout), gemini_ok("x"))[1])
+    assert translator.gemini_generate(BODY, timeout=30, deadline=_t.time() + 20) == "x" and seen[0] <= 18.1
+
+
+def test_scam_victims_mentioning_a_code_are_answered_not_turned_away():
+    for q in ("he asked me to give the code he sent on my phone", "someone on instagram said send me the code",
+              "they told me to send the verification code"):
+        assert not assistant.clearly_off_topic(q), q
+
+
+def test_normal_answers_are_never_mistaken_for_code():
+    for good in ("Call 1930 now.<br>Then call your bank.", "They may return your money; do not pay any fee.",
+                 "If your phone doesn't function properly (it keeps restarting), reset it.",
+                 'The SMS says "Alert": 5000 debited. It is fake.', "From today as a rule, never share OTP.",
+                 "[#1] [#2] [#3] [#4] are scam numbers, block them.", "<b>Don't pay.</b> Call 1930."):
+        assert not assistant.looks_like_code(good), good
+    out = assistant.finish({"reply": "Call 1930 now.<br>Then call your bank.", "kind": "safety", "actions": []}, "x", "en")
+    assert out["reply"] == "Call 1930 now.\nThen call your bank."
+    assert assistant._parse('{"reply": "hi", "actions": 1}')["actions"] == []
+    assert assistant._parse('Report on "Sanchar Saathi" and use "Chakshu".')["reply"].startswith("Report")
+
+
+if __name__ == "__main__":
+    tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
+    failed = 0
+    real_sleep = translator.time.sleep
+    for name, fn in tests:
+        try:
+            fn()
+            print(f"PASS  {name}")
+        except Exception as e:  # noqa: BLE001
+            failed += 1
+            print(f"FAIL  {name}: {type(e).__name__}: {e}")
+        finally:
+            requests.post = REAL_POST
+            translator.time.sleep = real_sleep
+    print(f"\n{len(tests) - failed}/{len(tests)} tests passed")
+    sys.exit(1 if failed else 0)

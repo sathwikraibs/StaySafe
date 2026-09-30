@@ -33,6 +33,7 @@ export const knContent: LangContent = {
     "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರಿಸಲು ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಂಡಿತು. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "That file is too big to upload.": "ಈ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ತುಂಬಾ ದೊಡ್ಡದಾಗಿದೆ.",
     "Something went wrong on the server. Please try again.": "ಸರ್ವರ್‌ನಲ್ಲಿ ಏನೋ ತೊಂದರೆಯಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "You've asked a lot of questions in a short time. Please wait a few minutes, or talk to a person.": "ನೀವು ಕಡಿಮೆ ಸಮಯದಲ್ಲಿ ತುಂಬಾ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿದ್ದೀರಿ. ದಯವಿಟ್ಟು ಕೆಲವು ನಿಮಿಷ ಕಾಯಿರಿ, ಅಥವಾ ಒಬ್ಬ ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ.",
     "Something went wrong on our side. Please try again.": "ನಮ್ಮ ಕಡೆ ಏನೋ ತೊಂದರೆಯಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "Request failed ({status}).": "ವಿನಂತಿ ವಿಫಲವಾಯಿತು ({status}).",
     "That file is too big. Please upload something under {mb} MB.": "ಈ ಫೈಲ್ ತುಂಬಾ ದೊಡ್ಡದು. {mb} MB ಗಿಂತ ಚಿಕ್ಕ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.",

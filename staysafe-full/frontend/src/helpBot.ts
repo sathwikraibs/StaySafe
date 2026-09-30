@@ -61,6 +61,10 @@ export interface HelpTexts {
   writeTeam: string;
   langAsk: string;
   commonTitle: string;
+  tip: string;
+  tuluTip: string;
+  aiTrouble: string;
+  aiBusy: string;
   typing: string;
   actIncident: string;
   actCheckMessage: string;
@@ -419,6 +423,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     writeTeam: "Write to our team",
     langAsk: "Which language would you like me to answer in?",
     commonTitle: "Common questions",
+    tip: "Tip: write in the language you are most comfortable with (English, ಕನ್ನಡ, हिन्दी or ತುಳು), in short, simple sentences. English letters are fine too. For Tulu, Kannada letters give the most accurate answers. Never type your OTP, PIN or passwords.",
+    tuluTip: "For Tulu, writing in Kannada letters (ಕನ್ನಡ ಅಕ್ಷರ) usually gives a more accurate answer.",
+    aiTrouble: "I couldn't answer that properly. Please ask again in one or two simple sentences, or tap a common question below.",
+    aiBusy: "StaySafe AI can't answer right now. Here are answers to common questions, or you can write to our team.",
   },
   hi: {
     title: "StaySafe AI से पूछें", subtitle: "कभी भी, आपकी भाषा में जवाब",
@@ -468,6 +476,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     writeTeam: "हमारी टीम को लिखें",
     langAsk: "मैं किस भाषा में जवाब दूँ?",
     commonTitle: "आम सवाल",
+    tip: "सुझाव: जिस भाषा में आप सहज हों उसी में छोटे, आसान वाक्यों में लिखें (English, ಕನ್ನಡ, हिन्दी या ತುಳು)। अंग्रेज़ी अक्षरों में भी लिख सकते हैं। अपना OTP, PIN या पासवर्ड कभी न लिखें।",
+    tuluTip: "तुलु के लिए कन्नड़ अक्षरों में लिखने से आम तौर पर ज़्यादा सही जवाब मिलता है।",
+    aiTrouble: "मैं इसका ठीक से जवाब नहीं दे सका। कृपया एक-दो आसान वाक्यों में फिर से पूछें, या नीचे कोई आम सवाल चुनें।",
+    aiBusy: "StaySafe AI अभी जवाब नहीं दे पा रहा। नीचे आम सवालों के जवाब हैं, या आप हमारी टीम को लिख सकते हैं।",
   },
   kn: {
     title: "StaySafe AI ಕೇಳಿ", subtitle: "ಯಾವಾಗ ಬೇಕಾದರೂ, ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರ",
@@ -517,6 +529,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     writeTeam: "ನಮ್ಮ ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
     langAsk: "ನಾನು ಯಾವ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರಿಸಲಿ?",
     commonTitle: "ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳು",
+    tip: "ಸಲಹೆ: ನಿಮಗೆ ಸುಲಭವಾದ ಭಾಷೆಯಲ್ಲಿ ಚಿಕ್ಕ, ಸರಳ ವಾಕ್ಯಗಳಲ್ಲಿ ಬರೆಯಿರಿ (English, ಕನ್ನಡ, हिन्दी ಅಥವಾ ತುಳು). ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಲ್ಲೂ ಬರೆಯಬಹುದು. ತುಳುವಿಗೆ ಕನ್ನಡ ಅಕ್ಷರಗಳಲ್ಲಿ ಬರೆದರೆ ಹೆಚ್ಚು ಸರಿಯಾದ ಉತ್ತರ ಸಿಗುತ್ತದೆ. ನಿಮ್ಮ OTP, PIN ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಎಂದಿಗೂ ಟೈಪ್ ಮಾಡಬೇಡಿ.",
+    tuluTip: "ತುಳುವಿಗೆ ಕನ್ನಡ ಅಕ್ಷರಗಳಲ್ಲಿ ಬರೆದರೆ ಸಾಮಾನ್ಯವಾಗಿ ಹೆಚ್ಚು ಸರಿಯಾದ ಉತ್ತರ ಸಿಗುತ್ತದೆ.",
+    aiTrouble: "ಇದಕ್ಕೆ ಸರಿಯಾಗಿ ಉತ್ತರಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಒಂದೆರಡು ಸರಳ ವಾಕ್ಯಗಳಲ್ಲಿ ಮತ್ತೆ ಕೇಳಿ, ಅಥವಾ ಕೆಳಗಿನ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಯನ್ನು ಒತ್ತಿ.",
+    aiBusy: "StaySafe AI ಈಗ ಉತ್ತರಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ಕೆಳಗೆ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳ ಉತ್ತರಗಳಿವೆ, ಅಥವಾ ನಮ್ಮ ತಂಡಕ್ಕೆ ಬರೆಯಬಹುದು.",
   },
   tcy: {
     title: "StaySafe AI ಕೇನುಲೆ", subtitle: "ಏಪ ಬೋಡಾಂಡಲಾ, ಈರೆನ ಭಾಷೆಡ್ ಉತ್ತರ",
@@ -566,6 +582,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     writeTeam: "ಎಂಕ್ಲೆನ ತಂಡೊಗು ಬರೆಲೆ",
     langAsk: "ಯಾನ್ ಓವು ಭಾಷೆಡ್ ಉತ್ತರ ಕೊರೊಡು?",
     commonTitle: "ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಲು",
+    tip: "ಸಲಹೆ: ಇರೆಗ್ ಸುಲಭ ಆಪಿನ ಭಾಷೆಡ್ ಎಲ್ಯ, ಸರಳ ವಾಕ್ಯೊಲೆಡ್ ಬರೆಲೆ (English, ಕನ್ನಡ, हिन्दी ಅತ್ತಂಡ ತುಳು). ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರೊಡುಲಾ ಬರೆಯೊಲಿ. ತುಳುನು ಕನ್ನಡ ಅಕ್ಷರೊಡು ಬರೆಯಿಂಡ ನನಲಾ ಸರಿಯಾಯಿನ ಉತ್ತರ ಬರ್ಪುಂಡು. ಇರೆನ OTP, PIN ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಏಪಲಾ ಟೈಪ್ ಮಲ್ಪೊಡ್ಚಿ.",
+    tuluTip: "ತುಳುನು ಕನ್ನಡ ಅಕ್ಷರೊಡು ಬರೆಯಿಂಡ ಮಸ್ತ್ ಸರ್ತಿ ನನಲಾ ಸರಿಯಾಯಿನ ಉತ್ತರ ಬರ್ಪುಂಡು.",
+    aiTrouble: "ಉಂದೆಕ್ ಸರಿಯಾದ್ ಉತ್ತರ ಕೊರಿಯೆರೆ ಆಯಿಜಿ. ದಯದ್ ಒಂಜಿ-ರಡ್ಡ್ ಸರಳ ವಾಕ್ಯೊಡು ಕೊರ್ಸ್ ಕೇನುಲೆ, ಅತ್ತಂಡ ತಿರ್ತ್‌ದ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆನ್ ಒತ್ತುಲೆ.",
+    aiBusy: "StaySafe AI ಇತ್ತೆ ಉತ್ತರ ಕೊರಿಯೆರೆ ಆವೊಂದಿಜ್ಜಿ. ತಿರ್ತ್ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಲೆನ ಉತ್ತರ ಉಂಡು, ಅತ್ತಂಡ ಎಂಕ್ಲೆನ ತಂಡೊಗು ಬರೆಯೊಲಿ.",
   },
 };
 
