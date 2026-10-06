@@ -1000,7 +1000,7 @@ def big_feed_lookup(urls, host: str, reg: str) -> dict:
     h = re.sub(r"^www\.", "", (host or "").lower())
     # Lists sometimes contain pages on big shared websites (docs.google.com, a popular site).
     # The website itself isn't a scam then, so we only mention it instead of condemning it.
-    shared = (reg in TRUSTED_DOMAINS or reg in FREE_HOSTING or h in FREE_HOSTING
+    shared = (reg in TRUSTED_DOMAINS or reg in FREE_HOSTING or h in FREE_HOSTING or reg in OFFICIAL_SHORTENERS
               or (popularity_rank(reg) or 10**9) <= 20_000)
     for name, arr in _BIG["domains"].items():
         if any(c and _in_fingerprints(arr, c) for c in {h, reg}):
@@ -1418,11 +1418,47 @@ def normalize_url(raw: str) -> str:
     return url
 
 
-def scan_url(url: str) -> dict:
+def _scan_official_short_link(url: str, reg: str):
+    """
+    A company's own short link (Google's share.google, g.co, youtu.be, amzn.to...). Scammers use
+    these too, so whole short-link services end up on community phishing lists, but the service
+    itself proves nothing either way. What matters is the page it opens, and whether this EXACT
+    short link was reported. None if the destination couldn't be found (normal check then).
+    """
+    page = _run(fetch_page, url, timeout=16, default=None) or {}
+    final = page.get("final_url") or ""
+    final_host = (urlparse(final).hostname or "").lower()
+    if not final or not final_host or final_host == urlparse(url).hostname or \
+            registered_domain(final_host) in OFFICIAL_SHORTENERS:
+        return None
+    result = scan_url(final, _hop=1)
+    result["url"] = url
+    result.setdefault("details", {})["final_url"] = final
+    # this exact short link reported as a scam? (only exact-address lists count)
+    exact = feed_lookup([url], "")
+    if exact["status"] != "fail":
+        exact = big_feed_lookup([url], "", "")
+    gsb = _run(check_safe_browsing, [url], timeout=8, default={"listed": None}) or {}
+    if exact["status"] == "fail" or gsb.get("listed"):
+        source = exact.get("source") or "Google Safe Browsing"
+        text = f"This link is on a public list of scam and malware links ({source})"
+        before = result["risk_score"]
+        result["findings"].insert(0, text)
+        result["risk_score"] = max(before, 95)
+        result.setdefault("score_parts", []).append({"label": text, "points": result["risk_score"] - before})
+        result["verdict"] = verdict_from_score(result["risk_score"])
+    return result
+
+
+def scan_url(url: str, _hop: int = 0) -> dict:
     url = normalize_url(url)
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     reg = host if is_ip(host) else registered_domain(host)
+    if reg in OFFICIAL_SHORTENERS and not _hop and not OFFLINE:
+        judged = _scan_official_short_link(url, reg)
+        if judged:
+            return judged
 
     structure = analyze_structure(url)
     checks = list(structure["checks"])
@@ -1444,7 +1480,7 @@ def scan_url(url: str) -> dict:
     page_f = None if trusted else _POOL.submit(fetch_page, url)
     crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
     abusech_f = _POOL.submit(check_abusech, url, host)
-    urlscan_f = None if (trusted or is_ip(host)) else _POOL.submit(check_urlscan, host)
+    urlscan_f = None if (trusted or official_short or is_ip(host)) else _POOL.submit(check_urlscan, host)
 
     def result_of(f, default, timeout=10):
         if f is None:
@@ -1457,7 +1493,7 @@ def scan_url(url: str) -> dict:
     dns = result_of(dns_f, {"exists": None, "ips": []}, 5)
     # Protective DNS (Cloudflare 1.1.1.2, Quad9): do these security services refuse this website?
     from scanners import protective_dns
-    pdns_f = None if (OFFLINE or trusted or is_ip(host) or dns["exists"] is False) else \
+    pdns_f = None if (OFFLINE or trusted or official_short or is_ip(host) or dns["exists"] is False) else \
         _POOL.submit(protective_dns.check, host, dns["exists"])
     page = result_of(page_f, {"ok": False, "error": "skipped", "final_url": url, "hops": [],
                               "ssl_error": False, "title": "", "has_password": False, "text": "",
@@ -1470,6 +1506,8 @@ def scan_url(url: str) -> dict:
         if gsb2.get("listed"):
             gsb = gsb2
     vt = result_of(vt_f, {"status": "skip"}, 60)
+    if official_short and vt.get("domain_malicious"):
+        vt = dict(vt, domain_malicious=0)   # reports about the whole short-link service say nothing about this link
     age_days = result_of(whois_f, None, 12)
     if age_days is None and vt.get("created_days") is not None and not trusted:
         age_days = vt["created_days"]

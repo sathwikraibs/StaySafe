@@ -362,6 +362,52 @@ def test_openrouter_busy_model_hands_over_to_its_next_free_model():
     assert len(models) == 2 and models[0] != models[1] and QUOTAS["openrouter"].status()["paused_for_s"] == 0
 
 
+def test_google_share_link_is_judged_by_the_page_it_opens_not_by_lists_of_the_whole_service():
+    import numpy as np
+    import scanners.url_scanner as u
+    import scanners.protective_dns as pd
+    saved = {k: getattr(u, k) for k in ("OFFLINE", "resolve_host", "whois_age_days", "whois_details", "cert_details",
+                                        "first_certificate_days", "check_virustotal", "check_safe_browsing",
+                                        "check_abusech", "check_urlscan", "check_server_abuse", "ensure_feeds",
+                                        "ensure_big_feeds", "popularity_rank", "fetch_page")}
+    saved_pd, saved_big, saved_feeds = pd.check, dict(u._BIG), dict(u._FEEDS)
+    try:
+        u.OFFLINE = False
+        u.resolve_host = lambda h: {"exists": True, "ips": ["142.250.1.1"]}
+        u.whois_age_days = lambda d: 3000
+        u.whois_details = lambda d: {}
+        u.cert_details = lambda h: {}
+        u.first_certificate_days = lambda h: 3000
+        u.check_virustotal = lambda url, d: {"status": "ok", "malicious": 0, "domain_malicious": 0}
+        u.check_safe_browsing = lambda urls: {"listed": False, "threats": []}
+        u.check_abusech = lambda url, h: {"status": "pass"}
+        u.check_urlscan = lambda h: {"status": "pass"}
+        u.check_server_abuse = lambda ip: {}
+        pd.check = lambda h, e: {"status": "pass"}
+        u.ensure_feeds = lambda: None
+        u.ensure_big_feeds = lambda: None
+        u._FEEDS.update(urls={"x": "OpenPhish"}, hosts={})
+        u._BIG.update(domains={"Phishing.Database": np.array([u._fingerprint("share.google")], dtype=np.uint64)}, links={})
+        u.popularity_rank = lambda d: 50 if d == "thehindu.com" else None
+
+        def opens(dest):
+            return lambda url: {"ok": True, "final_url": dest if "share.google" in url else url, "hops": [dest],
+                                "ssl_error": False, "title": "", "has_password": "login" in dest,
+                                "text": "SBI login" if "login" in dest else "news", "download": None,
+                                "blocked": False, "error": None}
+        u.fetch_page = opens("https://www.thehindu.com/news/national/story/article1.ece")
+        r = u.scan_url("https://share.google/k3IgCe77g1Gp4rhsH")
+        assert r["verdict"] == "SAFE" and r["details"]["final_url"].startswith("https://www.thehindu.com"), r
+        u.fetch_page = opens("https://sbi-reward-claim.xyz/login")
+        assert u.scan_url("https://share.google/k3IgCe77g1Gp4rhsH")["verdict"] == "DANGEROUS"
+    finally:
+        for k, v in saved.items():
+            setattr(u, k, v)
+        pd.check = saved_pd
+        u._BIG.clear(); u._BIG.update(saved_big)
+        u._FEEDS.clear(); u._FEEDS.update(saved_feeds)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
