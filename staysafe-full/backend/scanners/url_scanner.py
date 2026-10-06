@@ -58,7 +58,13 @@ SHORTENER_DOMAINS = {
     "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "buff.ly", "rebrand.ly",
     "cutt.ly", "t.ly", "rb.gy", "shorturl.at", "tiny.cc", "s.id", "v.gd", "shorte.st",
     "adf.ly", "bl.ink", "lnkd.in", "surl.li", "u.to", "clck.ru", "qr.ae", "tiny.one",
+    "share.google", "g.co", "youtu.be", "amzn.to", "amzn.in", "fkrt.it",
 }
+# Short links made by the company itself (Google's "Share" links, Amazon, Flipkart, LinkedIn...):
+# not a warning sign on their own, but the real destination is still opened and checked.
+# Website endings that only one company can own (nobody else can register a name ending in them)
+BRAND_TLDS = {"google", "youtube", "android", "gmail", "amazon", "apple", "microsoft", "sbi", "hdfcbank"}
+OFFICIAL_SHORTENERS = {"share.google", "goo.gl", "g.co", "youtu.be", "amzn.to", "amzn.in", "fkrt.it", "lnkd.in"}
 
 SUSPICIOUS_TLDS = {
     "xyz", "top", "club", "work", "click", "gq", "tk", "ml", "cf", "ga", "live", "icu",
@@ -79,7 +85,7 @@ MULTI_PART_SUFFIXES = {
 BRANDS = {
     "sbi": {"sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbicard.com", "sbi", "sbi.bank.in"},
     "onlinesbi": {"onlinesbi.sbi", "onlinesbi.com"},
-    "hdfc": {"hdfcbank.com", "hdfcbank.net", "hdfc.com", "hdfclife.com", "hdfcsec.com", "hdfc.bank.in", "hdfcbank.bank.in"},
+    "hdfc": {"hdfcbank.com", "hdfcbank.net", "hdfc.com", "hdfclife.com", "hdfcsec.com", "hdfc.bank.in", "hdfcbank.bank.in", "hdfcbank"},
     "icici": {"icicibank.com", "icicidirect.com", "iciciprulife.com", "icici.bank.in"},
     "axisbank": {"axisbank.com", "axis.bank.in"},
     "kotak": {"kotak.com", "kotak.bank.in"},
@@ -91,14 +97,15 @@ BRANDS = {
     "paytm": {"paytm.com", "paytm.in", "paytmbank.com"},
     "phonepe": {"phonepe.com"},
     "gpay": {"google.com"},
-    "google": {"google.com", "google.co.in", "googleusercontent.com", "youtube.com", "goo.gl", "g.co"},
-    "amazon": {"amazon.in", "amazon.com", "amazonaws.com", "amazon.co.uk", "amzn.to", "amzn.in"},
+    "google": {"google.com", "google.co.in", "googleusercontent.com", "youtube.com", "youtu.be", "goo.gl", "g.co",
+               "google", "youtube", "android", "gmail"},   # the last four: endings only Google can own
+    "amazon": {"amazon.in", "amazon.com", "amazonaws.com", "amazon.co.uk", "amzn.to", "amzn.in", "amazon"},
     "flipkart": {"flipkart.com", "fkrt.it"},
     "meesho": {"meesho.com"},
     "paypal": {"paypal.com", "paypal.me"},
-    "apple": {"apple.com", "icloud.com"},
+    "apple": {"apple.com", "icloud.com", "apple"},
     "icloud": {"icloud.com", "apple.com"},
-    "microsoft": {"microsoft.com", "live.com", "office.com", "outlook.com", "microsoftonline.com"},
+    "microsoft": {"microsoft.com", "live.com", "office.com", "outlook.com", "microsoftonline.com", "microsoft"},
     "netflix": {"netflix.com"},
     "facebook": {"facebook.com", "fb.com", "fb.me"},
     "instagram": {"instagram.com"},
@@ -328,7 +335,8 @@ def analyze_structure(url: str) -> dict:
                 "hosting": None, "shortener": False, "brand": None}
 
     reg = registered_domain(host)
-    trusted = reg in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in"))
+    trusted = reg in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in")) or \
+        (host.endswith(tuple("." + t for t in BRAND_TLDS)) and reg not in OFFICIAL_SHORTENERS)
     hosting = next((h for h in FREE_HOSTING if host == h or host.endswith("." + h)), None)
     shortener = reg in SHORTENER_DOMAINS
     if hosting:
@@ -336,6 +344,8 @@ def analyze_structure(url: str) -> dict:
         findings.append(f"Page is hosted on a free hosting service ({hosting}) where anyone can publish. Check who made it")
         score += led.note(findings, 10)
         _check(checks, "known", "warn", hosting)
+    elif shortener and reg in OFFICIAL_SHORTENERS:
+        _check(checks, "known", "pass", reg)   # the company's own short link: we judge where it leads
     elif shortener:
         findings.append("Link uses a link shortener, so the real destination is hidden")
         score += led.note(findings, 15)
@@ -1424,14 +1434,15 @@ def scan_url(url: str) -> dict:
 
     # Slow lookups run at the same time so the whole check takes a few seconds
     dns_f = _POOL.submit(resolve_host, host)
-    whois_f = None if (trusted or structure["hosting"] or is_ip(host)) else _POOL.submit(whois_age_days, reg)
+    official_short = structure["shortener"] and reg in OFFICIAL_SHORTENERS
+    whois_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(whois_age_days, reg)
     # extra details for the "Website details" card (also for well-known sites)
     who_f = None if (structure["hosting"] or is_ip(host)) else _POOL.submit(whois_details, reg)
     cert_f = _POOL.submit(cert_details, host) if parsed.scheme == "https" else None
     vt_f = _POOL.submit(check_virustotal, url, reg)
     gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
-    crt_f = None if (trusted or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
+    crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
     abusech_f = _POOL.submit(check_abusech, url, host)
     urlscan_f = None if (trusted or is_ip(host)) else _POOL.submit(check_urlscan, host)
 
@@ -1489,7 +1500,7 @@ def scan_url(url: str) -> dict:
     # --- website age
     if trusted:
         _check(checks, "age", "pass", None)
-    elif structure["hosting"] or is_ip(host):
+    elif structure["hosting"] or is_ip(host) or official_short:
         _check(checks, "age", "skip", None)
     elif age_days is None and first_cert_days is not None:
         # registration date hidden: use the date of its first security certificate instead
@@ -1522,7 +1533,10 @@ def scan_url(url: str) -> dict:
     # --- where does it really lead?
     if page.get("ok") or page.get("hops"):
         final_reg = registered_domain(final_host) if final_host and not is_ip(final_host) else final_host
-        if final_host and final_reg != reg:
+        dest_official = any(_is_official(final_host, d) for d in BRANDS.values()) or final_reg in TRUSTED_DOMAINS
+        if final_host and final_reg != reg and official_short and dest_official:
+            _check(checks, "redirect", "pass", final_host)   # e.g. Google's share link opening google.com
+        elif final_host and final_reg != reg:
             findings.append(f"This link secretly sends you to a different website: {final_host}")
             _check(checks, "redirect", "warn", final_host)
             dest = analyze_structure(final_url)
