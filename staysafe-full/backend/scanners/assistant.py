@@ -53,7 +53,8 @@ Answer like a kind, calm friend who knows cyber safety:
 - Start with one short caring line, then 2 to 5 short numbered steps, most important first. Speak to them directly and politely ("please call", "don't pay").
 - The WHOLE reply, including the first caring line, is in the one reply language. Never start or mix in English sentences when replying in another language (only words like OTP, UPI, SMS, WhatsApp, bank, police, 1930 may stay in English).
 - Never write the button names (incident, check_message, check_link, check_password, library, person) in the reply; the buttons appear by themselves.
-- When writing in English letters, spell words the common way people type them on WhatsApp, keep sentences short, and re-read every word for typos before answering.
+- Spelling and grammar must be perfect: use standard, correctly spelled words (in Kannada and Hindi script check every vowel sign and conjunct), correct case endings and verb forms, and simple sentences. Before answering, re-read the whole reply word by word and fix any spelling or grammar mistake. Never invent a word; if unsure of a word, use a simpler common one.
+- When writing in English letters, spell words the common way people type them on WhatsApp, the same way every time, and keep sentences short.
 - Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation.
 {phrases}- Money lost, or OTP/PIN/card/bank details shared: 1) call 1930 (National Cyber Crime Helpline) now, 2) call the bank on the number on the card or in the bank's app to block card, UPI and net banking, 3) report at cybercrime.gov.in and keep screenshots.
 - "Digital arrest", police/CBI/customs/courier threats on calls or video calls, "pay to avoid arrest": say clearly it is a scam and real police never arrest anyone on a call; hang up, don't pay, don't share Aadhaar or bank details, tell family. If they already paid: 1930 at once.
@@ -74,9 +75,9 @@ Reply with JSON only: {{"understood": "<what they said, in one short English sen
 urgent = money lost or at risk right now. actions = helpful buttons: incident (recovery steps), check_message, check_link, check_password (password/email leaks), library (learn about scams), person (talk to a real person)."""
 
 PHRASES = {
-    "kn": "- Useful " + 'Kannada: ಕರೆ ಕಡಿತಗೊಳಿಸಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don\'t pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don\'t tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi); in English letters: "chinte maadbedi", "call cut maadi", "yaarigu OTP kodbedi", "hana kodbedi", "eega 1930 ge call maadi".' + "\n",
+    "kn": "- Useful " + 'Kannada: ಕರೆ ಕಟ್ ಮಾಡಿ (hang up), ಹಣ ಕೊಡಬೇಡಿ (don\'t pay), ಯಾರಿಗೂ ಹೇಳಬೇಡಿ (don\'t tell anyone), ಸಂಚಾರ್ ಸಾಥಿ (Sanchar Saathi); in English letters: "chinte maadbedi", "call cut maadi", "yaarigu OTP kodbedi", "hana kodbedi", "eega 1930 ge call maadi".' + "\n",
     "hi": "- Useful " + 'Hindi: कॉल काट दें, पैसे न दें, किसी को न बताएँ, संचार साथी.' + "\n",
-    "tcy": '- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):\n  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don\'t panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don\'t give money). OTP ಏರೆಗ್\u200cಲಾ ಪನೊಡ್ಚಿ (don\'t tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್\u200cಡ್ ಇತ್ತಿನ ನಂಬರ್\u200cಗ್ ಕಾಲ್ ಮಲ್ತ್\u200cದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ನಿಲ್ಲಾವರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್\u200cಶಾಟ್ ದೀವೊಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don\'t click the link).\n  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking nillavare panle", "cybercrime.gov.in d dooru korle", "screenshot deevole", "undu mosa", "link click malpodchi".' + "\n  Careful: -le means DO it (ಕೊರ್ಲೆ = please give/file, ಮಲ್ಪುಲೆ = please do); -odchi means DON'T (ಕೊರೊಡ್ಚಿ = don't give). Never write -odchi for a step they SHOULD do (calling 1930, calling the bank, filing a complaint, keeping screenshots).\n  Use Tulu words, not Kannada ones: your = ಇರೆನ / eerena (not ನಿಮ್ಮ / nimma), you = ಈರ್ / eer, I = ಯಾನ್ / yaan, to you = ಇರೆಗ್ / eerege (not ಎಂಕ್ / enk, which means \"to me\"), and = ಬೊಕ್ಕ / bokka (not ಮತ್ತು), or = ಅತ್ತಂಡ / attanda (not ಅಥವಾ), these steps = ಈ ಹಂತೊಲೆನ್ (not ಈ ಕ್ರಮಗಳನ್ನು), please do = ಮಲ್ಪುಲೆ / malpule (not ಮಾಡಿ / maadi); leave out ದಯವಿಟ್ಟು.\n",
+    "tcy": '- Tulu model sentences (copy their grammar; Tulu negative commands end in -odchi, polite commands in -le):\n  Kannada script: ಗಾಬರಿ ಆವೊಡ್ಚಿ (don\'t panic). ಬೇಗ ಮಲ್ಪುಲೆ (act fast). ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (call 1930 right now). ಕಾಲ್ ಕಡಿಲೆ (hang up). ದುಡ್ಡು ಕೊರೊಡ್ಚಿ (don\'t give money). OTP ಏರೆಗ್\u200cಲಾ ಪನೊಡ್ಚಿ (don\'t tell the OTP to anyone). ಕಾರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್\u200cಡ್ ಇತ್ತಿನ ನಂಬರ್\u200cಗ್ ಕಾಲ್ ಮಲ್ತ್\u200cದ್, ಕಾರ್ಡ್, UPI ಬೊಕ್ಕ ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ಉಂತಾವೆರೆ ಪನ್ಲೆ (call the number on the card or bank app and ask to stop card, UPI and net banking). cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ (complain at cybercrime.gov.in). ಸ್ಕ್ರೀನ್\u200cಶಾಟ್ ದೀಲೆ (keep screenshots). ಉಂದು ಮೋಸ (this is a scam). ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡ್ಚಿ (don\'t click the link).\n  English letters: "gabari aavodchi", "bega malpule", "ittene 1930 g call malpule", "call kadile", "duddu korodchi", "OTP yereglaa panodchi", "bank app d ittina number g call malt, card, UPI bokka net banking untaavere panle", "cybercrime.gov.in d dooru korle", "screenshot deele", "undu mosa", "link click malpodchi".' + "\n  Careful: -le means DO it (ಕೊರ್ಲೆ = please give/file, ಮಲ್ಪುಲೆ = please do); -odchi means DON'T (ಕೊರೊಡ್ಚಿ = don't give). Never write -odchi for a step they SHOULD do (calling 1930, calling the bank, filing a complaint, keeping screenshots).\n  Use Tulu words, not Kannada ones: your = ಇರೆನ / eerena (not ನಿಮ್ಮ / nimma), you = ಈರ್ / eer, I = ಯಾನ್ / yaan, to you = ಇರೆಗ್ / eerege (not ಎಂಕ್ / enk, which means \"to me\"), and = ಬೊಕ್ಕ / bokka (not ಮತ್ತು), or = ಅತ್ತಂಡ / attanda (not ಅಥವಾ), these steps = ಈ ಹಂತೊಲೆನ್ (not ಈ ಕ್ರಮಗಳನ್ನು), please do = ಮಲ್ಪುಲೆ / malpule (not ಮಾಡಿ / maadi); leave out ದಯವಿಟ್ಟು.\n",
 }
 
 _ip_hits: "defaultdict[str, deque]" = defaultdict(deque)
@@ -123,9 +124,17 @@ LATIN_WORDS = {
     "tcy": {"yaan", "yan", "enk", "yenk", "enna", "yenna", "eer", "eerena", "ijji", "undu", "ulle", "ulla", "malpu",
             "malpule", "malpodu", "malte", "dada", "daada", "encha", "yencha", "olpa", "epa", "pande", "panle", "panpe",
             "kenderu", "kender", "kende", "kordhe", "korde", "kordu", "battundu", "battund", "poyind", "poyi", "ponda",
-            "duddu", "dudd", "bokka", "onji", "nana", "aand", "aandu", "ijjande", "ipo", "ippo"},
+            "duddu", "dudd", "bokka", "onji", "nana", "aand", "aandu", "ijjande", "ipo", "ippo",
+            "aaynd", "aayind", "aathund", "aatund", "malpodchi", "malpuni", "malpuve", "malthe", "malte", "kenule",
+            "panle", "panodchi", "korodchi", "korle", "kortini", "battundu", "bathnd", "battnd", "poyi", "poyindu",
+            "irena", "irege", "eerege", "enkulu", "yenkulu", "enchina", "yenchina", "daane", "dane", "ijjandu",
+            "pandud", "pandd", "undundu", "ullar", "paise", "paisa", "kadapudu", "toojid", "tooje", "abbe", "appe"},
     "kn": {"naanu", "nanna", "nanage", "neevu", "nimma", "illa", "ide", "maadi", "madi", "enu", "yenu", "hogide", "hoytu",
-           "beku", "heli", "banthu", "bantu", "ondu", "kodu", "kotte", "kottu", "hana", "gottilla", "yaaru", "yake"},
+           "beku", "heli", "banthu", "bantu", "ondu", "kodu", "kotte", "kottu", "hana", "gottilla", "yaaru", "yake",
+           "aagide", "agide", "aaytu", "aytu", "aagthide", "aagtide", "hoythu", "hogtide", "madodu", "maadodu", "madbeku",
+           "maadbeku", "madli", "maadli", "beda", "bedi", "kodi", "kelidru", "helidru", "andru", "antha", "anta",
+           "yenu", "yaake", "hege", "hegey", "illi", "alli", "dayavittu", "mattu", "athava", "nimage", "ninna", "banda",
+           "bandide", "kalsi", "kalsidru"},
     "hi": {"mera", "meri", "mujhe", "kya", "kaise", "paisa", "paise", "hai", "nahi", "gaya", "karo", "kiya", "diya",
            "aaya", "bola", "hua", "mere", "aur", "kaat", "kat", "batao"},
 }
@@ -153,13 +162,37 @@ def kannada_script_hint(text: str):
     return None
 
 
-def language_hint(text: str):
-    """(language, script) guessed from the words: script is 'latin' or 'kannada'. (None, None) if unclear."""
+def _scores(text: str):
+    """How many Tulu / Kannada / Hindi words the text has (English letters or Kannada script)."""
+    if _script_share(text, "kn") >= 0.4:
+        words = re.findall(r"[\u0C80-\u0CFF\u200c\u200d]+", text)
+        return {lang: sum(1 for w in words if any(w.startswith(st) for st in stems))
+                for lang, stems in KANNADA_SCRIPT_WORDS.items()}, "kannada"
+    words = re.findall(r"[a-z]+", text.lower())
+    return {lang: sum(1 for w in words if w in vocab) for lang, vocab in LATIN_WORDS.items()}, "latin"
+
+
+def language_hint(text: str, site_lang: str = ""):
+    """
+    (language, script) guessed from the words: script is 'latin' or 'kannada'. (None, None) if unclear.
+    When the words could be either Tulu or Kannada, the site's language decides: someone using the
+    site in Tulu who types in Kannada letters or English letters is most likely writing Tulu.
+    """
     if _script_share(text, "kn") >= 0.4:
         h = kannada_script_hint(text)
-        return (h, "kannada") if h else (None, None)
-    h = latin_language_hint(text)
-    return (h, "latin") if h else (None, None)
+        script = "kannada"
+    else:
+        h = latin_language_hint(text)
+        script = "latin"
+    if h:
+        return (h, script)
+    scores, script = _scores(text)
+    if site_lang in ("tcy", "kn", "hi") and scores.get(site_lang, 0) >= 1 \
+            and scores.get(site_lang, 0) >= max(scores.values()):
+        return (site_lang, script)
+    if script == "kannada" and site_lang in ("tcy", "kn"):
+        return (site_lang, script)          # Kannada letters, but which language is unclear: follow the site
+    return (None, None)
 
 
 def latin_language_hint(text: str):
@@ -212,7 +245,11 @@ def system_prompt(site_lang: str, chosen: str = "", hint=None, message: str = ""
             rule += (f" Our word check says their message is most likely {names[code]} written in {where}, "
                      f"so reply in {names[code]} in {where}.")
         if site_lang == "tcy":
-            rule += " The site is set to Tulu: text in Kannada script is most likely Tulu, unless it is clearly Kannada."
+            rule += (" The site is set to Tulu: text in Kannada script, or Indian-language words in English letters, "
+                     "is most likely Tulu, unless it is clearly Kannada.")
+        elif site_lang in ("kn", "hi"):
+            rule += (f" The site is set to {names[site_lang]}: Indian-language words in English letters are most likely "
+                     f"{names[site_lang]}.")
     return SYSTEM.format(lang_rule=rule, phrases=phrases)
 
 
@@ -504,10 +541,10 @@ OFF_TOPIC = {
     "en": "I can only help with online safety: scams, fraud, suspicious messages, links, calls and hacked accounts. Please ask me about that.",
     "hi": "मैं सिर्फ़ ऑनलाइन सुरक्षा से जुड़े सवालों में मदद कर सकता हूँ: धोखाधड़ी, संदिग्ध मैसेज, लिंक, कॉल और हैक हुए अकाउंट। कृपया इन्हीं के बारे में पूछें।",
     "hi-latn": "Main sirf online safety ke sawaalon mein madad kar sakta hoon: fraud, shak wale message, link, call aur hack hue account. Kripya inhi ke baare mein poochiye.",
-    "kn": "ನಾನು ಆನ್‌ಲೈನ್ ಸುರಕ್ಷತೆಯ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮಾತ್ರ ಉತ್ತರಿಸುತ್ತೇನೆ: ಮೋಸ, ಅನುಮಾನದ ಮೆಸೇಜ್, ಲಿಂಕ್, ಕರೆ ಮತ್ತು ಹ್ಯಾಕ್ ಆದ ಖಾತೆಗಳು. ದಯವಿಟ್ಟು ಅದರ ಬಗ್ಗೆ ಕೇಳಿ.",
-    "kn-latn": "Naanu online surakshate prashnegalige maatra uttara kodtini: mosa, anumaanada message, link, call mattu hack aada account. Dayavittu adara bagge keli.",
-    "tcy": "ಯಾನ್ ಆನ್‌ಲೈನ್ ಸುರಕ್ಷತೆದ ಪ್ರಶ್ನೆಲೆಗ್ ಮಾತ್ರ ಉತ್ತರ ಕೊರ್ಪೆ: ಮೋಸ, ಸಂಶಯದ ಮೆಸೇಜ್, ಲಿಂಕ್, ಕಾಲ್ ಬೊಕ್ಕ ಹ್ಯಾಕ್ ಆಯಿನ ಖಾತೆ. ದಯದ್ ಅವೆನ ಬಗ್ಗೆ ಕೇನುಲೆ.",
-    "tcy-latn": "Yaan online surakshateda prashnelegu maatra uttara korpe: mosa, samshayada message, link, call bokka hack aayina account. Dayad avena bagge kenule.",
+    "kn": "ನಾನು ಆನ್‌ಲೈನ್ ಸುರಕ್ಷತೆಯ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮಾತ್ರ ಉತ್ತರಿಸುತ್ತೇನೆ: ಮೋಸ, ಅನುಮಾನಾಸ್ಪದ ಮೆಸೇಜ್, ಲಿಂಕ್, ಕರೆ ಮತ್ತು ಹ್ಯಾಕ್ ಆದ ಖಾತೆಗಳು. ದಯವಿಟ್ಟು ಇವುಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
+    "kn-latn": "Naanu online surakshate prashnegalige maatra uttara kodtini: mosa, anumaanada message, link, call mattu hack aada account. Dayavittu ivugala bagge keli.",
+    "tcy": "ಯಾನ್ ಆನ್‌ಲೈನ್ ಸುರಕ್ಷತೆದ ಪ್ರಶ್ನೆಲೆಗ್ ಮಾತ್ರ ಉತ್ತರ ಕೊರ್ಪೆ: ಮೋಸ, ಸಂಶಯದ ಮೆಸೇಜ್, ಲಿಂಕ್, ಕಾಲ್ ಬೊಕ್ಕ ಹ್ಯಾಕ್ ಆಯಿನ ಖಾತೆ. ದಯಮಲ್ತ್ ಅವೆತ ಬಗ್ಗೆ ಕೇನುಲೆ.",
+    "tcy-latn": "Yaan online surakshateda prashnelegu maatra uttara korpe: mosa, samshayada message, link, call bokka hack aayina account. Dayamalt aveta bagge kenule.",
 }
 
 
@@ -542,6 +579,50 @@ def clearly_off_topic(message: str) -> bool:
     return bool(_CLEARLY_OFF.search(message or "")) and not _SAFETY_WORDS.search(message or "")
 
 
+# Kannada words that never belong in a Tulu sentence -> their Tulu word (whole words only)
+_TULU_FIX = {"ನಿಮ್ಮ": "ಇರೆನ", "ನಿಮಗೆ": "ಇರೆಗ್", "ಮತ್ತು": "ಬೊಕ್ಕ", "ಅಥವಾ": "ಅತ್ತಂಡ", "ದಯವಿಟ್ಟು": "",
+             "nimma": "irena", "nimage": "irege", "mattu": "bokka", "athava": "attanda", "athavaa": "attanda",
+             "dayavittu": ""}
+_TULU_FIX_RE = re.compile(r"(?<![\w\u0C80-\u0CFF])(" + "|".join(map(re.escape, _TULU_FIX)) + r")(?![\w\u0C80-\u0CFF])",
+                          re.IGNORECASE)
+
+
+def tulu_polish(reply: str) -> str:
+    """Swap Kannada-only words (ನಿಮ್ಮ, ಮತ್ತು, ಅಥವಾ...) in a Tulu answer for the Tulu ones."""
+    def swap(m):
+        new = _TULU_FIX[m.group(1).lower()]
+        return new[:1].upper() + new[1:] if new and m.group(1)[:1].isupper() else new
+    fixed = _TULU_FIX_RE.sub(swap, reply)
+    return re.sub(r"[ \t]{2,}", " ", re.sub(r"(^|\n)\s+", r"\1", fixed)).strip()
+
+
+PROOF_PROMPT = ("You are a careful {name} proofreader. Correct ONLY spelling mistakes (wrong vowel signs, conjuncts, "
+                "typos) and grammar mistakes in the text between <text> tags. Do not change the meaning, the order, the "
+                "numbers, the website names, the line breaks or the style, and do not add or remove sentences. If it is "
+                "already correct, return it unchanged. Reply with JSON only: {{\"text\": \"<corrected text>\"}}\n\n"
+                "<text>\n{text}\n</text>")
+
+
+def proofread(reply: str, lang: str) -> str:
+    """A second, careful pass for Kannada and Hindi answers (Gemini, only when it has room to spare)."""
+    from scanners import translator as tr
+    script = "kn" if lang == "kn" else "hi" if lang == "hi" else None
+    if not script or _script_share(reply, script) < 0.5 or len(reply) > 1400:
+        return reply
+    body = {"contents": [{"role": "user", "parts": [{"text": PROOF_PROMPT.format(
+                name={"kn": "Kannada", "hi": "Hindi"}[script], text=reply)}]}],
+            "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "maxOutputTokens": 3000}}
+    raw = tr.gemini_generate(body, wait=min(10.0, _wait()), priority="low", timeout=20, deadline=_finish_by())
+    data = _json_object(raw or "")
+    fixed = str((data or {}).get("text") or "").strip()
+    # only accept a careful correction: same language, about the same length, same numbers and websites
+    nums = lambda t: sorted(re.findall(r"\d+|[a-z0-9-]+\.(?:gov\.in|in|com)", t))
+    if not fixed or _script_share(fixed, script) < 0.5 or not 0.8 <= len(fixed) / max(1, len(reply)) <= 1.2 \
+            or nums(fixed) != nums(reply) or looks_like_code(fixed):
+        return reply
+    return fixed
+
+
 def finish(out, message: str, site_lang: str, chosen: str = "", hint=None):
     """Last checks before an answer is shown: off-topic questions and code never get through."""
     if not out:
@@ -550,14 +631,19 @@ def finish(out, message: str, site_lang: str, chosen: str = "", hint=None):
     if out.get("kind") == "other" or looks_like_code(out["reply"]):
         return dict(out, reply=OFF_TOPIC[_reply_lang(message, site_lang, chosen, hint, out)],
                     actions=[], urgent=False, ask_language=False, kind="other")
+    target = chosen or (hint[0] if isinstance(hint, tuple) and hint[0] else None) or out.get("language") or ""
+    if (target == "tcy" or out.get("language") == "tcy") and not _reads_as_kannada(out["reply"]):
+        out = dict(out, reply=tulu_polish(out["reply"]))     # a Tulu answer with a few Kannada words slipped in
+    elif target in ("kn", "hi") and not out.get("ask_language"):
+        out = dict(out, reply=proofread(out["reply"], target))
     return out
 
 
 # Steps a visitor MUST do (1930, complaint, screenshots) written with Tulu's "don't" ending (-odchi)
 _MUST_DO = r"(?:1930|cybercrime\.gov\.in|sancharsaathi\.gov\.in|ದೂರು|dooru|duru|ಸ್ಕ್ರೀನ್‌?ಶಾಟ್|screenshot)"
 _WRONG_DONT = re.compile(_MUST_DO + r"(?:(?!OTP|PIN|ಪಾಸ್|password)[^.\n!?]){0,35}?(?:ಕೊರೊಡ್ಚಿ|ಮಲ್ಪೊಡ್ಚಿ|ದೀವೊಡ್ಚಿ|korodchi|malpodchi|deevodchi)", re.I)
-_DO_FORM = {"ಕೊರೊಡ್ಚಿ": "ಕೊರ್ಲೆ", "ಮಲ್ಪೊಡ್ಚಿ": "ಮಲ್ಪುಲೆ", "ದೀವೊಡ್ಚಿ": "ದೀವೊಲೆ",
-            "korodchi": "korle", "malpodchi": "malpule", "deevodchi": "deevole"}
+_DO_FORM = {"ಕೊರೊಡ್ಚಿ": "ಕೊರ್ಲೆ", "ಮಲ್ಪೊಡ್ಚಿ": "ಮಲ್ಪುಲೆ", "ದೀವೊಡ್ಚಿ": "ದೀಲೆ",
+            "korodchi": "korle", "malpodchi": "malpule", "deevodchi": "deele"}
 
 
 def _reads_as_kannada(reply: str) -> bool:
@@ -683,7 +769,7 @@ def assistant_route():
     for i in range(len(s), 0, -1):   # highest first, so [#1] -> [#3] can't clash with [#3]
         masked = masked.replace(f"[#{i}]", f"[#{len(secrets) + i}]")
     secrets += s
-    hint = None if chosen else language_hint(message)
+    hint = None if chosen else language_hint(message, lang)
     system = system_prompt(lang, chosen, hint, message)
     messages = [{"role": "system", "content": system}] + turns + \
                [{"role": "user", "content": f"<visitor>\n{masked}\n</visitor>"}]
@@ -769,7 +855,7 @@ def _selftest(groq_client):
             results.append({"asked": q, "reply": "(not asked this time, to stay within the time limit; open again with &case=... for the rest)"})
             continue
         chosen = chosen if chosen in LANG_NAMES else ""
-        hint = None if chosen else language_hint(q)
+        hint = None if chosen else language_hint(q, lang)
         if clearly_off_topic(q):
             results.append({"asked": q, "site_lang": lang, "answered_by": "rule (no AI needed)", "seconds": 0.0,
                             "kind": "other", "reply": OFF_TOPIC[_reply_lang(q, lang, chosen, hint, None)]})

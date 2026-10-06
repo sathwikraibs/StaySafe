@@ -480,6 +480,31 @@ def test_connection_check_warns_about_services_open_to_the_internet_only_on_home
         requests.get, nc.lookup_ip, nc.abuse_report, nc.is_tor_exit, u.OFFLINE = real_get, real_lookup, real_abuse, real_tor, offline
 
 
+# ---- Language quality ----------------------------------------------------------------------------
+def test_site_language_decides_when_words_could_be_tulu_or_kannada():
+    assert assistant.language_hint("ಫೋನ್ ಹ್ಯಾಕ್", "tcy") == ("tcy", "kannada")
+    assert assistant.language_hint("enna phone hack aand dada malpodu", "kn") == ("tcy", "latin")
+    assert assistant.language_hint("nanna account hack aagide", "tcy") == ("kn", "latin")   # clearly Kannada
+    assert assistant.language_hint("my phone is hacked", "tcy") == (None, None)
+    p = assistant.system_prompt("tcy", "", None, "phone hack")
+    assert "Indian-language words in English letters, is most likely Tulu" in p
+
+
+def test_tulu_answers_lose_kannada_only_words_and_kannada_answers_get_a_careful_proofread():
+    assert assistant.tulu_polish("ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಂಡ್ ಅಥವಾ OTP ಮತ್ತು PIN ಕೊರೊಡ್ಚಿ.") == "ಇರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಂಡ್ ಅತ್ತಂಡ OTP ಬೊಕ್ಕ PIN ಕೊರೊಡ್ಚಿ."
+    assert assistant.tulu_polish("Nimma OTP korodchi") == "Irena OTP korodchi"
+    fresh(GEMINI_API_KEY="g")
+    original = "ತಕ್ಷಣ 1930 ಗೆ ಕರೆ ಮಾಡಿ ಮತ್ತು cybercrime.gov.in ನಲ್ಲಿ ದೂರು ನೀಡಿ."
+    corrected = "ತಕ್ಷಣ 1930 ಗೆ ಕರೆ ಮಾಡಿ ಮತ್ತು cybercrime.gov.in ನಲ್ಲಿ ದೂರು ನೀಡಿರಿ."
+    use(lambda url, **kw: gemini_ok(json.dumps({"text": corrected}, ensure_ascii=False)))
+    assert assistant.proofread(original, "kn") == corrected
+    # a "correction" that changes a number, the language or the length a lot is refused
+    for bad in (corrected.replace("1930", "1903"), "Call 1930 now and file a complaint at cybercrime.gov.in.", "ಕರೆ ಮಾಡಿ."):
+        use(lambda url, b=bad, **kw: gemini_ok(json.dumps({"text": b}, ensure_ascii=False)))
+        assert assistant.proofread(original, "kn") == original, bad
+    assert assistant.proofread("Ittene 1930 g call malpule", "kn") == "Ittene 1930 g call malpule"   # not Kannada script
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
