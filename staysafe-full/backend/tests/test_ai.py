@@ -408,6 +408,78 @@ def test_google_share_link_is_judged_by_the_page_it_opens_not_by_lists_of_the_wh
         u._FEEDS.clear(); u._FEEDS.update(saved_feeds)
 
 
+# ---- PhishStats and the Play Store check -------------------------------------------------------
+def test_phishstats_exact_link_fails_other_pages_warn_and_quiet_when_unreachable():
+    import scanners.url_scanner as u
+    fresh()
+    u._CACHE.clear() if hasattr(u, "_CACHE") else None
+    real_get, offline = requests.get, u.OFFLINE
+    try:
+        u.OFFLINE = False
+        rows = [{"url": "https://pay-sbi-kyc.xyz/login", "host": "pay-sbi-kyc.xyz", "score": 7.5}]
+        requests.get = lambda url, **kw: R(200, rows)
+        assert u.check_phishstats("https://pay-sbi-kyc.xyz/login", "pay-sbi-kyc.xyz") == {"status": "fail", "source": "PhishStats"}
+        assert u.check_phishstats("https://pay-sbi-kyc.xyz/other", "pay-sbi-kyc.xyz")["status"] == "warn"
+        requests.get = lambda url, **kw: R(200, [])
+        assert u.check_phishstats("https://example-shop.in/", "example-shop.in")["status"] == "pass"
+        requests.get = lambda url, **kw: (_ for _ in ()).throw(requests.ConnectionError())
+        assert u.check_phishstats("https://other.in/", "other.in")["status"] == "skip"
+    finally:
+        requests.get, u.OFFLINE = real_get, offline
+
+
+def test_bank_named_app_that_is_not_on_the_play_store_is_flagged():
+    import io as _io
+    import zipfile as _zip
+    import scanners.url_scanner as u
+    from scanners import apk_check
+    fresh()
+    buf = _io.BytesIO()
+    with _zip.ZipFile(buf, "w") as z:
+        z.writestr("AndroidManifest.xml", b"x")
+    real_get, real_manifest, offline = requests.get, apk_check.read_manifest, u.OFFLINE
+    try:
+        u.OFFLINE = False
+        apk_check._play_cache.clear()
+        apk_check.read_manifest = lambda b: {"package": "com.sbi.kyc.update", "permissions": ["android.permission.READ_SMS"]}
+        requests.get = lambda url, **kw: R(404, text="not found")
+        out = apk_check.analyze_apk("SBI KYC.apk", buf.getvalue())
+        assert out["findings"][0].startswith("This app uses the name of a bank") and "com.sbi.kyc.update" in out["findings"][0]
+        apk_check._play_cache.clear()
+        requests.get = lambda url, **kw: R(200, text="<html>")
+        out2 = apk_check.analyze_apk("SBI KYC.apk", buf.getvalue())
+        assert not any("Play Store exists" in f or "no app called" in f for f in out2["findings"]) and out2["score"] < out["score"]
+    finally:
+        requests.get, apk_check.read_manifest, u.OFFLINE = real_get, real_manifest, offline
+
+
+def test_connection_check_warns_about_services_open_to_the_internet_only_on_home_broadband():
+    import scanners.url_scanner as u
+    from scanners import network_checker as nc
+    fresh()
+    real_get, real_lookup, real_abuse, real_tor, offline = requests.get, nc.lookup_ip, nc.abuse_report, nc.is_tor_exit, u.OFFLINE
+    try:
+        u.OFFLINE = False
+        nc._IP_CACHE.clear()
+        nc.abuse_report = lambda ip: {}
+        nc.is_tor_exit = lambda ip: False
+        home = {"status": "success", "city": "Mangaluru", "regionName": "Karnataka", "country": "India", "isp": "BSNL",
+                "timezone": "Asia/Kolkata", "proxy": False, "hosting": False, "mobile": False}
+        nc.lookup_ip = lambda ip: home
+        requests.get = lambda url, **kw: R(200, {"ports": [23, 80], "vulns": ["CVE-2023-1", "CVE-2023-2"]})
+        out = nc.analyze_ip("117.200.1.2", "Asia/Kolkata")
+        assert any(c["id"] == "net_exposed" and c["status"] == "warn" and "Telnet" in c["value"] for c in out["checks"])
+        assert any("2 known security holes" in f for f in out["findings"])
+        nc._IP_CACHE.clear()
+        nc.lookup_ip = lambda ip: dict(home, mobile=True)          # mobile data: shared address, not checked
+        calls = []
+        requests.get = lambda url, **kw: (calls.append(url), R(200, {"ports": [23]}))[1]
+        out = nc.analyze_ip("106.200.1.2", "Asia/Kolkata")
+        assert calls == [] and not any(c["id"] == "net_exposed" for c in out["checks"])
+    finally:
+        requests.get, nc.lookup_ip, nc.abuse_report, nc.is_tor_exit, u.OFFLINE = real_get, real_lookup, real_abuse, real_tor, offline
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

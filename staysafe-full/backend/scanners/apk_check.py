@@ -15,6 +15,8 @@ import re
 import struct
 import zipfile
 
+import requests
+
 from scanners.security import safe_zip_read
 
 # permission -> (plain-language finding, score)
@@ -98,6 +100,38 @@ def read_manifest(axml: bytes) -> dict:
     return info
 
 
+PLAY_URL = "https://play.google.com/store/apps/details"
+_PACKAGE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$")
+_play_cache: dict = {}
+
+
+def on_play_store(package: str):
+    """True / False: is there a Play Store app with this exact package name? None: couldn't tell."""
+    from scanners import url_scanner
+    from scanners.quota import quota
+    if url_scanner.OFFLINE or not package or not _PACKAGE.match(package):
+        return None
+    if package in _play_cache:
+        return _play_cache[package]
+    if not quota("play_store").take(wait=3):
+        return None
+    try:
+        r = requests.get(PLAY_URL, params={"id": package, "hl": "en", "gl": "IN"}, timeout=6,
+                         headers={"User-Agent": url_scanner.USER_AGENT}, allow_redirects=True)
+    except Exception:
+        return None
+    answer = True if r.status_code == 200 else False if r.status_code == 404 else None
+    if answer is not None:
+        _play_cache[package] = answer
+        if len(_play_cache) > 2000:
+            _play_cache.clear()
+    return answer
+
+
+NOT_ON_PLAY = ("This app uses the name of a bank, payment app or government office, but no app called "
+               "{package} exists on the Google Play Store. Fake apps sent on WhatsApp work like this")
+
+
 def analyze_apk(filename: str, data: bytes) -> dict:
     """Findings and score for an Android app file."""
     out = {"findings": [], "score": 0, "package": "", "permissions": [], "points": {}}
@@ -138,4 +172,10 @@ def analyze_apk(filename: str, data: bytes) -> dict:
             "Install apps only from the Play Store")
         out["score"] += 25
         out["points"][out["findings"][-1]] = 25
+        # Real bank and government apps are on the Play Store under their own name: check
+        if on_play_store(manifest["package"]) is False:
+            text = NOT_ON_PLAY.format(package=manifest["package"])
+            out["findings"].insert(0, text)
+            out["score"] += 20
+            out["points"][text] = 20
     return out

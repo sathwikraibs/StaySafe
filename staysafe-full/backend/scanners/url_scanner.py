@@ -294,13 +294,14 @@ def _cached(key, fn):
         waiter.set()
 
 
-_PROBLEMS = {"safe_browsing": None, "virustotal": None, "abusech": None, "urlscan": None}
+_PROBLEMS = {"safe_browsing": None, "virustotal": None, "abusech": None, "urlscan": None, "phishstats": None}
 
 
 def link_check_status() -> dict:
     """Shown on the server's home page so problems with API keys are easy to spot."""
     return {
         "safe_browsing": {"configured": bool(GOOGLE_SAFE_BROWSING_API_KEY), "problem": _PROBLEMS["safe_browsing"]},
+        "phishstats": {"configured": True, "problem": _PROBLEMS["phishstats"], "today": quota("phishstats").status()["used_today"]},
         "virustotal": {"configured": bool(VIRUSTOTAL_API_KEY), "problem": _PROBLEMS["virustotal"]},
         "abusech": {"configured": bool(_abusech_key()), "problem": _PROBLEMS["abusech"]},
         "urlscan": {"configured": bool(os.environ.get("URLSCAN_API_KEY")), "problem": _PROBLEMS["urlscan"]},
@@ -1018,6 +1019,51 @@ def big_feed_lookup(urls, host: str, reg: str) -> dict:
 BAD_DBL = ("phishing", "malware", "botnet", "spam")
 
 
+def check_phishstats(url: str, host: str) -> dict:
+    """
+    PhishStats (phishstats.info): a free, no-key database of phishing pages reported worldwide.
+    One request per website. fail = this exact link is listed; warn = other phishing pages on
+    this website were listed. About 50 free lookups a day, so it's kept for unknown websites.
+    """
+    if OFFLINE or not host or is_ip(host):
+        return {"status": "skip"}
+
+    def call():
+        if not quota("phishstats").take(wait=3, priority="low"):
+            return {"status": "skip", NOT_CHECKED: True}
+        try:
+            r = requests.get("https://api.phishstats.info/api/phishing",
+                             params={"_where": f"(host,eq,{host})", "_sort": "-id", "_size": 20},
+                             headers={"User-Agent": USER_AGENT, "Accept": "application/json"}, timeout=6)
+            if r.status_code == 429:
+                quota("phishstats").close_day()
+                return {"status": "skip", NOT_CHECKED: True}
+            if r.status_code != 200:
+                _PROBLEMS["phishstats"] = f"HTTP {r.status_code}"
+                return {"status": "skip", NOT_CHECKED: True}
+            rows = r.json()
+        except Exception as e:
+            _PROBLEMS["phishstats"] = type(e).__name__
+            return {"status": "skip", NOT_CHECKED: True}
+        _PROBLEMS["phishstats"] = None
+        if not isinstance(rows, list):
+            return {"status": "skip"}
+        want = _feed_key(url)
+        found = [row for row in rows if isinstance(row, dict) and str(row.get("host") or "").lower() == host]
+        if any(_feed_key(str(row.get("url") or "")) == want for row in found):
+            return {"status": "fail", "source": "PhishStats"}
+        def score(row):
+            try:
+                return float(row.get("score") or 0)
+            except (TypeError, ValueError):
+                return 0.0
+        if any(score(row) >= 5 for row in found):
+            return {"status": "warn", "source": "PhishStats"}
+        return {"status": "pass"}
+
+    return _cached(("phishstats", host, url), call)
+
+
 def _abusech_key() -> str:
     return os.environ.get("ABUSECH_AUTH_KEY", "")
 
@@ -1481,6 +1527,8 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
     abusech_f = _POOL.submit(check_abusech, url, host)
     urlscan_f = None if (trusted or official_short or is_ip(host)) else _POOL.submit(check_urlscan, host)
+    phishstats_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else \
+        _POOL.submit(check_phishstats, url, host)
 
     def result_of(f, default, timeout=10):
         if f is None:
@@ -1655,9 +1703,12 @@ def scan_url(url: str, _hop: int = 0) -> dict:
         ach = {"status": "pass"}
     if rank_order[ach["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and ach["status"] != "skip"):
         feed = ach
-    pdns = result_of(pdns_f, {"status": "skip"}, 10)
-    if rank_order[pdns["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and pdns["status"] != "skip"):
-        feed = pdns
+    ps = result_of(phishstats_f, {"status": "skip"}, 8)
+    if ps["status"] == "warn" and (popularity_rank(reg) or 10**9) <= 20_000:
+        ps = {"status": "pass"}      # one reported page on a very popular website doesn't make the site a scam
+    for extra in (ps, result_of(pdns_f, {"status": "skip"}, 10)):
+        if rank_order[extra["status"]] < rank_order[feed["status"]] or (feed["status"] == "skip" and extra["status"] != "skip"):
+            feed = extra
     if feed["status"] == "fail":
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
         score = led.moved(findings, score, max(score + 50, 95))

@@ -145,6 +145,39 @@ def _lookup_ip(ip: str) -> dict:
     return data
 
 
+# Services that should never be open to the whole internet on a home connection
+RISKY_PORTS = {23: "Telnet", 2323: "Telnet", 21: "FTP", 3389: "Remote Desktop", 5900: "VNC remote control",
+               445: "Windows file sharing", 139: "Windows file sharing", 7547: "router remote management (TR-069)",
+               8291: "router remote management", 1900: "UPnP", 5555: "Android remote debugging",
+               8080: "router admin page", 8443: "router admin page"}
+
+
+def _internetdb(ip: str) -> dict:
+    """Shodan InternetDB (free, no key): what this internet address shows openly to the whole internet."""
+    from scanners.quota import quota
+    from scanners import url_scanner
+    if url_scanner.OFFLINE or not quota("internetdb").take(wait=3):
+        return {}
+    try:
+        r = requests.get(f"https://internetdb.shodan.io/{ip}", timeout=5)
+    except Exception:
+        return {}
+    if r.status_code == 404:
+        return {"ports": [], "vulns": [], "known": False}     # nothing seen open on this address
+    if r.status_code != 200:
+        return {}
+    try:
+        d = r.json()
+    except Exception:
+        return {}
+    return {"ports": [int(p) for p in d.get("ports") or [] if str(p).isdigit()],
+            "vulns": [str(v) for v in d.get("vulns") or []][:50], "known": True}
+
+
+def exposed_services(ip: str) -> dict:
+    return _ip_cached("internetdb", ip, _internetdb)
+
+
 def abuse_report(ip: str) -> dict:
     return _ip_cached("abuse", ip, _abuse_report) if ip else {}
 
@@ -248,6 +281,26 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
             checks.append({"id": "net_abuse", "status": "warn", "value": abuse["score"]})
         else:
             checks.append({"id": "net_abuse", "status": "pass", "value": None})
+
+    # Is something on this connection (usually the Wi-Fi router) open to the whole internet?
+    # Only for home broadband: mobile data, VPNs and datacenters share addresses with many others.
+    if not data.get("mobile") and not data.get("proxy") and not data.get("hosting") and ":" not in ip:
+        seen = exposed_services(ip)
+        if seen:
+            risky = sorted({RISKY_PORTS[p] for p in seen.get("ports", []) if p in RISKY_PORTS})
+            if risky:
+                services = ", ".join(risky)
+                findings.append(f"Your internet connection has a service open to the whole internet ({services}). "
+                                "If this is your home Wi-Fi, turn off remote access in the router's settings and change its password")
+                score += led.note(findings, 15)
+                checks.append({"id": "net_exposed", "status": "warn", "value": services})
+            else:
+                checks.append({"id": "net_exposed", "status": "pass", "value": None})
+            if seen.get("vulns"):
+                n = len(seen["vulns"])
+                findings.append(f"Security scanners found {n} known security holes on your internet address. "
+                                "Update your Wi-Fi router's software (firmware), or ask your internet provider to")
+                score += led.note(findings, 10)
 
     if data.get("mobile"):
         findings.append("You appear to be on a mobile data network")

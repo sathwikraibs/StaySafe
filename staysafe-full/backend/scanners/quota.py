@@ -244,6 +244,12 @@ QUOTAS = {
     "crtsh": Quota("crtsh", 30, None),
     # Cloudflare 1.1.1.2 and Quad9 public DNS (free, no key); each check asks both
     "protective_dns": Quota("protective_dns", 240, None),
+    # PhishStats: about 50 free lookups a day per server without a key
+    "phishstats": Quota("phishstats", 10, _env_int("PHISHSTATS_DAILY_LIMIT", 45)),
+    # Google Play: is an app with this name on the Play Store? (public page, used gently)
+    # Shodan InternetDB: free, no key, for non-commercial use
+    "internetdb": Quota("internetdb", 30, _env_int("INTERNETDB_DAILY_LIMIT", 2000)),
+    "play_store": Quota("play_store", 20, _env_int("PLAY_STORE_DAILY_LIMIT", 500)),
     "rdap": Quota("rdap", 60, None),
     "xposedornot": Quota("xposedornot", 20, _env_int("XON_DAILY_LIMIT", 90)),
     "leakcheck": Quota("leakcheck", 20, _env_int("LEAKCHECK_DAILY_LIMIT", 300)),

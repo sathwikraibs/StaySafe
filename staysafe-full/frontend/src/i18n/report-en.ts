@@ -225,6 +225,11 @@ export const reportEn = {
       warn: "The website's server was reported for attacks",
       warnV: "The website's server was reported for attacks ({value}% confidence)",
     },
+    net_exposed: {
+      pass: "Nothing risky on your connection is open to the whole internet",
+      warn: "Something on your connection is open to the whole internet",
+      warnV: "Open to the whole internet: {value}",
+    },
     net_abuse: {
       pass: "Your internet address has no abuse reports",
       warn: "Your internet address was reported for abuse",

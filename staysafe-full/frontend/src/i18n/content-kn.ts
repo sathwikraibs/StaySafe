@@ -262,6 +262,7 @@ export const knContent: LangContent = {
     "A computer could guess this password in less than a day": "ಕಂಪ್ಯೂಟರ್ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಒಂದು ದಿನದೊಳಗೆ ಊಹಿಸಬಹುದು",
     "A computer could guess this password in less than a month": "ಕಂಪ್ಯೂಟರ್ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಒಂದು ತಿಂಗಳೊಳಗೆ ಊಹಿಸಬಹುದು",
     "Asks you to contact a foreign phone number ({country})": "ವಿದೇಶಿ ಫೋನ್ ನಂಬರ್ ಸಂಪರ್ಕಿಸಲು ಹೇಳುತ್ತದೆ ({country})",
+    "This app uses the name of a bank, payment app or government office, but no app called {package} exists on the Google Play Store. Fake apps sent on WhatsApp work like this": "ಈ ಆ್ಯಪ್ ಬ್ಯಾಂಕ್, ಪೇಮೆಂಟ್ ಆ್ಯಪ್ ಅಥವಾ ಸರ್ಕಾರಿ ಕಚೇರಿಯ ಹೆಸರನ್ನು ಬಳಸುತ್ತದೆ, ಆದರೆ Google Play Store ನಲ್ಲಿ {package} ಎಂಬ ಆ್ಯಪ್ ಇಲ್ಲ. WhatsApp ನಲ್ಲಿ ಕಳುಹಿಸುವ ನಕಲಿ ಆ್ಯಪ್‌ಗಳು ಹೀಗೆಯೇ ಇರುತ್ತವೆ",
     "Banks, RTO, electricity boards and government offices never send apps as files. Install apps only from the Play Store": "ಬ್ಯಾಂಕ್, RTO, ವಿದ್ಯುತ್ ಮಂಡಳಿ ಮತ್ತು ಸರ್ಕಾರಿ ಕಚೇರಿಗಳು ಯಾವತ್ತೂ ಫೈಲ್ ಆಗಿ ಆ್ಯಪ್ ಕಳುಹಿಸುವುದಿಲ್ಲ. ಆ್ಯಪ್‌ಗಳನ್ನು Play Store ನಿಂದ ಮಾತ್ರ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ",
     "Claims to be from a bank, company or government office, but was sent from a personal mobile number. Real ones use a registered sender name like AX-HDFCBK-S": "ಬ್ಯಾಂಕ್, ಕಂಪನಿ ಅಥವಾ ಸರ್ಕಾರಿ ಕಚೇರಿಯಿಂದ ಎಂದು ಹೇಳುತ್ತದೆ, ಆದರೆ ಖಾಸಗಿ ಮೊಬೈಲ್ ನಂಬರ್‌ನಿಂದ ಬಂದಿದೆ. ನಿಜವಾದವು AX-HDFCBK-S ತರಹದ ನೋಂದಾಯಿತ ಹೆಸರಿನಿಂದ ಬರುತ್ತವೆ",
     "Discount or refund on a bill, with a link or number to contact": "ಬಿಲ್ ಮೇಲೆ ರಿಯಾಯಿತಿ ಅಥವಾ ರಿಫಂಡ್, ಲಿಂಕ್ ಅಥವಾ ಸಂಪರ್ಕ ನಂಬರ್ ಜೊತೆ",
@@ -310,6 +311,8 @@ export const knContent: LangContent = {
     "Security scans on urlscan.io found a scam or malware page on this website in the last 3 months": "urlscan.io ಭದ್ರತಾ ಪರಿಶೀಲನೆಗಳು ಕಳೆದ 3 ತಿಂಗಳಲ್ಲಿ ಈ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ವಂಚನೆ ಅಥವಾ ಮಾಲ್‌ವೇರ್ ಪುಟ ಕಂಡಿವೆ",
     "The server this website runs on has been reported for attacks ({n}% confidence)": "ಈ ವೆಬ್‌ಸೈಟ್ ನಡೆಯುವ ಸರ್ವರ್ ಮೇಲೆ ದಾಳಿಗಳ ದೂರು ಬಂದಿದೆ ({n}% ಖಚಿತತೆ)",
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ನಲ್ಲಿ ಗೊತ್ತಿರುವ ಮಾಲ್‌ವೇರ್ ({name}). ಇದನ್ನು ಅಳಿಸಿ",
+    "Your internet connection has a service open to the whole internet ({services}). If this is your home Wi-Fi, turn off remote access in the router's settings and change its password": "ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕದಲ್ಲಿ ಒಂದು ಸೇವೆ ಇಡೀ ಇಂಟರ್ನೆಟ್‌ಗೆ ತೆರೆದಿದೆ ({services}). ಇದು ನಿಮ್ಮ ಮನೆಯ Wi-Fi ಆಗಿದ್ದರೆ, ರೂಟರ್ ಸೆಟ್ಟಿಂಗ್‌ನಲ್ಲಿ ರಿಮೋಟ್ ಆಕ್ಸೆಸ್ ಆಫ್ ಮಾಡಿ ಮತ್ತು ಅದರ ಪಾಸ್‌ವರ್ಡ್ ಬದಲಿಸಿ",
+    "Security scanners found {n} known security holes on your internet address. Update your Wi-Fi router's software (firmware), or ask your internet provider to": "ಸುರಕ್ಷತಾ ಸ್ಕ್ಯಾನರ್‌ಗಳು ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದಲ್ಲಿ {n} ಗೊತ್ತಿರುವ ಸುರಕ್ಷತಾ ದೋಷಗಳನ್ನು ಕಂಡಿವೆ. ನಿಮ್ಮ Wi-Fi ರೂಟರ್‌ನ ಸಾಫ್ಟ್‌ವೇರ್ (ಫರ್ಮ್‌ವೇರ್) ಅಪ್‌ಡೇಟ್ ಮಾಡಿ, ಅಥವಾ ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಒದಗಿಸುವವರಿಗೆ ಹೇಳಿ",
     "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮೇಲೆ ದಾಳಿ ಅಥವಾ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬಂದಿದೆ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅಥವಾ ಮೊಬೈಲ್ ಡೇಟಾದಂತಹ ಹಂಚಿಕೆಯ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ, ಅಥವಾ ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್‌ನ ಯಾವುದಾದರೂ ಸಾಧನಕ್ಕೆ ವೈರಸ್ ತಗುಲಿದ್ದರೆ ಹೀಗಾಗಬಹುದು",
 
     // ---- score breakdown and items inside messages

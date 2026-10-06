@@ -262,6 +262,7 @@ export const hiContent: LangContent = {
     "A computer could guess this password in less than a day": "कोई कंप्यूटर यह पासवर्ड एक दिन से कम में अंदाज़ा लगा सकता है",
     "A computer could guess this password in less than a month": "कोई कंप्यूटर यह पासवर्ड एक महीने से कम में अंदाज़ा लगा सकता है",
     "Asks you to contact a foreign phone number ({country})": "किसी विदेशी फ़ोन नंबर से संपर्क करने को कहता है ({country})",
+    "This app uses the name of a bank, payment app or government office, but no app called {package} exists on the Google Play Store. Fake apps sent on WhatsApp work like this": "यह ऐप किसी बैंक, पेमेंट ऐप या सरकारी दफ़्तर का नाम इस्तेमाल करता है, लेकिन Google Play Store पर {package} नाम का कोई ऐप नहीं है। WhatsApp पर भेजे जाने वाले नकली ऐप ऐसे ही होते हैं",
     "Banks, RTO, electricity boards and government offices never send apps as files. Install apps only from the Play Store": "बैंक, RTO, बिजली विभाग और सरकारी दफ़्तर कभी फ़ाइल के रूप में ऐप नहीं भेजते। ऐप सिर्फ़ Play Store से इंस्टॉल करें",
     "Claims to be from a bank, company or government office, but was sent from a personal mobile number. Real ones use a registered sender name like AX-HDFCBK-S": "बैंक, कंपनी या सरकारी दफ़्तर से होने का दावा करता है, पर एक निजी मोबाइल नंबर से भेजा गया है। असली मैसेज AX-HDFCBK-S जैसे रजिस्टर्ड नाम से आते हैं",
     "Discount or refund on a bill, with a link or number to contact": "बिल पर छूट या रिफंड, साथ में लिंक या संपर्क नंबर",
@@ -310,6 +311,8 @@ export const hiContent: LangContent = {
     "Security scans on urlscan.io found a scam or malware page on this website in the last 3 months": "urlscan.io की सुरक्षा जाँचों में पिछले 3 महीनों में इस वेबसाइट पर धोखे या मैलवेयर वाला पेज मिला",
     "The server this website runs on has been reported for attacks ({n}% confidence)": "यह वेबसाइट जिस सर्वर पर चलती है, उसकी हमलों के लिए शिकायत हुई है ({n}% भरोसा)",
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "यह फ़ाइल MalwareBazaar पर एक जाना-माना मैलवेयर है ({name})। इसे डिलीट करें",
+    "Your internet connection has a service open to the whole internet ({services}). If this is your home Wi-Fi, turn off remote access in the router's settings and change its password": "आपके इंटरनेट कनेक्शन पर एक सेवा पूरे इंटरनेट के लिए खुली है ({services})। अगर यह आपका घर का Wi-Fi है, तो राउटर की सेटिंग में रिमोट एक्सेस बंद करें और उसका पासवर्ड बदलें",
+    "Security scanners found {n} known security holes on your internet address. Update your Wi-Fi router's software (firmware), or ask your internet provider to": "सुरक्षा स्कैनरों को आपके इंटरनेट पते पर {n} ज्ञात सुरक्षा कमियाँ मिलीं। अपने Wi-Fi राउटर का सॉफ़्टवेयर (फ़र्मवेयर) अपडेट करें, या अपने इंटरनेट प्रदाता से करवाएँ",
     "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "आपके इंटरनेट पते की हमलों या स्पैम के लिए शिकायत हुई है ({n}% भरोसा)। ऐसा पब्लिक Wi-Fi या मोबाइल डेटा जैसे साझा नेटवर्क पर, या आपके नेटवर्क का कोई डिवाइस संक्रमित होने पर हो सकता है",
 
     // ---- score breakdown and items inside messages

@@ -263,6 +263,7 @@ export const tcyContent: LangContent = {
     "A computer could guess this password in less than a day": "ಕಂಪ್ಯೂಟರ್ ಈ ಪಾಸ್‌ವರ್ಡ್‌ನ್ ಒಂಜಿ ದಿನೊದುಲಾಯಿ ಊಹೆ ಮಲ್ಪುವೊಲಿ",
     "A computer could guess this password in less than a month": "ಕಂಪ್ಯೂಟರ್ ಈ ಪಾಸ್‌ವರ್ಡ್‌ನ್ ಒಂಜಿ ತಿಂಗೊಳುದುಲಾಯಿ ಊಹೆ ಮಲ್ಪುವೊಲಿ",
     "Asks you to contact a foreign phone number ({country})": "ವಿದೇಶಿ ಫೋನ್ ನಂಬರ್‌ಗ್ ಸಂಪರ್ಕ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು ({country})",
+    "This app uses the name of a bank, payment app or government office, but no app called {package} exists on the Google Play Store. Fake apps sent on WhatsApp work like this": "ಈ ಆ್ಯಪ್ ಬ್ಯಾಂಕ್, ಪೇಮೆಂಟ್ ಆ್ಯಪ್ ಅತ್ತಂಡ ಸರ್ಕಾರಿ ಕಚೇರಿದ ಪುದರ್ ಬಳಸುಂಡು, ಆಂಡ Google Play Store ಡ್ {package} ಪನ್ಪಿನ ಆ್ಯಪ್ ಇಜ್ಜಿ. WhatsApp ಡ್ ಕಡಪುಡುನ ನಕಲಿ ಆ್ಯಪ್‌ಲು ಇಂಚನೇ ಇಪ್ಪುವ",
     "Banks, RTO, electricity boards and government offices never send apps as files. Install apps only from the Play Store": "ಬ್ಯಾಂಕ್, RTO, ವಿದ್ಯುತ್ ಮಂಡಳಿ ಬೊಕ್ಕ ಸರಕಾರಿ ಕಚೇರಿಲು ಒವ್ವೇ ಪೊರ್ತುಗುಲಾ ಫೈಲ್ ಆದ್ ಆ್ಯಪ್ ಕಡಪುಡುಜಿ. ಆ್ಯಪ್‌ಲೆನ್ Play Store ಡ್ದ್ ಮಾತ್ರ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪುಲೆ",
     "Claims to be from a bank, company or government office, but was sent from a personal mobile number. Real ones use a registered sender name like AX-HDFCBK-S": "ಬ್ಯಾಂಕ್, ಕಂಪನಿ ಅತ್ತಂಡ ಸರಕಾರಿ ಕಚೇರಿಡ್ದ್ ಪಂಡ್ದ್ ಪನ್ಪುಂಡು, ಆಂಡ ಖಾಸಗಿ ಮೊಬೈಲ್ ನಂಬರ್‌ಡ್ದ್ ಬೈದ್ಂಡ್. ನಿಜವಾಯಿನವು AX-HDFCBK-S ಲೆಕ್ಕೊದ ನೋಂದಾಯಿತ ಪುದರ್‌ಡ್ದ್ ಬರ್ಪುಂಡು",
     "Discount or refund on a bill, with a link or number to contact": "ಬಿಲ್ಲ್‌ದ ಮಿತ್ತ್ ರಿಯಾಯಿತಿ ಅತ್ತಂಡ ರಿಫಂಡ್, ಲಿಂಕ್ ಅತ್ತಂಡ ಸಂಪರ್ಕ ನಂಬರ್ ಒಟ್ಟುಗು",
@@ -311,6 +312,8 @@ export const tcyContent: LangContent = {
     "Security scans on urlscan.io found a scam or malware page on this website in the last 3 months": "urlscan.io ಭದ್ರತಾ ಪರಿಶೀಲನೆಲು ಕರಿನ 3 ತಿಂಗೊಳುಡು ಈ ವೆಬ್‌ಸೈಟ್‌ಡ್ ಮೋಸ ಅತ್ತಂಡ ಮಾಲ್‌ವೇರ್ ಪುಟ ತೂತೊಂಡ್",
     "The server this website runs on has been reported for attacks ({n}% confidence)": "ಈ ವೆಬ್‌ಸೈಟ್ ನಡಪುನ ಸರ್ವರ್‌ದ ಮಿತ್ತ್ ದಾಳಿದ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ)",
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ಡ್ ಗೊತ್ತುಪ್ಪುನ ಮಾಲ್‌ವೇರ್ ({name}). ಉಂದೆನ್ ಡಿಲೀಟ್ ಮಲ್ಪುಲೆ",
+    "Your internet connection has a service open to the whole internet ({services}). If this is your home Wi-Fi, turn off remote access in the router's settings and change its password": "ಇರೆನ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕೊಡು ಒಂಜಿ ಸೇವೆ ಇಡೀ ಇಂಟರ್ನೆಟ್‌ಗ್ ತೆರೆದ್ ಉಂಡು ({services}). ಉಂದು ಇರೆನ ಇಲ್ಲದ Wi-Fi ಆಂಡ, ರೂಟರ್‌ದ ಸೆಟ್ಟಿಂಗ್‌ಡ್ ರಿಮೋಟ್ ಆಕ್ಸೆಸ್ ಆಫ್ ಮಲ್ಪುಲೆ ಬೊಕ್ಕ ಅಯಿತ ಪಾಸ್‌ವರ್ಡ್ ಬದಲ್ ಮಲ್ಪುಲೆ",
+    "Security scanners found {n} known security holes on your internet address. Update your Wi-Fi router's software (firmware), or ask your internet provider to": "ಸುರಕ್ಷತಾ ಸ್ಕ್ಯಾನರ್‌ಲು ಇರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸೊಡು {n} ಗೊತ್ತಿತ್ತಿನ ಸುರಕ್ಷತಾ ದೋಷೊಲೆನ್ ತೂತೆರ್. ಇರೆನ Wi-Fi ರೂಟರ್‌ದ ಸಾಫ್ಟ್‌ವೇರ್ (ಫರ್ಮ್‌ವೇರ್) ಅಪ್‌ಡೇಟ್ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಇರೆನ ಇಂಟರ್ನೆಟ್ ಕೊರ್ಪಿನಕುಲೆಡ್ ಪನ್ಲೆ",
     "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ಈರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮಿತ್ತ್ ದಾಳಿ ಅತ್ತಂಡ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅತ್ತಂಡ ಮೊಬೈಲ್ ಡೇಟಾದ ಲೆಕ್ಕೊದ ಹಂಚಿಕೆದ ನೆಟ್‌ವರ್ಕ್‌ಡ್, ಅತ್ತಂಡ ಈರೆನ ನೆಟ್‌ವರ್ಕ್‌ದ ಏತಾಂಡಲ ಸಾಧನೊಗು ವೈರಸ್ ಬತ್ತ್‌ಂಡ ಇಂಚ ಆವೊಲಿ",
 
     // ---- score breakdown and items inside messages
