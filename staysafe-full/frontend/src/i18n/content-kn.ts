@@ -102,6 +102,8 @@ export const knContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಸುತ್ತಿಲ್ಲ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿಲ್ಲ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನ ಬದಲು ಕೇವಲ IP ನಂಬರ್ ಇದೆ",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "ಈ ಪುಟ ಉಚಿತ ಹೋಸ್ಟಿಂಗ್ ({host}) ನಲ್ಲಿದೆ, ಅಲ್ಲಿ ಯಾರು ಬೇಕಾದರೂ ಪುಟ ಮಾಡಬಹುದು. ಇದನ್ನು ಯಾರು ಮಾಡಿದ್ದಾರೆ ಎಂದು ನೋಡಿ",
+    "Reported as a scam by {n} StaySafe users": "{n} StaySafe ಬಳಕೆದಾರರು ಇದನ್ನು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+    "The UPI ID {upi} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ನಲ್ಲಿರುವ UPI ID {upi}: {reason}",
     "This is {reason}. It is a real government number": "ಇದು {reason}. ಇದು ನಿಜವಾದ ಸರ್ಕಾರಿ ಸಂಖ್ಯೆ",
     "the national cyber-crime helpline": "ರಾಷ್ಟ್ರೀಯ ಸೈಬರ್ ಅಪರಾಧ ಸಹಾಯವಾಣಿ",
     "the national emergency number": "ರಾಷ್ಟ್ರೀಯ ತುರ್ತು ಸಂಖ್ಯೆ",

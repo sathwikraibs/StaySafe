@@ -230,6 +230,12 @@ export const reportHi: ReportDict = {
   },
 
   checks: {
+    community: {
+      warn: "StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      warnV: "{value} StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      fail: "StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      failV: "{value} StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+    },
     num_type: {
       pass: "असली सरकारी या बैंक नंबर",
       info: "जाँचा कि यह किस तरह का नंबर है",

@@ -103,6 +103,8 @@ export const tcyContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಕೆ ಮಲ್ಪುಜಿ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆತಿಜಿ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ಡ್ ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ದ ಬದಲ್ ಬರೀ IP ನಂಬರ್ ಉಂಡು",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "ಈ ಪುಟ ಉಚಿತ ಹೋಸ್ಟಿಂಗ್ ({host}) ಡ್ ಉಂಡು, ಅಲ್ಪ ಏರ್‌ಲಾ ಪುಟ ಮಲ್ಪೊಲಿ. ಉಂದೆನ್ ಏರ್ ಮಲ್ತೆರ್ ಪಂಡ್‌ದ್ ತೂಲೆ",
+    "Reported as a scam by {n} StaySafe users": "{n} StaySafe ಬಳಕೆದಾರೆರ್ ಉಂದೆನ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+    "The UPI ID {upi} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ದ UPI ID {upi}: {reason}",
     "This is {reason}. It is a real government number": "ಉಂದು {reason}. ಉಂದು ನಿಜವಾಯಿನ ಸರಕಾರಿ ನಂಬರ್",
     "the national cyber-crime helpline": "ರಾಷ್ಟ್ರೀಯ ಸೈಬರ್ ಅಪರಾಧ ಸಹಾಯವಾಣಿ",
     "the national emergency number": "ರಾಷ್ಟ್ರೀಯ ತುರ್ತು ನಂಬರ್",

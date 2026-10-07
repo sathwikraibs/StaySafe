@@ -1343,6 +1343,17 @@ def add_entity_checks(result: dict, text: str = None) -> dict:
         if listed and r.get("findings"):
             added.append((f"The email address {e} in this message: {r['findings'][0]}", 40))
 
+    # StaySafe's own list: a UPI ID in the message that its users reported as a scam
+    for upi in upis[:2]:
+        try:
+            from scanners.reports import community_signal
+            sig = community_signal("upi", upi)
+        except Exception:
+            sig = None
+        if sig:
+            added.append((f"The UPI ID {upi} in this message: {sig[0]}", sig[1]))
+            break
+
     if upis and PAY_WORDS.search(text):
         upi = upis[0]
         # with other scam signs this is how the money is collected; alone it can be a normal request

@@ -230,6 +230,12 @@ export const reportEn = {
   },
 
   checks: {
+    community: {
+      warn: "Reported as a scam by StaySafe users",
+      warnV: "Reported as a scam by {value} StaySafe users",
+      fail: "Reported as a scam by StaySafe users",
+      failV: "Reported as a scam by {value} StaySafe users",
+    },
     num_type: {
       pass: "A real official or bank number",
       info: "Checked what kind of number this is",

@@ -281,6 +281,18 @@ def check_number(value: str, claim: str = "", ask: str = "") -> dict:
     else:
         return {"error": "Please enter a phone number (like 98765 43210 or +91 98765 43210) or a UPI ID (like name@okaxis)."}
     score = part["score"] + context_signals(claim, ask, kind, findings, led, checks)
+    # StaySafe's own list: reported as a scam by its users (official numbers can't be reported)
+    if part["info"].get("number_type") not in ("helpline", "bank_1600"):
+        try:
+            from scanners.reports import community_signal
+            sig = community_signal("upi" if kind == "upi" else "number", value)
+        except Exception:
+            sig = None
+        if sig:
+            findings.insert(0, sig[0])
+            score += led.note(findings, sig[1])
+            checks.insert(0, {"id": "community", "status": "fail" if sig[1] >= 35 else "warn",
+                              "value": int(re.search(r"\d+", sig[0]).group())})
     score = min(100, score)
     helpline = part["info"].get("number_type") == "helpline"
     verdict = "DANGEROUS" if score >= 50 else ("CAUTION" if score >= 20 else "SAFE")

@@ -166,6 +166,16 @@ const enBase = {
     address: "Address: ",
   },
 
+  reportScam: {
+    button: "Report as scam",
+    sent: "Thanks. Your report helps warn others.",
+    already: "You've already reported this. Thank you.",
+    limit: "You've sent many reports today. Please try again tomorrow.",
+    notReportable: "This is an official or well-known number or website, so it can't be reported.",
+    unavailable: "Reporting isn't available right now. Please try again later.",
+    note: "Only report it if someone tried to scam you with it. Others see a warning once several people report the same one.",
+  },
+
   number: {
     title: "Check a Number or UPI ID",
     subtitle: "Got a call, a WhatsApp message or a payment request? Check the phone number or UPI ID before you trust it.",
@@ -368,7 +378,9 @@ const enBase = {
     notGuarantee: "Scammers keep inventing new tricks, so a scam can sometimes look safe to our checks. If something still feels wrong, don't click it, don't pay, and ask someone you trust.",
     dataTitle: "What happens to what you check",
     dataItems: [
-      "We check what you send and then forget it. We don't keep your messages, pictures or files.",
+      "We read what you send only to check it, then forget it. We don't keep your messages, pictures or files.",
+      "We remember the answer about a link or file (for example 'listed as phishing') so the next person gets it faster. We never remember who checked it, or the message it came in.",
+      "If a screenshot is hard to read, it may be sent to a text-reading service only to read its words. We don't keep it.",
       "Only the web address of a link is shared with safety services, never who you are.",
       "Files are compared using only their fingerprint (a code that identifies the file). The file itself stays with us unless you choose a full antivirus scan.",
       "Phone numbers, OTPs, account numbers, email addresses and UPI IDs are hidden before a message is translated or double-checked.",

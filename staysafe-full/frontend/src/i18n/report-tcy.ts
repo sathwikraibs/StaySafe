@@ -231,6 +231,12 @@ export const reportTcy: ReportDict = {
   },
 
   checks: {
+    community: {
+      warn: "StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      warnV: "{value} StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      fail: "StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      failV: "{value} StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+    },
     num_type: {
       pass: "ನಿಜವಾಯಿನ ಸರಕಾರಿ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ನಂಬರ್",
       info: "ಉಂದು ಓವು ಬಗೆತ್ತ ನಂಬರ್ ಪಂಡ್‌ದ್ ತೂಯ",

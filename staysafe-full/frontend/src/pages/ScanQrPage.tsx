@@ -12,6 +12,7 @@ import { ChoiceTabs } from "@/components/ChoiceTabs";
 import { API_BASE } from "@/config";
 import type { ScanQrResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { ReportButton } from "@/components/ReportButton";
 import { Section } from "@/components/Section";
 import { LinkDetails } from "@/components/WebsiteDetails";
 import { IconQr, IconCamera, IconImage } from "@/icons";
@@ -120,6 +121,8 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
             </Section>
           )}
           {result.qr_type === "url" && <LinkDetails details={result.details} />}
+          {result.qr_type === "upi_payment" && result.payee && <ReportButton key={result.payee} kind="upi" value={result.payee} />}
+          {result.qr_type === "url" && result.url && <ReportButton key={result.url} kind="link" value={result.url} />}
         </ResultReport>
       )}
     </div>

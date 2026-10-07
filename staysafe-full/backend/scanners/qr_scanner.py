@@ -136,6 +136,16 @@ def analyze_upi_string(upi_data: str) -> dict:
         findings.append(f"The payment note says “{note}”. Scammers use notes like this to make you think you'll RECEIVE money")
         score += led.note(findings, 40)
 
+    if payee:
+        try:
+            from scanners.reports import community_signal
+            sig = community_signal("upi", payee)
+        except Exception:
+            sig = None
+        if sig:
+            findings.insert(0, sig[0])
+            score += led.note(findings, sig[1])
+
     findings.append("Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.")
 
     score = min(100, score)

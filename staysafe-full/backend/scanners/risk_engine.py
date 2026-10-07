@@ -1,14 +1,12 @@
 """
 StaySafe - Risk Engine + Dashboard
 ------------------------------------
-Records every scan so the dashboard can show a safety score.
+Each scan result carries a `history_entry` that the frontend saves in the
+visitor's own browser, where the dashboard is built.
 
-History is kept PER VISITOR: the frontend sends a random anonymous ID in the
-`X-Client-Id` header, so people never see each other's checks.
-
-Each scan result also carries a `history_entry` that the frontend saves in
-the visitor's own browser. That copy survives Render's free tier putting the
-server to sleep (which wipes this in-memory store).
+Privacy: the server keeps NO copy of anyone's checks. After a result is sent,
+nothing about the message, link or file stays on the server (only anonymous
+answers about links/files in the long memory, see store.py).
 
 Register with:
     from risk_engine import risk_engine_bp, log_scan
@@ -16,19 +14,11 @@ Register with:
 """
 
 import re
-import threading
-from collections import OrderedDict
 from datetime import datetime, timezone
 from flask import Blueprint, jsonify, request, has_request_context
 
 risk_engine_bp = Blueprint("risk_engine", __name__)
 
-MAX_ENTRIES_PER_CLIENT = 200
-MAX_CLIENTS = 1000
-
-# client_id -> list of scan entries (oldest first)
-_HISTORY: "OrderedDict[str, list]" = OrderedDict()
-_LOCK = threading.Lock()
 
 DANGER = ("DANGEROUS", "SCAM_LIKELY")
 CAUTION = ("CAUTION", "SUSPICIOUS", "UNCERTAIN")
@@ -54,8 +44,8 @@ def _summary_for(scan_type: str, result: dict) -> str:
 
 def log_scan(scan_type: str, result: dict) -> None:
     """
-    Call right before returning a scan result. Stores the scan for this
-    visitor and adds `history_entry` to the result for the browser copy.
+    Call right before returning a scan result. Adds `history_entry` (kept only in the
+    visitor's own browser) to the result.
     """
     entry = {
         "type": scan_type,
@@ -66,20 +56,11 @@ def log_scan(scan_type: str, result: dict) -> None:
     }
     result["history_entry"] = entry
 
-    cid = current_client_id()
-    with _LOCK:
-        history = _HISTORY.setdefault(cid, [])
-        _HISTORY.move_to_end(cid)
-        history.append(entry)
-        if len(history) > MAX_ENTRIES_PER_CLIENT:
-            del history[0]
-        while len(_HISTORY) > MAX_CLIENTS:
-            _HISTORY.popitem(last=False)
 
 
 def get_history(cid: str) -> list:
-    with _LOCK:
-        return list(_HISTORY.get(cid, []))
+    """The server keeps no history any more; the visitor's browser has it."""
+    return []
 
 
 def compute_safety_score(history: list) -> dict:

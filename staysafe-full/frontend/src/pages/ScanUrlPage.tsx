@@ -11,6 +11,7 @@ import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanUrlResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { ReportButton } from "@/components/ReportButton";
 import { HiddenLinkGuide } from "@/components/HiddenLinkGuide";
 
 export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
@@ -92,6 +93,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
           onNavigate={onNavigate}
         >
           <LinkDetails details={result.details} />
+          <ReportButton key={result.url} kind="link" value={result.url} />
         </ResultReport>
       )}
 

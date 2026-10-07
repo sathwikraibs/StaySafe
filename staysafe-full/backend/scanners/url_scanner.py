@@ -1059,6 +1059,17 @@ def popularity_rank(domain: str):
     return _TRANCO["ranks"].get((domain or "").lower())
 
 
+def community_listed(kind: str, value: str) -> bool:
+    """Reported as a scam by enough different StaySafe users (scanners/reports.py)."""
+    if OFFLINE:
+        return False
+    try:
+        from scanners.reports import report_count, REPORT_THRESHOLD
+        return report_count(kind, value) >= REPORT_THRESHOLD
+    except Exception:
+        return False
+
+
 def big_feed_lookup(urls, host: str, reg: str) -> dict:
     """
     {'status': 'fail'|'warn'|'pass'|'skip', 'source': ...}
@@ -1598,7 +1609,12 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     # Well-known sites (official brands, the world's 10,000 most visited) use VirusTotal only when
     # plenty of today's allowance is left, so it is saved for the unknown links that need it
     well_known = trusted or (not structure["hosting"] and (popularity_rank(reg) or 10**9) <= 10_000)
-    vt_f = _POOL.submit(check_virustotal, url, reg, "low" if well_known else "normal")
+    # Already on a downloaded scam list (or StaySafe's own reports)? The answer is clear without
+    # VirusTotal, so it only uses VirusTotal when plenty is left (for the engine details).
+    listed = not trusted and (feed_lookup([url], host)["status"] == "fail"
+                              or big_feed_lookup([url], host, reg)["status"] == "fail"
+                              or community_listed("link", url))
+    vt_f = _POOL.submit(check_virustotal, url, reg, "low" if (well_known or listed) else "normal")
     gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
     crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
@@ -1799,6 +1815,18 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     else:
         _check(checks, "feeds", "pass")
 
+    # --- StaySafe's own list: reported as a scam by its users
+    if not trusted and not OFFLINE:
+        try:
+            from scanners.reports import community_signal
+            sig = community_signal("link", url) or (community_signal("link", final_url) if final_url != url else None)
+        except Exception:
+            sig = None
+        if sig:
+            findings.insert(0, sig[0])
+            score += led.note(findings, sig[1])
+            _check(checks, "community", "fail" if sig[1] >= 35 else "warn", int(re.search(r"\d+", sig[0]).group()))
+
     # --- urlscan.io: scans by security researchers that found a scam page on this website
     shared_site = structure["hosting"] and host == structure["hosting"]
     us_res = result_of(urlscan_f, {"status": "skip"}, 12)
@@ -1866,7 +1894,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
             led.add(ADJ_POPULAR, new_total - total)
         total = new_total
 
-    order = ["google", "feeds", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
+    order = ["google", "feeds", "community", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
 
     return {

@@ -50,32 +50,42 @@ def _fingerprint(ns: str, key) -> str:
 
 def _command(cmd: list, cost: int = 1):
     """Run one Redis command. None on any problem (the caller then carries on without it)."""
+    return command(cmd, cost)[1]
+
+
+def key(ns: str, k) -> str:
+    return _fingerprint(ns, k)
+
+
+def command(cmd: list, cost: int = 1):
+    """(worked, result). worked is False on any problem; result can be None for a Redis 'nil'."""
     url, token = _conf()
     if not url or time.time() < _state["down_until"]:
-        return None
+        return False, None
     from scanners.quota import quota
     if not quota("store").take(wait=0, cost=cost):
-        return None
+        return False, None
     try:
         r = requests.post(url, json=cmd, headers={"Authorization": f"Bearer {token}"}, timeout=TIMEOUT)
         if r.status_code == 401:
             _state["problem"] = "token not accepted"
             _state["down_until"] = time.time() + 3600
-            return None
+            return False, None
         if r.status_code == 429:
             _state["problem"] = "free allowance used"
             _state["down_until"] = time.time() + 3600
-            return None
+            return False, None
         data = r.json()
         if "error" in data:
             _state["problem"] = str(data["error"])[:80]
-            return None
+            return False, None
         _state["problem"] = None
-        return data.get("result")
+        _state["working"] = True
+        return True, data.get("result")
     except Exception as e:  # noqa: BLE001
         _state["problem"] = type(e).__name__
         _state["down_until"] = time.time() + 60   # unreachable: don't keep every check waiting
-        return None
+        return False, None
 
 
 def get(ns: str, key):
@@ -159,6 +169,8 @@ def start_background() -> None:
     _started["done"] = True
 
     def loop():
+        ok, pong = command(["PING"])
+        _state["working"] = bool(ok and pong == "PONG")
         load_quota_days()
         while True:
             time.sleep(600)
@@ -167,5 +179,5 @@ def start_background() -> None:
 
 
 def status() -> dict:
-    return {"configured": enabled(), "problem": _state["problem"], "hits": _state["hits"],
+    return {"configured": enabled(), "working": _state.get("working", False), "problem": _state["problem"], "hits": _state["hits"],
             "misses": _state["misses"], "writes": _state["writes"]}

@@ -230,6 +230,12 @@ export const reportKn: ReportDict = {
   },
 
   checks: {
+    community: {
+      warn: "StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      warnV: "{value} StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      fail: "StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      failV: "{value} StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+    },
     num_type: {
       pass: "ನಿಜವಾದ ಸರ್ಕಾರಿ ಅಥವಾ ಬ್ಯಾಂಕ್ ಸಂಖ್ಯೆ",
       info: "ಇದು ಯಾವ ರೀತಿಯ ಸಂಖ್ಯೆ ಎಂದು ಪರಿಶೀಲಿಸಿದೆವು",

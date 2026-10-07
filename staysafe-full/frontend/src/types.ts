@@ -78,6 +78,7 @@ export interface ScanQrResponse {
   findings: string[];
   qr_type: string;
   raw_data: string;
+  url?: string;
   checks?: Check[];
   details?: ScanUrlResponse["details"];
   payee?: string;

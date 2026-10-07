@@ -8,6 +8,7 @@ import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
 import type { CheckNumberResponse } from "@/types";
 import { useI18n } from "@/i18n";
+import { ReportButton } from "@/components/ReportButton";
 import { IconSearch, IconAlert, IconInfo } from "@/icons";
 
 const CLAIMS = ["bank", "official", "delivery", "company", "family", "unknown"] as const;
@@ -138,6 +139,9 @@ export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) =>
                 {t("number.govButton")}
               </a>
             </div>
+          )}
+          {result.details?.number_type !== "helpline" && result.details?.number_type !== "bank_1600" && (
+            <ReportButton key={result.value} kind={result.kind === "upi" ? "upi" : "number"} value={result.value} />
           )}
           <div className="rounded-2xl bg-cream-50 p-5 shadow-warm-sm">
             <div className="flex items-center gap-2">
