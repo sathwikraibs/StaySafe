@@ -1083,6 +1083,22 @@ def _tesseract(img, lang: str, config: str, timeout: int) -> str:
         return ""
 
 
+def _jpeg_for_backup(img) -> bytes:
+    buf = io.BytesIO()
+    backup = img.copy()
+    backup.thumbnail((1400, 2400))
+    backup.convert("L").save(buf, "JPEG", quality=80)
+    return buf.getvalue()
+
+
+def _reading_quality(text: str) -> float:
+    """How much real, readable text a reading has (more real words = better)."""
+    words = re.findall(r"[A-Za-z0-9@₹.:/'-]+", text or "")
+    good = [w for w in words if re.fullmatch(r"[A-Za-z]{2,}", w) and re.search(r"[aeiouyAEIOUY]", w)
+            or re.fullmatch(r"[0-9₹.,:/-]{2,}", w) or "http" in w.lower() or "@" in w]
+    return len(good) * (len(good) / max(1, len(words)))
+
+
 def _ocr_space(image_bytes_jpeg: bytes) -> str:
     """
     Optional free backup reader (OCR.space, 25,000 free reads a month, no card).
@@ -1239,7 +1255,11 @@ def extract_text_from_image(image_bytes: bytes) -> str:
 
         english, eng_conf = _tesseract_conf(prepared, "eng", "--oem 1 --psm 6", min(40, left()))
         if english and (langs == "eng" or (eng_conf >= 72 and _looks_like_real_english(english))):
-            return english
+            if eng_conf >= 60:
+                return english
+            unsure, unsure_conf = english, eng_conf
+        else:
+            unsure, unsure_conf = None, 0
 
         best, best_conf = english, eng_conf
         if langs != "eng" and left() > 10:
@@ -1247,23 +1267,31 @@ def extract_text_from_image(image_bytes: bytes) -> str:
             # prefer the Indian-language reading when it is at least as sure, or clearly found that script
             if mixed and (mixed_conf >= best_conf - 5 or native_share(mixed) >= 0.25):
                 best, best_conf = mixed, mixed_conf
-        if best:
+        if best and best_conf >= 55:
             return best
+        if best and (not unsure or best_conf > unsure_conf):
+            unsure, unsure_conf = best, best_conf
 
         # Nothing yet: a smaller picture reads faster
-        if left() > 10:
+        if not unsure and left() > 10:
             small = prepared.copy()
             small.thumbnail((800, 1800))
             best = _tesseract(small, "eng" if langs == "eng" else langs, "--oem 1 --psm 3", left())
             if best:
                 return best
 
+    if unsure:
+        # Blurry or unusual screenshot read with little confidence: ask the backup reader too
+        # (outside the lock, so other screenshots aren't kept waiting) and keep the clearer reading.
+        # Indian-script readings stay as they are: the backup reader is weaker at those.
+        if native_share(unsure) < 0.1:
+            second = _ocr_space(_jpeg_for_backup(prepared))
+            if second and _reading_quality(second) > _reading_quality(unsure) * 1.15:
+                return second
+        return unsure
+
     # Last try: the free OCR.space backup (if a key is set)
-    buf = io.BytesIO()
-    backup = prepared.copy()
-    backup.thumbnail((1400, 2400))
-    backup.convert("L").save(buf, "JPEG", quality=80)
-    text = _ocr_space(buf.getvalue())
+    text = _ocr_space(_jpeg_for_backup(prepared))
     if text:
         return text
     raise RuntimeError("could not read the image")
@@ -1286,6 +1314,8 @@ def ocr_self_check() -> dict:
         "languages": ocr_languages(),
         "omp_thread_limit": os.environ.get("OMP_THREAD_LIMIT", ""),
         "ocr_space_backup": bool(os.environ.get("OCRSPACE_API_KEY")),
+        "ocr_space_test": (_ocr_space(_jpeg_for_backup(img))[:60] or OCR_PROBLEM["last"])
+        if os.environ.get("OCRSPACE_API_KEY") else None,
         "last_problem": OCR_PROBLEM["last"],
     }
 
