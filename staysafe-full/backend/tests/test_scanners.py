@@ -1152,6 +1152,15 @@ def test_page_tricks_and_crypto_lookalikes():
         assert scan_url(u)["verdict"] != "DANGEROUS", (u, scan_url(u)["findings"])
 
 
+def test_fresh_scam_patterns_from_blind_test():
+    for u in ["http://vmi3580221.contaboserver.net/rdwa/rd/rd/msg.php", "http://app-exodusweb.pages.dev/x",
+              "http://curemypc.myvnc.com/cgi-bin/index.ha", "http://zoominvite07.pages.dev", "http://shopee7677.blogspot.com/",
+              "http://nltavaconsulting.com/space/r.html#galis@3398cb06b10be.org"]:
+        assert scan_url(u)["verdict"] != "SAFE", (u, scan_url(u)["findings"])
+    for u in ["https://zoom-clone-project.vercel.app", "https://www.zoom.us", "https://shopee.co.id", "https://www.adobe.com"]:
+        assert scan_url(u)["verdict"] == "SAFE", (u, scan_url(u)["findings"])
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

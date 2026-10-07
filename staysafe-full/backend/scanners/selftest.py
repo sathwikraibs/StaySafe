@@ -64,6 +64,8 @@ LINK_SETS = {
     "7": ("Real scam links reported in the last few hours (picked from today's public lists)", None),
     "9": ("BLIND test: today's real scam links, judged WITHOUT any scam list, Google or VirusTotal "
           "(what StaySafe's own checks catch before anyone has reported a link)", None),
+    "10": ("FAIR test: today's real scam links, with StaySafe's own downloaded scam lists switched off (the lists these "
+           "links come from), but Google, VirusTotal, Cloudflare and the other live checks on, as for a real visitor", None),
     "8": ("Big shared websites that scammers also misuse (the websites themselves are fine)", [
         ("https://github.com/sathwikraibs/StaySafe", SAFE), ("https://www.karnatakabank.com", SAFE),
         ("https://raw.githubusercontent.com/python/cpython/main/README.rst", SAFE),
@@ -90,11 +92,11 @@ def _right(expect, verdict):
     return verdict == expect
 
 
-def _one(url, expect, blind=False):
+def _one(url, expect, blind=False, nolists=False):
     from scanners.url_scanner import scan_url
     t = time.time()
     try:
-        r = scan_url(url, blind=blind)
+        r = scan_url(url, blind=blind, nolists=nolists)
     except Exception as e:
         return {"url": url, "expected": expect, "verdict": "ERROR", "right": False,
                 "error": f"{type(e).__name__}: {str(e)[:120]}"}
@@ -121,14 +123,15 @@ def selftest_links_route():
     elif pick in LINK_SETS:
         title, cases = LINK_SETS[pick]
         if cases is None:
-            cases = [(u, NOT_SAFE) for u, _ in _fresh_scam_links(8, ("OpenPhish",))] if pick == "9" else _fresh_scam_links()
+            cases = [(u, NOT_SAFE) for u, _ in _fresh_scam_links(8 if pick == "9" else 6, ("OpenPhish",))] \
+                if pick in ("9", "10") else _fresh_scam_links()
             if not cases:
                 return jsonify({"set": pick, "error": "Today's public lists are still loading. Open again in a minute."})
     else:
-        return jsonify({"how": "Add &set=1 (then 2, 3 ... 9) to the address, or &url=<link> to check your own (up to 6).",
+        return jsonify({"how": "Add &set=1 (then 2, 3 ... 10) to the address, or &url=<link> to check your own (up to 6).",
                         "sets": {k: v[0] for k, v in LINK_SETS.items()}})
     began = time.time()
-    futures = [(u, e, _POOL.submit(_one, u, e, pick == "9")) for u, e in cases]
+    futures = [(u, e, _POOL.submit(_one, u, e, pick == "9", pick == "10")) for u, e in cases]
     results = []
     for u, e, f in futures:
         try:
@@ -138,7 +141,7 @@ def selftest_links_route():
                             "note": "Took too long this time. Open the same address again, it will be quick."})
     graded = [r for r in results if r.get("right") is not None]
     extra = {}
-    if pick == "9":
+    if pick in ("9", "10"):
         online = [r for r in graded if r.get("still_online")]
         extra = {"still_online": len(online),
                  "caught_while_still_online": f"{sum(1 for r in online if r['right'])}/{len(online)}",

@@ -84,7 +84,7 @@ MULTI_PART_SUFFIXES = {
 
 SECOND_LEVEL = {"com", "co", "net", "org", "gov", "ac", "edu", "ne", "or", "go", "gob", "nic", "mil", "ltd", "plc"}
 # Global brands whose own country websites (google.de, amazon.co.jp) are real when they are well-known sites
-GLOBAL_BRANDS = {"google", "amazon", "apple", "microsoft", "facebook", "instagram", "netflix", "paypal", "youtube",
+GLOBAL_BRANDS = {"shopee", "airbnb", "google", "amazon", "apple", "microsoft", "facebook", "instagram", "netflix", "paypal", "youtube",
                  "linkedin", "yahoo", "ebay", "samsung", "whatsapp", "twitter", "hsbc", "citibank", "binance", "roblox"}
 MAJOR_CC = set("""in us uk de fr it es nl be ch at se no dk fi ie pt pl cz gr ru ua tr il ae sa eg za ng ke ma
                   jp kr cn hk tw sg my id th vn ph au nz ca mx br ar cl co pe ve pk bd lk np""".split())
@@ -180,6 +180,13 @@ BRANDS = {
     "metamask": {"metamask.io"},
     "trezor": {"trezor.io"},
     "exodus": {"exodus.com", "exodus.io"},
+    "imtoken": {"token.im", "imtoken.com"},
+    "airbnb": {"airbnb.com", "airbnb.co.in", "airbnb.co.uk", "airbnb.de"},
+    "spotify": {"spotify.com"},
+    "shopee": {"shopee.com", "shopee.co.id", "shopee.com.my", "shopee.ph", "shopee.sg", "shopee.vn", "shopee.co.th", "shopee.tw", "shopee.com.br"},
+    "zoom": {"zoom.us", "zoom.com", "zoomgov.com"},
+    "adobe": {"adobe.com", "adobelogin.com", "adobe.io"},
+    "wetransfer": {"wetransfer.com", "we.tl"},
     "ledger": {"ledger.com"},
     "ledgerlive": {"ledger.com"},
     "trustwallet": {"trustwallet.com"},
@@ -212,7 +219,8 @@ BRANDS = {
 WORD_BRANDS = {"telegram", "apple", "chase", "outlook", "cred", "groww", "steam"}
 # Short names that are inside ordinary words ("train", "trailer", "ksebastian"): only counted when they
 # stand alone in the website name ("trai-sim-block") or are joined to a scam word ("traiverify")
-STANDALONE_BRANDS = {"trai", "kseb", "dtdc", "jio", "pnb", "kbc", "dhl", "cbi", "sbi", "ledger", "phantom", "exodus", "kraken"}
+STANDALONE_BRANDS = {"trai", "kseb", "dtdc", "jio", "pnb", "kbc", "dhl", "cbi", "sbi", "ledger", "phantom", "exodus", "kraken",
+                     "zoom", "adobe", "spotify"}
 
 BRAND_DISPLAY = {
     "sbi": "SBI", "onlinesbi": "SBI", "hdfc": "HDFC Bank", "icici": "ICICI Bank", "axisbank": "Axis Bank",
@@ -234,7 +242,8 @@ BRAND_DISPLAY = {
     "metamask": "MetaMask", "trezor": "Trezor", "usps": "USPS", "docusign": "DocuSign", "dropbox": "Dropbox",
     "onedrive": "Microsoft OneDrive", "office365": "Microsoft Office", "outlook": "Outlook", "yahoo": "Yahoo",
     "roblox": "Roblox", "steamcommunity": "Steam", "steampowered": "Steam",
-    "exodus": "Exodus wallet", "ledger": "Ledger", "ledgerlive": "Ledger Live", "trustwallet": "Trust Wallet",
+    "exodus": "Exodus wallet", "imtoken": "imToken wallet", "airbnb": "Airbnb", "spotify": "Spotify", "shopee": "Shopee",
+    "zoom": "Zoom", "adobe": "Adobe", "wetransfer": "WeTransfer", "ledger": "Ledger", "ledgerlive": "Ledger Live", "trustwallet": "Trust Wallet",
     "phantom": "Phantom wallet", "kraken": "Kraken", "tokenpocket": "TokenPocket", "uniswap": "Uniswap",
     "opensea": "OpenSea", "pancakeswap": "PancakeSwap", "walletconnect": "WalletConnect", "atomicwallet": "Atomic Wallet",
     "kucoin": "KuCoin", "bybit": "Bybit", "wazirx": "WazirX", "coindcx": "CoinDCX", "coinswitch": "CoinSwitch",
@@ -298,13 +307,27 @@ FREE_HOSTING = {
     "duckdns.org", "ddns.net", "no-ip.org", "no-ip.com", "hopto.org", "zapto.org", "sytes.net", "serveo.net",
     "freedns.org", "mooo.com", "dynu.net", "myftp.biz", "myddns.me", "servehttp.com", "redirectme.net",
     "loca.lt", "localtunnel.me", "serveousercontent.com", "pinggy.link", "devtunnels.ms", "trycloudflare.com",
+    "b12sites.com", "webador.com", "webador.site", "squarespace.com", "wixstudio.io", "mystrikingly.com", "simdif.com",
+    "jimdofree.com", "wuaze.com", "infinityfreeapp.com", "rf.gd", "great-site.net", "lovestoblog.com", "free.nf",
+    "42web.io", "epizy.com", "byethost.com", "netlify.com", "web.core.windows.net", "azureedge.net", "framer.app",
+    "myvnc.com", "servebeer.com", "servegame.com", "serveftp.com", "bounceme.net", "freeddns.org", "gotdns.ch",
+    "ddnsking.com", "webhop.me", "freemyip.com", "dynv6.net", "dyndns.org", "ddnsfree.com", "kozow.com", "giize.com",
+    "gleeze.com", "loseyourip.com", "ooguy.com", "casacam.net", "ddnsgeek.com", "mywire.org", "myftp.org",
+    "contaboserver.net", "vultrusercontent.com", "ip.linodeusercontent.com", "your-server.de", "vps.ovh.net",
+    "cloudapp.azure.com", "compute.amazonaws.com", "hostwindsdns.com", "a2hosted.com",
 }
 # "Dynamic address" and tunnel services: a home computer can appear as a website for a few hours.
 # Genuine banks, shops and government offices never use them
 TUNNEL_HOSTS = {"duckdns.org", "ddns.net", "no-ip.org", "no-ip.com", "hopto.org", "zapto.org", "sytes.net",
                 "serveo.net", "freedns.org", "mooo.com", "dynu.net", "myftp.biz", "myddns.me", "servehttp.com",
                 "redirectme.net", "loca.lt", "localtunnel.me", "serveousercontent.com", "pinggy.link",
-                "devtunnels.ms", "trycloudflare.com", "ngrok.io", "ngrok-free.app"}
+                "devtunnels.ms", "trycloudflare.com", "ngrok.io", "ngrok-free.app", "myvnc.com", "servebeer.com",
+                "servegame.com", "serveftp.com", "bounceme.net", "freeddns.org", "gotdns.ch", "ddnsking.com", "webhop.me",
+                "freemyip.com", "dynv6.net", "dyndns.org", "ddnsfree.com", "kozow.com", "giize.com", "gleeze.com",
+                "loseyourip.com", "ooguy.com", "casacam.net", "ddnsgeek.com", "mywire.org", "myftp.org"}
+# A rented server's default name (vmi3580221.contaboserver.net): real businesses put their own name on it
+SERVER_DEFAULT_HOSTS = {"contaboserver.net", "vultrusercontent.com", "ip.linodeusercontent.com", "your-server.de",
+                        "vps.ovh.net", "cloudapp.azure.com", "compute.amazonaws.com", "hostwindsdns.com", "a2hosted.com"}
 TRUSTED_DOMAINS -= FREE_HOSTING
 
 PHISHING_WORDS = {
@@ -643,6 +666,12 @@ def analyze_structure(url: str) -> dict:
         findings.append(f"Website runs on a temporary address service ({hosting}) that turns any computer into a website for a few hours. Banks, shops and government offices never use these")
         score += led.note(findings, 25)
         _check(checks, "known", "warn", hosting)
+    elif hosting in SERVER_DEFAULT_HOSTS:
+        trusted = False
+        findings.append(f"This link uses a rented server's default name ({hosting}) instead of a real website name. "
+                        "Genuine companies put their own name on their website")
+        score += led.note(findings, 25)
+        _check(checks, "known", "warn", hosting)
     elif hosting:
         trusted = False
         findings.append(f"Page is hosted on a free hosting service ({hosting}) where anyone can publish. Check who made it")
@@ -730,6 +759,10 @@ def analyze_structure(url: str) -> dict:
             else:
                 hit_plain = brand in host_compact
                 hit_lookalike = not hit_plain and (brand in host_lookalike or brand in host_lookalike2)
+            if not (hit_plain or hit_lookalike) and hosting and len(brand) >= 4 and \
+                    brand in host[: -len(reg)].replace("-", "") + name_part.replace("-", "") and \
+                    not re.search(r"(clone|portfolio|demo|tutorial|project|practice|assignment)", host):
+                hit_plain = True     # on a free hosting service a real company would never publish its own site
             if hit_plain or hit_lookalike:
                 how = "uses look-alike characters to imitate" if hit_lookalike else "mentions"
                 findings.append(f"Link {how} '{brand_name(brand)}' but is NOT {brand_name(brand)}'s official website ({reg})")
@@ -877,7 +910,7 @@ def analyze_structure(url: str) -> dict:
 
         # the victim's email already filled in (?email=you@x.com, or hidden in base64): fake login pages
         # do this so the page looks personal
-        email_inside = _EMAIL_IN_URL.search(raw_path) is not None
+        email_inside = _EMAIL_IN_URL.search(raw_path + "#" + (parsed.fragment or "")) is not None
         if not email_inside:
             for blob in _B64_EMAIL.findall(raw_path)[:6]:
                 try:
@@ -2030,8 +2063,11 @@ def _page_tricks(html: str, page_url: str) -> dict:
         re.search(r"(?:window|document|top|self)\.location(?:\.href)?\s*=\s*['\"`](https?://[^'\"`\s]{4,300})", low) or \
         re.search(r"location\.(?:replace|assign)\s*\(\s*['\"`](https?://[^'\"`\s]{4,300})", low)
     if m:
-        h = (urlparse(m.group(1)).hostname or "").lower()
-        if h and registered_domain(h) != here:
+        try:
+            h = (urlparse(m.group(1)).hostname or "").lower()
+        except ValueError:
+            h = ""
+        if re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,24}", h) and registered_domain(h) != here:
             out["js_redirect"] = m.group(1)
     out["scrambled"] = re.search(r"(eval\s*\(\s*(atob|unescape|decodeuricomponent)\s*\(|document\.write\s*\(\s*(unescape|atob)\s*\()",
                                  low) is not None
@@ -2146,7 +2182,7 @@ def _scan_official_short_link(url: str, reg: str):
     return result
 
 
-def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
+def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False) -> dict:
     """blind=True (owner's test only): ignore every outside list and reputation service, to measure
     what StaySafe's own checks catch on a brand-new scam link that no list knows yet."""
     url = normalize_url(url)
@@ -2156,7 +2192,7 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
     inner = unwrap_redirect(url) if _hop < 3 else ""
     if inner:
         # google.com/url?q=..., Facebook/Instagram/Outlook "safe" links: what matters is where it goes
-        result = scan_url(inner, _hop=_hop + 1, blind=blind)
+        result = scan_url(inner, _hop=_hop + 1, blind=blind, nolists=nolists)
         inner_host = (urlparse(normalize_url(inner)).hostname or "").lower()
         result["url"] = url
         result.setdefault("details", {})["final_url"] = inner
@@ -2187,7 +2223,7 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
     well_known = trusted or (not structure["hosting"] and (popularity_rank(reg) or 10**9) <= 10_000)
     # Already on a downloaded scam list (or StaySafe's own reports)? The answer is clear without
     # VirusTotal, so it only uses VirusTotal when plenty is left (for the engine details).
-    listed = not trusted and not blind and (feed_lookup([url], host)["status"] == "fail"
+    listed = not trusted and not blind and not nolists and (feed_lookup([url], host)["status"] == "fail"
                               or big_feed_lookup([url], host, reg)["status"] == "fail"
                               or community_listed("link", url))
     vt_f = None if blind else _POOL.submit(check_virustotal, url, reg, "low" if (well_known or listed) else "normal")
@@ -2334,7 +2370,7 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
             for dp in dest.get("parts", []):
                 led.add(f"Final website: {dp['label']}", dp["points"])
         else:
-            score += led.note(findings, 10)
+            score += led.note(findings, 20)
 
     # --- the page itself
     final_official = any(_is_official(final_host, d) for d in BRANDS.values()) or \
@@ -2403,8 +2439,8 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
         _check(checks, "google", "skip")
 
     # --- Public scam-link lists (OpenPhish, URLhaus)
-    feed = feed_lookup([url, final_url], host) if not (trusted or blind) else {"status": "pass" if trusted else "skip"}
-    big = big_feed_lookup([url, final_url], host, reg) if not blind else {"status": "skip"}
+    feed = feed_lookup([url, final_url], host) if not (trusted or blind or nolists) else {"status": "pass" if trusted else "skip"}
+    big = big_feed_lookup([url, final_url], host, reg) if not (blind or nolists) else {"status": "skip"}
     if trusted and big["status"] == "warn":
         big = {"status": "pass"}
     rank_order = {"fail": 0, "warn": 1, "pass": 2, "skip": 3}
