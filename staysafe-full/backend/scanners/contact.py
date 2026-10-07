@@ -125,7 +125,7 @@ def contact_route():
     if not email and not phone:
         return jsonify({"error": "Please add your email or WhatsApp number so we can reply to you."}), 400
     if not _allowed(client_ip()):
-        return jsonify({"error": "You've sent a few messages already. We'll reply soon, please wait for our answer."}), 429
+        return jsonify({"error": "You've sent a few messages already. We'll reply soon. Please wait for our answer."}), 429
 
     ref = "SS-" + secrets.token_hex(3).upper()
     urgent = lost == "yes"

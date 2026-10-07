@@ -266,7 +266,7 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
         checks.append({"id": "net_vpn", "status": "pass", "value": None})
 
     if data.get("hosting"):
-        findings.append("This IP belongs to a hosting/datacenter provider, not a typical home or mobile network. Unusual for regular browsing")
+        findings.append("This internet address belongs to a hosting company (data centre), not a normal home or mobile network. This is unusual for everyday browsing")
         score += led.note(findings, 15)
         checks.append({"id": "net_hosting", "status": "warn", "value": data.get("org") or isp})
     else:
@@ -319,7 +319,7 @@ def analyze_ip(ip: str, browser_tz: str = "") -> dict:
             checks.append({"id": "net_timezone", "status": "warn", "value": ip_tz})
 
     if not findings:
-        findings.append(f"Standard ISP connection detected ({isp})")
+        findings.append(f"Normal internet provider connection ({isp})")
 
     findings.append(f"Approximate location: {location}")
 

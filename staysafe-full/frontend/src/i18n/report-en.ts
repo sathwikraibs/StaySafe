@@ -500,7 +500,7 @@ export const reportEn = {
     },
     net_timezone: {
       pass: "Your connection's location matches your device's time zone",
-      warn: "Your connection comes out in a different time zone ({value})",
+      warn: "Your connection shows a different time zone ({value})",
     },
     net_https: {
       pass: "StaySafe opened securely (HTTPS)",
@@ -726,7 +726,7 @@ export const reportEn = {
     more: "More details (optional)",
     simple: "Fill in the form",
     advanced: "Paste full source (advanced)",
-    advancedNote: "The full source also lets us check the technical sender checks (SPF, DKIM, DMARC).",
+    advancedNote: "The full source also lets us run the technical sender checks (SPF, DKIM, DMARC).",
     badEmail: "Please enter a full email address, like name@example.com",
     cleaned: "We used: {email}",
     movedName: "We moved “{name}” to the sender's name. Now type their email address here.",
@@ -816,7 +816,7 @@ export const reportEn = {
 
   qrCam: {
     noCamera: "We couldn't open the camera. Please allow camera access, or upload a photo of the QR code instead.",
-    pointAuto: "Point at the QR code. It reads by itself.",
+    pointAuto: "Point at the QR code. It will be read automatically.",
     point: "Point at the QR code, then tap Take photo",
     close: "Close camera",
     capture: "Take photo",
@@ -856,7 +856,7 @@ export const reportEn = {
     button: "Check my email",
     found: "Found in {n} data leaks",
     notFound: "Not found in any known data leak",
-    todo: "Change the password on these websites, and on any other site where you used the same password. Turn on two-step verification where you can.",
+    todo: "Change the password on these websites, and on any other site where you used the same password. Turn on 2-step verification where you can.",
     source: "Checked with {source}",
     privacy: "We only get back the names of the leaks, never your leaked data. We don't store your email.",
   },

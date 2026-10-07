@@ -139,7 +139,7 @@ def check_phone(value: str, claim: str, findings: list, led: Ledger, checks: lis
         if re.fullmatch(r"1600\d{6}", local):
             info["number_type"] = "bank_1600"
             findings.append("Numbers starting with 1600 are given only to banks, insurance and other money "
-                            "companies for service calls. Still never share an OTP or PIN on a call")
+                            "companies for service calls. Still, never share an OTP or PIN on a call")
             checks.append({"id": "num_type", "status": "pass", "value": "1600"})
         elif re.fullmatch(r"140\d{7}", local):
             info["number_type"] = "promo_140"
@@ -205,7 +205,7 @@ def check_phone(value: str, claim: str, findings: list, led: Ledger, checks: lis
         findings.append(f"Foreign number ({shown}). Be careful if you don't know anyone there")
         score += led.note(findings, 15)
     if claim in ("bank", "official", "delivery"):
-        findings.append("Says they are an Indian bank, office or courier but uses a foreign number. Real ones don't")
+        findings.append("Says they are from an Indian bank, office or courier but uses a foreign number. Real ones don't")
         score += led.note(findings, 30)
     checks.append({"id": "num_type", "status": "warn", "value": shown})
     return {"score": score, "info": info}

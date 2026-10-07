@@ -42,11 +42,11 @@ def check_auth_results(raw_email: str) -> dict:
         auth_header = match.group(0).lower()
 
     if not auth_header:
-        findings.append("No authentication results found. Could not verify sender (may be a stripped/forwarded email)")
+        findings.append("No sender checks found in this email, so we couldn't confirm who sent it (it may have been forwarded)")
         return {"score": 5, "findings": findings, "status": "skip"}
 
     if "spf=fail" in auth_header or "spf=softfail" in auth_header:
-        findings.append("SPF check failed. Sender's server is not authorized to send from this domain")
+        findings.append("SPF check failed. The sender's server is not authorised to send email for this website")
         score += 25
     if "dkim=fail" in auth_header:
         findings.append("DKIM check failed. Email content may have been altered or forged")
@@ -73,7 +73,7 @@ def check_sender_mismatch(msg) -> dict:
         from_domain = from_addr.split("@")[-1] if "@" in from_addr else ""
         reply_domain = reply_to.split("@")[-1] if "@" in reply_to else ""
         if from_domain != reply_domain:
-            findings.append(f"Reply-To address ({reply_to}) doesn't match the From address ({from_addr}). Replies go somewhere different than they appear to")
+            findings.append(f"Reply-To address ({reply_to}) doesn't match the From address ({from_addr}). Replies go somewhere different from where they appear to go")
             score += 25
 
     return {"score": score, "findings": findings, "from": from_addr, "reply_to": reply_to}
