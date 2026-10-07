@@ -901,8 +901,11 @@ def test_abusech_urlscan_and_bazaar_lookups():
                 dbl = "phishing_domain" if "sbi-secure-login" in data["host"] else "not listed"
                 return _FakeResponse(200, {"query_status": "ok", "urls_online": 0, "url_count": 0, "blacklists": {"spamhaus_dbl": dbl, "surbl": "not listed"}})
             if "threatfox" in url:
+                if json["search_term"] == "github.com":   # big shared site: malware once downloaded from it
+                    return _FakeResponse(200, {"query_status": "ok", "data": [
+                        {"ioc": "https://github.com/bad-person/loader/raw/main/x.exe", "malware_printable": "Lumma"}]})
                 return _FakeResponse(200, {"query_status": "ok" if json["search_term"] == "c2-panel-host.net" else "no_result",
-                                           "data": [{"malware_printable": "AgentTesla"}]})
+                                           "data": [{"ioc": "c2-panel-host.net:443", "malware_printable": "AgentTesla"}]})
             if "mb-api" in url:
                 return _FakeResponse(200, {"query_status": "ok", "data": [{"signature": "SpyNote"}]})
             raise AssertionError(url)
@@ -918,7 +921,11 @@ def test_abusech_urlscan_and_bazaar_lookups():
         r = scan("https://sbi-secure-login.com/")
         assert r["verdict"] == "DANGEROUS" and any(c.get("value") == "Spamhaus" for c in r["checks"]), r["checks"]
         r = scan("https://c2-panel-host.net/")
-        assert any(c.get("value") == "ThreatFox" for c in r["checks"]), r["checks"]
+        assert any(c.get("value") == "ThreatFox" and c["status"] == "fail" for c in r["checks"]), r["checks"]
+        r = scan("https://github.com/sathwikraibs/StaySafe")
+        assert r["verdict"] == "SAFE", (r["risk_score"], r["findings"])
+        r = scan("https://github.com/bad-person/loader/raw/main/x.exe")
+        assert r["verdict"] == "DANGEROUS" and any(c.get("value") == "ThreatFox" for c in r["checks"]), r["checks"]
         r = scan("https://evil-shop-deals.com/")
         assert any(c["id"] == "urlscan" and c["status"] == "fail" for c in r["checks"]), r["checks"]
         fs.requests.post = fake_post
@@ -1083,6 +1090,13 @@ def test_hard_link_cases_from_india():
               "https://github.com/someone/example.com", "https://www.redbus.in", "https://www.policybazaar.com"]:
         r = scan_url(u)
         assert r["verdict"] == "SAFE", (u, r["risk_score"], r["findings"])
+
+
+def test_bank_moving_to_bank_in_is_not_a_secret_redirect():
+    r = _scan_online("https://www.karnatakabank.com", page={"final_url": "https://www.karnatakabank.bank.in/", "hops": [1]})
+    assert r["verdict"] == "SAFE" and not any("secretly" in f for f in r["findings"]), r["findings"]
+    r = _scan_online("https://karnatakabank-kyc.com", page={"final_url": "https://evil-pay.top/", "hops": [1]})
+    assert any("secretly" in f for f in r["findings"]), r["findings"]
 
 
 if __name__ == "__main__":

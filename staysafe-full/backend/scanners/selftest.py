@@ -61,6 +61,12 @@ LINK_SETS = {
         ("https://bit.ly/3sbi-kyc", NOT_SAFE), ("https://hdfc-kyc.trycloudflare.com", DANGEROUS),
     ]),
     "7": ("Real scam links reported in the last few hours (picked from today's public lists)", None),
+    "8": ("Big shared websites that scammers also misuse (the websites themselves are fine)", [
+        ("https://github.com/sathwikraibs/StaySafe", SAFE), ("https://www.karnatakabank.com", SAFE),
+        ("https://raw.githubusercontent.com/python/cpython/main/README.rst", SAFE),
+        ("https://docs.google.com/document/u/0/", SAFE), ("https://www.dropbox.com/home", SAFE),
+        ("https://bit.ly/", SAFE),
+    ]),
 }
 
 
@@ -115,7 +121,7 @@ def selftest_links_route():
             if not cases:
                 return jsonify({"set": pick, "error": "Today's public lists are still loading. Open again in a minute."})
     else:
-        return jsonify({"how": "Add &set=1 (then 2, 3 ... 7) to the address, or &url=<link> to check your own (up to 6).",
+        return jsonify({"how": "Add &set=1 (then 2, 3 ... 8) to the address, or &url=<link> to check your own (up to 6).",
                         "sets": {k: v[0] for k, v in LINK_SETS.items()}})
     began = time.time()
     futures = [(u, e, _POOL.submit(_one, u, e)) for u, e in cases]

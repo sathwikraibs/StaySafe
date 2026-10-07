@@ -373,7 +373,7 @@ def _keep(seconds):
     return lambda v: seconds if v is not None and not (isinstance(v, dict) and v.get("error")) else 0
 
 
-PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "abusech": _keep(86400), "otx": _keep(86400), "cfscan": lambda v: (7 * 86400 if v.get("status") == "fail" else 86400) if isinstance(v, dict) and v.get("status") in ("fail", "pass") else 0, "phishstats": _keep(86400), "abuseip": _keep(86400),
+PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "abusech2": _keep(86400), "otx": _keep(86400), "cfscan": lambda v: (7 * 86400 if v.get("status") == "fail" else 86400) if isinstance(v, dict) and v.get("status") in ("fail", "pass") else 0, "phishstats": _keep(86400), "abuseip": _keep(86400),
            "whois": _keep(2 * 86400), "rdap": _keep(2 * 86400), "crt": _keep(2 * 86400)}
 # A check that was skipped because a free limit was reached is never remembered as an answer.
 NOT_CHECKED = "_not_checked"
@@ -1523,15 +1523,29 @@ def check_abusech(url: str, host: str) -> dict:
             t = requests.post("https://threatfox-api.abuse.ch/api/v1/", json={"query": "search_ioc", "search_term": host},
                               headers=headers, timeout=6).json()
             if t.get("query_status") == "ok" and t.get("data"):
-                fam = (t["data"][0] or {}).get("malware_printable") or ""
-                return {"status": "fail", "source": "ThreatFox", "detail": fam}
+                # ThreatFox also lists big shared websites (github.com, drive.google.com) because some malware
+                # was once downloaded from them. There only a match on this exact link counts.
+                want = _feed_key(url)
+                rows = [d or {} for d in t["data"] if isinstance(d, dict)]
+                exact = next((d for d in rows if _feed_key(str(d.get("ioc") or "")) == want), None)
+                if exact:
+                    return {"status": "fail", "source": "ThreatFox", "detail": exact.get("malware_printable") or ""}
+                h0 = re.sub(r"^www\.", "", host.lower())
+                reg0 = registered_domain(h0)
+                shared = (reg0 in TRUSTED_DOMAINS or reg0 in FREE_HOSTING or h0 in FREE_HOSTING or reg0 in SHORTENER_DOMAINS
+                          or (popularity_rank(reg0) or 10**9) <= 20_000)
+                whole_site = next((d for d in rows if re.sub(r"^www\.", "", str(d.get("ioc") or "").lower().split(":")[0]) == h0), None)
+                if whole_site and not shared:
+                    return {"status": "fail", "source": "ThreatFox", "detail": whole_site.get("malware_printable") or ""}
+                if rows and out["status"] == "pass":
+                    out = {"status": "warn", "source": "ThreatFox", "detail": ""}
         except Exception as e:
             _PROBLEMS["abusech"] = type(e).__name__
             return {"status": "skip"}
         _PROBLEMS["abusech"] = None
         return out
 
-    return _cached(("abusech", url), call)
+    return _cached(("abusech2", url), call)   # 2: answers kept before the shared-website fix are not reused
 
 
 def _cf_scan_conf():
@@ -2199,8 +2213,13 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     if page.get("ok") or page.get("hops"):
         final_reg = registered_domain(final_host) if final_host and not is_ip(final_host) else final_host
         dest_official = any(_is_official(final_host, d) for d in BRANDS.values()) or final_reg in TRUSTED_DOMAINS
+        same_owner = final_host and final_reg != reg and final_reg.split(".")[0] == reg.split(".")[0] and (
+            final_host.endswith((".bank.in", ".gov.in", ".nic.in")) or final_reg in TRUSTED_DOMAINS
+            or (popularity_rank(final_reg) or 10**9) <= 100_000)
         if final_host and final_reg != reg and official_short and dest_official:
             _check(checks, "redirect", "pass", final_host)   # e.g. Google's share link opening google.com
+        elif same_owner:
+            _check(checks, "redirect", "pass", final_host)   # same name, new address (banks moving to .bank.in)
         elif final_host and final_reg != reg:
             findings.append(f"This link secretly sends you to a different website: {final_host}")
             _check(checks, "redirect", "warn", final_host)
@@ -2292,7 +2311,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
         score = led.moved(findings, score, max(score + 50, 95))
         _check(checks, "feeds", "fail", feed["source"])
-    elif feed["status"] == "warn" and not structure["hosting"]:
+    elif feed["status"] == "warn" and not structure["hosting"] and not structure["shortener"]:
         findings.append(f"Scam pages on this website were reported recently ({feed['source']})")
         score += led.note(findings, 25)
         _check(checks, "feeds", "warn", feed["source"])
