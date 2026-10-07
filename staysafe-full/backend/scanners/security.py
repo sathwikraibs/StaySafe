@@ -72,8 +72,8 @@ def _allow(key: tuple, limit: int, window: int) -> bool:
 def check_rate_limit():
     """Flask before_request hook. Returns a 429 answer when a visitor is over the limit."""
     path = request.path or ""
-    if not path.startswith("/api/") or request.method == "OPTIONS":
-        return None
+    if not path.startswith("/api/") or request.method == "OPTIONS" or path == "/api/telegram/webhook":
+        return None  # each Telegram chat is limited separately when its check runs
     counted = request.method == "POST" or path.startswith(("/api/file-report", "/api/check-network"))
     if not counted:
         return None
