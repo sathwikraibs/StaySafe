@@ -61,6 +61,23 @@ def test_slow_scan_is_picked_up_next_time():
     assert second["status"] == "fail" and len(SENT) == n      # same scan, not a new one
 
 
+def test_otx_reports():
+    us._CACHE.clear()
+    os.environ["OTX_API_KEY"] = "k"
+    us.requests.get = lambda url, **kw: _R(200, {"pulse_info": {"pulses": [
+        {"name": "SBI phishing kit domains", "tags": ["phishing", "india"]},
+        {"name": "Fake KYC smishing", "tags": []}]}})
+    r = us.check_otx("sbi-kyc-update.xyz")
+    assert r["status"] == "warn" and r["pulses"] == 2 and r["what"] == "phishing", r
+    us._CACHE.clear()
+    us.requests.get = lambda url, **kw: _R(200, {"pulse_info": {"pulses": [{"name": "Top sites list", "tags": ["alexa"]}]}})
+    assert us.check_otx("someshop.in")["status"] == "pass"
+    us._CACHE.clear()
+    us.requests.get = lambda url, **kw: _R(200, {"validation": [{"source": "majestic"}], "pulse_info": {"pulses": [
+        {"name": "phishing", "tags": []}]}})
+    assert us.check_otx("bigsite.com")["status"] == "pass"
+
+
 if __name__ == "__main__":
     failed = 0
     tests = sorted((n, f) for n, f in globals().items() if n.startswith("test_"))

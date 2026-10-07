@@ -230,6 +230,11 @@ export const reportEn = {
   },
 
   checks: {
+    otx: {
+      pass: "No reports from security researchers",
+      warn: "Reported by security researchers",
+      warnV: "Reported by security researchers ({value} reports)",
+    },
     cfscan: {
       pass: "Cloudflare opened the page in a safe browser and found nothing harmful",
       fail: "Cloudflare found the page harmful",

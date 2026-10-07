@@ -274,7 +274,7 @@ def _keep(seconds):
     return lambda v: seconds if v is not None and not (isinstance(v, dict) and v.get("error")) else 0
 
 
-PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "abusech": _keep(86400), "cfscan": lambda v: (7 * 86400 if v.get("status") == "fail" else 86400) if isinstance(v, dict) and v.get("status") in ("fail", "pass") else 0, "phishstats": _keep(86400), "abuseip": _keep(86400),
+PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "abusech": _keep(86400), "otx": _keep(86400), "cfscan": lambda v: (7 * 86400 if v.get("status") == "fail" else 86400) if isinstance(v, dict) and v.get("status") in ("fail", "pass") else 0, "phishstats": _keep(86400), "abuseip": _keep(86400),
            "whois": _keep(2 * 86400), "rdap": _keep(2 * 86400), "crt": _keep(2 * 86400)}
 # A check that was skipped because a free limit was reached is never remembered as an answer.
 NOT_CHECKED = "_not_checked"
@@ -328,7 +328,7 @@ def _cached(key, fn):
 
 
 _PROBLEMS = {"safe_browsing": None, "virustotal": None, "abusech": None, "urlscan": None, "phishstats": None,
-             "cloudflare_scan": None}
+             "cloudflare_scan": None, "otx": None}
 
 
 def link_check_status() -> dict:
@@ -340,6 +340,7 @@ def link_check_status() -> dict:
         "abusech": {"configured": bool(_abusech_key()), "problem": _PROBLEMS["abusech"]},
         "urlscan": {"configured": bool(os.environ.get("URLSCAN_API_KEY")), "problem": _PROBLEMS["urlscan"]},
         "cloudflare_scan": {"configured": bool(_cf_scan_conf()), "problem": _PROBLEMS["cloudflare_scan"]},
+        "otx": {"configured": bool(os.environ.get("OTX_API_KEY")), "problem": _PROBLEMS["otx"]},
         "abuseipdb": {"configured": bool(os.environ.get("ABUSEIPDB_KEY"))},
         "public_lists": {"links": sum(_FEEDS["counts"].values()), "counts": _FEEDS["counts"],
                          "problem": _FEEDS["problem"],
@@ -1277,6 +1278,53 @@ def check_cloudflare_scan(url: str, wait: float = 55.0) -> dict:
     return _cached(("cfscan", target), call)
 
 
+OTX_BAD_TAGS = re.compile(r"phish|scam|fraud|malware|trojan|stealer|banker|rat\b|c2|botnet|ransom|spyware|smish",
+                          re.IGNORECASE)
+
+
+def check_otx(domain: str) -> dict:
+    """
+    AlienVault OTX: security researchers' shared reports ("pulses") that mention this website.
+    {'status': 'warn'|'pass'|'skip', 'pulses': n, 'what': 'phishing'}
+    """
+    key = os.environ.get("OTX_API_KEY", "")
+    if OFFLINE or not key or not domain:
+        return {"status": "skip"}
+
+    def call():
+        if not quota("otx").take(wait=5):
+            return {"status": "skip", NOT_CHECKED: True}
+        try:
+            r = requests.get(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/general",
+                             headers={"X-OTX-API-KEY": key, "User-Agent": "StaySafe/2.0"}, timeout=8)
+            if r.status_code in (400, 404):
+                return {"status": "pass", "pulses": 0}
+            if r.status_code != 200:
+                _PROBLEMS["otx"] = f"HTTP {r.status_code}"
+                return {"status": "skip", "error": True}
+            data = r.json()
+        except Exception as e:
+            _PROBLEMS["otx"] = type(e).__name__
+            return {"status": "skip", "error": True}
+        _PROBLEMS["otx"] = None
+        pulses = (data.get("pulse_info") or {}).get("pulses") or []
+        # only reports that call it phishing, scam or malware; known-good lists don't count
+        bad = []
+        for p in pulses:
+            words = " ".join([p.get("name") or ""] + [str(t) for t in (p.get("tags") or [])] +
+                             [str((m or {}).get("display_name", "")) for m in (p.get("malware_families") or [])])
+            if OTX_BAD_TAGS.search(words):
+                bad.append(OTX_BAD_TAGS.search(words).group(0).lower())
+        if data.get("validation"):          # OTX itself marks it as a known-good domain
+            return {"status": "pass", "pulses": 0}
+        if bad:
+            return {"status": "warn", "pulses": len(bad), "what": "phishing" if any(
+                w.startswith(("phish", "scam", "fraud", "smish")) for w in bad) else "malware"}
+        return {"status": "pass", "pulses": 0}
+
+    return _cached(("otx", domain), call)
+
+
 def check_urlscan(host: str) -> dict:
     """urlscan.io: has this exact website been scanned and marked malicious in the last 90 days?"""
     key = os.environ.get("URLSCAN_API_KEY", "")
@@ -1702,6 +1750,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     urlscan_f = None if (trusted or official_short or is_ip(host)) else _POOL.submit(check_urlscan, host)
     # Cloudflare opens unknown pages in a real browser (not needed for well-known or already-listed links)
     cfscan_f = None if (well_known or listed or official_short) else _POOL.submit(check_cloudflare_scan, url)
+    otx_f = None if (well_known or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(check_otx, reg)
     phishstats_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else \
         _POOL.submit(check_phishstats, url, host)
 
@@ -1920,6 +1969,16 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     elif cf.get("status") == "pass":
         _check(checks, "cfscan", "pass")
 
+    otx = result_of(otx_f, {"status": "skip"}, 10)
+    if otx.get("status") == "warn" and (popularity_rank(reg) or 10**9) > 20_000:
+        findings.append("Security researchers have reported this website for phishing or scams (AlienVault OTX)"
+                        if otx.get("what") == "phishing" else
+                        "Security researchers have reported this website for spreading malware (AlienVault OTX)")
+        score += led.note(findings, 30 if otx.get("pulses", 0) >= 2 else 20)
+        _check(checks, "otx", "warn", otx.get("pulses"))
+    elif otx.get("status") == "pass":
+        _check(checks, "otx", "pass")
+
     us_res = result_of(urlscan_f, {"status": "skip"}, 12)
     if us_res["status"] == "fail" and not shared_site and (popularity_rank(reg) or 10**9) > 20_000:
         findings.append("Security scans on urlscan.io found a scam or malware page on this website in the last 3 months")
@@ -1985,7 +2044,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
             led.add(ADJ_POPULAR, new_total - total)
         total = new_total
 
-    order = ["google", "feeds", "community", "cfscan", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
+    order = ["google", "feeds", "community", "cfscan", "otx", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
 
     return {

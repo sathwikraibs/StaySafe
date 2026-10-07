@@ -102,6 +102,8 @@ export const hiContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "लिंक HTTPS इस्तेमाल नहीं करता (कनेक्शन सुरक्षित/एन्क्रिप्टेड नहीं है)",
     "Link uses a raw IP address instead of a real website name": "लिंक में वेबसाइट के नाम की जगह सिर्फ़ IP नंबर है",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "यह पेज मुफ़्त होस्टिंग ({host}) पर है, जहाँ कोई भी पेज बना सकता है। देखें कि इसे किसने बनाया",
+    "Security researchers have reported this website for phishing or scams (AlienVault OTX)": "सुरक्षा शोधकर्ताओं ने इस वेबसाइट को फ़िशिंग या ठगी के लिए रिपोर्ट किया है (AlienVault OTX)",
+    "Security researchers have reported this website for spreading malware (AlienVault OTX)": "सुरक्षा शोधकर्ताओं ने इस वेबसाइट को मैलवेयर फैलाने के लिए रिपोर्ट किया है (AlienVault OTX)",
     "Cloudflare's scanner opened this page and found it harmful ({kinds})": "Cloudflare के स्कैनर ने यह पेज खोलकर देखा और इसे हानिकारक पाया ({kinds})",
     "Reported as a scam by {n} StaySafe users": "{n} StaySafe उपयोगकर्ताओं ने इसे ठगी के रूप में रिपोर्ट किया है",
     "The UPI ID {upi} in this message: {reason}": "इस मैसेज में दी गई UPI ID {upi}: {reason}",

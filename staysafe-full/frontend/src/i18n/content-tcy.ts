@@ -103,6 +103,8 @@ export const tcyContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಕೆ ಮಲ್ಪುಜಿ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆತಿಜಿ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ಡ್ ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ದ ಬದಲ್ ಬರೀ IP ನಂಬರ್ ಉಂಡು",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "ಈ ಪುಟ ಉಚಿತ ಹೋಸ್ಟಿಂಗ್ ({host}) ಡ್ ಉಂಡು, ಅಲ್ಪ ಏರ್‌ಲಾ ಪುಟ ಮಲ್ಪೊಲಿ. ಉಂದೆನ್ ಏರ್ ಮಲ್ತೆರ್ ಪಂಡ್‌ದ್ ತೂಲೆ",
+    "Security researchers have reported this website for phishing or scams (AlienVault OTX)": "ಭದ್ರತಾ ಸಂಶೋಧಕೆರ್ ಈ ವೆಬ್‌ಸೈಟ್‌ನ್ ಫಿಶಿಂಗ್ ಅತ್ತಂಡ ಮೋಸೊಗಾದ್ ವರದಿ ಮಲ್ತೆರ್ (AlienVault OTX)",
+    "Security researchers have reported this website for spreading malware (AlienVault OTX)": "ಭದ್ರತಾ ಸಂಶೋಧಕೆರ್ ಈ ವೆಬ್‌ಸೈಟ್‌ನ್ ಮಾಲ್‌ವೇರ್ ಪರಡಾವುನೆಗಾದ್ ವರದಿ ಮಲ್ತೆರ್ (AlienVault OTX)",
     "Cloudflare's scanner opened this page and found it harmful ({kinds})": "Cloudflare ಸ್ಕ್ಯಾನರ್ ಈ ಪುಟೊನು ತೆರೆದ್ ತೂದು ಉಂದು ಹಾನಿಕಾರಕ ಪಂಡ್‌ದ್ ಕಂಡುಪಿಡಿತ್ಂಡ್ ({kinds})",
     "Reported as a scam by {n} StaySafe users": "{n} StaySafe ಬಳಕೆದಾರೆರ್ ಉಂದೆನ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
     "The UPI ID {upi} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ದ UPI ID {upi}: {reason}",
