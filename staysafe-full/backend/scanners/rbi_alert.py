@@ -132,5 +132,7 @@ def names_in_text(text: str, offline: bool = False) -> list:
 
 
 def status() -> dict:
+    if not _state["entities"]:
+        _load_bundled()
     return {"platforms": len(_state["entities"]), "websites": len(_state["domains"]),
             "added_from_rbi": _state["extra"], "list_date": _state["updated"], "problem": _state["problem"]}

@@ -380,6 +380,7 @@ const enBase = {
     dataItems: [
       "We read what you send only to check it, then forget it. We don't keep your messages, pictures or files.",
       "We remember the answer about a link or file (for example 'listed as phishing') so the next person gets it faster. We never remember who checked it, or the message it came in.",
+      "When you report a scam, we keep only a count for that number, UPI ID or link, never who reported it.",
       "If a screenshot is hard to read, it may be sent to a text-reading service only to read its words. We don't keep it.",
       "Only the web address of a link is shared with safety services, never who you are.",
       "Files are compared using only their fingerprint (a code that identifies the file). The file itself stays with us unless you choose a full antivirus scan.",
@@ -403,7 +404,7 @@ const enBase = {
     toolsTitle: "What each check looks at",
     tools: {
       number: "What a phone number or UPI ID shows, who the caller says they are and what they asked for, plus the government's own lookup.",
-      link: "Whether the website is real, how old it is, who it pretends to be, and what safety lists and security companies say about it.",
+      link: "Whether the website is real, how old it is, who it pretends to be, what safety lists and security companies say about it, and whether it is on RBI's list of unapproved trading platforms or was reported by other StaySafe users.",
       message: "Scam tricks in the words, the sender, phone numbers, UPI IDs, email addresses and every link inside. Works in English, Hindi, Kannada, Tulu and more.",
       qr: "Where the code leads or who gets paid, and whether it's a trick to take money instead of giving it.",
       file: "What the file really is, hidden programs or macros, what Android apps ask to do, and what 70+ antivirus companies say.",

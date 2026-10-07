@@ -565,6 +565,7 @@ export const reportEn = {
       "Searching more than a million known scam links",
       "Asking 70+ security companies",
       "Looking at past security scans of this website",
+      "Checking RBI's list and reports from other StaySafe users",
       "Opening the page safely for you",
       "Checking how old the website is",
       "Putting your report together",
