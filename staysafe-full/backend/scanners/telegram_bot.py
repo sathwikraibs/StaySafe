@@ -6,7 +6,8 @@ ID to the bot and get the same check the website gives, in a short reply.
 
 Free: Telegram's Bot API costs nothing. Setup (once):
   1. In Telegram, talk to @BotFather, send /newbot, pick a name. It gives a token.
-  2. On Render, add the environment variable TELEGRAM_BOT_TOKEN = that token.
+  2. On Render, add the environment variable TELEGRAM_SCAN_BOT_TOKEN = that token. (This must be a
+     NEW bot: TELEGRAM_BOT_TOKEN is the private bot that brings contact-form messages to you.)
   3. Open https://<backend>/api/telegram/setup?key=<STATUS_KEY> once. It tells Telegram
      where to send messages (a webhook, with a secret only Telegram and StaySafe know).
 
@@ -38,7 +39,7 @@ _SEEN_LOCK = threading.Lock()
 
 
 def _token() -> str:
-    return os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    return os.environ.get("TELEGRAM_SCAN_BOT_TOKEN", "").strip()
 
 
 def _secret() -> str:
@@ -323,7 +324,7 @@ def telegram_setup():
     if not has_status_key():
         return jsonify({"error": "not found"}), 404
     if not _token():
-        return jsonify({"ok": False, "problem": "TELEGRAM_BOT_TOKEN is not set on the server"})
+        return jsonify({"ok": False, "problem": "TELEGRAM_SCAN_BOT_TOKEN is not set on the server"})
     base = os.environ.get("PUBLIC_API_URL", "").rstrip("/") or request.host_url.rstrip("/").replace("http://", "https://")
     url = f"{base}/api/telegram/webhook"
     try:

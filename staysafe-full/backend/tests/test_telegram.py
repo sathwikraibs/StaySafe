@@ -5,7 +5,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ["TELEGRAM_BOT_TOKEN"] = "123:TEST"
+os.environ["TELEGRAM_SCAN_BOT_TOKEN"] = "123:TEST"
 import scanners.url_scanner as us  # noqa: E402
 us.OFFLINE = True
 import scanners.telegram_bot as tg  # noqa: E402
