@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { takeAutoRun, useSharedFile } from "@/share";
 import { usePrefill, useStartTab } from "@/helpBot";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
@@ -43,7 +44,10 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
   const pace = usePace();
   const [text, setText] = useState("");
   const [tab, setTab] = useState<"paste" | "shot">("paste");
-  usePrefill("message", (v) => { setText(v); setTab("paste"); });
+  const [auto, setAuto] = useState<"" | "text" | "shot">("");
+  const [incoming, setIncoming] = useState<File | null>(null);
+  usePrefill("message", (v) => { setText(v); setTab("paste"); if (takeAutoRun("message")) setAuto("text"); });
+  useSharedFile("screenshot", (f) => { setTab("shot"); setIncoming(f); setAuto("shot"); });
   useStartTab("message", (v) => { if (v === "paste" || v === "shot") setTab(v); });
   const [sender, setSender] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -75,6 +79,13 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
       setResult(data); setFromScreenshot(true);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
+  // shared to StaySafe from another app: check it straight away
+  useEffect(() => {
+    if (auto === "text" && text.trim()) { setAuto(""); handleCheckText(); }
+    if (auto === "shot" && file) { setAuto(""); handleCheckScreenshot(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, text, file]);
+
 
   const senderField = (
     <label className="mt-3 block">
@@ -135,6 +146,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
             hint={t("message.uploadHint")}
             onFile={setFile}
             onClear={() => setFile(null)}
+            incoming={incoming}
             disabled={loading}
           />
           {file && senderField}

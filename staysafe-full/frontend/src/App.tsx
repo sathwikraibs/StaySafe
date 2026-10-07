@@ -15,6 +15,7 @@ import { HelpPage } from "@/pages/HelpPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { API_BASE } from "@/config";
+import { receiveShare } from "@/share";
 
 const ROUTES = [
   "/", "/scan-url", "/scan-message", "/scan-qr", "/scan-file",
@@ -42,6 +43,11 @@ export default function App() {
   useEffect(() => {
     fetch(`${API_BASE}/`).catch(() => { /* it's only a wake-up call */ });
   }, []);
+
+  // Opened by sharing a message, link, screenshot or file to StaySafe: go to the right check
+  useEffect(() => {
+    receiveShare().then((p) => { if (p) navigate(p); }).catch(() => undefined);
+  }, [navigate]);
 
   useEffect(() => {
     const onHashChange = () => {

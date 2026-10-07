@@ -1,4 +1,5 @@
 import { MAIN_TOOLS, MORE_TOOLS } from "@/nav";
+import { InstallCard } from "@/components/InstallCard";
 import { IconShield, IconArrowRight, IconAlert, IconLock, IconChevronRight, IconCheck, IconChat } from "@/icons";
 import { useI18n } from "@/i18n";
 import { themeFor } from "@/toolTheme";
@@ -79,6 +80,8 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
           <span className="whitespace-nowrap font-body text-sm font-bold text-sage-700">{t("nav.ask")}</span>
         </button>
       </div>
+
+      <InstallCard place="home" />
 
       {/* The four main checks */}
       <h2 className="mb-3 font-heading text-lg font-semibold text-ink-800">{t("home.toolsTitle")}</h2>

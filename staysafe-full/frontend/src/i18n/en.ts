@@ -311,6 +311,15 @@ const enBase = {
     cleared: "History cleared",
     about: "About StaySafe & privacy",
   },
+  install: {
+    title: "Add StaySafe to your phone",
+    text: "Then you can share any message, link, screenshot or file straight to StaySafe from WhatsApp, SMS or any app, and it is checked at once.",
+    button: "Add to my phone",
+    later: "Not now",
+    done: "StaySafe is on your phone. In any app, tap Share and choose StaySafe.",
+    tip: "Tip: in WhatsApp or Messages, press and hold a message, tap Share, then choose StaySafe.",
+  },
+
 
   about: {
     title: "About & Privacy",

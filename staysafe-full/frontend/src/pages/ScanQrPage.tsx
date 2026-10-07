@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSharedQr } from "@/share";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
@@ -45,6 +46,9 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
+  // a picture shared to StaySafe had a QR code in it: check what it says
+  useSharedQr((v) => { checkText(v); });
+
 
   const typeLabel = (type: string) => {
     const key = `qr.types.${type}`;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/PageBits";
 import { Card } from "@/components/Card";
+import { InstallCard } from "@/components/InstallCard";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { clearHistory, loadHistory } from "@/history";
 import { IconCheck, IconLanguage, IconHistory, IconInfo, IconArrowRight, IconGlobe } from "@/icons";
@@ -61,6 +62,8 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
           </div>
         </div>
       </Card>
+
+      <InstallCard place="settings" />
 
       {/* Data */}
       <Card className="p-5 sm:p-6">

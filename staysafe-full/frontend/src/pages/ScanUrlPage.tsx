@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { takeAutoRun } from "@/share";
 import { usePrefill } from "@/helpBot";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
@@ -16,7 +17,8 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
   const { t } = useI18n();
   const pace = usePace();
   const [url, setUrl] = useState("");
-  usePrefill("url", setUrl);
+  const [auto, setAuto] = useState(false);
+  usePrefill("url", (v) => { setUrl(v); if (takeAutoRun("url")) setAuto(true); });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanUrlResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +41,12 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
       setLoading(false);
     }
   }
+  // shared to StaySafe from another app: check it straight away
+  useEffect(() => {
+    if (auto && url.trim()) { setAuto(false); handleCheck(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, url]);
+
 
   return (
     <div>

@@ -17,6 +17,8 @@ interface UploadZoneProps {
   camera?: boolean;
   /** offer "Crop" for pictures, so only the important part is checked */
   crop?: boolean;
+  /** a picture or file handed over from outside (shared to StaySafe from another app) */
+  incoming?: File | null;
 }
 
 /** Scissors, for the crop button. */
@@ -54,7 +56,7 @@ async function shrinkImage(file: File, maxSide = 2000): Promise<File> {
   }
 }
 
-export function UploadZone({ accept, label, hint, onFile, onClear, selectedPreview, disabled, compress, camera = true, crop = false }: UploadZoneProps) {
+export function UploadZone({ accept, label, hint, onFile, onClear, selectedPreview, disabled, compress, camera = true, crop = false, incoming = null }: UploadZoneProps) {
   const { t } = useI18n();
   const pickRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -68,7 +70,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
-  async function handleFile(original: File, fromCrop = false) {
+  async function handleFile(original: File, fromCrop = false, askCrop = true) {
     setFileName(original.name || t("upload.photo"));
     if (original.type.startsWith("image/")) {
       setPreview(URL.createObjectURL(original));
@@ -76,12 +78,18 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
         setPicture(original);
         setCropped(false);
         // open the cropper straight away, so people can keep just the part that matters
-        if (crop && original.type !== "image/gif" && original.type !== "image/svg+xml") setCropping(true);
+        if (crop && askCrop && original.type !== "image/gif" && original.type !== "image/svg+xml") setCropping(true);
       }
     }
     const file = compress ? await shrinkImage(original) : original;
     onFile(file);
   }
+
+  // something shared to StaySafe: show it as if it had been picked here (no crop window, to be quick)
+  useEffect(() => {
+    if (incoming) handleFile(incoming, false, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incoming]);
 
   function clear() {
     setFileName(null);

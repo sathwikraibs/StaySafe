@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSharedFile } from "@/share";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
@@ -29,6 +30,9 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
   const [result, setResult] = useState<ScanFileResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullScan, setFullScan] = useState(false);
+  const [incoming, setIncoming] = useState<File | null>(null);
+  const [auto, setAuto] = useState(false);
+  useSharedFile("file", (f) => { setIncoming(f); setAuto(true); });
 
   async function handleCheck() {
     if (!file || loading) return;
@@ -41,6 +45,12 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
+  // shared to StaySafe from another app: check it straight away
+  useEffect(() => {
+    if (auto && file) { setAuto(false); handleCheck(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, file]);
+
 
   const label = "font-body text-xs font-bold uppercase tracking-wide text-dustyblue-600";
   const value = "-mt-1.5 font-body text-sm text-ink-800 sm:mt-0";
@@ -56,6 +66,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           onClear={() => setFile(null)}
           disabled={loading}
           camera={false}
+          incoming={incoming}
         />
         <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-cream-100 p-3">
           <input type="checkbox" checked={fullScan} onChange={(e) => setFullScan(e.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#647A4F]" />
