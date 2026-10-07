@@ -1110,6 +1110,31 @@ def test_file_tricks_from_the_live_test_sets():
             assert _right(expect, r["verdict"]), (title, name, r["verdict"], r["risk_score"], r["findings"])
 
 
+def test_known_software_list_never_hides_strong_findings():
+    import scanners.file_scanner as fs
+    from scanners.selftest_files import EICAR
+    real = fs.check_known_good
+    try:
+        fs.check_known_good = lambda sha: {"known": True, "source": "eicar.com"}
+        r = fs.scan_file_bytes("eicar.com", EICAR, use_vt=False)
+        assert r["verdict"] == "DANGEROUS", (r["risk_score"], r["findings"])
+        r = fs.scan_file_bytes("setup.exe", b"MZ" + b"\0" * 100, use_vt=False)
+        assert r["verdict"] == "SAFE", (r["risk_score"], r["findings"])     # a genuine installer stays fine
+    finally:
+        fs.check_known_good = real
+
+
+def test_blind_mode_ignores_lists():
+    scan = _online(gsb=True, vt={"status": "ok", "malicious": 9, "suspicious": 0, "harmless": 0, "engines": 90, "domain_malicious": 9})
+    try:
+        assert scan("https://plain-shop-example.com/")["verdict"] == "DANGEROUS"
+        r = url_scanner.scan_url("https://plain-shop-example.com/", blind=True)
+        assert r["verdict"] == "SAFE" and not any(c["id"] in ("google", "virustotal") and c["status"] == "fail"
+                                                   for c in r["checks"]), r["checks"]
+    finally:
+        _restore()
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

@@ -21,6 +21,7 @@ selftest_bp = Blueprint("selftest", __name__)
 
 # Separate workers, so a test never slows down real visitors' checks
 _POOL = ThreadPoolExecutor(max_workers=6)
+_VT_POOL = ThreadPoolExecutor(max_workers=1)
 DEADLINE = 150          # the server stops any request at 180 s
 
 SAFE, CAUTION, DANGEROUS = "SAFE", "CAUTION", "DANGEROUS"
@@ -61,6 +62,8 @@ LINK_SETS = {
         ("https://bit.ly/3sbi-kyc", NOT_SAFE), ("https://hdfc-kyc.trycloudflare.com", DANGEROUS),
     ]),
     "7": ("Real scam links reported in the last few hours (picked from today's public lists)", None),
+    "9": ("BLIND test: today's real scam links, judged WITHOUT any scam list, Google or VirusTotal "
+          "(what StaySafe's own checks catch before anyone has reported a link)", None),
     "8": ("Big shared websites that scammers also misuse (the websites themselves are fine)", [
         ("https://github.com/sathwikraibs/StaySafe", SAFE), ("https://www.karnatakabank.com", SAFE),
         ("https://raw.githubusercontent.com/python/cpython/main/README.rst", SAFE),
@@ -70,11 +73,11 @@ LINK_SETS = {
 }
 
 
-def _fresh_scam_links(n=6):
+def _fresh_scam_links(n=6, sources=("OpenPhish", "URLhaus")):
     """A few links from today's OpenPhish / URLhaus lists, so the test uses live scams."""
     from scanners import url_scanner as u
     u.ensure_feeds()
-    keys = [k for k, src in list(u._FEEDS.get("urls", {}).items()) if src in ("OpenPhish", "URLhaus")]
+    keys = [k for k, src in list(u._FEEDS.get("urls", {}).items()) if src in sources]
     random.shuffle(keys)
     return [("http://" + k, DANGEROUS) for k in keys[:n]]
 
@@ -87,11 +90,11 @@ def _right(expect, verdict):
     return verdict == expect
 
 
-def _one(url, expect):
+def _one(url, expect, blind=False):
     from scanners.url_scanner import scan_url
     t = time.time()
     try:
-        r = scan_url(url)
+        r = scan_url(url, blind=blind)
     except Exception as e:
         return {"url": url, "expected": expect, "verdict": "ERROR", "right": False,
                 "error": f"{type(e).__name__}: {str(e)[:120]}"}
@@ -102,6 +105,7 @@ def _one(url, expect):
         "why": [f[:160] for f in r.get("findings", [])[:4]],
         "checks": checks,
         "final_url": (r.get("details") or {}).get("final_url") or None,
+        "still_online": checks.get("exists") != "fail",
     }
 
 
@@ -117,14 +121,14 @@ def selftest_links_route():
     elif pick in LINK_SETS:
         title, cases = LINK_SETS[pick]
         if cases is None:
-            cases = _fresh_scam_links()
+            cases = _fresh_scam_links(8, ("OpenPhish",)) if pick == "9" else _fresh_scam_links()
             if not cases:
                 return jsonify({"set": pick, "error": "Today's public lists are still loading. Open again in a minute."})
     else:
-        return jsonify({"how": "Add &set=1 (then 2, 3 ... 8) to the address, or &url=<link> to check your own (up to 6).",
+        return jsonify({"how": "Add &set=1 (then 2, 3 ... 9) to the address, or &url=<link> to check your own (up to 6).",
                         "sets": {k: v[0] for k, v in LINK_SETS.items()}})
     began = time.time()
-    futures = [(u, e, _POOL.submit(_one, u, e)) for u, e in cases]
+    futures = [(u, e, _POOL.submit(_one, u, e, pick == "9")) for u, e in cases]
     results = []
     for u, e, f in futures:
         try:
@@ -133,7 +137,14 @@ def selftest_links_route():
             results.append({"url": u, "expected": e, "verdict": "STILL_RUNNING", "right": None,
                             "note": "Took too long this time. Open the same address again, it will be quick."})
     graded = [r for r in results if r.get("right") is not None]
+    extra = {}
+    if pick == "9":
+        online = [r for r in graded if r.get("still_online")]
+        extra = {"still_online": len(online),
+                 "caught_while_still_online": f"{sum(1 for r in online if r['right'])}/{len(online)}",
+                 "note": "Links already taken down are easy to call risky, so the fair number is the one for links still online."}
     return jsonify({
+        **extra,
         "set": pick or "own", "title": title,
         "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
         "wrong": [r["url"] for r in graded if not r["right"]],
@@ -200,9 +211,11 @@ def selftest_files_route():
     title, cases = sets[pick]
     use_vt = pick == "6"        # made-up sample files are never on VirusTotal, so its free allowance is saved
     began = time.time()
-    futures = [(n, e, _POOL.submit(_one_file, n, d, e, use_vt)) for n, d, e in cases]
+    # VirusTotal allows 4 lookups a minute: set 6 asks one at a time, like real visitors would
+    pool = _VT_POOL if use_vt else _POOL
+    futures = [(n, e, pool.submit(_one_file, n, d, e, use_vt)) for n, d, e in cases]
     if pick == "6":
-        futures += [(f"sample {sha[:12]}", "FOUND", _POOL.submit(_one_hash, sha, label)) for sha, label in _recent_bazaar()]
+        futures += [(f"sample {sha[:12]}", "FOUND", pool.submit(_one_hash, sha, label)) for sha, label in _recent_bazaar(2)]
     results = []
     for n, e, f in futures:
         try:

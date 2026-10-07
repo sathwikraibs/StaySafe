@@ -694,7 +694,10 @@ def scan_file_bytes(filename: str, file_bytes: bytes, vt_upload: bool = False, u
         led.add(all_findings[0], max(total_score, 95) - total_score)
         total_score = max(total_score, 95)
         known = {"known": False}
-    if known.get("known") and vt_flagged == 0:
+    # Strong evidence found inside the file (a disguised program, hidden code, the antivirus test file)
+    # is never cancelled by a "known software" list: those lists also contain test files and tools.
+    strong_inside = content_score >= 40 or EICAR in file_bytes[:4096]
+    if known.get("known") and vt_flagged == 0 and not strong_inside:
         # exactly the same file as a known genuine program: small warning signs don't matter
         all_findings.insert(0, f"This exact file is on a public list of known genuine software ({known['source']})")
         led.add(all_findings[0], min(total_score, 10) - total_score)

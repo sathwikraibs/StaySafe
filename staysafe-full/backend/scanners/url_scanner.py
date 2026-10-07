@@ -2069,7 +2069,9 @@ def _scan_official_short_link(url: str, reg: str):
     return result
 
 
-def scan_url(url: str, _hop: int = 0) -> dict:
+def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
+    """blind=True (owner's test only): ignore every outside list and reputation service, to measure
+    what StaySafe's own checks catch on a brand-new scam link that no list knows yet."""
     url = normalize_url(url)
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
@@ -2077,13 +2079,13 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     inner = unwrap_redirect(url) if _hop < 3 else ""
     if inner:
         # google.com/url?q=..., Facebook/Instagram/Outlook "safe" links: what matters is where it goes
-        result = scan_url(inner, _hop=_hop + 1)
+        result = scan_url(inner, _hop=_hop + 1, blind=blind)
         inner_host = (urlparse(normalize_url(inner)).hostname or "").lower()
         result["url"] = url
         result.setdefault("details", {})["final_url"] = inner
         result["findings"].insert(0, f"This link only passes through {host} and actually opens {inner_host}. The result below is for {inner_host}")
         return result
-    if reg in OFFICIAL_SHORTENERS and not _hop and not OFFLINE:
+    if reg in OFFICIAL_SHORTENERS and not _hop and not OFFLINE and not blind:
         judged = _scan_official_short_link(url, reg)
         if judged:
             return judged
@@ -2108,19 +2110,19 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     well_known = trusted or (not structure["hosting"] and (popularity_rank(reg) or 10**9) <= 10_000)
     # Already on a downloaded scam list (or StaySafe's own reports)? The answer is clear without
     # VirusTotal, so it only uses VirusTotal when plenty is left (for the engine details).
-    listed = not trusted and (feed_lookup([url], host)["status"] == "fail"
+    listed = not trusted and not blind and (feed_lookup([url], host)["status"] == "fail"
                               or big_feed_lookup([url], host, reg)["status"] == "fail"
                               or community_listed("link", url))
-    vt_f = _POOL.submit(check_virustotal, url, reg, "low" if (well_known or listed) else "normal")
-    gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
+    vt_f = None if blind else _POOL.submit(check_virustotal, url, reg, "low" if (well_known or listed) else "normal")
+    gsb_f = None if blind else _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
     crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
-    abusech_f = _POOL.submit(check_abusech, url, host)
-    urlscan_f = None if (trusted or official_short or is_ip(host)) else _POOL.submit(check_urlscan, host)
+    abusech_f = None if blind else _POOL.submit(check_abusech, url, host)
+    urlscan_f = None if (blind or trusted or official_short or is_ip(host)) else _POOL.submit(check_urlscan, host)
     # Cloudflare opens unknown pages in a real browser (not needed for well-known or already-listed links)
-    cfscan_f = None if (well_known or listed or official_short) else _POOL.submit(check_cloudflare_scan, url)
-    otx_f = None if (well_known or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(check_otx, reg)
-    phishstats_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else \
+    cfscan_f = None if (blind or well_known or listed or official_short) else _POOL.submit(check_cloudflare_scan, url)
+    otx_f = None if (blind or well_known or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(check_otx, reg)
+    phishstats_f = None if (blind or trusted or official_short or structure["hosting"] or is_ip(host)) else \
         _POOL.submit(check_phishstats, url, host)
 
     def result_of(f, default, timeout=10):
@@ -2134,7 +2136,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     dns = result_of(dns_f, {"exists": None, "ips": []}, 5)
     # Protective DNS (Cloudflare 1.1.1.2, Quad9): do these security services refuse this website?
     from scanners import protective_dns
-    pdns_f = None if (OFFLINE or trusted or official_short or is_ip(host) or dns["exists"] is False) else \
+    pdns_f = None if (OFFLINE or blind or trusted or official_short or is_ip(host) or dns["exists"] is False) else \
         _POOL.submit(protective_dns.check, host, dns["exists"])
     page = result_of(page_f, {"ok": False, "error": "skipped", "final_url": url, "hops": [],
                               "ssl_error": False, "title": "", "has_password": False, "text": "",
@@ -2142,7 +2144,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     final_url = page.get("final_url") or url
     final_host = (urlparse(final_url).hostname or "").lower()
     gsb = result_of(gsb_f, {"listed": None, "threats": []}, 12)
-    if not gsb.get("listed") and final_url != url:
+    if not gsb.get("listed") and final_url != url and not blind:
         gsb2 = _run(check_safe_browsing, [final_url], timeout=6, default={"listed": None, "threats": []})
         if gsb2.get("listed"):
             gsb = gsb2
@@ -2289,8 +2291,8 @@ def scan_url(url: str, _hop: int = 0) -> dict:
         _check(checks, "google", "skip")
 
     # --- Public scam-link lists (OpenPhish, URLhaus)
-    feed = feed_lookup([url, final_url], host) if not trusted else {"status": "pass"}
-    big = big_feed_lookup([url, final_url], host, reg)
+    feed = feed_lookup([url, final_url], host) if not (trusted or blind) else {"status": "pass" if trusted else "skip"}
+    big = big_feed_lookup([url, final_url], host, reg) if not blind else {"status": "skip"}
     if trusted and big["status"] == "warn":
         big = {"status": "pass"}
     rank_order = {"fail": 0, "warn": 1, "pass": 2, "skip": 3}
@@ -2324,7 +2326,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
         _check(checks, "feeds", "pass")
 
     # --- StaySafe's own list: reported as a scam by its users
-    if not trusted and not OFFLINE:
+    if not trusted and not OFFLINE and not blind:
         try:
             from scanners.reports import community_signal
             sig = community_signal("link", url) or (community_signal("link", final_url) if final_url != url else None)
@@ -2375,7 +2377,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
 
     # --- AbuseIPDB: the server itself
     server_ip = (dns.get("ips") or [None])[0]
-    if server_ip and not trusted and not structure["hosting"]:
+    if server_ip and not trusted and not structure["hosting"] and not blind:
         ab = _run(check_server_abuse, server_ip, timeout=6, default={}) or {}
         if ab.get("score", 0) >= 50 and not ab.get("whitelisted"):
             findings.append(f"The server this website runs on has been reported for attacks ({ab['score']}% confidence)")
