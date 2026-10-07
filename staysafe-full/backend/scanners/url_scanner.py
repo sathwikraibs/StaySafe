@@ -1336,9 +1336,16 @@ def check_urlscan(host: str) -> dict:
         if not quota("urlscan").take(wait=10):
             return {"status": "skip", NOT_CHECKED: True}
         try:
+            headers = {"API-Key": key, "User-Agent": "StaySafe/2.0"}
             resp = requests.get("https://urlscan.io/api/v1/search/", timeout=8,
                                 params={"q": f'page.domain:"{host}" AND verdicts.malicious:true AND date:>now-90d', "size": 5},
-                                headers={"API-Key": key, "User-Agent": "StaySafe/2.0"})
+                                headers=headers)
+            simple_query = False
+            if resp.status_code == 403:
+                # Some searches are refused for free accounts: ask more simply and read the verdicts ourselves
+                resp = requests.get("https://urlscan.io/api/v1/search/", timeout=8,
+                                    params={"q": f'page.domain:"{host}" AND date:>now-90d', "size": 20}, headers=headers)
+                simple_query = True
             if resp.status_code != 200:
                 _PROBLEMS["urlscan"] = f"HTTP {resp.status_code}"
                 if resp.status_code == 429:
@@ -1349,7 +1356,9 @@ def check_urlscan(host: str) -> dict:
             _PROBLEMS["urlscan"] = type(e).__name__
             return {"status": "skip"}
         _PROBLEMS["urlscan"] = None
-        hits = [r for r in data.get("results", []) if (r.get("page") or {}).get("domain", "").lower() == host]
+        hits = [r for r in data.get("results", []) if (r.get("page") or {}).get("domain", "").lower() == host
+                and (not simple_query or ((r.get("verdicts") or {}).get("malicious") is True)
+                     or ((r.get("verdicts") or {}).get("overall") or {}).get("malicious") is True)]
         return {"status": "fail", "count": len(hits)} if hits else {"status": "pass"}
 
     return _cached(("urlscan", host), call)

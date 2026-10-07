@@ -68,12 +68,13 @@ def _refresh_from_rbi() -> None:
         if not 40 <= len(found) <= 400:     # page layout changed: keep what we have
             raise RuntimeError(f"only {len(found)} websites found")
         with _lock:
-            new = 0
-            for d in found:
+            new = []
+            for d in sorted(found):
                 if d not in _state["domains"]:
                     _state["domains"][d] = d
-                    new += 1
-            _state["extra"] = new
+                    new.append(d)
+            _state["extra"] = len(new)
+            _state["extra_list"] = new[:20]
             _state["problem"] = None
     except Exception as e:  # noqa: BLE001
         _state["problem"] = f"RBI page: {type(e).__name__}: {str(e)[:60]}"
@@ -135,4 +136,4 @@ def status() -> dict:
     if not _state["entities"]:
         _load_bundled()
     return {"platforms": len(_state["entities"]), "websites": len(_state["domains"]),
-            "added_from_rbi": _state["extra"], "list_date": _state["updated"], "problem": _state["problem"]}
+            "added_from_rbi": _state["extra"], "added_websites": _state.get("extra_list", []), "list_date": _state["updated"], "problem": _state["problem"]}
