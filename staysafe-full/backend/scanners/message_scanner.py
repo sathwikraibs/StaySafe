@@ -81,10 +81,14 @@ RULES = [
     (
         "Bank / KYC / PAN impersonation",
         [
-            r"\bre-?kyc\b", r"\bkyc\b[^.\n]{0,40}\b(update|pending|expire|verify|complete|block|suspend)",
+            r"\bre-?kyc\b",
+            r"kyc\b[^.\n]{0,40}\b(pending|expired?|expiring|incomplete|not (been )?(updated|completed|verified|done)|block\w*|suspend\w*|deactivat\w*|update (now|immediately|today|within))",
+            r"kyc\b[^\n]{0,60}\b(update|verify|complete)\b[^\n]{0,60}(https?://|www\.|\b(link|click|call|contact)\b|\d{10})",
             r"\b(account|a/c|khata|card|yono|net ?banking|wallet|upi id|paytm|phonepe|gpay)\b[^.\n]{0,40}\b(will be |has been |is |ho jayega |hoga )?(blocked|suspended|frozen|deactivated|closed|band)\b",
             r"\b(update|link|verify)\b[^.\n]{0,20}\b(pan|aadhaar|aadhar)\b",
             r"\bverify your (account|bank|kyc|identity)\b",
+            r"\b(complete|update|verify|do)\b[^.\n]{0,20}\b(your |the )?kyc\b[^\n]{0,80}(https?://|www\.|\b(call|contact|click|link|immediately|today|within|now)\b|\d{10})",
+            r"\b(re-?activate|reactivation|confirm your (details|account|update|registration)|review your details|if (it|this) (is|was) not (done by )?you)\b[^\n]{0,80}(https?:/|www\.|bit\.|[a-z0-9-]+\.(in|com|xyz|top|online|site|info|net|co|org|live|shop)\b)",
             r"\b(unusual|suspicious|unknown|new) (login|log-in|sign-?in|activity|device)\b[^\n]{0,80}\b(secure|verify|confirm|click|update)\b",
             r"\bsecure your (account|bank|card)\b",
             r"\b(debit|credit|atm) card\b[^.\n]{0,40}\b(blocked|suspended|deactivated)\b[^\n]{0,60}\b(call|click|reactivate|verify|update)\b",
@@ -96,6 +100,7 @@ RULES = [
         [
             r"\b(electricity|bijli|power|light|eb)\b[^.\n]{0,60}\b(disconnect|disconnected|cut|kaat|kat|band)\b(?![^.\n]{0,30}\b(avoid|to avoid)\b)",
             r"\bmeter\b[^.\n]{0,40}\b(will be |is being )?(removed|disconnected|cut|seized)\b",
+            r"\b(electricity|power|bijli)\b[^\n]{0,40}\b(officer|lineman)\b[^\n]{0,40}\d{10}",
             r"\belectricity (officer|department)\b",
             r"\b(bill|bijli bill)\b[^.\n]{0,50}\b(not (been )?updated|update nahi)\b",
         ],
@@ -116,6 +121,7 @@ RULES = [
         [
             r"\b(income tax|it department|itr)\b[^\n]{0,60}\brefund\b[^\n]{0,60}\b(claim|click|verify|update|pending|approved|link|apply|submit)\b",
             r"\b(income tax|it department)\b[^.\n]{0,40}\b(notice|penalty)\b",
+            r"\btax refund\b[^\n]{0,100}\b(form|click|link|claim|process|https?://|www\.)",
             r"\b(police|court) (verification|notice|summons)\b",
             r"\btrai\b[^.\n]{0,60}\b(disconnect|block|suspend)\b",
             r"\bpress \d\b[^.\n]{0,40}\b(officer|executive|agent|speak)\b",
@@ -137,7 +143,7 @@ RULES = [
     (
         "Task-based or fake job offer",
         [
-            r"\b(lik(e|ing)|rat(e|ing)|review(ing)?|subscrib(e|ing))\b[^.\n]{0,40}\b(videos?|youtube|hotels?|products?|google maps)\b",
+            r"(?=[^\n]*\b(earn|task|commission|paid|payment|salary|income|rs\.?|₹|inr|per (like|video|review|task))\b)[^\n]*\b(lik(e|ing)|rat(e|ing)|review(ing)?|subscrib(e|ing))\b[^.\n]{0,40}\b(videos?|youtube|hotels?|products?|google maps)\b",
             r"\b(hiring|job offer|vacancy)\b[^\n]{0,120}\b(telegram|whatsapp)\b",
             r"\b(part[- ]time|work from home|ghar baithe)\b[^\n]{0,80}\b(earn|daily|salary|income|kamao)\b",
             r"\b(registration|joining|security|training) (fee|deposit|charges?)\b",
@@ -149,12 +155,20 @@ RULES = [
     (
         "Prize, lottery or 'you have won' offer",
         [
-            r"\byou (have |'ve )?(won|been selected)\b", r"\blottery\b", r"\blucky draw\b",
+            r"\b(you|u)( have|'ve|['’]ve| ve| hv)? won(?!['’]t)(?! (our|my|your|the|everyone'?s|their|his|her) (hearts?|match|game|trust|love|race|election))\b",
+            r"\b(you|u)( have|'ve|['’]ve| ve| hv)? been (selected|chosen|picked)\b[^\n]{0,60}\b(prize|reward|cash|gift|lucky|winner|claim|free|bonus|holiday|iphone|car|lottery|draw|offer)\b",
+            r"\blottery\b", r"\blucky draw\b",
+            r"\b(gift|reward|prize|cash|voucher|surprise|bonus)\b[^\n]{0,30}\b(is |are )?(waiting|awaiting|await)\b[^\n]{0,80}\b(call|claim|collect|click|log ?onto|visit|txt|text|reply)\b",
+            r"\b(entitled|specially selected|randomly (picked|selected|chosen))\b[^\n]{0,60}\b(free|claim|receive|cash|holiday|prize|grant|compensation|reward|upgrade)\b",
+            r"\b(is|are) yours\b[^\n]{0,60}\b(call|claim|collect|txt|text|reply)\b",
+            r"\b(awarded|selected to receive|chosen to receive|picked to receive)\b[^\n]{0,60}\b(prize|cash|reward|bonus|award|holiday|voucher|gift)\b",
+            r"\b(cash prize|bonus (caller )?prize|guaranteed (prize|cash|award|reward)|prize (money|draw|code))\b",
+            r"\b(await(s|ing)? collection|identifier code|claim code)\b",
             r"\bkbc\b", r"\bjackpot\b", r"\bclaim (your )?(prize|reward|gift|cashback)\b",
             r"\bwinner\b[^\n]{0,80}\b(claim|collect|cashback|prize|reward)\b",
             r"\byou (have |'ve )?(got|received|won)\b[^.\n]{0,40}\b(cashback|reward|prize|iphone|gift|bonus)\b[^\n]{0,60}\b(claim|click|collect)\b",
             r"\b(selected|chosen|eligible)\b for\b[^.\n]{0,25}\b(grant|scheme|subsidy|prize|reward|bonus)\b",
-            r"\bcongratulations\b[^.\n]{0,60}\b(won|winner|selected|reward|prize)\b",
+            r"\bcongratulations\b[^.\n]{0,60}\b(won(?!['’]t)(?! (our|my|your|the|everyone'?s|their|his|her) (hearts?|match|game|trust|love|race|election))|winner|reward|prize)\b",
             r"\b(inaam|lottery lagi)\b",
         ],
         30,
@@ -227,6 +241,8 @@ RULES = [
         [
             r"\b(call|contact|whatsapp|message|sms)\b[^.\n]{0,30}(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}\b",
             r"\b(contact|message|join)\b[^.\n]{0,20}\b(on |us on |me on )?telegram\b",
+            r"\b(call|ring|dial|text|txt)\b[^\n]{0,40}\b0(9\d{8,9}|87\d{8,9}|70\d{8})\b",
+            r"\b(urgent|important) (message|delivery|parcel)\b[^\n]{0,30}\bwaiting for you\b",
         ],
         10,
     ),
@@ -245,6 +261,7 @@ RULES = [
             r"\b(instant|quick|easy|pre-?approved)\s+(personal\s+)?loan\b[^\n]{0,80}\b(no|without)\s+(documents?|paperwork|cibil|credit check|income proof)\b",
             r"\bloan\b[^\n]{0,60}\b(in|within) \d+ (minutes?|mins?)\b",
             r"\bno cibil (check|score)?\b",
+            r"\bloans?\b[^\n]{0,60}\b(bad credit|no credit check|low cibil|without cibil|poor credit)\b",
         ],
         30,
     ),
@@ -255,6 +272,7 @@ RULES = [
             r"\b(gas|lpg)\s+(connection|subsidy|kyc)\b[^\n]{0,60}\b(update|block|cancel|stop|verify)",
             r"\b(aadhaa?r|pan)(\s+card)?\b[^\n]{0,40}\b(will be |is |has been )?(blocked|deactivated|suspended|cancelled|inactive)\b",
             r"\b(pension|scholarship|subsidy)\b[^\n]{0,40}\b(stopped|blocked|pending)\b[^\n]{0,60}\b(update|link|click|call)\b",
+            r"\b(grant|relief (fund|payment)|government payment|stimulus|covid[- ]?19 (fund|payment|grant))\b[^\n]{0,80}\b(redeem|claim|apply|tap|click|contact)\b",
         ],
         30,
     ),
@@ -305,6 +323,7 @@ RULES = [
             r"\b(hi|hello|hey) (beautiful|handsome|dear|sweetheart|gorgeous)\b[^\n]{0,80}\b(profile|chat|meet|friend)\b",
             r"\b(single|lonely|hot) (women|girls|ladies|bhabhi|aunty)\b[^\n]{0,80}\b(waiting|meet|call|chat|near you)\b",
             r"\b(saw|liked|found) your profile\b[^\n]{0,60}\b(chat|talk|meet|reply|whatsapp)\b",
+            r"\bsecret admirer\b",
             r"\b(video call|friendship|dating)\b[^\n]{0,40}\b(girls?|women|service|club)\b[^\n]{0,40}\b(call|join|whatsapp|click)\b",
         ],
         30,
@@ -316,6 +335,52 @@ RULES = [
             r"\b(electricity|power|gas|water) bill\b[^\n]{0,40}\b(refund|discount|cashback)\b[^\n]{0,60}\b(claim|click|approved|call)\b",
         ],
         30,
+    ),
+    (
+        "Says money was sent to you by mistake and asks you to return it",
+        [
+            r"\b(sent|credited|transferred|paid|deposited)\b[^\n]{0,60}\b(by mistake|mistakenly|wrongly|accidentally|galti se)\b[^\n]{0,120}\b(return|refund|send (it )?back|wapas|reverse)\b",
+            r"\b(by mistake|mistakenly|wrongly|galti se)\b[^\n]{0,40}\b(sent|credited|transferred)\b[^\n]{0,120}\b(return|refund|send (it )?back|wapas)\b",
+        ],
+        45,
+    ),
+    (
+        "Threatens to cut your water, gas, internet or TV connection",
+        [
+            r"\b(water|gas|png|lpg|broadband|internet|wifi|wi-fi|dth|cable tv|tv)\b[^\n]{0,40}\b(connection|supply|service)\b[^\n]{0,60}\b(disconnect(ed)?|cut|suspend(ed)?|stop(ped)?|band)\b",
+            r"\b(water|gas|broadband|dth)\b[^\n]{0,60}\b(officer|department)\b[^\n]{0,40}\b(call|contact)\b",
+        ],
+        35,
+    ),
+    (
+        "Asks for your SIM card number (used to take over your number)",
+        [
+            r"\bsim\b[^\n]{0,60}\b(\d{2}[- ]?digits?|serial|iccid)\b",
+            r"\b(send|sms|share|reply|message|tell)\b[^\n]{0,40}\bsim\b[^\n]{0,20}\bnumber\b",
+            r"\b(4g|5g|esim|e-sim) (sim )?(upgrade|activation|conversion)\b[^\n]{0,80}\b(send|sms|share|call|reply|click|otp)\b",
+        ],
+        45,
+    ),
+    (
+        "Says a parcel couldn't be delivered and asks you to update details or pay",
+        [
+            r"\b(delivery|deliver|parcel|package|shipment|courier|india post|speed post)\b[^\n]{0,80}\b(failed|unable|could not|couldn'?t|on hold|held|incomplete address|address (is )?(incomplete|incorrect|wrong))\b[^\n]{0,100}\b(update|confirm|reschedule|click|pay|link|https?://|www\.)",
+            r"\b(redeliver|re-deliver|reschedule (your )?delivery)\b[^\n]{0,60}\b(click|link|pay|fee|https?://|www\.)",
+        ],
+        30,
+    ),
+    (
+        "Threatens to block something unless you pay",
+        [
+            r"\b(blocked|suspended|withheld|cancelled|on hold|stopped)\b[^\n]{0,80}\b(pay|payment|fee|fine|charges|dues)\b[^\n]{0,80}(\b(link|upi|call|immediately|today|now)\b|https?://|www\.|\b[a-z0-9-]+\.(in|com|xyz|top|online|site|info|net|co|org|live|shop)\b)",
+            r"\b(pay|payment)\b[^\n]{0,60}\b(or|otherwise|else)\b[^\n]{0,40}\b(blocked|suspended|cancelled|disconnected|withheld)\b",
+        ],
+        30,
+    ),
+    (
+        "Uses look-alike characters to slip past spam filters (bl0cked, W0N)",
+        [r"__DEOBFUSCATED__"],
+        20,
     ),
     (
         "Free recharge, data or gifts with a link",
@@ -339,6 +404,26 @@ MONEY = r"(₹|rs\.?|ರೂ\.?|ರೂಪಾಯಿ|रु\.?|रुपये|र�
 NUM = r"(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}"
 
 NATIVE_PATTERNS = {
+    "Says money was sent to you by mistake and asks you to return it": [
+        r"(ತಪ್ಪಾಗಿ|ಗೊತ್ತಿಲ್ಲದೆ|ತಪ್ಪಾದ್)[^\n]{0,60}(ಕಳುಹಿಸ|ಕಳಿಸ|ಜಮಾ|ಕ್ರೆಡಿಟ್|ಬಂದಿದೆ|ಕಡಪುಡ)[^\n]{0,100}(ಹಿಂದಿರುಗಿಸ|ವಾಪಸ್|ರಿಟರ್ನ್|ಮರಳಿ|ಪಿರ)",
+        r"(गलती से)[^\n]{0,60}(भेज|आ गए|आ गया|क्रेडिट|जमा)[^\n]{0,100}(वापस|लौटा|रिटर्न)",
+    ],
+    "Threatens to cut your water, gas, internet or TV connection": [
+        r"(ನೀರು|ನೀರ್|ಗ್ಯಾಸ್|ಇಂಟರ್ನೆಟ್|ಬ್ರಾಡ್ಬ್ಯಾಂಡ್|ಡಿಟಿಎಚ್)[^\n]{0,60}(ಸಂಪರ್ಕ|ಕನೆಕ್ಷನ್|ಸರಬರಾಜು)[^\n]{0,40}(ಕಟ್|ಕಡಿತ|ಸ್ಥಗಿತ|ನಿಲ್ಲಿಸ)",
+        r"(पानी|गैस|इंटरनेट|ब्रॉडबैंड|डीटीएच)[^\n]{0,60}(कनेक्शन|सप्लाई|आपूर्ति)[^\n]{0,40}(कट|काट|बंद)",
+    ],
+    "Asks for your SIM card number (used to take over your number)": [
+        r"ಸಿಮ್[^\n]{0,60}(\d{2} ?ಅಂಕಿ|ಸೀರಿಯಲ್|ನಂಬರ್)[^\n]{0,40}(ಕಳುಹಿಸಿ|ಕಳಿಸಿ|ಹೇಳಿ|sms|ಎಸ್ಎಂಎಸ್|ಕಡಪುಡ್ಲೆ|ಪನ್ಲೆ)",
+        r"सिम[^\n]{0,60}(\d{2} ?अंक|सीरियल|नंबर)[^\n]{0,40}(भेजें|भेजो|भेजिए|बताएं|बताओ|sms|एसएमएस)",
+    ],
+    "Says a parcel couldn't be delivered and asks you to update details or pay": [
+        r"(ಪಾರ್ಸೆಲ್|ಕೊರಿಯರ್|ಡೆಲಿವರಿ|ಅಂಚೆ)[^\n]{0,80}(ವಿಳಾಸ|ತಲುಪಿಸಲು ಆಗಿಲ್ಲ|ವಿಫಲ|ತಡೆ)[^\n]{0,80}(ಅಪ್ಡೇಟ್|ಕ್ಲಿಕ್|ಲಿಂಕ್|ಪಾವತಿ|ಕಟ್ಟಿ)",
+        r"(पार्सल|कूरियर|डिलीवरी|पैकेज|इंडिया पोस्ट)[^\n]{0,80}(पता|नहीं हो (सकी|पाई)|असफल|रुकी|रोक)[^\n]{0,80}(अपडेट|क्लिक|लिंक|भुगतान|शुल्क)",
+    ],
+    "Threatens to block something unless you pay": [
+        r"(ಬ್ಲಾಕ್|ರದ್ದು|ಸ್ಥಗಿತ|ತಡೆಹಿಡಿ)[^\n]{0,60}(ಪಾವತಿ|ಶುಲ್ಕ|ದಂಡ|ಹಣ ಕಟ್ಟ|ಫೀಸ್)[^\n]{0,60}(ಲಿಂಕ್|ಕರೆ|ತಕ್ಷಣ|ಇಂದೇ|upi|ಯುಪಿಐ)",
+        r"(ब्लॉक|रद्द|बंद|रोक)[^\n]{0,60}(भुगतान|शुल्क|जुर्माना|फीस)[^\n]{0,60}(लिंक|कॉल|तुरंत|आज ही|upi|यूपीआई)",
+    ],
     "Asks you to share an OTP, PIN, CVV or password": [
         r"(otp|ಒಟಿಪಿ|ಓಟಿಪಿ|pin|ಪಿನ್|cvv|ಪಾಸ್ವರ್ಡ್|ಕೋಡ್)[^.\n]{0,40}" + KN_ASK,
         r"(ಬಂದ|ಬಂದಿರುವ|ಬತ್ತಿನ)[^.\n]{0,12}(otp|ಒಟಿಪಿ|ಕೋಡ್)",
@@ -628,14 +713,39 @@ def _normalise(text: str) -> str:
     return text
 
 
+# Scammers write "bl0cked", "W0N", "FL1PKART" so spam filters miss them
+_LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s"})
+_DISGUISED = re.compile(r"\b(?=[a-z0-9@$]*[a-z][0-9@$]+[a-z])[a-z0-9@$]{3,}\b")
+_SCAM_WORDS = {"blocked", "block", "won", "win", "winner", "kyc", "paytm", "flipkart", "amazon", "account", "verify",
+               "prize", "claim", "bank", "update", "cash", "free", "offer", "urgent", "suspended", "lottery", "reward",
+               "refund", "click", "bonus", "gift", "expired", "expire", "sbi", "hdfc", "icici", "password", "otp", "loan"}
+
+
+def _deobfuscate(text_norm: str):
+    """(readable text, True if a disguised scam word was found)."""
+    found = False
+
+    def fix(m):
+        nonlocal found
+        word = m.group(0)
+        plain = word.translate(_LEET)
+        if plain in _SCAM_WORDS or any(plain.startswith(w) for w in ("flipkart", "paytm", "block", "verif", "suspend")):
+            found = True
+        return plain
+    return _DISGUISED.sub(fix, text_norm), found
+
+
 def analyze_text(text: str) -> dict:
     text_norm = _normalise(text)
+    readable, disguised = _deobfuscate(text_norm)
+    if readable != text_norm:
+        text_norm = text_norm + "\n" + readable      # rules see both the original and the de-disguised words
     findings = []
     score = 0
 
     parts = []
     for label, patterns, weight in RULES:
-        hits = sum(1 for p in patterns if re.search(p, text_norm))
+        hits = sum(1 for p in patterns if (disguised if p == "__DEOBFUSCATED__" else re.search(p, text_norm)))
         if hits:
             findings.append(label)
             score += weight
@@ -1195,7 +1305,7 @@ EMAIL_IN_TEXT = re.compile(r"(?<![\w.+-])([A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]+(?
 UPI_IN_TEXT = re.compile(r"(?<![\w.@-])([\w.\-]{2,64}@(?:ok[a-z]+|ybl|ibl|axl|paytm|upi|apl|yapl|ptyes|ptsbi|pthdfc|ptaxis|"
                          r"freecharge|jupiteraxis|axisbank|sbi|hdfcbank|icici|kotak|pnb|boi|barodampay|ikwik|fbl|idfcbank|"
                          r"indus|rbl|yesbank|airtel|jio|slc|timecosmos|waaxis|waicici|wahdfcbank|wasbi))\b", re.IGNORECASE)
-PAY_WORDS = re.compile(r"\b(pay|send|transfer|deposit|fee|charges?|refund|bhejo|bhej|jama|ಪಾವತಿ|ಕಳುಹಿಸಿ|भेज|भुगतान|जमा)", re.IGNORECASE)
+PAY_WORDS = re.compile(r"\b(pay|send|transfer|deposit|fee|charges?|refund|return|wapas|bhejo|bhej|jama|ಪಾವತಿ|ಕಳುಹಿಸಿ|भेज|भुगतान|जमा)", re.IGNORECASE)
 
 
 def add_entity_checks(result: dict, text: str = None) -> dict:
