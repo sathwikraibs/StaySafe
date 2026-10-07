@@ -38,7 +38,14 @@ DANGEROUS_EXTENSIONS = {
     ".exe", ".scr", ".bat", ".cmd", ".com", ".pif", ".vbs", ".vbe", ".js", ".jse",
     ".jar", ".msi", ".ps1", ".apk", ".dll", ".hta", ".wsf", ".lnk", ".reg", ".cpl",
     ".chm", ".iso", ".img", ".vhd", ".xll", ".appx", ".msix", ".sh",
+    ".xapk", ".apks", ".apkm", ".vhdx", ".url", ".scf", ".wsh", ".msp", ".application", ".appref-ms",
+    ".settingcontent-ms", ".one", ".iqy", ".slk", ".website", ".mde", ".ade", ".gadget", ".psc1",
 }
+
+# Web pages and drawings that can carry scripts and login boxes when sent as files
+WEB_EXTENSIONS = {".html", ".htm", ".shtml", ".xhtml", ".svg", ".mht", ".mhtml", ".xht"}
+
+EICAR = b"X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
 
 # Extensions often used to smuggle macros
 MACRO_RISK_EXTENSIONS = {".docm", ".xlsm", ".pptm", ".dotm", ".xlam"}
@@ -52,7 +59,8 @@ COMMONLY_TRUSTED = {
 ARCHIVE_EXTENSIONS = {".zip", ".rar", ".7z"}
 
 # What each file TYPE's content starts with ("magic bytes")
-EXECUTABLE_KINDS = {"Windows program", "Linux program", "Android app", "Java program", "Windows shortcut", "script"}
+EXECUTABLE_KINDS = {"Windows program", "Linux program", "Android app", "Java program", "Windows shortcut", "script",
+                    "disk image", "OneNote file"}
 
 
 def detect_real_type(data: bytes) -> str:
@@ -97,8 +105,20 @@ def detect_real_type(data: bytes) -> str:
         if any(n.startswith("ppt/") for n in names):
             return "PowerPoint document"
         return "ZIP archive"
+    if head.startswith(b"\xe4\x52\x5c\x7b\x8c\xd8\xa7\x4d"):
+        return "OneNote file"
+    if any(data[o:o + 5] == b"CD001" for o in (0x8001, 0x8801, 0x9001)) or data[:8] == b"conectix" or data[:8] == b"vhdxfile":
+        return "disk image"
     if head.startswith(b"#!") or re.match(rb"\s*(@echo off|powershell|Set\s+\w+\s*=\s*CreateObject)", head, re.IGNORECASE):
         return "script"
+    low = head.lstrip(b"\xef\xbb\xbf \t\r\n").lower()
+    if low.startswith((b"<!doctype html", b"<html", b"<head", b"<body", b"<script", b"<form", b"<meta", b"<iframe")) \
+            or (low.startswith(b"<?xml") and b"<html" in head.lower()):
+        return "web page"
+    if low.startswith(b"<svg") or (low.startswith(b"<?xml") and b"<svg" in head.lower()):
+        return "SVG image"
+    if low.startswith(b"[internetshortcut]"):
+        return "internet shortcut"
     return "unknown"
 
 
@@ -106,6 +126,7 @@ EXPECTED_TYPES = {
     ".pdf": {"PDF"}, ".png": {"PNG image"}, ".jpg": {"JPEG image"}, ".jpeg": {"JPEG image"},
     ".gif": {"GIF image"}, ".webp": {"WEBP image"}, ".docx": {"Word document"}, ".xlsx": {"Excel document"},
     ".pptx": {"PowerPoint document"}, ".doc": {"old Office document"}, ".xls": {"old Office document"},
+    ".svg": {"SVG image", "web page"}, ".html": {"web page"}, ".htm": {"web page"},
     ".ppt": {"old Office document"}, ".zip": {"ZIP archive"}, ".apk": {"Android app"},
 }
 
@@ -171,46 +192,188 @@ def check_content(filename: str, data: bytes, led=None) -> tuple:
         findings.append(f"The file's name says '{ext}' but its contents are {_a(real_type)}")
         score += (led.note(findings, 20) if led else 20)
 
+    def note(text, pts):
+        nonlocal score
+        findings.append(text)
+        score += (led.note(findings, pts) if led else pts)
+
+    if EICAR in data[:4096] and real_type != "ZIP archive":
+        note("This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it "
+             "as a virus, so StaySafe does too", 90)
+
     if real_type == "PDF":
-        lowered = data[:5_000_000]
+        # names can be hidden with #xx codes (/J#61vaScript is /JavaScript)
+        raw = data[:5_000_000]
+        lowered = re.sub(rb"#([0-9a-fA-F]{2})", lambda m: bytes([int(m.group(1), 16)]), raw)
         risky = [label for token, label in (
-            (b"/JavaScript", "runs JavaScript"),
-            (b"/Launch", "tries to launch other programs"),
+            (b"/JavaScript", "runs JavaScript"), (b"/JS", "runs JavaScript"),
             (b"/EmbeddedFile", "has files hidden inside it"),
         ) if token in lowered]
         risky = sorted(set(risky))
+        auto = re.search(rb"/(OpenAction|AA)\b", lowered) is not None
+        if b"/Launch" in lowered:
+            note("This PDF tries to start another program on your computer when opened. Genuine documents never do this", 50)
         if risky:
-            findings.append("This PDF " + ", ".join(risky) + ". Normal documents rarely need this")
-            score += (led.note(findings, 30) if led else 30)
+            if auto and "runs JavaScript" in risky:
+                risky = ["runs JavaScript as soon as it is opened" if r == "runs JavaScript" else r for r in risky]
+            note("This PDF " + ", ".join(risky) + ". Normal documents rarely need this",
+                 40 if "runs JavaScript as soon as it is opened" in risky else 30)
 
-    if real_type in ("Word document", "Excel document", "PowerPoint document", "ZIP archive"):
+    if real_type in ("Word document", "Excel document", "PowerPoint document"):
         try:
             with zipfile.ZipFile(io.BytesIO(data)) as z:
-                infos = z.infolist()
-                names = [i.filename for i in infos]
+                names = z.namelist()[:2000]
                 if any(n.lower().endswith("vbaproject.bin") for n in names):
-                    findings.append("This Office document contains macros (hidden programs)")
-                    score += (led.note(findings, 35) if led else 35)
+                    note("This Office document contains macros (hidden programs)", 35)
                     if ext in (".docx", ".xlsx", ".pptx"):
-                        findings.append(f"'{ext}' files normally can't contain macros, so this one has been tampered with")
-                        score += (led.note(findings, 15) if led else 15)
-                if real_type == "ZIP archive":
-                    inner_risky = [n for n in names if get_extension(n) in DANGEROUS_EXTENSIONS]
-                    if inner_risky:
-                        shown = ", ".join(n.rsplit("/", 1)[-1] for n in inner_risky[:3])
-                        findings.append(f"This ZIP contains program files that can run code: {shown}")
-                        score += (led.note(findings, 40) if led else 40)
-                    if any(i.flag_bits & 0x1 for i in infos):
-                        findings.append("This ZIP is password-protected, a trick used to hide malware from scanners")
-                        score += (led.note(findings, 15) if led else 15)
+                        note(f"'{ext}' files normally can't contain macros, so this one has been tampered with", 15)
+                rels = b" ".join(safe_zip_read(z, n, 2 * 1024 * 1024) for n in names if n.endswith(".rels"))
+                if re.search(rb'Type="[^"]*/(attachedTemplate|oleObject|frame|subDocument)"[^>]*Target="(https?:|file:|\\\\)', rels) or \
+                        re.search(rb'Target="(https?:|file:|\\\\)[^"]*"[^>]*Type="[^"]*/(attachedTemplate|oleObject|frame|subDocument)"', rels):
+                    note("This document downloads a hidden part from the internet when it is opened (a known trick to "
+                         "run harmful code without macros)", 45)
+                body = b" ".join(safe_zip_read(z, n, 4 * 1024 * 1024) for n in names
+                                 if re.match(r"(word|xl|ppt)/[^/]+\.xml$", n) or n.startswith("xl/worksheets/"))[:20_000_000]
+                if re.search(rb"\bDDE(AUTO)?\b", body):
+                    note("This document can start other programs through a hidden command (DDE). Don't click 'Yes' "
+                         "on any pop-up it shows", 45)
+                embedded = [n for n in names if "/embeddings/" in n.lower() or n.lower().endswith(("olepackage.bin", ".exe", ".js", ".hta"))]
+                if embedded:
+                    inside = b" ".join(safe_zip_read(z, n, 4 * 1024 * 1024)[:4_000_000] for n in embedded[:5]).lower()
+                    if re.search(rb"\.(exe|scr|bat|cmd|js|jse|vbs|vbe|hta|lnk|ps1|wsf|apk|msi)\b", inside) or inside.find(b"mz") == 0:
+                        note("This document has a program hidden inside it. Never double-click pictures or icons in it", 50)
+                    elif any(n.lower().endswith(".bin") for n in embedded):
+                        note("This document has another file hidden inside it", 10)
         except Exception:
             pass
 
+    if real_type == "ZIP archive":
+        pts, texts = _inspect_zip(data, 0)
+        for t, p in zip(texts, pts):
+            note(t, p)
+
     if real_type == "old Office document" and (b"VBA" in data or b"_VBA_PROJECT" in data):
-        findings.append("This Office document contains macros (hidden programs)")
-        score += (led.note(findings, 35) if led else 35)
+        note("This Office document contains macros (hidden programs)", 35)
+
+    if real_type in ("web page", "SVG image") or (ext in WEB_EXTENSIONS and real_type == "unknown"):
+        for t, p in _inspect_web_page(data[:3_000_000], real_type == "SVG image" or ext == ".svg"):
+            note(t, p)
+
+    if real_type == "OneNote file" or ext == ".one":
+        inside = data[:20_000_000].lower()
+        if re.search(rb"\.(hta|bat|cmd|exe|vbs|js|wsf|lnk|ps1|chm)\b", inside):
+            note("This OneNote file has a program hidden behind a picture or button. Clicking it would install malware", 50)
+        else:
+            note("OneNote files sent by email or chat are a common way to hide programs. Don't click anything in it", 20)
+
+    if real_type == "internet shortcut" or ext in (".url", ".website"):
+        target = re.search(rb"(?im)^\s*url\s*=\s*(\S+)", data[:4096])
+        if target and re.match(rb"(file:|\\\\|smb:)", target.group(1), re.I):
+            note("This shortcut opens a file on another computer over the internet, a trick used to run programs", 45)
+
+    if real_type == "disk image" and ext in (".iso", ".img", ".vhd", ".vhdx"):
+        note("Disk image files sent by email or chat are used to sneak programs past Windows protection", 20)
 
     return score, findings, real_type
+
+
+_PROGRAM_NAME = re.compile(r"\.(exe|scr|bat|cmd|com|pif|vbs|vbe|js|jse|jar|msi|ps1|hta|wsf|lnk|cpl|apk|dll|iso|img|one)$", re.I)
+
+
+def _inspect_zip(data: bytes, depth: int):
+    """What is inside a ZIP (and ZIPs inside it, two levels deep). Returns (points, texts)."""
+    pts, texts = [], []
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            infos = z.infolist()[:2000]
+            names = [i.filename for i in infos]
+            programs = [n for n in names if _PROGRAM_NAME.search(n.rstrip(" ."))]
+            if programs:
+                shown = ", ".join(n.rsplit("/", 1)[-1] for n in programs[:3])
+                texts.append(f"This archive contains program files that can run code: {shown}")
+                pts.append(40)
+            if any(check_double_extension(n.rsplit("/", 1)[-1]) or "\u202e" in n for n in names):
+                texts.append("A file inside is disguised as a document or photo but is really a program")
+                pts.append(30)
+            if any(i.flag_bits & 0x1 for i in infos):
+                texts.append("This archive is password-protected, a trick used to hide malware from scanners")
+                pts.append(15 if not programs else 25)
+            encrypted = any(i.flag_bits & 0x1 for i in infos)
+            if encrypted:
+                return pts, texts
+            for i in infos:
+                n = i.filename.lower()
+                if i.file_size > 25 * 1024 * 1024 or i.is_dir():
+                    continue
+                if n.endswith((".apk", ".xapk", ".apks")) or n == "classes.dex":
+                    inner = safe_zip_read(z, i.filename, 25 * 1024 * 1024)
+                    if inner[:2] == b"PK":
+                        from scanners.apk_check import analyze_apk
+                        a = analyze_apk(i.filename.rsplit("/", 1)[-1], inner)
+                        if a["score"]:
+                            texts.append(f"This archive hides an Android app ({i.filename.rsplit('/', 1)[-1]}) that asks for risky "
+                                         "permissions, like reading SMS OTPs or controlling the screen")
+                            pts.append(min(60, a["score"]))
+                    break
+            budget = 60 * 1024 * 1024        # never unpack more than this in total (stops "zip bombs")
+            for i in infos[:200]:
+                if i.file_size > 25 * 1024 * 1024 or i.is_dir() or i.file_size > budget:
+                    continue
+                budget -= i.file_size
+                head = safe_zip_read(z, i.filename, 25 * 1024 * 1024)
+                if EICAR in head[:4096]:
+                    texts.append("The archive contains the standard antivirus test file (EICAR), which every security program treats as a virus")
+                    pts.append(90)
+                    break
+                if depth < 2 and head[:4] == b"PK\x03\x04" and not i.filename.lower().endswith((".docx", ".xlsx", ".pptx", ".apk", ".jar")):
+                    p2, t2 = _inspect_zip(head, depth + 1)
+                    if p2:
+                        texts.append("Another archive is hidden inside this one, and it contains program files")
+                        pts.append(max(p2) + 10)
+                        break
+                if head[:2] == b"MZ" and not _PROGRAM_NAME.search(i.filename):
+                    texts.append(f"A file inside ({i.filename.rsplit('/', 1)[-1]}) is really a Windows program in disguise")
+                    pts.append(50)
+                    break
+    except Exception:
+        pass
+    return pts, texts
+
+
+def _inspect_web_page(data: bytes, svg: bool):
+    """A web page or drawing sent as a file: login boxes, hidden downloads, instant redirects."""
+    out = []
+    text = data.decode("utf-8", "ignore")
+    low = text.lower()
+    if re.search(r"<input[^>]+type\s*=\s*[\"']?password", low):
+        brand = re.search(r"(microsoft|outlook|office ?365|onedrive|sharepoint|adobe|docusign|wetransfer|dropbox|"
+                          r"gmail|google|yahoo|webmail|sbi|hdfc|icici|axis|kotak|paytm|phonepe|bank|netbanking|"
+                          r"aadhaa?r|income ?tax|whatsapp|instagram|facebook)", low)
+        if brand:
+            out.append((f"This file is a login page with a password box and uses the name '{brand.group(1).title()}'. "
+                        "Login pages sent as files are almost always fake and send your password to criminals", 55))
+        else:
+            out.append(("This file is a login page with a password box. Login pages sent as files are almost always "
+                        "fake and send your password to criminals", 55))
+        if re.search(r"<input[^>]+value\s*=\s*[\"'][^\"'@\s]+@[^\"'\s]+\.[a-z]{2,}", low):
+            out.append(("Your email address is already filled in, to make the fake page look personal", 10))
+    elif re.search(r"<input[^>]+name\s*=\s*[\"']?(otp|pin|cvv|card|upi|aadhaa?r|pan)\b", low):
+        out.append(("This file is a form asking for OTP, PIN, card or bank details. Never type them into a file", 45))
+    if re.search(r"(new\s+blob\s*\(|createobjecturl|mssaveoropenblob|navigator\.mssaveblob)", low) and \
+            re.search(r"(atob\s*\(|\.download\s*=|download\s*=)", low):
+        out.append(("This file builds another file inside your browser and downloads it (HTML smuggling). "
+                    "This is used to sneak malware past email protection", 55))
+    elif re.search(r"(eval\s*\(\s*(atob|unescape|decodeuricomponent)|document\.write\s*\(\s*(unescape|atob|decodeuricomponent)|"
+                   r"string\.fromcharcode\s*\((\s*\d+\s*,){20,})", low):
+        out.append(("This file hides its real content with scrambled code", 30))
+    redirect = re.search(r"http-equiv\s*=\s*[\"']?refresh[^>]+url\s*=\s*['\"]?https?://", low) or \
+        re.search(r"(window|document|top|self)\.location(\.href)?\s*=\s*['\"`]https?://", low) or \
+        re.search(r"location\.(replace|assign)\s*\(\s*['\"`]https?://", low)
+    if redirect:
+        out.append(("Opening this file sends you straight to a website, a way to get around link checks in email and chat", 20))
+    if svg and re.search(r"<script|onload\s*=|javascript:", low):
+        out.append(("This picture (SVG) contains a program (script). Real pictures don't need one", 35))
+    return out
 
 
 VT_API = "https://www.virustotal.com/api/v3"
@@ -370,8 +533,12 @@ def extract_file_links(real_type: str, data: bytes, limit: int = 3) -> list:
                             raw.append(m.group(1))
         elif real_type == "PDF":
             raw = [m.group(1) for m in re.finditer(rb"/URI\s*\(([^)]{4,300})\)", data[:8_000_000])]
-        elif real_type in ("unknown", "script"):
+        elif real_type in ("unknown", "script", "web page", "SVG image", "internet shortcut"):
             raw = _LINK_IN_FILE.findall(data[:2_000_000])
+            # where a web page sends what you type, or where it jumps to, matters most
+            first = re.findall(rb"(?:action\s*=\s*[\"']?|url\s*=\s*['\"]?|location(?:\.href)?\s*=\s*['\"`]|"
+                               rb"(?:replace|assign)\s*\(\s*['\"`])(https?://[^\s\"'`<>)]{4,300})", data[:2_000_000], re.I)
+            raw = first + [r for r in raw if r not in first]
     except Exception:
         return []
     out = []
@@ -460,6 +627,13 @@ def scan_file_route():
     if not file_bytes:
         return jsonify({"error": "This file is empty."}), 400
 
+    result = scan_file_bytes(filename, file_bytes, vt_upload=request.form.get("vt_upload") == "1")
+    log_scan("file", result)
+    return jsonify(result)
+
+
+def scan_file_bytes(filename: str, file_bytes: bytes, vt_upload: bool = False, use_vt: bool = True) -> dict:
+    """The whole file check (also used by the owner's live self-test)."""
     sha256 = hashlib.sha256(file_bytes).hexdigest()
     md5 = hashlib.md5(file_bytes).hexdigest()
     sha1 = hashlib.sha1(file_bytes).hexdigest()
@@ -483,11 +657,11 @@ def scan_file_route():
     with ThreadPoolExecutor(3) as pool:
         known_f = pool.submit(check_known_good, sha256)
         bazaar_f = pool.submit(check_malwarebazaar, sha256)
-        vt_result = check_virustotal_hash(sha256)
+        vt_result = check_virustotal_hash(sha256) if use_vt else {"status": "skip", "score": 0, "findings": [], "vt": {"state": "off"}}
         known = known_f.result()
         bazaar = bazaar_f.result()
     # The visitor agreed to let VirusTotal scan the file itself (only if it has never been seen)
-    if request.form.get("vt_upload") == "1" and vt_result.get("vt", {}).get("state") == "not_found":
+    if vt_upload and vt_result.get("vt", {}).get("state") == "not_found":
         uploaded = upload_to_virustotal(filename, file_bytes, sha256)
         if uploaded.get("state") == "found":
             vt_result = {**_vt_scoring(uploaded), "vt": uploaded}
@@ -562,6 +736,4 @@ def scan_file_route():
         "verdict": verdict_from_score(total_score),
         "findings": all_findings,
     }
-
-    log_scan("file", result)
-    return jsonify(result)
+    return result

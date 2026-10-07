@@ -140,3 +140,78 @@ def selftest_links_route():
         "seconds": round(time.time() - began, 1),
         "results": results,
     })
+
+
+# ---------------------------------------------------------------------------
+# Files: /api/selftest/files?key=<STATUS_KEY>&set=1 ... 6
+# ---------------------------------------------------------------------------
+def _one_file(name, data, expect, use_vt):
+    from scanners.file_scanner import scan_file_bytes
+    t = time.time()
+    try:
+        r = scan_file_bytes(name, data, use_vt=use_vt)
+    except Exception as e:
+        return {"file": name, "expected": expect, "verdict": "ERROR", "right": False, "error": f"{type(e).__name__}: {str(e)[:120]}"}
+    vt = r.get("virustotal") or {}
+    return {"file": name, "expected": expect, "verdict": r["verdict"], "score": r["risk_score"],
+            "right": _right(expect, r["verdict"]), "seconds": round(time.time() - t, 1), "type": r.get("detected_type"),
+            "why": [f[:170] for f in r.get("findings", [])[:4]],
+            "checks": {c["id"]: c["status"] for c in r.get("checks", [])},
+            "virustotal": {k: vt.get(k) for k in ("state", "malicious", "total") if k in vt} or None}
+
+
+def _recent_bazaar(n=3):
+    """The newest malware samples on MalwareBazaar, checked by fingerprint only (we never download them)."""
+    import os
+    import requests
+    key = os.environ.get("ABUSECH_AUTH_KEY", "")
+    if not key:
+        return []
+    try:
+        data = requests.post("https://mb-api.abuse.ch/api/v1/", data={"query": "get_recent", "selector": "time"},
+                             headers={"Auth-Key": key, "User-Agent": "StaySafe/2.0"}, timeout=10).json()
+        return [(d.get("sha256_hash"), d.get("signature") or d.get("file_type") or "") for d in (data.get("data") or [])[:n]
+                if d.get("sha256_hash")]
+    except Exception:
+        return []
+
+
+def _one_hash(sha, label):
+    from scanners.file_scanner import check_malwarebazaar, check_virustotal_hash
+    t = time.time()
+    mb = check_malwarebazaar(sha)
+    vt = check_virustotal_hash(sha)
+    found = mb.get("found") or (vt.get("vt") or {}).get("malicious", 0) >= 1
+    return {"file": f"newest MalwareBazaar sample ({label or 'malware'})", "sha256": sha, "expected": "FOUND",
+            "verdict": "FOUND" if found else "NOT_FOUND", "right": bool(found), "seconds": round(time.time() - t, 1),
+            "malwarebazaar": mb, "virustotal": {k: (vt.get("vt") or {}).get(k) for k in ("state", "malicious", "total")}}
+
+
+@selftest_bp.route("/api/selftest/files", methods=["GET"])
+def selftest_files_route():
+    from scanners.security import has_status_key
+    from scanners.selftest_files import file_sets
+    if not has_status_key():
+        return jsonify({"error": "Not found"}), 404
+    sets = file_sets()
+    pick = str(request.args.get("set") or "").strip()
+    if pick not in sets:
+        return jsonify({"how": "Add &set=1 (then 2 ... 6) to the address.", "sets": {k: v[0] for k, v in sets.items()}})
+    title, cases = sets[pick]
+    use_vt = pick == "6"        # made-up sample files are never on VirusTotal, so its free allowance is saved
+    began = time.time()
+    futures = [(n, e, _POOL.submit(_one_file, n, d, e, use_vt)) for n, d, e in cases]
+    if pick == "6":
+        futures += [(f"sample {sha[:12]}", "FOUND", _POOL.submit(_one_hash, sha, label)) for sha, label in _recent_bazaar()]
+    results = []
+    for n, e, f in futures:
+        try:
+            results.append(f.result(timeout=max(1, DEADLINE - (time.time() - began))))
+        except Exception:
+            results.append({"file": n, "expected": e, "verdict": "STILL_RUNNING", "right": None,
+                            "note": "Took too long this time. Open the same address again."})
+    graded = [r for r in results if r.get("right") is not None]
+    return jsonify({"set": pick, "title": title,
+                    "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
+                    "wrong": [r["file"] for r in graded if not r["right"]],
+                    "seconds": round(time.time() - began, 1), "results": results})

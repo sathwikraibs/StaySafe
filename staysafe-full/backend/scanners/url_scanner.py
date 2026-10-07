@@ -2311,6 +2311,9 @@ def scan_url(url: str, _hop: int = 0) -> dict:
         findings.insert(0, f"This link is on a public list of scam and malware links ({feed['source']})")
         score = led.moved(findings, score, max(score + 50, 95))
         _check(checks, "feeds", "fail", feed["source"])
+    elif feed["status"] == "warn" and not structure["hosting"] and not structure["shortener"] \
+            and (popularity_rank(reg) or 10**9) <= 20_000:
+        _check(checks, "feeds", "pass")     # a big shared website (raw.githubusercontent.com): one bad file doesn't make it a scam site
     elif feed["status"] == "warn" and not structure["hosting"] and not structure["shortener"]:
         findings.append(f"Scam pages on this website were reported recently ({feed['source']})")
         score += led.note(findings, 25)

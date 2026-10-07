@@ -1099,6 +1099,17 @@ def test_bank_moving_to_bank_in_is_not_a_secret_redirect():
     assert any("secretly" in f for f in r["findings"]), r["findings"]
 
 
+def test_file_tricks_from_the_live_test_sets():
+    """Every sample in the owner's live file test gives the expected answer offline too."""
+    from scanners.file_scanner import scan_file_bytes
+    from scanners.selftest_files import file_sets
+    from scanners.selftest import _right
+    for key, (title, cases) in file_sets().items():
+        for name, data, expect in cases:
+            r = scan_file_bytes(name, data, use_vt=False)
+            assert _right(expect, r["verdict"]), (title, name, r["verdict"], r["risk_score"], r["findings"])
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
