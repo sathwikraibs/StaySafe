@@ -254,7 +254,7 @@ def _online(dns=True, age=900, gsb=False, vt=None, page=None):
     url_scanner.resolve_host = lambda host: {"exists": dns, "ips": ["93.184.216.34"] if dns else []}
     url_scanner.whois_age_days = lambda domain: age
     url_scanner.check_safe_browsing = lambda urls: {"listed": gsb, "threats": ["SOCIAL_ENGINEERING"] if gsb else []}
-    url_scanner.check_virustotal = lambda url, domain: vt or {"status": "ok", "malicious": 0, "suspicious": 0,
+    url_scanner.check_virustotal = lambda url, domain, *_: vt or {"status": "ok", "malicious": 0, "suspicious": 0,
                                                              "harmless": 60, "engines": 90, "domain_malicious": 0}
     url_scanner.fetch_page = fake_page
     url_scanner.ensure_feeds = lambda: None  # no downloads in tests

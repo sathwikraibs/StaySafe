@@ -378,7 +378,7 @@ def test_google_share_link_is_judged_by_the_page_it_opens_not_by_lists_of_the_wh
         u.whois_details = lambda d: {}
         u.cert_details = lambda h: {}
         u.first_certificate_days = lambda h: 3000
-        u.check_virustotal = lambda url, d: {"status": "ok", "malicious": 0, "domain_malicious": 0}
+        u.check_virustotal = lambda url, d, *_: {"status": "ok", "malicious": 0, "domain_malicious": 0}
         u.check_safe_browsing = lambda urls: {"listed": False, "threats": []}
         u.check_abusech = lambda url, h: {"status": "pass"}
         u.check_urlscan = lambda h: {"status": "pass"}
