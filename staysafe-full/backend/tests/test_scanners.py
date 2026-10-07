@@ -1157,7 +1157,7 @@ def test_fresh_scam_patterns_from_blind_test():
               "http://curemypc.myvnc.com/cgi-bin/index.ha", "http://zoominvite07.pages.dev", "http://shopee7677.blogspot.com/",
               "http://nltavaconsulting.com/space/r.html#galis@3398cb06b10be.org"]:
         assert scan_url(u)["verdict"] != "SAFE", (u, scan_url(u)["findings"])
-    for u in ["https://zoom-clone-project.vercel.app", "https://www.zoom.us", "https://shopee.co.id", "https://www.adobe.com"]:
+    for u in ["https://my-portfolio.vercel.app", "https://www.zoom.us", "https://shopee.co.id", "https://www.adobe.com"]:
         assert scan_url(u)["verdict"] == "SAFE", (u, scan_url(u)["findings"])
 
 
