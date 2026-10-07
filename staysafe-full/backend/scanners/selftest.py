@@ -121,7 +121,7 @@ def selftest_links_route():
     elif pick in LINK_SETS:
         title, cases = LINK_SETS[pick]
         if cases is None:
-            cases = _fresh_scam_links(8, ("OpenPhish",)) if pick == "9" else _fresh_scam_links()
+            cases = [(u, NOT_SAFE) for u, _ in _fresh_scam_links(8, ("OpenPhish",))] if pick == "9" else _fresh_scam_links()
             if not cases:
                 return jsonify({"set": pick, "error": "Today's public lists are still loading. Open again in a minute."})
     else:

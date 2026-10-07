@@ -179,6 +179,23 @@ BRANDS = {
     "binance": {"binance.com"},
     "metamask": {"metamask.io"},
     "trezor": {"trezor.io"},
+    "exodus": {"exodus.com", "exodus.io"},
+    "ledger": {"ledger.com"},
+    "ledgerlive": {"ledger.com"},
+    "trustwallet": {"trustwallet.com"},
+    "phantom": {"phantom.app", "phantom.com"},
+    "kraken": {"kraken.com"},
+    "tokenpocket": {"tokenpocket.pro"},
+    "uniswap": {"uniswap.org"},
+    "opensea": {"opensea.io"},
+    "pancakeswap": {"pancakeswap.finance"},
+    "walletconnect": {"walletconnect.com", "walletconnect.network"},
+    "atomicwallet": {"atomicwallet.io"},
+    "kucoin": {"kucoin.com"},
+    "bybit": {"bybit.com"},
+    "wazirx": {"wazirx.com"},
+    "coindcx": {"coindcx.com"},
+    "coinswitch": {"coinswitch.co"},
     "usps": {"usps.com"},
     "docusign": {"docusign.com", "docusign.net"},
     "dropbox": {"dropbox.com", "dropboxusercontent.com", "db.tt"},
@@ -195,7 +212,7 @@ BRANDS = {
 WORD_BRANDS = {"telegram", "apple", "chase", "outlook", "cred", "groww", "steam"}
 # Short names that are inside ordinary words ("train", "trailer", "ksebastian"): only counted when they
 # stand alone in the website name ("trai-sim-block") or are joined to a scam word ("traiverify")
-STANDALONE_BRANDS = {"trai", "kseb", "dtdc", "jio", "pnb", "kbc", "dhl", "cbi", "sbi"}
+STANDALONE_BRANDS = {"trai", "kseb", "dtdc", "jio", "pnb", "kbc", "dhl", "cbi", "sbi", "ledger", "phantom", "exodus", "kraken"}
 
 BRAND_DISPLAY = {
     "sbi": "SBI", "onlinesbi": "SBI", "hdfc": "HDFC Bank", "icici": "ICICI Bank", "axisbank": "Axis Bank",
@@ -217,6 +234,10 @@ BRAND_DISPLAY = {
     "metamask": "MetaMask", "trezor": "Trezor", "usps": "USPS", "docusign": "DocuSign", "dropbox": "Dropbox",
     "onedrive": "Microsoft OneDrive", "office365": "Microsoft Office", "outlook": "Outlook", "yahoo": "Yahoo",
     "roblox": "Roblox", "steamcommunity": "Steam", "steampowered": "Steam",
+    "exodus": "Exodus wallet", "ledger": "Ledger", "ledgerlive": "Ledger Live", "trustwallet": "Trust Wallet",
+    "phantom": "Phantom wallet", "kraken": "Kraken", "tokenpocket": "TokenPocket", "uniswap": "Uniswap",
+    "opensea": "OpenSea", "pancakeswap": "PancakeSwap", "walletconnect": "WalletConnect", "atomicwallet": "Atomic Wallet",
+    "kucoin": "KuCoin", "bybit": "Bybit", "wazirx": "WazirX", "coindcx": "CoinDCX", "coinswitch": "CoinSwitch",
     "mescom": "MESCOM", "hescom": "HESCOM", "gescom": "GESCOM", "cescmysore": "CESC Mysore", "kseb": "KSEB",
     "tangedco": "TANGEDCO", "cybercrime": "Cyber Crime Portal", "trai": "TRAI", "cbi": "CBI", "dtdc": "DTDC",
     "sanchar": "Department of Telecom",
@@ -241,6 +262,9 @@ TYPO_TARGETS = {
     "coinbase": "coinbase", "binance": "binance", "metamask": "metamask", "chaseonline": "chase",
     "wellsfargo": "wellsfargo", "bankofamerica": "bankofamerica", "docusign": "docusign", "roblox": "roblox",
     "uidai": "uidai", "parivahan": "parivahan", "digilocker": "digilocker", "pmkisan": "pmkisan",
+    "exodus": "exodus", "ledgerlive": "ledgerlive", "trustwallet": "trustwallet", "tokenpocket": "tokenpocket",
+    "pancakeswap": "pancakeswap", "walletconnect": "walletconnect", "metamask": "metamask", "phantom": "phantom",
+    "wazirx": "wazirx", "coindcx": "coindcx", "kucoin": "kucoin",
 }
 
 TRUSTED_DOMAINS = set().union(*BRANDS.values()) | {
@@ -745,6 +769,14 @@ def analyze_structure(url: str) -> dict:
                     if _edit_distance(cand, target) <= limit:
                         brand_hit = brand
                         break
+                if not brand_hit:
+                    # a misspelled brand as one word of the name (ur-exods.pages.dev, my-metamsk-wallet.com)
+                    for tok in [t for t in re.split(r"[.\-]", host[: -len(reg)] + name_part if hosting else name_part) if len(t) >= 5]:
+                        if tok == target or tok[0] != target[0]:
+                            continue
+                        if 0 < _edit_distance(tok, target) <= (2 if len(target) >= 9 else 1):
+                            brand_hit = brand
+                            break
                 if brand_hit and exact_name:
                     findings.append(f"Link uses the name '{brand_name(brand_hit)}' but is NOT {brand_name(brand_hit)}'s official website ({reg})")
                     score += led.note(findings, 45)
@@ -816,6 +848,23 @@ def analyze_structure(url: str) -> dict:
         if re.search(r"/wp-(content|includes|admin)/[^?#]*(login|signin|webmail|verify|secure|bank|account|auth|update|office|outlook|paypal|apple|netflix|wallet)", path) \
                 or re.search(r"/(signin|sign-in|login|logon|auth|verify|verification|validate|webmail|secure-?file|otp\w*|bizmail|mailbox|owa|onedrive|sharepoint|office365|docusign|excel\w*)\.(php|html?|aspx?)\b", path):
             findings.append("The link's address looks like a fake login page hidden inside another website")
+            score += led.note(findings, 25)
+            tricks += 1
+
+        # another website's address written into the name: start-ledgerlive-com-web.typedream.app, www-sbi-co-in.com
+        label_part = host[: -len(reg)].rstrip(".") + "." + name_part if hosting else host[: -len(reg)].rstrip(".") + "." + name_part
+        # (only when more follows, "x-com-web", or in a sub-name; "owata-net.com" is just a name)
+        hidden_site = re.search(r"(^|[.\-])[a-z0-9]{3,}-(com|co-in|org|net|gov-in)-", label_part.strip(".")) or \
+            re.search(r"(^|[.\-])[a-z0-9]{3,}-(com|co-in|org|net|gov-in)\.", host[: -len(reg)])
+        if hidden_site and not re.search(r"(^|[.\-])dot-com", label_part):
+            findings.append("The website name has another website's address written into it, to look like that website")
+            score += led.note(findings, 25)
+            tricks += 1
+
+        # a page hidden inside a website's own system folders (hacked WordPress sites host scam pages there)
+        if re.search(r"/wp-(includes|admin)/(?![^?#]*\.(js|css|png|jpe?g|gif|svg|woff2?)\b)[^?#]*\.(html?|php)\b", path) and \
+                not re.search(r"/wp-admin/(admin-ajax|admin-post|index|post|edit|options-general|load-(scripts|styles))\.php", path):
+            findings.append("The page is hidden inside the website's own system folders, where hacked websites keep scam pages")
             score += led.note(findings, 25)
             tricks += 1
 
@@ -1853,6 +1902,9 @@ LOGIN_BRAND_WORDS = {
     "facebook": "facebook", "instagram": "instagram", "whatsapp": "whatsapp", "gmail": "google",
     "irctc": "irctc", "aadhaar": "aadhaar", "income tax": "incometax", "india post": "indiapost",
     "canara": "canarabank", "punjab national": "pnb", "bank of baroda": "bankofbaroda",
+    "metamask": "metamask", "exodus": "exodus", "ledger live": "ledgerlive", "trust wallet": "trustwallet",
+    "coinbase": "coinbase", "binance": "binance", "phantom wallet": "phantom", "wazirx": "wazirx",
+    "dropbox": "dropbox", "docusign": "docusign", "onedrive": "onedrive", "sharepoint": "office365",
 }
 
 
@@ -1897,7 +1949,8 @@ def fetch_page(url: str) -> dict:
              'text', 'download', 'blocked', 'error'}.
     """
     out = {"ok": False, "final_url": url, "hops": [], "status": None, "ssl_error": False,
-           "title": "", "has_password": False, "text": "", "download": None, "blocked": False, "error": None}
+           "title": "", "has_password": False, "text": "", "download": None, "blocked": False, "error": None,
+           "telegram_exfil": False, "form_to": "", "js_redirect": "", "scrambled": False}
     if OFFLINE:
         out["error"] = "offline"
         return out
@@ -1951,6 +2004,7 @@ def fetch_page(url: str) -> dict:
                     out["has_password"] = re.search(r"<input[^>]{0,400}type\s*=\s*[\"']?password", html, re.I) is not None
                     text = _strip_blocks(html)
                     out["text"] = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text))[:5000].lower()
+                    out.update(_page_tricks(html, current))
                 resp.close()
                 out["ok"] = True
                 return out
@@ -1959,6 +2013,29 @@ def fetch_page(url: str) -> dict:
     except Exception as e:
         out["error"] = type(e).__name__
         return out
+
+
+def _page_tricks(html: str, page_url: str) -> dict:
+    """Tricks phishing pages use that a browser would hide: where typed details are sent, a jump
+    to another website done by the page's own code, and scrambled code."""
+    low = html[:MAX_PAGE_BYTES].lower()
+    out = {"telegram_exfil": "api.telegram.org/bot" in low, "form_to": "", "js_redirect": "", "scrambled": False}
+    here = registered_domain(urlparse(page_url).hostname or "")
+    for m in re.finditer(r"<form[^>]{0,400}action\s*=\s*[\"']?(https?://[^\"'\s>]{4,300})", low):
+        h = (urlparse(m.group(1)).hostname or "").lower()
+        if h and registered_domain(h) != here:
+            out["form_to"] = h
+            break
+    m = re.search(r"http-equiv\s*=\s*[\"']?refresh[^>]{0,200}url\s*=\s*['\"]?(https?://[^\"'\s>]{4,300})", low) or \
+        re.search(r"(?:window|document|top|self)\.location(?:\.href)?\s*=\s*['\"`](https?://[^'\"`\s]{4,300})", low) or \
+        re.search(r"location\.(?:replace|assign)\s*\(\s*['\"`](https?://[^'\"`\s]{4,300})", low)
+    if m:
+        h = (urlparse(m.group(1)).hostname or "").lower()
+        if h and registered_domain(h) != here:
+            out["js_redirect"] = m.group(1)
+    out["scrambled"] = re.search(r"(eval\s*\(\s*(atob|unescape|decodeuricomponent)\s*\(|document\.write\s*\(\s*(unescape|atob)\s*\()",
+                                 low) is not None
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -2244,6 +2321,21 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
     else:
         _check(checks, "redirect", "skip")
 
+    # a jump to another website done by the page's own code (a browser follows it, our fetch does not)
+    jump = page.get("js_redirect") or ""
+    jump_host = (urlparse(jump).hostname or "").lower() if jump else ""
+    if jump_host and not structure["hosting"] == jump_host:
+        findings.append(f"This page immediately sends visitors on to another website: {jump_host}")
+        _check(checks, "redirect", "warn", jump_host)
+        dest = analyze_structure(jump)
+        if dest["score"] >= 20:
+            score += dest["score"]
+            findings.extend(f"Final website: {f}" for f in dest["findings"])
+            for dp in dest.get("parts", []):
+                led.add(f"Final website: {dp['label']}", dp["points"])
+        else:
+            score += led.note(findings, 10)
+
     # --- the page itself
     final_official = any(_is_official(final_host, d) for d in BRANDS.values()) or \
         registered_domain(final_host or host) in TRUSTED_DOMAINS
@@ -2259,8 +2351,25 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
         haystack = (page.get("title", "") + " " + page.get("text", "")[:3000]).lower()
         pretends = next((b for w, b in LOGIN_BRAND_WORDS.items() if re.search(rf"\b{re.escape(w)}\b", haystack)), None)
         otp_words = re.search(r"\b(otp|upi pin|atm pin|cvv|card number|net ?banking|aadhaa?r number)\b", haystack)
+        seed = re.search(r"\b(recovery phrase|seed phrase|secret (recovery )?phrase|mnemonic phrase|12[- ]word phrase|"
+                         r"24[- ]word phrase|enter (your )?private key|import (your )?wallet|restore (your )?wallet)\b", haystack)
         pretends = brand_name(pretends) if pretends else pretends
-        if page.get("has_password") and pretends:
+        if page.get("telegram_exfil"):
+            findings.append("This page sends what you type straight to a Telegram account. Scam pages do this to collect "
+                            "stolen passwords and card details")
+            score += led.note(findings, 50)
+        if page.get("form_to") and page.get("has_password"):
+            findings.append(f"This page sends the password you type to a different website ({page['form_to']})")
+            score += led.note(findings, 30)
+        if page.get("scrambled") and (page.get("has_password") or pretends or otp_words):
+            findings.append("This page hides its real content with scrambled code")
+            score += led.note(findings, 15)
+        if seed:
+            findings.append("This page asks for a crypto wallet's recovery phrase or private key. No genuine service ever asks "
+                            "for it. Whoever has it can empty the wallet")
+            score += led.note(findings, 55)
+            _check(checks, "page", "fail", "recovery phrase")
+        elif page.get("has_password") and pretends:
             findings.append(f"This page asks for a password and looks like a {pretends} page, but it is not on {pretends}'s website. This is a fake login page")
             score += led.note(findings, 45)
             _check(checks, "page", "fail", pretends)
@@ -2278,6 +2387,9 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False) -> dict:
         _check(checks, "page", "pass", None)
     else:
         _check(checks, "page", "skip")
+    if (page.get("telegram_exfil") or (page.get("form_to") and page.get("has_password"))) and not final_official:
+        checks[:] = [c for c in checks if c["id"] != "page"]
+        _check(checks, "page", "fail", "telegram" if page.get("telegram_exfil") else page.get("form_to"))
 
     # --- Google Safe Browsing
     if gsb.get("listed"):
