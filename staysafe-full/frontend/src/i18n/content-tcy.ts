@@ -103,6 +103,8 @@ export const tcyContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಕೆ ಮಲ್ಪುಜಿ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆತಿಜಿ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ಡ್ ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ದ ಬದಲ್ ಬರೀ IP ನಂಬರ್ ಉಂಡು",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "ಈ ಪುಟ ಉಚಿತ ಹೋಸ್ಟಿಂಗ್ ({host}) ಡ್ ಉಂಡು, ಅಲ್ಪ ಏರ್‌ಲಾ ಪುಟ ಮಲ್ಪೊಲಿ. ಉಂದೆನ್ ಏರ್ ಮಲ್ತೆರ್ ಪಂಡ್‌ದ್ ತೂಲೆ",
+    "Website name looks randomly generated, typical of throwaway scam sites": "ವೆಬ್‌ಸೈಟ್‌ದ ಪುದರ್ ಸುಮ್ಮನೆ ಬರೆತಿನ ಅಕ್ಷರಲೆಕ್ಕ ತೋಜುಂಡು, ಕೆಲವು ದಿನ ಮಾತ್ರ ಉಪಯೋಗ ಮಲ್ಪುನ ಮೋಸದ ಸೈಟ್‌ಲೆಡ್ ಇಂಚ ಇಪ್ಪುಂಡು",
+    "The link's address looks like a fake login page hidden inside another website": "ಈ ಲಿಂಕ್‌ದ ವಿಳಾಸ ಬೇತೆ ವೆಬ್‌ಸೈಟ್‌ದುಲಾಯಿ ದೆಂಗಾದ್ ದೀತಿನ ನಕಲಿ ಲಾಗಿನ್ ಪುಟದ ಲೆಕ್ಕ ತೋಜುಂಡು",
     "Website name uses special look-alike characters (punycode) to imitate another site": "ಬೇತೆ ಸೈಟ್‌ದ ಲೆಕ್ಕ ತೋಜೆರೆ ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ಡ್ ಒಂಜೇ ಲೆಕ್ಕ ತೋಜುನ ವಿಶೇಷ ಅಕ್ಷರೊಲು ಉಂಡು (punycode)",
     "Link mentions '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್‌ಡ್ '{brand}' ಪಂಡ್‌ದ್ ಉಂಡು, ಆಂಡ ಉಂದು {brand2} ದ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅತ್ತ್ ({domain})",
     "Link uses look-alike characters to imitate '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್ ಒಂಜೇ ಲೆಕ್ಕ ತೋಜುನ ಅಕ್ಷರೊಲೆಡ್ '{brand}' ದ ಲೆಕ್ಕ ನಟನೆ ಮಲ್ಪುಂಡು, ಆಂಡ ಉಂದು {brand2} ದ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅತ್ತ್ ({domain})",

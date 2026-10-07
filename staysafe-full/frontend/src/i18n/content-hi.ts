@@ -102,6 +102,8 @@ export const hiContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "लिंक HTTPS इस्तेमाल नहीं करता (कनेक्शन सुरक्षित/एन्क्रिप्टेड नहीं है)",
     "Link uses a raw IP address instead of a real website name": "लिंक में वेबसाइट के नाम की जगह सिर्फ़ IP नंबर है",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "यह पेज मुफ़्त होस्टिंग ({host}) पर है, जहाँ कोई भी पेज बना सकता है। देखें कि इसे किसने बनाया",
+    "Website name looks randomly generated, typical of throwaway scam sites": "वेबसाइट का नाम बेतरतीब अक्षरों जैसा है, जैसा कुछ दिन चलकर बंद होने वाली धोखाधड़ी साइटों में होता है",
+    "The link's address looks like a fake login page hidden inside another website": "इस लिंक का पता किसी दूसरी वेबसाइट के अंदर छिपे नकली लॉगिन पेज जैसा दिखता है",
     "Website name uses special look-alike characters (punycode) to imitate another site": "वेबसाइट के नाम में मिलते-जुलते खास अक्षर हैं (punycode), ताकि वह किसी और साइट जैसी दिखे",
     "Link mentions '{brand}' but is NOT {brand2}'s official website ({domain})": "लिंक में '{brand}' लिखा है, लेकिन यह {brand2} की असली वेबसाइट नहीं है ({domain})",
     "Link uses look-alike characters to imitate '{brand}' but is NOT {brand2}'s official website ({domain})": "लिंक मिलते-जुलते अक्षरों से '{brand}' जैसा दिखता है, लेकिन यह {brand2} की असली वेबसाइट नहीं है ({domain})",

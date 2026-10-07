@@ -81,6 +81,13 @@ MULTI_PART_SUFFIXES = {
     "com.np", "co.id", "bank.in",
 }
 
+SECOND_LEVEL = {"com", "co", "net", "org", "gov", "ac", "edu", "ne", "or", "go", "gob", "nic", "mil", "ltd", "plc"}
+# Global brands whose own country websites (google.de, amazon.co.jp) are real when they are well-known sites
+GLOBAL_BRANDS = {"google", "amazon", "apple", "microsoft", "facebook", "instagram", "netflix", "paypal", "youtube",
+                 "linkedin", "yahoo", "ebay", "samsung", "whatsapp", "twitter"}
+MAJOR_CC = set("""in us uk de fr it es nl be ch at se no dk fi ie pt pl cz gr ru ua tr il ae sa eg za ng ke ma
+                  jp kr cn hk tw sg my id th vn ph au nz ca mx br ar cl co pe ve pk bd lk np""".split())
+
 # Brand keyword -> the real registered domains that brand uses
 BRANDS = {
     "sbi": {"sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbicard.com", "sbi", "sbi.bank.in"},
@@ -187,6 +194,7 @@ FREE_HOSTING = {
     "appspot.com", "azurewebsites.net", "wordpress.com", "godaddysites.com", "square.site",
     "webflow.io", "framer.website", "carrd.co", "mystrikingly.com", "jimdosite.com",
     "surge.sh", "fly.dev", "railway.app", "r2.dev", "ipfs.io", "dweb.link", "trycloudflare.com",
+    "cf-ipfs.com", "w3s.link", "nftstorage.link", "4everland.io", "fleek.co", "ipfs.dweb.link",
 }
 TRUSTED_DOMAINS -= FREE_HOSTING
 
@@ -212,6 +220,9 @@ def registered_domain(host: str) -> str:
         suffix = ".".join(labels[-size:])
         if len(labels) > size and (suffix in FREE_HOSTING or suffix in MULTI_PART_SUFFIXES):
             return ".".join(labels[-(size + 1):])
+    # any country's second level, like com.mx, co.kr, org.br, gov.ng
+    if len(labels) >= 3 and len(labels[-1]) == 2 and labels[-2] in SECOND_LEVEL:
+        return ".".join(labels[-3:])
     return ".".join(labels[-2:])
 
 
@@ -316,6 +327,25 @@ def link_check_status() -> dict:
 # ---------------------------------------------------------------------------
 # 1. The address itself
 # ---------------------------------------------------------------------------
+def path_for_hosting(url: str) -> str:
+    try:
+        return urlparse(url).path.lower()
+    except Exception:
+        return ""
+
+
+def _random_looking(label: str) -> bool:
+    """A website name that looks machine-made (svuyvmmweyrfgeqg, iokycc2ghvd74nmnh4ki), not a word or brand."""
+    if len(label) < 12 or "xn--" in label:
+        return False
+    letters = re.sub(r"[^a-z]", "", label)
+    digits = sum(ch.isdigit() for ch in label)
+    vowels = sum(ch in "aeiou" for ch in letters)
+    longest_consonants = max((len(m) for m in re.findall(r"[bcdfghjklmnpqrstvwxz]+", label)), default=0)
+    mixed = digits >= 3 and len(letters) >= 6 and re.search(r"[a-z]\d+[a-z]+\d", label) is not None
+    return longest_consonants >= 6 or mixed or (len(letters) >= 12 and vowels / max(1, len(letters)) < 0.2)
+
+
 def analyze_structure(url: str) -> dict:
     findings, checks = [], []
     score = 0
@@ -339,6 +369,8 @@ def analyze_structure(url: str) -> dict:
     trusted = reg in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in")) or \
         (host.endswith(tuple("." + t for t in BRAND_TLDS)) and reg not in OFFICIAL_SHORTENERS)
     hosting = next((h for h in FREE_HOSTING if host == h or host.endswith("." + h)), None)
+    if not hosting and re.search(r"/ip[fn]s/", path_for_hosting(url)):
+        hosting = "IPFS"
     shortener = reg in SHORTENER_DOMAINS
     if hosting:
         trusted = False
@@ -369,9 +401,17 @@ def analyze_structure(url: str) -> dict:
     if not trusted:
         host_compact = host.replace("-", "")
         host_lookalike = host_compact.translate(LOOKALIKE_MAP).replace("rn", "m").replace("vv", "w")
+        reg_parts = reg.split(".")
+        top_site = not hosting and host in (reg, "www." + reg) and (popularity_rank(reg) or 10**9) <= 10_000
+        country_site = len(reg_parts) in (2, 3) and len(reg_parts[-1]) == 2 and \
+            (len(reg_parts) == 2 or reg_parts[1] in SECOND_LEVEL) and (reg_parts[-1] in MAJOR_CC or top_site)
         for brand, official in BRANDS.items():
             if _is_official(host, official):
                 continue  # e.g. s3.amazonaws.com really is run by Amazon
+            if brand in GLOBAL_BRANDS and reg_parts[0] == brand and country_site:
+                continue  # google.de, amazon.co.jp: the brand's own website for that country
+            if top_site:
+                break  # one of the world's 10,000 most visited websites (kotaku.com, telegram.me), not a fake
             if len(brand) <= 3:
                 hit_plain = re.search(rf"(^|[.\-]){brand}([.\-]|$)", host) is not None
                 hit_lookalike = False
@@ -386,7 +426,7 @@ def analyze_structure(url: str) -> dict:
                 break
 
         # Misspelled brand name: amazom.in, flipkarrt.com, paytrn.com, g00gle.com
-        if not brand_hit:
+        if not brand_hit and not top_site:
             candidates = {name_part, name_part.replace("-", ""),
                           name_part.translate(LOOKALIKE_MAP).replace("rn", "m").replace("vv", "w")}
             for target, brand in TYPO_TARGETS.items():
@@ -444,6 +484,18 @@ def analyze_structure(url: str) -> dict:
         if len(host) > 40:
             findings.append("Website name is unusually long")
             score += led.note(findings, 5)
+            tricks += 1
+
+        first_label = host.split(".")[0]
+        if _random_looking(name_part.replace("-", "")) or (hosting and _random_looking(first_label.replace("-", ""))):
+            findings.append("Website name looks randomly generated, typical of throwaway scam sites")
+            score += led.note(findings, 15)
+            tricks += 1
+
+        if re.search(r"/wp-(content|includes|admin)/[^?#]*(login|signin|webmail|verify|secure|bank|account|auth|update|office|outlook|paypal|apple|netflix|wallet)", path) \
+                or re.search(r"/(signin|sign-in|login|logon|auth|verify|verification|validate|webmail|secure-?file|otp\w*)\.(php|html?|aspx?)\b", path):
+            findings.append("The link's address looks like a fake login page hidden inside another website")
+            score += led.note(findings, 25)
             tricks += 1
 
         if re.search(r"\d{4,}", name_part):
@@ -1784,7 +1836,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     if rank and not hard:
         _check(checks, "known", "pass", reg)
         checks[:] = [c for c in checks if not (c["id"] == "known" and c["status"] == "info")]
-        new_total = min(total, 20) if rank <= 10_000 else max(0, total - 10)
+        new_total = min(total, 15) if rank <= 10_000 else max(0, total - 10)   # 15: stays below "caution"
         if new_total != total:
             led.add(ADJ_POPULAR, new_total - total)
         total = new_total

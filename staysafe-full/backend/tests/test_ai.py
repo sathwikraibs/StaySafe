@@ -505,6 +505,24 @@ def test_tulu_answers_lose_kannada_only_words_and_kannada_answers_get_a_careful_
     assert assistant.proofread("Ittene 1930 g call malpule", "kn") == "Ittene 1930 g call malpule"   # not Kannada script
 
 
+def test_country_sites_and_very_popular_sites_are_not_called_fakes_but_tricks_still_are():
+    import scanners.url_scanner as u
+    saved = dict(u._TRANCO["ranks"])
+    try:
+        u._TRANCO["ranks"].clear()
+        u._TRANCO["ranks"].update({"google.ro": 219, "kotaku.com": 882, "telegraf.com.ua": 1741, "blogspot.com": 40})
+        for good in ("https://google.de/", "https://www.amazon.co.jp/", "https://google.ro/", "https://kotaku.com/",
+                     "https://telegraf.com.ua/"):
+            r = u.scan_url(good)
+            assert r["verdict"] == "SAFE", (good, r["risk_score"], r["findings"])
+        for bad in ("https://paypal-login.blogspot.com/", "https://g00gle.ro/", "https://kotak-kyc.com/",
+                    "https://xkqzvbtrwplm.com/", "https://cafe-shop.com/wp-includes/paypal/signin/index.php"):
+            r = u.scan_url(bad)
+            assert r["verdict"] != "SAFE", (bad, r["risk_score"], r["findings"])
+    finally:
+        u._TRANCO["ranks"].clear(); u._TRANCO["ranks"].update(saved)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

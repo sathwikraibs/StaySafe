@@ -102,6 +102,8 @@ export const knContent: LangContent = {
     "Link does not use HTTPS (the connection is not encrypted)": "ಲಿಂಕ್ HTTPS ಬಳಸುತ್ತಿಲ್ಲ (ಕನೆಕ್ಷನ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿಲ್ಲ)",
     "Link uses a raw IP address instead of a real website name": "ಲಿಂಕ್‌ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನ ಬದಲು ಕೇವಲ IP ನಂಬರ್ ಇದೆ",
     "Page is hosted on a free hosting service ({host}) where anyone can publish. Check who made it": "ಈ ಪುಟ ಉಚಿತ ಹೋಸ್ಟಿಂಗ್ ({host}) ನಲ್ಲಿದೆ, ಅಲ್ಲಿ ಯಾರು ಬೇಕಾದರೂ ಪುಟ ಮಾಡಬಹುದು. ಇದನ್ನು ಯಾರು ಮಾಡಿದ್ದಾರೆ ಎಂದು ನೋಡಿ",
+    "Website name looks randomly generated, typical of throwaway scam sites": "ವೆಬ್‌ಸೈಟ್ ಹೆಸರು ಯಾದೃಚ್ಛಿಕ ಅಕ್ಷರಗಳಂತೆ ಕಾಣುತ್ತದೆ, ಕೆಲವೇ ದಿನ ಬಳಸಿ ಬಿಡುವ ವಂಚನೆ ಸೈಟ್‌ಗಳಲ್ಲಿ ಹೀಗೆ ಇರುತ್ತದೆ",
+    "The link's address looks like a fake login page hidden inside another website": "ಈ ಲಿಂಕ್‌ನ ವಿಳಾಸ ಬೇರೊಂದು ವೆಬ್‌ಸೈಟ್‌ನೊಳಗೆ ಅಡಗಿಸಿಟ್ಟ ನಕಲಿ ಲಾಗಿನ್ ಪುಟದಂತೆ ಕಾಣುತ್ತದೆ",
     "Website name uses special look-alike characters (punycode) to imitate another site": "ಬೇರೆ ಸೈಟ್‌ನಂತೆ ಕಾಣಲು ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನಲ್ಲಿ ಒಂದೇ ರೀತಿ ಕಾಣುವ ವಿಶೇಷ ಅಕ್ಷರಗಳಿವೆ (punycode)",
     "Link mentions '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್‌ನಲ್ಲಿ '{brand}' ಎಂದಿದೆ, ಆದರೆ ಇದು {brand2} ನ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅಲ್ಲ ({domain})",
     "Link uses look-alike characters to imitate '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್ ಒಂದೇ ರೀತಿ ಕಾಣುವ ಅಕ್ಷರಗಳಿಂದ '{brand}' ನಂತೆ ನಟಿಸುತ್ತಿದೆ, ಆದರೆ ಇದು {brand2} ನ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅಲ್ಲ ({domain})",
