@@ -152,9 +152,9 @@ def review(text: str):
     from scanners.translator import mask_personal
     masked, _ = mask_personal(text)
     key = hashlib.sha256(masked.encode()).hexdigest()
-    with _lock:
-        if key in _cache:
-            return _cache[key]
+    known = known_verdict(key)
+    if known:
+        return known
     prompt = PROMPT.replace("{text}", masked)
     result = None
     for name, fn in (("groq", _groq), ("cloudflare", _cloudflare), ("gemini", _gemini), ("mistral", _mistral)):
@@ -163,11 +163,34 @@ def review(text: str):
             result = dict(out, provider=name)
             break
     if result:
-        with _lock:
-            _cache[key] = result
-            while len(_cache) > 1000:
-                _cache.popitem(last=False)
+        remember_verdict(key, result)
     return result
+
+
+def known_verdict(key: str):
+    """The AI's earlier verdict on exactly this (masked) message: from memory, then the long memory.
+    Forwarded scam messages are identical, so this saves most AI calls."""
+    with _lock:
+        if key in _cache:
+            return _cache[key]
+    from scanners import store
+    kept = store.get("ai", key)
+    if isinstance(kept, dict) and kept.get("verdict"):
+        with _lock:
+            _cache[key] = kept
+        return kept
+    return None
+
+
+def remember_verdict(key: str, result: dict) -> None:
+    with _lock:
+        _cache[key] = result
+        while len(_cache) > 1000:
+            _cache.popitem(last=False)
+    from scanners import store
+    # only the verdict is kept (never the message); scams for 7 days, others 2 days
+    keep = {k: result.get(k) for k in ("verdict", "category", "confidence", "provider")}
+    store.put("ai", key, keep, (7 if result.get("verdict") == "scam" else 2) * 86400)
 
 
 def apply_review(result: dict, text: str) -> dict:

@@ -285,6 +285,12 @@ def check_virustotal_hash(sha256: str) -> dict:
         hit = _VT_FOUND.get(sha256)
     if hit and time.time() - hit[0] < 3 * 3600:
         return hit[1]
+    from scanners import store
+    kept = store.get("file", sha256)
+    if isinstance(kept, dict) and kept.get("vt"):
+        with _VT_LOCK:
+            _VT_FOUND[sha256] = (time.time(), kept)
+        return kept
     try:
         deadline = time.time() + 40   # the file's own VirusTotal result matters most: wait for a free slot
         for _attempt in range(2):
@@ -307,6 +313,9 @@ def check_virustotal_hash(sha256: str) -> dict:
             _VT_FOUND[sha256] = (time.time(), out)
             if len(_VT_FOUND) > 500:
                 _VT_FOUND.pop(next(iter(_VT_FOUND)))
+        # A file's verdict rarely changes: harmful files are kept 30 days, others 3 days
+        harmful = (vt.get("malicious") or 0) >= 1 if isinstance(vt, dict) else False
+        store.put("file", sha256, out, (30 if harmful else 3) * 86400)
         return out
     except Exception:
         return {"status": "skip", "score": 0, "findings": [], "error": True, "vt": {"state": "error"}}

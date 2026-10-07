@@ -54,6 +54,8 @@ app.register_blueprint(telegram_bp)
 # Start downloading the free public scam-link lists in the background
 from scanners.url_scanner import ensure_feeds  # noqa: E402
 ensure_feeds()
+from scanners import store as _store  # noqa: E402
+_store.start_background()   # today's used allowances survive restarts
 
 
 @app.route("/")
@@ -76,6 +78,7 @@ def home():
         "contact_form": contact_status(),
         "assistant": assistant_ready(),
         "telegram_bot": telegram_status(),
+        "long_memory": _store.status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }
 

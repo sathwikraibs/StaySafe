@@ -38,8 +38,7 @@ def _needs(text: str, ui_lang: str) -> dict:
             and not os.environ.get("GROQ_API_KEY") \
             and not (os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_AI_TOKEN")):
         masked, _ = tr.mask_personal(text.strip()[:1500])
-        with ai_review._lock:
-            want_review = hashlib.sha256(masked.encode()).hexdigest() not in ai_review._cache
+        want_review = ai_review.known_verdict(hashlib.sha256(masked.encode()).hexdigest()) is None
     return {"en": want_en, "ui": ui_lang if want_ui else None, "review": want_review}
 
 
@@ -110,6 +109,5 @@ def prefetch(text: str, ui_lang: str) -> bool:
         verdict = ai_review._parse(json.dumps({k: data.get(k) for k in ("verdict", "category", "confidence")}))
         if verdict:
             rmasked, _ = tr.mask_personal(text[:1500])
-            with ai_review._lock:
-                ai_review._cache[hashlib.sha256(rmasked.encode()).hexdigest()] = dict(verdict, provider="gemini")
+            ai_review.remember_verdict(hashlib.sha256(rmasked.encode()).hexdigest(), dict(verdict, provider="gemini"))
     return True

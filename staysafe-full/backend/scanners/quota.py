@@ -255,6 +255,8 @@ QUOTAS = {
     "leakcheck": Quota("leakcheck", 20, _env_int("LEAKCHECK_DAILY_LIMIT", 300)),
     "abusech": Quota("abusech", 60, None),
     "circl": Quota("circl", 60, None),
+    # Long memory of results (Upstash Redis free plan: 500k commands a month)
+    "store": Quota("store", 600, _env_int("STORE_DAILY_LIMIT", 15000), low_reserve=0, normal_reserve=0, low_spread=0),
 }
 
 

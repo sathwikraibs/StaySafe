@@ -261,6 +261,21 @@ CACHE_SECONDS = 3600
 # Answers that change slowly are kept longer, so the free daily allowances go further.
 CACHE_TTL = {"vt": 3 * 3600, "urlscan": 6 * 3600, "abuseip": 12 * 3600, "rdap": 24 * 3600,
              "crt": 24 * 3600, "ipinfo": 24 * 3600, "whois": 24 * 3600}
+# Answers worth keeping across restarts in the long memory (scanners/store.py): how long, by answer.
+def _vt_keep(v):
+    if not isinstance(v, dict) or v.get("status") not in ("ok", "not_found"):
+        return 0
+    if (v.get("malicious") or 0) >= 1 or (v.get("domain_malicious") or 0) >= 1:
+        return 7 * 86400          # scam links stay scam links
+    return 86400 if v.get("status") == "ok" else 6 * 3600
+
+
+def _keep(seconds):
+    return lambda v: seconds if v is not None and not (isinstance(v, dict) and v.get("error")) else 0
+
+
+PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "phishstats": _keep(86400), "abuseip": _keep(86400),
+           "whois": _keep(2 * 86400), "rdap": _keep(2 * 86400), "crt": _keep(2 * 86400)}
 # A check that was skipped because a free limit was reached is never remembered as an answer.
 NOT_CHECKED = "_not_checked"
 
@@ -290,7 +305,12 @@ def _cached(key, fn):
             return hit[1]
         return fn()
     try:
-        value = fn()
+        from scanners import store
+        ttl_fn = PERSIST.get(key[0])
+        value = store.get("link", key) if ttl_fn else None
+        fresh = value is None
+        if fresh:
+            value = fn()
         if not (isinstance(value, dict) and (value.get(NOT_CHECKED)
                                              or (value.get("error") and key[0] in ("gsb", "vt")))):
             with _CACHE_LOCK:
@@ -298,6 +318,8 @@ def _cached(key, fn):
                 if len(_CACHE) > 2000:
                     for k in list(_CACHE)[:500]:
                         _CACHE.pop(k, None)
+            if fresh and ttl_fn:
+                store.put("link", key, value, ttl_fn(value))
         return value
     finally:
         with _CACHE_LOCK:
@@ -1277,7 +1299,7 @@ def _vt_report(attrs: dict, scope: str) -> dict:
     }
 
 
-def check_virustotal(url: str, domain: str) -> dict:
+def check_virustotal(url: str, domain: str, priority: str = "normal") -> dict:
     """
     {'status': 'ok'|'not_found'|'skip', 'malicious', 'suspicious', 'harmless', 'engines',
      'domain_malicious', 'created_days'}
@@ -1294,7 +1316,7 @@ def check_virustotal(url: str, domain: str) -> dict:
         attrs, state = None, "not_found"
         for v in variants:
             url_id = base64.urlsafe_b64encode(v.encode()).decode().strip("=")
-            attrs, state = _vt_get(f"urls/{url_id}")
+            attrs, state = _vt_get(f"urls/{url_id}", wait=VT_WAIT if priority != "low" else 5, priority=priority)
             if state != "not_found":
                 break
         if state in ("error", "busy"):
@@ -1307,7 +1329,7 @@ def check_virustotal(url: str, domain: str) -> dict:
         if out["status"] == "ok":
             return out
         # Link never seen: look at the whole website's reputation (also gives its age)
-        dattrs, dstate = _vt_get(f"domains/{domain}", wait=15)
+        dattrs, dstate = _vt_get(f"domains/{domain}", wait=15 if priority != "low" else 5, priority=priority)
         if dattrs:
             dstats = dattrs.get("last_analysis_stats", {})
             out["domain_malicious"] = dstats.get("malicious", 0)
@@ -1573,7 +1595,10 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     # extra details for the "Website details" card (also for well-known sites)
     who_f = None if (structure["hosting"] or is_ip(host)) else _POOL.submit(whois_details, reg)
     cert_f = _POOL.submit(cert_details, host) if parsed.scheme == "https" else None
-    vt_f = _POOL.submit(check_virustotal, url, reg)
+    # Well-known sites (official brands, the world's 10,000 most visited) use VirusTotal only when
+    # plenty of today's allowance is left, so it is saved for the unknown links that need it
+    well_known = trusted or (not structure["hosting"] and (popularity_rank(reg) or 10**9) <= 10_000)
+    vt_f = _POOL.submit(check_virustotal, url, reg, "low" if well_known else "normal")
     gsb_f = _POOL.submit(check_safe_browsing, [url, f"{parsed.scheme}://{host}/"])
     page_f = None if trusted else _POOL.submit(fetch_page, url)
     crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
