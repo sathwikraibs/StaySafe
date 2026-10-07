@@ -341,6 +341,7 @@ def link_check_status() -> dict:
         "urlscan": {"configured": bool(os.environ.get("URLSCAN_API_KEY")), "problem": _PROBLEMS["urlscan"]},
         "cloudflare_scan": {"configured": bool(_cf_scan_conf()), "problem": _PROBLEMS["cloudflare_scan"]},
         "otx": {"configured": bool(os.environ.get("OTX_API_KEY")), "problem": _PROBLEMS["otx"]},
+        "rbi_alert_list": __import__("scanners.rbi_alert", fromlist=["status"]).status(),
         "abuseipdb": {"configured": bool(os.environ.get("ABUSEIPDB_KEY"))},
         "public_lists": {"links": sum(_FEEDS["counts"].values()), "counts": _FEEDS["counts"],
                          "problem": _FEEDS["problem"],
@@ -1960,6 +1961,15 @@ def scan_url(url: str, _hop: int = 0) -> dict:
 
     # --- urlscan.io: scans by security researchers that found a scam page on this website
     shared_site = structure["hosting"] and host == structure["hosting"]
+    # --- RBI Alert List: forex trading platforms not allowed in India
+    from scanners import rbi_alert
+    rbi_name = rbi_alert.domain_hit(final_host or host, reg, OFFLINE) or rbi_alert.domain_hit(host, reg, OFFLINE)
+    if rbi_name:
+        findings.insert(0, f"{rbi_name} is on RBI's Alert List of unauthorised forex trading platforms. "
+                           "Trading through it is not allowed in India and your money is not protected")
+        score = led.moved(findings, score, max(score + 60, 85))
+        _check(checks, "rbi", "fail", rbi_name)
+
     cf = result_of(cfscan_f, {"status": "skip"}, 60)
     if cf.get("status") == "fail":
         kinds = ", ".join(cf.get("categories") or []) or "scam or malware"
@@ -2035,7 +2045,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     rank = None if (trusted or structure["hosting"] or is_ip(host)) else popularity_rank(reg)
     hard = gsb.get("listed") or feed["status"] == "fail" or vt.get("malicious", 0) >= 1 \
         or vt.get("domain_malicious", 0) >= 1 or dns["exists"] is False \
-        or any(c["id"] in ("imitation", "page", "cfscan", "community") and c["status"] == "fail" for c in checks)
+        or any(c["id"] in ("imitation", "page", "cfscan", "community", "rbi") and c["status"] == "fail" for c in checks)
     if rank and not hard:
         _check(checks, "known", "pass", reg)
         checks[:] = [c for c in checks if not (c["id"] == "known" and c["status"] == "info")]
@@ -2044,7 +2054,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
             led.add(ADJ_POPULAR, new_total - total)
         total = new_total
 
-    order = ["google", "feeds", "community", "cfscan", "otx", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
+    order = ["rbi", "google", "feeds", "community", "cfscan", "otx", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
 
     return {

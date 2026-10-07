@@ -67,6 +67,45 @@ def test_every_finding_has_a_translation():
         assert not missing, (lang, missing[:3])
 
 
+def test_phone_reputation_when_configured():
+    import scanners.number_check as nc
+
+    class _R:
+        def __init__(self, d): self._d = d
+        def json(self): return self._d
+    saved = nc.requests.get
+    try:
+        os.environ["IPQS_API_KEY"] = "k"
+        nc.requests.get = lambda url, **kw: _R({"success": True, "recent_abuse": True, "VOIP": True, "fraud_score": 90})
+        r = check_number("98765 12345", "bank")
+        assert r["findings"][0] == "This number has recently been linked to fraud or spam calls", r["findings"]
+        assert any("VOIP" in f for f in r["findings"]) and r["verdict"] == "DANGEROUS", r
+        # official numbers are never looked up
+        nc.requests.get = lambda url, **kw: (_ for _ in ()).throw(AssertionError("looked up"))
+        assert check_number("1930")["verdict"] == "SAFE"
+    finally:
+        nc.requests.get = saved
+        os.environ.pop("IPQS_API_KEY", None)
+
+
+def test_rbi_alert_list():
+    import scanners.url_scanner as us
+    us.OFFLINE = True
+    from scanners import rbi_alert
+    assert rbi_alert.domain_hit("hi.octafx.com", "octafx.com", True) == "OctaFX"
+    assert rbi_alert.domain_hit("www.exness.com", "exness.com", True) == "Exness"
+    assert rbi_alert.domain_hit("zerodha.com", "zerodha.com", True) is None
+    r = us.scan_url("https://quotex.com/en/sign-up")
+    assert r["verdict"] == "DANGEROUS" and "RBI's Alert List" in r["findings"][0], r["findings"]
+    assert rbi_alert.names_in_text("Join our Olymp Trade VIP group, 90% profit daily", True) == ["Olymp Trade"]
+    assert rbi_alert.names_in_text("Deposit on XM and copy my trades", True) == ["XM"]
+    assert rbi_alert.names_in_text("XM radio is playing my favourite song", True) == []
+    assert rbi_alert.names_in_text("I trust trade unions to fight for us", True) == []
+    from scanners.message_scanner import analyze_text, add_entity_checks
+    m = add_entity_checks(analyze_text("Earn 5000 daily with Binomo. Join now"))
+    assert any("Binomo" in p and "RBI" in p for p in m["patterns_detected"]), m["patterns_detected"]
+
+
 if __name__ == "__main__":
     failed = 0
     tests = sorted((n, f) for n, f in globals().items() if n.startswith("test_"))

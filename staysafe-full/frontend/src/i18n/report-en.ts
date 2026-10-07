@@ -230,6 +230,14 @@ export const reportEn = {
   },
 
   checks: {
+    rbi: {
+      fail: "On RBI's Alert List of unauthorised forex trading platforms",
+      failV: "On RBI's Alert List: {value}",
+    },
+    num_reputation: {
+      pass: "No recent fraud or spam reports for this number",
+      fail: "Recently linked to fraud or spam calls",
+    },
     otx: {
       pass: "No reports from security researchers",
       warn: "Reported by security researchers",

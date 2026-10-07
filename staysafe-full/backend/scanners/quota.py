@@ -256,6 +256,8 @@ QUOTAS = {
     "abusech": Quota("abusech", 60, None),
     "circl": Quota("circl", 60, None),
     "otx": Quota("otx", 60, _env_int("OTX_DAILY_LIMIT", 3000)),
+    # IPQualityScore free plan: about 1,000 lookups a month
+    "ipqs": Quota("ipqs", 10, _env_int("IPQS_DAILY_LIMIT", 30)),
     # Cloudflare URL Scanner free plan: 1 scan per 10 seconds, 5,000 a month
     "cloudflare_scan": Quota("cloudflare_scan", 6, _env_int("CF_SCAN_DAILY_LIMIT", 160)),
     # Long memory of results (Upstash Redis free plan: 500k commands a month)

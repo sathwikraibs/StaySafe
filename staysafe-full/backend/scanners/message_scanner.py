@@ -1373,6 +1373,12 @@ def add_entity_checks(result: dict, text: str = None) -> dict:
         if listed and r.get("findings"):
             added.append((f"The email address {e} in this message: {r['findings'][0]}", 40))
 
+    # RBI Alert List: trading platforms that are not allowed to offer forex trading in India
+    from scanners import rbi_alert
+    import scanners.url_scanner as _us_rbi
+    for name in rbi_alert.names_in_text(text, _us_rbi.OFFLINE):
+        added.append((f"Mentions {name}, which is on RBI's Alert List of unauthorised forex trading platforms", 40))
+
     # StaySafe's own list: a UPI ID in the message that its users reported as a scam
     for upi in upis[:2]:
         try:

@@ -18,8 +18,10 @@ The result always points to the government's own lookup (cybercrime.gov.in, "Rep
 Check Suspect"), which searches numbers and UPI IDs reported by victims.
 """
 
+import os
 import re
 
+import requests
 from flask import Blueprint, jsonify, request
 
 from scanners.ledger import Ledger
@@ -240,6 +242,48 @@ def check_upi(value: str, findings: list, led: Ledger, checks: list) -> dict:
     return {"score": score, "info": info}
 
 
+_IPQS_PROBLEM = {"last": None}
+
+
+def phone_reputation(e164: str) -> dict:
+    """
+    IPQualityScore phone check (optional IPQS_API_KEY): has this number recently been used for
+    fraud or spam, and is it an internet (VOIP) number? Answers are kept 7 days.
+    {'status': 'ok'|'skip', 'abuse': bool, 'voip': bool, 'fraud_score': int}
+    """
+    key = os.environ.get("IPQS_API_KEY", "").strip()
+    if not key or not e164:
+        return {"status": "skip"}
+    from scanners import store
+    kept = store.get("ipqs", e164)
+    if isinstance(kept, dict) and kept.get("status") == "ok":
+        return kept
+    from scanners.quota import quota
+    if not quota("ipqs").take(wait=3):
+        return {"status": "skip"}
+    try:
+        r = requests.get(f"https://www.ipqualityscore.com/api/json/phone/{key}/{e164.lstrip('+')}",
+                         params={"strictness": 1}, timeout=8)
+        data = r.json()
+    except Exception as e:  # noqa: BLE001
+        _IPQS_PROBLEM["last"] = type(e).__name__
+        return {"status": "skip"}
+    if not data.get("success"):
+        _IPQS_PROBLEM["last"] = str(data.get("message") or "error")[:80]
+        if "quota" in str(data.get("message", "")).lower() or "credits" in str(data.get("message", "")).lower():
+            quota("ipqs").close_day()
+        return {"status": "skip"}
+    _IPQS_PROBLEM["last"] = None
+    out = {"status": "ok", "abuse": bool(data.get("recent_abuse") or data.get("spammer")),
+           "voip": bool(data.get("VOIP")), "fraud_score": int(data.get("fraud_score") or 0)}
+    store.put("ipqs", e164, out, 7 * 86400)
+    return out
+
+
+def ipqs_status() -> dict:
+    return {"configured": bool(os.environ.get("IPQS_API_KEY")), "problem": _IPQS_PROBLEM["last"]}
+
+
 def context_signals(claim: str, ask: str, kind: str, findings: list, led: Ledger, checks: list) -> int:
     score = 0
     if ask == "pay_to_get":
@@ -267,6 +311,20 @@ def context_signals(claim: str, ask: str, kind: str, findings: list, led: Ledger
     return score
 
 
+def _to_e164(value: str):
+    raw = re.sub(r"[^\d+]", "", value or "")
+    if raw.startswith("00"):
+        raw = "+" + raw[2:]
+    d = re.sub(r"\D", "", raw)
+    if raw.startswith("+"):
+        return "+" + d if 8 <= len(d) <= 15 else None
+    if len(d) == 11 and d.startswith("0"):
+        d = d[1:]
+    if len(d) == 12 and d.startswith("91"):
+        d = d[2:]
+    return "+91" + d if len(d) == 10 else None
+
+
 def check_number(value: str, claim: str = "", ask: str = "") -> dict:
     value = (value or "").strip()[:120]
     claim = claim if claim in CLAIMS else ""
@@ -281,6 +339,22 @@ def check_number(value: str, claim: str = "", ask: str = "") -> dict:
     else:
         return {"error": "Please enter a phone number (like 98765 43210 or +91 98765 43210) or a UPI ID (like name@okaxis)."}
     score = part["score"] + context_signals(claim, ask, kind, findings, led, checks)
+    # Phone reputation (recent fraud or spam, internet numbers)
+    ntype = part["info"].get("number_type")
+    if kind == "phone" and ntype in ("mobile", "landline", "foreign", "unknown"):
+        e164 = _to_e164(value)
+        rep = phone_reputation(e164) if e164 else {"status": "skip"}
+        if rep.get("status") == "ok":
+            if rep.get("abuse") or rep.get("fraud_score", 0) >= 85:
+                findings.insert(0, "This number has recently been linked to fraud or spam calls")
+                score += led.note(findings, 35)
+                checks.append({"id": "num_reputation", "status": "fail", "value": None})
+            else:
+                checks.append({"id": "num_reputation", "status": "pass", "value": None})
+            if rep.get("voip"):
+                findings.append("This is an internet (VOIP) number. Scammers use these to hide who they are")
+                score += led.note(findings, 20 if claim in ("bank", "official", "delivery") else 10)
+
     # StaySafe's own list: reported as a scam by its users (official numbers can't be reported)
     if part["info"].get("number_type") not in ("helpline", "bank_1600"):
         try:
