@@ -181,6 +181,7 @@ BRANDS = {
     "trezor": {"trezor.io"},
     "exodus": {"exodus.com", "exodus.io"},
     "imtoken": {"token.im", "imtoken.com"},
+    "nubank": {"nubank.com.br", "nu.com.mx"},
     "airbnb": {"airbnb.com", "airbnb.co.in", "airbnb.co.uk", "airbnb.de"},
     "spotify": {"spotify.com"},
     "shopee": {"shopee.com", "shopee.co.id", "shopee.com.my", "shopee.ph", "shopee.sg", "shopee.vn", "shopee.co.th", "shopee.tw", "shopee.com.br"},
@@ -242,7 +243,7 @@ BRAND_DISPLAY = {
     "metamask": "MetaMask", "trezor": "Trezor", "usps": "USPS", "docusign": "DocuSign", "dropbox": "Dropbox",
     "onedrive": "Microsoft OneDrive", "office365": "Microsoft Office", "outlook": "Outlook", "yahoo": "Yahoo",
     "roblox": "Roblox", "steamcommunity": "Steam", "steampowered": "Steam",
-    "exodus": "Exodus wallet", "imtoken": "imToken wallet", "airbnb": "Airbnb", "spotify": "Spotify", "shopee": "Shopee",
+    "exodus": "Exodus wallet", "imtoken": "imToken wallet", "nubank": "Nubank", "airbnb": "Airbnb", "spotify": "Spotify", "shopee": "Shopee",
     "zoom": "Zoom", "adobe": "Adobe", "wetransfer": "WeTransfer", "ledger": "Ledger", "ledgerlive": "Ledger Live", "trustwallet": "Trust Wallet",
     "phantom": "Phantom wallet", "kraken": "Kraken", "tokenpocket": "TokenPocket", "uniswap": "Uniswap",
     "opensea": "OpenSea", "pancakeswap": "PancakeSwap", "walletconnect": "WalletConnect", "atomicwallet": "Atomic Wallet",
@@ -307,7 +308,7 @@ FREE_HOSTING = {
     "duckdns.org", "ddns.net", "no-ip.org", "no-ip.com", "hopto.org", "zapto.org", "sytes.net", "serveo.net",
     "freedns.org", "mooo.com", "dynu.net", "myftp.biz", "myddns.me", "servehttp.com", "redirectme.net",
     "loca.lt", "localtunnel.me", "serveousercontent.com", "pinggy.link", "devtunnels.ms", "trycloudflare.com",
-    "b12sites.com", "webador.com", "webador.site", "squarespace.com", "wixstudio.io", "mystrikingly.com", "simdif.com",
+    "edgeone.dev", "edgeone.app", "b12sites.com", "webador.com", "webador.site", "squarespace.com", "wixstudio.io", "mystrikingly.com", "simdif.com",
     "jimdofree.com", "wuaze.com", "infinityfreeapp.com", "rf.gd", "great-site.net", "lovestoblog.com", "free.nf",
     "42web.io", "epizy.com", "byethost.com", "netlify.com", "web.core.windows.net", "azureedge.net", "framer.app",
     "myvnc.com", "servebeer.com", "servegame.com", "serveftp.com", "bounceme.net", "freeddns.org", "gotdns.ch",
@@ -349,6 +350,7 @@ THEME_WORDS = {
     "scratchcard", "spin", "electricity", "bill", "power", "ration", "laptop", "fee", "fine", "pay", "payment",
     "number", "deactivate", "deactivation", "kyc", "pending", "alert", "notice", "income", "daily", "tips",
     "like", "review", "approval", "cash", "money", "gramin", "list", "status", "seized", "illegal", "drugs",
+    "authorize", "authorization", "document", "documents", "invoice", "shared", "voicemail", "mailbox", "webmail",
 }
 
 LOOKALIKE_MAP = str.maketrans({"0": "o", "1": "l", "3": "e", "4": "a", "5": "s", "7": "t",
@@ -771,7 +773,10 @@ def analyze_structure(url: str) -> dict:
                 # spelled almost exactly like the real website (hdfcbannk.com vs hdfcbank.com)
                 labels = {d.split(".")[0] for d in official if "." in d}
                 cand = name_part.replace("-", "")
-                if any(0 < _edit_distance(cand, lab) <= (1 if len(lab) <= 6 else 2) for lab in labels if len(lab) >= 4):
+                if cand in labels and not hosting and (rank or 10**9) > 100_000:
+                    findings.append(f"The website uses {brand_name(brand)}'s exact name with a different ending ({reg}), a common trick")
+                    score += led.note(findings, 15)
+                elif any(0 < _edit_distance(cand, lab) <= (1 if len(lab) <= 6 else 2) for lab in labels if len(lab) >= 4):
                     findings.append(f"The website name '{reg}' is spelled almost like {brand_name(brand)}'s real website, so it is easy to mistake")
                     score += led.note(findings, 20)
                 # a second, different brand or government service in the same name (echallan + parivahan)
@@ -841,7 +846,7 @@ def analyze_structure(url: str) -> dict:
         theme_in_host = sorted(w for w in THEME_WORDS - set(words_in_host)
                                if any(tok == w or (len(w) >= 7 and w in tok) for tok in tokens[:-1]))
         n_words = len(words_in_host) + len(theme_in_host)
-        if words_in_host or n_words >= 2:
+        if words_in_host or n_words >= 2 or (hosting and theme_in_host):
             shown_words = (words_in_host + theme_in_host)[:3]
             findings.append(f"Website name contains words scammers love: {', '.join(shown_words)}")
             score += led.note(findings, 35 if n_words >= 3 else 25 if n_words == 2 else 15)

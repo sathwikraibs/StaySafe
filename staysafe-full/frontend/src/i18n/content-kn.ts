@@ -159,6 +159,7 @@ export const knContent: LangContent = {
     "Link mentions '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್‌ನಲ್ಲಿ '{brand}' ಎಂದಿದೆ, ಆದರೆ ಇದು {brand2} ನ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅಲ್ಲ ({domain})",
     "Link uses look-alike characters to imitate '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್ ಒಂದೇ ರೀತಿ ಕಾಣುವ ಅಕ್ಷರಗಳಿಂದ '{brand}' ನಂತೆ ನಟಿಸುತ್ತಿದೆ, ಆದರೆ ಇದು {brand2} ನ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅಲ್ಲ ({domain})",
     "Website name contains words scammers love: {words}": "ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನಲ್ಲಿ ವಂಚಕರು ಹೆಚ್ಚಾಗಿ ಬಳಸುವ ಪದಗಳಿವೆ: {words}",
+    "The website uses {brand}'s exact name with a different ending ({domain}), a common trick": "ಈ ವೆಬ್‌ಸೈಟ್ {brand} ನ ಅದೇ ಹೆಸರನ್ನು ಬೇರೆ ಕೊನೆಯೊಂದಿಗೆ ಬಳಸುತ್ತದೆ ({domain}), ಇದು ಸಾಮಾನ್ಯ ತಂತ್ರ",
     "This link uses a rented server's default name ({service}) instead of a real website name. Genuine companies put their own name on their website": "ಈ ಲಿಂಕ್ ನಿಜವಾದ ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನ ಬದಲು ಬಾಡಿಗೆ ಸರ್ವರ್‌ನ ಮೂಲ ಹೆಸರನ್ನು ({service}) ಬಳಸುತ್ತದೆ. ನಿಜವಾದ ಕಂಪನಿಗಳು ತಮ್ಮ ವೆಬ್‌ಸೈಟ್‌ಗೆ ತಮ್ಮದೇ ಹೆಸರು ಇಡುತ್ತವೆ",
     "The website name has another website's address written into it, to look like that website": "ವೆಬ್‌ಸೈಟ್ ಹೆಸರಿನಲ್ಲಿ ಬೇರೆ ವೆಬ್‌ಸೈಟ್‌ನ ವಿಳಾಸ ಬರೆಯಲಾಗಿದೆ, ಅದರಂತೆ ಕಾಣಲು",
     "The page is hidden inside the website's own system folders, where hacked websites keep scam pages": "ಈ ಪುಟ ವೆಬ್‌ಸೈಟ್‌ನ ಸ್ವಂತ ಸಿಸ್ಟಮ್ ಫೋಲ್ಡರ್‌ಗಳಲ್ಲಿ ಅಡಗಿದೆ, ಹ್ಯಾಕ್ ಆದ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಮೋಸದ ಪುಟಗಳನ್ನು ಅಲ್ಲೇ ಇಡುತ್ತಾರೆ",

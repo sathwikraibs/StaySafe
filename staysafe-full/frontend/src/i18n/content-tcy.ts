@@ -160,6 +160,7 @@ export const tcyContent: LangContent = {
     "Link mentions '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್‌ಡ್ '{brand}' ಪಂಡ್‌ದ್ ಉಂಡು, ಆಂಡ ಉಂದು {brand2} ದ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅತ್ತ್ ({domain})",
     "Link uses look-alike characters to imitate '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್ ಒಂಜೇ ಲೆಕ್ಕ ತೋಜುನ ಅಕ್ಷರೊಲೆಡ್ '{brand}' ದ ಲೆಕ್ಕ ನಟನೆ ಮಲ್ಪುಂಡು, ಆಂಡ ಉಂದು {brand2} ದ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅತ್ತ್ ({domain})",
     "Website name contains words scammers love: {words}": "ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ಡ್ ಸ್ಕ್ಯಾಮರ್‌ಲು ಮಸ್ತ್ ಬಳಕೆ ಮಲ್ಪುನ ಪದೊಲು ಉಂಡು: {words}",
+    "The website uses {brand}'s exact name with a different ending ({domain}), a common trick": "ಈ ವೆಬ್‌ಸೈಟ್ {brand} ದ ಅವ್ವೇ ಪುದರ್‌ನ್ ಬೇತೆ ಅಕೇರಿದ ಒಟ್ಟುಗು ಬಳಕೆ ಮಲ್ಪುಂಡು ({domain}), ಉಂದು ಸಾಮಾನ್ಯ ತಂತ್ರ",
     "This link uses a rented server's default name ({service}) instead of a real website name. Genuine companies put their own name on their website": "ಈ ಲಿಂಕ್ ನಿಜವಾಯಿನ ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ದ ಬದಲ್ ಬಾಡಿಗೆದ ಸರ್ವರ್‌ದ ಮೂಲ ಪುದರ್ ({service}) ಬಳಕೆ ಮಲ್ಪುಂಡು. ನಿಜವಾಯಿನ ಕಂಪೆನಿಲು ಅಕುಲೆನ ವೆಬ್‌ಸೈಟ್‌ಗ್ ಅಕುಲೆನವೇ ಪುದರ್ ದೀಪುವೆರ್",
     "The website name has another website's address written into it, to look like that website": "ವೆಬ್‌ಸೈಟ್ ಪುದರ್‌ಡ್ ಬೇತೆ ವೆಬ್‌ಸೈಟ್‌ದ ವಿಳಾಸ ಬರೆತೆರ್, ಅವುದ ಲೆಕ್ಕ ತೋಜೆರೆ",
     "The page is hidden inside the website's own system folders, where hacked websites keep scam pages": "ಈ ಪುಟ ವೆಬ್‌ಸೈಟ್‌ದ ಸ್ವಂತ ಸಿಸ್ಟಮ್ ಫೋಲ್ಡರ್‌ಡ್ ದೆಂಗ್‌ದ್ ಉಂಡು, ಹ್ಯಾಕ್ ಆಯಿನ ವೆಬ್‌ಸೈಟ್‌ಲೆಡ್ ಮೋಸದ ಪುಟೊಲೆನ್ ಅಲ್ಪನೇ ದೀಪುವೆರ್",

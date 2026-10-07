@@ -159,6 +159,7 @@ export const hiContent: LangContent = {
     "Link mentions '{brand}' but is NOT {brand2}'s official website ({domain})": "लिंक में '{brand}' लिखा है, लेकिन यह {brand2} की असली वेबसाइट नहीं है ({domain})",
     "Link uses look-alike characters to imitate '{brand}' but is NOT {brand2}'s official website ({domain})": "लिंक मिलते-जुलते अक्षरों से '{brand}' जैसा दिखता है, लेकिन यह {brand2} की असली वेबसाइट नहीं है ({domain})",
     "Website name contains words scammers love: {words}": "वेबसाइट के नाम में ऐसे शब्द हैं जो स्कैमर अक्सर इस्तेमाल करते हैं: {words}",
+    "The website uses {brand}'s exact name with a different ending ({domain}), a common trick": "यह वेबसाइट {brand} का बिल्कुल वही नाम अलग अंत के साथ इस्तेमाल करती है ({domain}), एक आम तरकीब",
     "This link uses a rented server's default name ({service}) instead of a real website name. Genuine companies put their own name on their website": "यह लिंक असली वेबसाइट नाम की जगह किराए के सर्वर का डिफ़ॉल्ट नाम ({service}) इस्तेमाल करता है। असली कंपनियाँ अपनी वेबसाइट पर अपना नाम रखती हैं",
     "The website name has another website's address written into it, to look like that website": "वेबसाइट के नाम में किसी दूसरी वेबसाइट का पता लिखा गया है, ताकि वह उसी जैसी लगे",
     "The page is hidden inside the website's own system folders, where hacked websites keep scam pages": "यह पेज वेबसाइट के अपने सिस्टम फ़ोल्डर में छिपा है, जहाँ हैक हुई वेबसाइटों पर स्कैम पेज रखे जाते हैं",
