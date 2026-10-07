@@ -34,6 +34,7 @@ export const reportEn = {
       password: "Password",
       network: "Connection",
       email: "Email",
+      number: "Number or UPI ID",
     },
     bill: {
       title: "How we got this score",
@@ -87,6 +88,11 @@ export const reportEn = {
         safe: "We found no strong warning signs in this email.",
         caution: "This email has some warning signs. Don't click its links or open attachments until you're sure.",
         danger: "This email looks like a scam. Don't click, reply or download anything from it.",
+      },
+      number: {
+        safe: "We found no warning signs. Remember, a number alone can't prove who someone is.",
+        caution: "There are warning signs. Don't pay, share an OTP or install anything until you're sure.",
+        danger: "This looks like a scam. Stop talking to them, don't pay and don't share any codes.",
       },
     },
     tips: {
@@ -198,6 +204,20 @@ export const reportEn = {
           "If you entered a password from it, change that password now.",
         ],
       },
+      number: {
+        safe: [
+          "Never share an OTP, PIN or card details on a call, whoever it is.",
+          "Before paying a UPI ID, check the name your UPI app shows.",
+        ],
+        caution: [
+          "Hang up and call the bank or office yourself, on the number from their official app or website.",
+          "Don't install any app or share your screen because a caller asked you to.",
+        ],
+        danger: [
+          "Stop replying and block the number.",
+          "Report it on Sanchar Saathi (Chakshu). If you paid or shared details, call 1930 right away.",
+        ],
+      },
     },
     age: {
       days: "{n} days",
@@ -210,6 +230,32 @@ export const reportEn = {
   },
 
   checks: {
+    num_type: {
+      pass: "A real official or bank number",
+      info: "Checked what kind of number this is",
+      warn: "Unusual or foreign number",
+      warnV: "Foreign or unusual number: {value}",
+    },
+    upi_handle: {
+      pass: "Known UPI app or bank",
+      passV: "UPI app or bank: {value}",
+      warn: "Unknown UPI app or bank",
+      warnV: "Unknown UPI ending: @{value}",
+    },
+    upi_words: {
+      pass: "No official-sounding words like 'refund' or 'support' in the ID",
+      fail: "Pretends to be a refund, support or official ID",
+      failV: "Official-sounding word in the ID: {value}",
+    },
+    upi_person: {
+      info: "Belongs to a person (made from a mobile number)",
+    },
+    num_ask: {
+      fail: "They asked for something only scammers ask for",
+    },
+    num_registry: {
+      info: "A number alone can't prove who someone is. Check the government's list below too",
+    },
     msg_ai: {
       pass: "An AI review found no scam signs",
       warn: "An AI review thinks it looks suspicious",
@@ -556,6 +602,13 @@ export const reportEn = {
       "Checking every link inside",
       "Putting your report together",
     ],
+    number: [
+      "Reading the number or ID",
+      "Checking what kind of number it is",
+      "Checking who they said they are",
+      "Checking what they asked for",
+      "Putting your report together",
+    ],
     incident: [
       "Finding the right steps for you",
       "Adding helpful links",
@@ -674,6 +727,7 @@ export const reportEn = {
       password: "Strong enough? Ever leaked?",
       network: "Is your internet connection safe?",
       email: "Fake senders and phishing",
+      number: "Calls, WhatsApp numbers and UPI IDs",
       dashboard: "Your checks and safety score",
       library: "Learn the common tricks",
     },

@@ -43,6 +43,7 @@ const enBase = {
     password: "Check a Password", passwordShort: "Password",
     network: "Check My Connection", networkShort: "Connection",
     email: "Check an Email", emailShort: "Email",
+    number: "Check a Number or UPI ID", numberShort: "Number",
     dashboard: "Safety Dashboard", dashboardShort: "Dashboard",
     library: "Scam Knowledge Base", libraryShort: "Learn",
     incident: "I Clicked a Scam", incidentShort: "Clicked Scam",
@@ -165,6 +166,40 @@ const enBase = {
     address: "Address: ",
   },
 
+  number: {
+    title: "Check a Number or UPI ID",
+    subtitle: "Got a call, a WhatsApp message or a payment request? Check the phone number or UPI ID before you trust it.",
+    label: "Phone number or UPI ID",
+    placeholder: "98765 43210 or name@okaxis",
+    claimTitle: "Who did they say they are?",
+    claims: {
+      bank: "Bank or payment app",
+      official: "Police, court or government",
+      delivery: "Courier or delivery",
+      company: "Company, job or shop",
+      family: "Family or friend (new number)",
+      unknown: "Didn't say",
+    },
+    askTitle: "What did they ask you to do?",
+    asks: {
+      pay_to_get: "Pay first to get money, a job, a prize or a refund",
+      otp: "Share an OTP, PIN or card details",
+      app: "Install an app or share my screen",
+      video: "Stay on a video call or move money to a 'safe account'",
+      nothing: "Nothing yet",
+    },
+    optional: "Optional, but it makes the check much more accurate",
+    button: "Check this number",
+    govTitle: "Check it in the government's list too",
+    govText: "The government keeps a list of numbers and UPI IDs reported by scam victims. Search this number or UPI ID there.",
+    govButton: "Search on cybercrime.gov.in",
+    reportTitle: "Got a fraud call or message?",
+    reportText: "Report it on Sanchar Saathi (Chakshu) so the number can be blocked. If you lost money, call 1930 right away.",
+    reportButton: "Report on Sanchar Saathi",
+    upiTip: "Before paying any UPI ID, type it in your UPI app and read the name it shows. If it isn't who you expect, stop.",
+    badInput: "Enter a phone number, or a UPI ID like name@okaxis",
+  },
+
   email: {
     title: "Check an Email",
     subtitle: "Fill in who sent the email and what it says, and we will check it for you.",
@@ -203,6 +238,7 @@ const enBase = {
     types: {
       url: "Link", message: "Message", screenshot: "Screenshot", qr_upi: "QR payment",
       qr_url: "QR link", qr_text: "QR code", file: "File", email: "Email",
+      number: "Number or UPI ID",
     },
   },
 
@@ -354,6 +390,7 @@ const enBase = {
     ],
     toolsTitle: "What each check looks at",
     tools: {
+      number: "What a phone number or UPI ID shows, who the caller says they are and what they asked for, plus the government's own lookup.",
       link: "Whether the website is real, how old it is, who it pretends to be, and what safety lists and security companies say about it.",
       message: "Scam tricks in the words, the sender, phone numbers, UPI IDs, email addresses and every link inside. Works in English, Hindi, Kannada, Tulu and more.",
       qr: "Where the code leads or who gets paid, and whether it's a trick to take money instead of giving it.",

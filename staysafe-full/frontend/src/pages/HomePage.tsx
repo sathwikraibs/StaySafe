@@ -7,7 +7,7 @@ import { openHelper } from "@/chat";
 
 const TOOL_IDS: Record<string, string> = {
   "/scan-url": "link", "/scan-message": "message", "/scan-qr": "qr", "/scan-file": "file",
-  "/check-password": "password", "/check-network": "network", "/scan-email": "email",
+  "/check-password": "password", "/check-network": "network", "/scan-email": "email", "/check-number": "number",
   "/dashboard": "dashboard", "/scam-library": "library",
 };
 

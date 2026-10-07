@@ -6,7 +6,7 @@ import { Section } from "@/components/Section";
 import type { Check, ScorePart, Verdict } from "@/types";
 import { openHelper } from "@/chat";
 
-export type ReportTool = "link" | "message" | "qr" | "file" | "password" | "network" | "email";
+export type ReportTool = "link" | "message" | "qr" | "file" | "password" | "network" | "email" | "number";
 
 const TONE_STYLE: Record<Tone, { hero: string; ring: string; text: string; soft: string; chip: string }> = {
   safe: {

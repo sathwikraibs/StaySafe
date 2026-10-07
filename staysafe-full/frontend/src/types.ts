@@ -85,6 +85,17 @@ export interface ScanQrResponse {
   amount?: string;
 }
 
+export interface CheckNumberResponse {
+  score_parts?: ScorePart[];
+  risk_score: number;
+  verdict: Verdict;
+  findings: string[];
+  checks?: Check[];
+  kind: "phone" | "upi";
+  value: string;
+  details: { kind: string; number_type?: string; country?: string | null; upi?: string; app?: string | null };
+}
+
 export interface ScanFileResponse {
   filename: string;
   sha256: string;

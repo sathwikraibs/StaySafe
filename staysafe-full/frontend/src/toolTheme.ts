@@ -16,6 +16,7 @@ export const TOOL_THEMES: Record<string, ToolTheme> = {
   "/scan-file": { soft: "#F5EAD2", ink: "#86621A", from: "#D2A649", to: "#86621A" },
   "/check-password": { soft: "#F4E1D8", ink: "#A85F47", from: "#DB9B7D", to: "#A85F47" },
   "/check-network": { soft: "#DDE6EB", ink: "#3E5862", from: "#7F9DA9", to: "#3E5862" },
+  "/check-number": { soft: "#DCE6F0", ink: "#365E86", from: "#7A9CC0", to: "#365E86" },
   "/scan-email": { soft: "#F3DFDF", ink: "#944A4A", from: "#CF8A86", to: "#944A4A" },
   "/dashboard": { soft: "#E0E8DA", ink: "#3A4A2C", from: "#7E9168", to: "#3A4A2C" },
   "/scam-library": { soft: "#E2E4F1", ink: "#48548F", from: "#8792C6", to: "#48548F" },

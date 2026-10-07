@@ -143,7 +143,7 @@ function BreakdownBar({ label, count, total, color }: { label: string; count: nu
 
 const TYPE_LABELS: Record<string, string> = {
   url: "Link", message: "Message", screenshot: "Screenshot", qr_upi: "QR payment",
-  qr_url: "QR link", qr_text: "QR code", file: "File", email: "Email",
+  qr_url: "QR link", qr_text: "QR code", file: "File", email: "Email", number: "Number or UPI ID",
 };
 
 function HistoryRow({ item }: { item: ScanHistoryItem }) {

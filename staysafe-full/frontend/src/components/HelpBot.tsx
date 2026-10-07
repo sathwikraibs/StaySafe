@@ -50,7 +50,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
   const tt = TOOL_TEXTS[lang] ?? TOOL_TEXTS.en;
   const TOOL_LABEL: Record<ToolId, string> = {
     message: "nav.message", link: "nav.link", email: "nav.email", qr: "nav.qr", file: "nav.file",
-    password: "nav.password", leak: "nav.password", network: "nav.network",
+    password: "nav.password", leak: "nav.password", network: "nav.network", number: "nav.number",
   };
   const topics = helpTopics(lang);
   const [bubbles, setBubbles] = useState<Bubble[]>([{ from: "bot", lines: [tx.hello] }]);

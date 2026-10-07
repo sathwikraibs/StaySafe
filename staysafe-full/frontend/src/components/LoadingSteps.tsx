@@ -3,11 +3,11 @@ import { useI18n } from "@/i18n";
 import { themeFor, type ToolTheme } from "@/toolTheme";
 
 export type WaitingTool =
-  | "link" | "message" | "screenshot" | "qr" | "file" | "password" | "network" | "email" | "incident";
+  | "link" | "message" | "screenshot" | "qr" | "file" | "password" | "network" | "email" | "number" | "incident";
 
 const TOOL_PATH: Record<WaitingTool, string> = {
   link: "/scan-url", message: "/scan-message", screenshot: "/scan-message", qr: "/scan-qr", file: "/scan-file",
-  password: "/check-password", network: "/check-network", email: "/scan-email", incident: "",
+  password: "/check-password", network: "/check-network", email: "/scan-email", number: "/check-number", incident: "",
 };
 const INCIDENT_THEME: ToolTheme = { soft: "#F3DEDA", ink: "#8B3A2E", from: "#C26A5A", to: "#8B3A2E" };
 
@@ -90,6 +90,15 @@ function ToolAnimation({ tool, th }: { tool: WaitingTool; th: ToolTheme }) {
           <g className="anim-rise"><rect x="30" y="22" width="36" height="34" rx="3" fill="#FBF7F0" stroke={light} strokeWidth="3" /><path d="M37 32h22M37 40h16" stroke={light} strokeWidth="3" strokeLinecap="round" /></g>
           <path {...s} fill={th.soft} d="M16 40l32 22 32-22v38H16z" />
           <path {...s} d="M16 78l24-20M80 78 56 58" />
+        </svg>
+      );
+    case "number":
+      return (
+        <svg viewBox="0 0 96 96" className="h-full w-full">
+          <rect {...s} x="30" y="14" width="36" height="68" rx="7" fill={th.soft} />
+          <path {...s} d="M42 72h12" />
+          <g className="anim-wave"><path d="M70 30a12 12 0 0 1 0 18" stroke={light} strokeWidth="4" fill="none" strokeLinecap="round" /><path d="M76 24a20 20 0 0 1 0 30" stroke={light} strokeWidth="4" fill="none" strokeLinecap="round" /></g>
+          <path {...s} d="M40 30h16M40 40h16M40 50h10" /><circle cx="48" cy="60" r="3" fill={th.ink} className="anim-dot" />
         </svg>
       );
     case "incident":

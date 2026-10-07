@@ -14,12 +14,13 @@ import { ScamLibraryPage } from "@/pages/ScamLibraryPage";
 import { HelpPage } from "@/pages/HelpPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { AboutPage } from "@/pages/AboutPage";
+import { CheckNumberPage } from "@/pages/CheckNumberPage";
 import { API_BASE } from "@/config";
 import { receiveShare } from "@/share";
 
 const ROUTES = [
   "/", "/scan-url", "/scan-message", "/scan-qr", "/scan-file",
-  "/check-password", "/check-network", "/scan-email",
+  "/check-password", "/check-network", "/scan-email", "/check-number",
   "/dashboard", "/incident", "/scam-library", "/help", "/settings", "/about",
 ];
 
@@ -75,6 +76,7 @@ function renderPage(path: string, navigate: (p: string) => void) {
     case "/check-password": return <CheckPasswordPage onNavigate={navigate} />;
     case "/check-network": return <CheckNetworkPage onNavigate={navigate} />;
     case "/scan-email": return <ScanEmailPage onNavigate={navigate} />;
+    case "/check-number": return <CheckNumberPage onNavigate={navigate} />;
     case "/dashboard": return <DashboardPage onNavigate={navigate} />;
     case "/incident": return <IncidentPage onNavigate={navigate} />;
     case "/help": return <HelpPage onNavigate={navigate} />;

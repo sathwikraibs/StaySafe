@@ -45,7 +45,7 @@ def current_client_id() -> str:
 
 
 def _summary_for(scan_type: str, result: dict) -> str:
-    for key in ("url", "filename", "raw_data", "from", "text_analyzed"):
+    for key in ("url", "filename", "raw_data", "from", "text_analyzed", "value"):
         value = result.get(key)
         if value:
             return str(value).replace("\n", " ")[:80]

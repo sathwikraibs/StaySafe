@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import {
   IconHome, IconLink, IconMessage, IconQr, IconFile, IconKey,
-  IconNetwork, IconEmail, IconDashboard, IconAlert, IconBook, IconHelp, IconSettings, IconInfo,
+  IconNetwork, IconEmail, IconDashboard, IconAlert, IconBook, IconHelp, IconSettings, IconInfo, IconPhone,
 } from "@/icons";
 
 export interface NavItem {
@@ -25,6 +25,7 @@ export const MAIN_TOOLS: NavItem[] = [
 
 /** Everything else, kept one step away so the first screen stays simple. */
 export const MORE_TOOLS: NavItem[] = [
+  { path: "/check-number", label: "nav.number", short: "nav.numberShort", icon: IconPhone },
   { path: "/scan-email", label: "nav.email", short: "nav.emailShort", icon: IconEmail },
   { path: "/check-password", label: "nav.password", short: "nav.passwordShort", icon: IconKey },
   { path: "/check-network", label: "nav.network", short: "nav.networkShort", icon: IconNetwork },

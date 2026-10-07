@@ -655,11 +655,11 @@ export function understand(input: string, lang: Lang): BotReply {
 }
 
 // ---- "Check this mail / message / link": point to the tool, no AI needed ----
-export type ToolId = "message" | "link" | "email" | "qr" | "file" | "password" | "leak" | "network";
+export type ToolId = "message" | "link" | "email" | "qr" | "file" | "password" | "leak" | "network" | "number";
 
 export const TOOL_PATHS: Record<ToolId, string> = {
   message: "/scan-message", link: "/scan-url", email: "/scan-email", qr: "/scan-qr", file: "/scan-file",
-  password: "/check-password", leak: "/check-password", network: "/check-network",
+  password: "/check-password", leak: "/check-password", network: "/check-network", number: "/check-number",
 };
 
 /** Tools that live on a tab of a shared page. */
@@ -676,6 +676,7 @@ const TOOL_WORDS: [ToolId, RegExp][] = [
   ["network", /wi-?fi|wireless|hotspot|\bvpn\b|network|internet connection|my connection|नेटवर्क|वाई-?फ़?फाई|ವೈ-?ಫೈ|ನೆಟ್‌?ವರ್ಕ್/],
   ["file", /\bapk\b|\bfiles?\b|\bpdf\b|attachment|document|फ़ाइल|फाइल|ಫೈಲ್|ಎಪಿಕೆ/],
   ["email", /e-?mail|\bmails?\b|gmail|inbox|ईमेल|ई-मेल|मेल|ಇ-?ಮೇಲ್|ಮೇಲ್/],
+  ["number", /phone ?number|mobile ?number|whats ?app number|\bnumbers?\b|\bupi\b|upi ?id|caller|who (is )?call|नंबर|यूपीआई|ಸಂಖ್ಯೆ|ನಂಬರ್|ಯುಪಿಐ/],
   ["message", /messages?|\bmsg\b|\bsms\b|whats ?app|\btexts?\b|screen ?shot|मैसेज|मेसेज|संदेश|एसएमएस|व्हाट्सएप|ಮೆಸೇಜ್|ಮೆಸೆಜ್|ಸಂದೇಶ|ಎಸ್‌?ಎಂಎಸ್|ವಾಟ್ಸ್|ಸ್ಕ್ರೀನ್‌?ಶಾಟ್/],
   ["link", /\blinks?\b|\burls?\b|website|web site|\bsite\b|लिंक|वेबसाइट|ಲಿಂಕ್|ವೆಬ್‌?ಸೈಟ್/],
 ];
@@ -720,6 +721,7 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       password: "Type the password there to see if it's strong and safe.",
       leak: "Enter your email there to see if it showed up in a data leak.",
       network: "Open it while you're on the Wi-Fi or network you want to check.",
+      number: "Type the phone number or UPI ID there, and tell us what they asked you to do.",
     },
     askAi: "Ask StaySafe AI instead",
   },
@@ -734,6 +736,7 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       password: "वहाँ पासवर्ड लिखें और देखें कि वह मज़बूत और सुरक्षित है या नहीं।",
       leak: "वहाँ अपना ईमेल डालें और देखें कि वह किसी डेटा लीक में आया है या नहीं।",
       network: "जिस Wi-Fi या नेटवर्क को जाँचना है, उस पर रहते हुए इसे खोलें।",
+      number: "वहाँ फ़ोन नंबर या UPI ID डालें, और बताएँ कि उन्होंने आपसे क्या करने को कहा।",
     },
     askAi: "इसके बजाय StaySafe AI से पूछें",
   },
@@ -748,6 +751,7 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       password: "ಪಾಸ್‌ವರ್ಡ್ ಬಲವಾಗಿದೆಯೇ, ಸುರಕ್ಷಿತವೇ ಎಂದು ನೋಡಲು ಅಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ.",
       leak: "ನಿಮ್ಮ ಇಮೇಲ್ ಯಾವುದಾದರೂ ಡೇಟಾ ಲೀಕ್‌ನಲ್ಲಿ ಬಂದಿದೆಯೇ ಎಂದು ನೋಡಲು ಅಲ್ಲಿ ಹಾಕಿ.",
       network: "ಪರಿಶೀಲಿಸಬೇಕಾದ Wi-Fi ಅಥವಾ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಇರುವಾಗಲೇ ಇದನ್ನು ತೆರೆಯಿರಿ.",
+      number: "ಅಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ UPI ID ಹಾಕಿ, ಅವರು ನಿಮಗೆ ಏನು ಮಾಡಲು ಹೇಳಿದರು ಎಂದೂ ತಿಳಿಸಿ.",
     },
     askAi: "ಬದಲಿಗೆ StaySafe AI ಕೇಳಿ",
   },
@@ -762,6 +766,7 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       password: "ಪಾಸ್‌ವರ್ಡ್ ಗಟ್ಟಿ ಉಂಡಾ, ಸುರಕ್ಷಿತ ಉಂಡಾ ಪಂಡ್‌ದ್ ತೂಯೆರೆ ಅಲ್ಪ ಟೈಪ್ ಮಲ್ಪುಲೆ.",
       leak: "ಇರೆನ ಇಮೇಲ್ ಓವಾಂಡಲ ಡೇಟಾ ಲೀಕ್‌ಡ್ ಬೈದ್ಂಡಾ ಪಂಡ್‌ದ್ ತೂಯೆರೆ ಅಲ್ಪ ಪಾಡ್ಲೆ.",
       network: "ಪರಿಶೀಲನೆ ಮಲ್ಪೊಡಾಯಿನ ವೈ-ಫೈ ಅತ್ತಂಡ ನೆಟ್‌ವರ್ಕ್‌ಡ್ ಉಪ್ಪುನಗನೇ ಉಂದೆನ್ ತೆರೆಲೆ.",
+      number: "ಅಲ್ಪ ಫೋನ್ ನಂಬರ್ ಅತ್ತಂಡ UPI ID ಪಾಡ್ಲೆ, ಅಕುಲು ಇರೆಗ್ ದಾದ ಮಲ್ಪುಲೆ ಪಂಡೆರ್ ಪಂಡ್‌ದ್ಲಾ ಪನ್ಲೆ.",
     },
     askAi: "ಅವೆತ ಬದಲ್ StaySafe AI ಡ್ ಕೇನುಲೆ",
   },
