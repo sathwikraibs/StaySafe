@@ -21,6 +21,7 @@ from scanners.contact import contact_bp, contact_status
 from scanners.number_check import number_check_bp
 from scanners.reports import reports_bp
 from scanners.telegram_bot import telegram_bp, telegram_status
+from scanners.selftest import selftest_bp
 from scanners.assistant import assistant_bp, assistant_ready
 from scanners.translator import translation_status
 from scanners.ai_review import ai_status
@@ -52,6 +53,7 @@ app.register_blueprint(knowledge_base_bp)
 app.register_blueprint(number_check_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(telegram_bp)
+app.register_blueprint(selftest_bp)
 
 # Start downloading the free public scam-link lists in the background
 from scanners.url_scanner import ensure_feeds  # noqa: E402

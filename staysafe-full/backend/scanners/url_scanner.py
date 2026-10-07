@@ -58,13 +58,14 @@ SHORTENER_DOMAINS = {
     "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "buff.ly", "rebrand.ly",
     "cutt.ly", "t.ly", "rb.gy", "shorturl.at", "tiny.cc", "s.id", "v.gd", "shorte.st",
     "adf.ly", "bl.ink", "lnkd.in", "surl.li", "u.to", "clck.ru", "qr.ae", "tiny.one",
-    "share.google", "g.co", "youtu.be", "amzn.to", "amzn.in", "fkrt.it",
+    "share.google", "g.co", "youtu.be", "amzn.to", "amzn.in", "fkrt.it", "paytm.me", "phon.pe",
 }
 # Short links made by the company itself (Google's "Share" links, Amazon, Flipkart, LinkedIn...):
 # not a warning sign on their own, but the real destination is still opened and checked.
 # Website endings that only one company can own (nobody else can register a name ending in them)
 BRAND_TLDS = {"google", "youtube", "android", "gmail", "amazon", "apple", "microsoft", "sbi", "hdfcbank"}
-OFFICIAL_SHORTENERS = {"share.google", "goo.gl", "g.co", "youtu.be", "amzn.to", "amzn.in", "fkrt.it", "lnkd.in"}
+OFFICIAL_SHORTENERS = {"share.google", "goo.gl", "g.co", "youtu.be", "amzn.to", "amzn.in", "fkrt.it", "lnkd.in",
+                       "paytm.me", "phon.pe"}
 
 SUSPICIOUS_TLDS = {
     "xyz", "top", "club", "work", "click", "gq", "tk", "ml", "cf", "ga", "live", "icu",
@@ -84,29 +85,34 @@ MULTI_PART_SUFFIXES = {
 SECOND_LEVEL = {"com", "co", "net", "org", "gov", "ac", "edu", "ne", "or", "go", "gob", "nic", "mil", "ltd", "plc"}
 # Global brands whose own country websites (google.de, amazon.co.jp) are real when they are well-known sites
 GLOBAL_BRANDS = {"google", "amazon", "apple", "microsoft", "facebook", "instagram", "netflix", "paypal", "youtube",
-                 "linkedin", "yahoo", "ebay", "samsung", "whatsapp", "twitter"}
+                 "linkedin", "yahoo", "ebay", "samsung", "whatsapp", "twitter", "hsbc", "citibank", "binance", "roblox"}
 MAJOR_CC = set("""in us uk de fr it es nl be ch at se no dk fi ie pt pl cz gr ru ua tr il ae sa eg za ng ke ma
                   jp kr cn hk tw sg my id th vn ph au nz ca mx br ar cl co pe ve pk bd lk np""".split())
 
 # Brand keyword -> the real registered domains that brand uses
 BRANDS = {
-    "sbi": {"sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbicard.com", "sbi", "sbi.bank.in"},
+    "sbi": {"sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbicard.com", "sbi", "sbi.bank.in", "sbilife.co.in",
+            "sbimf.com", "sbigeneral.in", "sbisecurities.in", "sbicaps.com"},
     "onlinesbi": {"onlinesbi.sbi", "onlinesbi.com"},
-    "hdfc": {"hdfcbank.com", "hdfcbank.net", "hdfc.com", "hdfclife.com", "hdfcsec.com", "hdfc.bank.in", "hdfcbank.bank.in", "hdfcbank"},
-    "icici": {"icicibank.com", "icicidirect.com", "iciciprulife.com", "icici.bank.in"},
-    "axisbank": {"axisbank.com", "axis.bank.in"},
-    "kotak": {"kotak.com", "kotak.bank.in"},
+    "hdfc": {"hdfcbank.com", "hdfcbank.net", "hdfc.com", "hdfclife.com", "hdfcsec.com", "hdfc.bank.in", "hdfcbank.bank.in", "hdfcbank",
+             "hdfcergo.com", "hdfcfund.com", "hdfcsky.com"},
+    "icici": {"icicibank.com", "icicidirect.com", "iciciprulife.com", "icici.bank.in", "icicilombard.com", "icicipruamc.com",
+              "icicisecurities.com"},
+    "axisbank": {"axisbank.com", "axis.bank.in", "axismf.com", "axisdirect.in"},
+    "kotak": {"kotak.com", "kotak.bank.in", "kotaksecurities.com", "kotakmf.com", "kotaklife.com"},
     "canarabank": {"canarabank.com", "canarabank.in"},
     "pnb": {"pnbindia.in", "pnb.co.in", "pnb.bank.in"},
     "bankofbaroda": {"bankofbaroda.in", "bankofbaroda.com"},
     "unionbank": {"unionbankofindia.co.in"},
     "yesbank": {"yesbank.in"},
-    "paytm": {"paytm.com", "paytm.in", "paytmbank.com"},
-    "phonepe": {"phonepe.com"},
+    "paytm": {"paytm.com", "paytm.in", "paytmbank.com", "paytmmoney.com", "paytmmall.com", "paytm.me"},
+    "phonepe": {"phonepe.com", "phon.pe"},
+    "phonepay": {"phonepe.com", "phon.pe"},      # the usual misspelling scammers use
     "gpay": {"google.com"},
-    "google": {"google.com", "google.co.in", "googleusercontent.com", "youtube.com", "youtu.be", "goo.gl", "g.co",
+    "googlepay": {"google.com"},
+    "google": {"google.com", "google.co.in", "googleusercontent.com", "googleapis.com", "gstatic.com", "withgoogle.com", "youtube.com", "youtu.be", "goo.gl", "g.co",
                "google", "youtube", "android", "gmail"},   # the last four: endings only Google can own
-    "amazon": {"amazon.in", "amazon.com", "amazonaws.com", "amazon.co.uk", "amzn.to", "amzn.in", "amazon"},
+    "amazon": {"amazon.in", "amazon.com", "amazonaws.com", "amazon.co.uk", "amzn.to", "amzn.in", "amazon", "amazonpay.in"},
     "flipkart": {"flipkart.com", "fkrt.it"},
     "meesho": {"meesho.com"},
     "paypal": {"paypal.com", "paypal.me"},
@@ -136,17 +142,66 @@ BRANDS = {
     "swiggy": {"swiggy.com"},
     "zomato": {"zomato.com"},
     "bescom": {"bescom.co.in", "bescom.karnataka.gov.in"},
+    "mescom": {"mescom.karnataka.gov.in", "mescom.co.in"},
+    "hescom": {"hescom.karnataka.gov.in", "hescom.co.in"},
+    "gescom": {"gescom.karnataka.gov.in", "gescom.in"},
+    "cescmysore": {"cescmysore.karnataka.gov.in", "cescmysore.org"},
+    "kseb": {"kseb.in"},
+    "tangedco": {"tangedco.gov.in", "tnebltd.gov.in"},
+    "cybercrime": {"cybercrime.gov.in"},
+    "trai": {"trai.gov.in"},
+    "cbi": {"cbi.gov.in"},
+    "dtdc": {"dtdc.in", "dtdc.com"},
+    "sanchar": {"sancharsaathi.gov.in", "dot.gov.in"},
     "mahadiscom": {"mahadiscom.in"},
     "fastag": {"npci.org.in", "ihmcl.co.in"},
     "parivahan": {"parivahan.gov.in"},
     "echallan": {"parivahan.gov.in"},
+    "pmkisan": {"pmkisan.gov.in"},
+    "kbc": {"sonyliv.com", "sonypicturesnetworks.com"},
+    "digilocker": {"digilocker.gov.in"},
+    "sancharsaathi": {"sancharsaathi.gov.in"},
+    "bhim": {"bhimupi.org.in", "npci.org.in"},
+    "yono": {"onlinesbi.sbi", "sbi.co.in", "sbi"},
+    "mobikwik": {"mobikwik.com"},
+    "cred": {"cred.club"},
+    "zerodha": {"zerodha.com"},
+    "groww": {"groww.in"},
+    "upstox": {"upstox.com"},
+    "angelone": {"angelone.in"},
+    "hsbc": {"hsbc.co.in", "hsbc.com", "hsbc.co.uk", "hsbc.com.hk"},
+    "citibank": {"citibank.com", "citi.com", "citibank.co.in"},
+    # global services that scam pages copy for everyone, Indians included
+    "chase": {"chase.com"},
+    "bankofamerica": {"bankofamerica.com", "bofa.com"},
+    "wellsfargo": {"wellsfargo.com"},
+    "coinbase": {"coinbase.com"},
+    "binance": {"binance.com"},
+    "metamask": {"metamask.io"},
+    "trezor": {"trezor.io"},
+    "usps": {"usps.com"},
+    "docusign": {"docusign.com", "docusign.net"},
+    "dropbox": {"dropbox.com", "dropboxusercontent.com", "db.tt"},
+    "onedrive": {"live.com", "microsoft.com", "sharepoint.com"},
+    "office365": {"microsoft.com", "office.com", "microsoftonline.com", "live.com"},
+    "outlook": {"outlook.com", "live.com", "office.com", "microsoft.com"},
+    "yahoo": {"yahoo.com", "yahoo.co.jp", "yahoo.co.in"},
+    "roblox": {"roblox.com"},
+    "steamcommunity": {"steamcommunity.com"},
+    "steampowered": {"steampowered.com"},
 }
+# Brand names that are also ordinary words ("the indian telegram", "pineapple"): only counted
+# when they stand alone in the website name or start it ("telegram-premium", "appleid-verify")
+WORD_BRANDS = {"telegram", "apple", "chase", "outlook", "cred", "groww", "steam"}
+# Short names that are inside ordinary words ("train", "trailer", "ksebastian"): only counted when they
+# stand alone in the website name ("trai-sim-block") or are joined to a scam word ("traiverify")
+STANDALONE_BRANDS = {"trai", "kseb", "dtdc", "jio", "pnb", "kbc", "dhl", "cbi", "sbi"}
 
 BRAND_DISPLAY = {
     "sbi": "SBI", "onlinesbi": "SBI", "hdfc": "HDFC Bank", "icici": "ICICI Bank", "axisbank": "Axis Bank",
     "kotak": "Kotak Bank", "canarabank": "Canara Bank", "pnb": "PNB", "bankofbaroda": "Bank of Baroda",
     "unionbank": "Union Bank", "yesbank": "Yes Bank", "paytm": "Paytm", "phonepe": "PhonePe",
-    "gpay": "Google Pay", "google": "Google", "amazon": "Amazon", "flipkart": "Flipkart", "meesho": "Meesho",
+    "gpay": "Google Pay", "googlepay": "Google Pay", "phonepay": "PhonePe", "google": "Google", "amazon": "Amazon", "flipkart": "Flipkart", "meesho": "Meesho",
     "paypal": "PayPal", "apple": "Apple", "icloud": "Apple iCloud", "microsoft": "Microsoft",
     "netflix": "Netflix", "facebook": "Facebook", "instagram": "Instagram", "whatsapp": "WhatsApp",
     "telegram": "Telegram", "irctc": "IRCTC", "uidai": "Aadhaar (UIDAI)", "aadhaar": "Aadhaar (UIDAI)",
@@ -154,7 +209,17 @@ BRAND_DISPLAY = {
     "bsnl": "BSNL", "indiapost": "India Post", "fedex": "FedEx", "dhl": "DHL", "bluedart": "Blue Dart",
     "delhivery": "Delhivery", "myntra": "Myntra", "swiggy": "Swiggy", "zomato": "Zomato",
     "bescom": "BESCOM", "mahadiscom": "MSEDCL", "fastag": "FASTag", "parivahan": "Parivahan (Transport Dept)",
-    "echallan": "e-Challan (Transport Dept)",
+    "echallan": "e-Challan (Transport Dept)", "pmkisan": "PM-Kisan", "kbc": "KBC (Kaun Banega Crorepati)",
+    "digilocker": "DigiLocker", "sancharsaathi": "Sanchar Saathi", "bhim": "BHIM UPI", "yono": "SBI YONO",
+    "mobikwik": "MobiKwik", "cred": "CRED", "zerodha": "Zerodha", "groww": "Groww", "upstox": "Upstox",
+    "angelone": "Angel One", "hsbc": "HSBC", "citibank": "Citibank", "chase": "Chase Bank",
+    "bankofamerica": "Bank of America", "wellsfargo": "Wells Fargo", "coinbase": "Coinbase", "binance": "Binance",
+    "metamask": "MetaMask", "trezor": "Trezor", "usps": "USPS", "docusign": "DocuSign", "dropbox": "Dropbox",
+    "onedrive": "Microsoft OneDrive", "office365": "Microsoft Office", "outlook": "Outlook", "yahoo": "Yahoo",
+    "roblox": "Roblox", "steamcommunity": "Steam", "steampowered": "Steam",
+    "mescom": "MESCOM", "hescom": "HESCOM", "gescom": "GESCOM", "cescmysore": "CESC Mysore", "kseb": "KSEB",
+    "tangedco": "TANGEDCO", "cybercrime": "Cyber Crime Portal", "trai": "TRAI", "cbi": "CBI", "dtdc": "DTDC",
+    "sanchar": "Department of Telecom",
 }
 
 
@@ -172,6 +237,10 @@ TYPO_TARGETS = {
     "airtel": "airtel", "indiapost": "indiapost", "incometax": "incometax", "bluedart": "bluedart",
     "delhivery": "delhivery", "meesho": "meesho", "kotak": "kotak", "canarabank": "canarabank",
     "telegram": "telegram", "youtube": "google", "bankofbaroda": "bankofbaroda", "yesbank": "yesbank",
+    "sbionline": "sbi", "pnbindia": "pnb", "mobikwik": "mobikwik", "zerodha": "zerodha", "upstox": "upstox",
+    "coinbase": "coinbase", "binance": "binance", "metamask": "metamask", "chaseonline": "chase",
+    "wellsfargo": "wellsfargo", "bankofamerica": "bankofamerica", "docusign": "docusign", "roblox": "roblox",
+    "uidai": "uidai", "parivahan": "parivahan", "digilocker": "digilocker", "pmkisan": "pmkisan",
 }
 
 TRUSTED_DOMAINS = set().union(*BRANDS.values()) | {
@@ -195,7 +264,23 @@ FREE_HOSTING = {
     "webflow.io", "framer.website", "carrd.co", "mystrikingly.com", "jimdosite.com",
     "surge.sh", "fly.dev", "railway.app", "r2.dev", "ipfs.io", "dweb.link", "trycloudflare.com",
     "cf-ipfs.com", "w3s.link", "nftstorage.link", "4everland.io", "fleek.co", "ipfs.dweb.link",
+    "gitbook.io", "codesandbox.io", "csb.app", "ondigitalocean.app", "cleverapps.io", "easywp.com", "mybluehost.me",
+    "ic0.app", "icp0.io", "siasky.net", "web3.storage", "vercel.dev", "deno.dev", "pages.github.io", "gitlab.io",
+    "bitbucket.io", "notion.site", "typedream.app", "webnode.page", "site123.me", "yolasite.com",
+    "tilda.ws", "readthedocs.io", "hpage.com", "ukit.me", "start.page", "linktr.ee", "beacons.ai",
+    "firebasestorage.googleapis.com", "storage.googleapis.com", "blob.core.windows.net", "s3.amazonaws.com",
+    "backblazeb2.com", "dropboxusercontent.com", "1drv.ms", "sharepoint.com", "my.canva.site", "canva.site",
+    "builder.io", "studio.site", "glide.page", "softr.app", "bubbleapps.io", "webcindario.com", "altervista.org",
+    "duckdns.org", "ddns.net", "no-ip.org", "no-ip.com", "hopto.org", "zapto.org", "sytes.net", "serveo.net",
+    "freedns.org", "mooo.com", "dynu.net", "myftp.biz", "myddns.me", "servehttp.com", "redirectme.net",
+    "loca.lt", "localtunnel.me", "serveousercontent.com", "pinggy.link", "devtunnels.ms", "trycloudflare.com",
 }
+# "Dynamic address" and tunnel services: a home computer can appear as a website for a few hours.
+# Genuine banks, shops and government offices never use them
+TUNNEL_HOSTS = {"duckdns.org", "ddns.net", "no-ip.org", "no-ip.com", "hopto.org", "zapto.org", "sytes.net",
+                "serveo.net", "freedns.org", "mooo.com", "dynu.net", "myftp.biz", "myddns.me", "servehttp.com",
+                "redirectme.net", "loca.lt", "localtunnel.me", "serveousercontent.com", "pinggy.link",
+                "devtunnels.ms", "trycloudflare.com", "ngrok.io", "ngrok-free.app"}
 TRUSTED_DOMAINS -= FREE_HOSTING
 
 PHISHING_WORDS = {
@@ -203,6 +288,20 @@ PHISHING_WORDS = {
     "account", "kyc", "banking", "wallet", "reward", "rewards", "bonus", "gift", "free",
     "claim", "refund", "prize", "support", "helpdesk", "unlock", "confirm", "suspend",
     "customer", "care", "offer", "lucky", "winner", "cashback", "recharge", "pan", "aadhar",
+    "lottery", "jackpot", "parcel", "customs", "challan", "penalty", "disconnection", "blocked", "expired",
+    "redeem", "netbanking", "ebanking", "otp", "unblock", "reactivate", "doubling", "profit", "airdrop",
+    "giveaway", "subsidy", "scholarship", "loanapp", "instantloan",
+}
+
+# Words that are ordinary on their own but tell a scam story together ("dtdc-courier-redelivery",
+# "cbi-arrest-warrant", "task-earn-daily"). Only counted with a second such word or a word above.
+THEME_WORDS = {
+    "redelivery", "courier", "delivery", "tracking", "track", "arrest", "warrant", "police", "complaint", "court",
+    "yojana", "scheme", "sim", "block", "earn", "earning", "task", "parttime", "job", "jobs", "hiring", "loan",
+    "instant", "investment", "invest", "bitcoin", "crypto", "forex", "trading", "double", "draw", "scratch",
+    "scratchcard", "spin", "electricity", "bill", "power", "ration", "laptop", "fee", "fine", "pay", "payment",
+    "number", "deactivate", "deactivation", "kyc", "pending", "alert", "notice", "income", "daily", "tips",
+    "like", "review", "approval", "cash", "money", "gramin", "list", "status", "seized", "illegal", "drugs",
 }
 
 LOOKALIKE_MAP = str.maketrans({"0": "o", "1": "l", "3": "e", "4": "a", "5": "s", "7": "t",
@@ -372,6 +471,95 @@ def _random_looking(label: str) -> bool:
     return longest_consonants >= 6 or mixed or (len(letters) >= 12 and vowels / max(1, len(letters)) < 0.2)
 
 
+# Letters from other alphabets that look exactly like English ones (Cyrillic "а" in "аpple")
+_CONFUSABLE = str.maketrans({
+    "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i", "ј": "j", "ѕ": "s",
+    "ԁ": "d", "ɡ": "g", "һ": "h", "ӏ": "l", "ո": "n", "ս": "u", "ν": "v", "ο": "o", "α": "a", "ρ": "p",
+    "τ": "t", "κ": "k", "ι": "i", "ε": "e", "ԛ": "q", "ԝ": "w", "м": "m", "т": "t", "к": "k", "в": "b",
+    "н": "h", "ь": "b", "г": "r", "ı": "i", "ɩ": "i", "ʟ": "l", "ᴠ": "v", "ɑ": "a", "ɢ": "g",
+})
+
+
+def _decode_idn(host: str) -> str:
+    out = []
+    for label in host.split("."):
+        if label.startswith("xn--"):
+            try:
+                label = label.encode("ascii").decode("idna")
+            except Exception:
+                try:
+                    label = label[4:].encode("ascii").decode("punycode")
+                except Exception:
+                    pass
+        out.append(label)
+    return ".".join(out)
+
+
+def _skeleton(text: str) -> str:
+    """What a name looks like on screen: 'аpple' (Cyrillic а) and 'àpple' both look like 'apple'."""
+    import unicodedata
+    text = text.translate(_CONFUSABLE)
+    text = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in text if not unicodedata.combining(ch))
+
+
+def _scripts(label: str) -> set:
+    import unicodedata
+    found = set()
+    for ch in label:
+        if ch.isalpha():
+            try:
+                found.add(unicodedata.name(ch).split(" ")[0])
+            except ValueError:
+                pass
+    return found
+
+
+_EMAIL_IN_URL = re.compile(r"[\w.+-]{2,}(?:@|%40)[\w-]{2,}\.[a-z]{2,}", re.I)
+_B64_EMAIL = re.compile(r"[A-Za-z0-9+/_-]{16,}={0,2}")
+_KIT_WORDS = ("login", "signin", "sign-in", "logon", "auth", "verify", "verification", "kyc", "update", "account",
+              "secure", "wp-", "confirm", "billing", "payment", "netbanking", "unlock", "session", "otp", "webmail",
+              "validate", "recover", "suspend", "index.php", "index.html", "redeem", "claim", "reward", "refund")
+_REDIRECT_WRAPPERS = {
+    "google.com": ("/url", ("q", "url")), "google.co.in": ("/url", ("q", "url")),
+    "l.facebook.com": ("/l.php", ("u",)), "lm.facebook.com": ("/l.php", ("u",)), "l.messenger.com": ("/l.php", ("u",)),
+    "l.instagram.com": ("/", ("u",)), "youtube.com": ("/redirect", ("q",)), "www.youtube.com": ("/redirect", ("q",)),
+    "out.reddit.com": ("/", ("url",)), "away.vk.com": ("/away.php", ("to",)), "t.umblr.com": ("/redirect", ("z",)),
+    "href.li": ("/", ()), "www.linkedin.com": ("/redir/redirect", ("url",)), "click.snapchat.com": ("/", ("url",)),
+}
+
+
+def unwrap_redirect(url: str) -> str:
+    """Links that only pass through Google, Facebook, Outlook... ('google.com/url?q=https://evil.xyz') open
+    the inner address. Returns that inner address, or '' when the link isn't one of these."""
+    from urllib.parse import parse_qs, unquote
+    try:
+        p = urlparse(url)
+    except Exception:
+        return ""
+    host = (p.hostname or "").lower()
+    qs = parse_qs(p.query)
+    keys = ()
+    if host.endswith("safelinks.protection.outlook.com"):
+        keys = ("url",)
+    elif host in ("www.google.com", "google.com", "www.google.co.in", "google.co.in"):
+        keys = ("q", "url") if p.path == "/url" else ()
+    elif host in _REDIRECT_WRAPPERS:
+        path, keys = _REDIRECT_WRAPPERS[host]
+        if p.path != path:
+            keys = ()
+        if host == "href.li" and p.query.lower().startswith("http"):
+            return unquote(p.query)
+    for k in keys:
+        v = (qs.get(k) or [""])[0].strip()
+        if v.lower().startswith(("http://", "https://")):
+            return v
+    return ""
+
+
+_APK_IN_PATH = re.compile(r"\.apk($|[?&/#=])")
+
+
 def analyze_structure(url: str) -> dict:
     findings, checks = [], []
     score = 0
@@ -380,35 +568,79 @@ def analyze_structure(url: str) -> dict:
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     path = (parsed.path + "?" + parsed.query).lower()
+    raw_path = parsed.path + "?" + parsed.query
     tricks = 0
+
+    def brand_in_path(min_len: int):
+        for brand in BRANDS:
+            if len(brand) >= min_len and re.search(rf"[/\-_.=?&]{brand}[/\-_.?=&0-9]", path + "/"):
+                return brand
+        return None
 
     if is_ip(host):
         findings.append("Link uses a raw IP address instead of a real website name")
         score += led.note(findings, 25)
+        b = brand_in_path(3)
+        if b:
+            findings.append(f"The page address mentions '{brand_name(b)}', but genuine {brand_name(b)} pages never open from a bare number address")
+            score += led.note(findings, 30)
+        elif any(w in path for w in _KIT_WORDS):
+            findings.append("Link leads to a login or verification page. Never enter details on a page you reached from a message")
+            score += led.note(findings, 15)
+        if _APK_IN_PATH.search(path):
+            findings.append("Link downloads an Android app (.apk) from outside the Play Store. This is a common way to steal OTPs")
+            score += led.note(findings, 40)
         _check(checks, "known", "warn", host)
-        _check(checks, "imitation", "pass")
+        _check(checks, "imitation", "fail" if b else "pass", brand_name(b) if b else None)
         _check(checks, "name_tricks", "warn", 1)
         return {"score": score, "findings": findings, "checks": checks, "parts": led.parts, "trusted": False,
-                "hosting": None, "shortener": False, "brand": None}
+                "hosting": None, "shortener": False, "brand": b, "apk": bool(_APK_IN_PATH.search(path))}
 
     reg = registered_domain(host)
     trusted = reg in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in")) or \
         (host.endswith(tuple("." + t for t in BRAND_TLDS)) and reg not in OFFICIAL_SHORTENERS)
     hosting = next((h for h in FREE_HOSTING if host == h or host.endswith("." + h)), None)
+    if not hosting and re.search(r"\.blogspot\.[a-z.]+$", host):
+        hosting = "blogspot"
     if not hosting and re.search(r"/ip[fn]s/", path_for_hosting(url)):
         hosting = "IPFS"
+    if not hosting and host in ("docs.google.com", "forms.office.com", "forms.microsoft.com") and \
+            (parsed.path.startswith("/forms/") or host != "docs.google.com"):
+        hosting = "Google Forms" if host == "docs.google.com" else "Microsoft Forms"
+    tunnel = hosting in TUNNEL_HOSTS
     shortener = reg in SHORTENER_DOMAINS
-    if hosting:
+    if hosting and hosting.endswith("Forms"):
+        trusted = False
+        findings.append(f"This is a {hosting.split()[0]} form. Anyone can make one, so never type passwords, OTPs, card or bank details into it")
+        score += led.note(findings, 10)
+        _check(checks, "known", "warn", hosting)
+    elif tunnel:
+        trusted = False
+        findings.append(f"Website runs on a temporary address service ({hosting}) that turns any computer into a website for a few hours. Banks, shops and government offices never use these")
+        score += led.note(findings, 25)
+        _check(checks, "known", "warn", hosting)
+    elif hosting:
         trusted = False
         findings.append(f"Page is hosted on a free hosting service ({hosting}) where anyone can publish. Check who made it")
-        score += led.note(findings, 10)
+        score += led.note(findings, 20 if hosting in ("IPFS", "ipfs.io", "dweb.link", "cf-ipfs.com", "w3s.link",
+                                                       "nftstorage.link", "4everland.io", "siasky.net") else 10)
         _check(checks, "known", "warn", hosting)
     elif shortener and reg in OFFICIAL_SHORTENERS:
         _check(checks, "known", "pass", reg)   # the company's own short link: we judge where it leads
+    elif shortener and parsed.path.strip("/") == "" and not parsed.query:
+        _check(checks, "known", "info", reg)   # just the short-link service's own home page
     elif shortener:
         findings.append("Link uses a link shortener, so the real destination is hidden")
         score += led.note(findings, 15)
         _check(checks, "known", "warn", reg)
+        slug = parsed.path.lower()
+        slug_brand = next((b for b in BRANDS if len(b) >= 3 and b in slug), None)
+        slug_words = [w for w in ("kyc", "reward", "refund", "claim", "bonus", "prize", "lottery", "offer", "update",
+                                  "verify", "electricity", "bill", "challan", "parcel", "customs", "apk", "loan", "job")
+                      if w in slug]
+        if slug_brand or slug_words:
+            findings.append("The short link's name was chosen to mention a bank, a brand or a reward. Scammers do this to look genuine")
+            score += led.note(findings, 25 if (slug_brand and slug_words) or len(slug_words) >= 2 else 15)
     elif trusted:
         _check(checks, "known", "pass", reg)
     else:
@@ -416,21 +648,45 @@ def analyze_structure(url: str) -> dict:
 
     subdomain_part = host[: -len(reg)].rstrip(".") if host.endswith(reg) else ""
     name_part = reg.split(".")[0]
+    rank = None if hosting else popularity_rank(reg)
 
+    # Look-alike letters from other alphabets (punycode). A name fully in Hindi, Kannada, Thai or Chinese
+    # is normal; English mixed with Cyrillic or Greek letters, or a name that LOOKS like a brand, is not
+    idn_brand = None
     if "xn--" in host:
-        findings.append("Website name uses special look-alike characters (punycode) to imitate another site")
-        score += led.note(findings, 30)
-        tricks += 1
+        shown = _decode_idn(host)
+        skeleton = _skeleton(shown)
+        mixed = any(len(_scripts(lab) - {"DIGIT"}) >= 2 and "LATIN" in _scripts(lab) for lab in shown.split("."))
+        if skeleton.isascii() and skeleton != shown:
+            sk_reg = registered_domain(skeleton)
+            sk_compact = skeleton.replace("-", "")
+            if sk_reg in TRUSTED_DOMAINS or (popularity_rank(sk_reg) or 10**9) <= 100_000:
+                idn_brand = sk_reg
+            else:
+                idn_brand = next((brand_name(b) for b in BRANDS if len(b) >= 4 and b in sk_compact), None)
+        if idn_brand:
+            findings.append(f"Website name '{shown}' uses look-alike letters to pass as '{idn_brand}'. It is a different website")
+            score += led.note(findings, 55)
+            tricks += 1
+        elif mixed:
+            findings.append(f"Website name '{shown}' mixes letters from different alphabets, a trick to imitate another site")
+            score += led.note(findings, 30)
+            tricks += 1
 
     # Brand impersonation: a brand name appears, but this isn't that brand's real site
     brand_hit = None
-    if not trusted:
+    if idn_brand:
+        brand_hit = idn_brand
+    if not trusted and not brand_hit:
         host_compact = host.replace("-", "")
         host_lookalike = host_compact.translate(LOOKALIKE_MAP).replace("rn", "m").replace("vv", "w")
+        host_lookalike2 = host_lookalike.replace("l", "i")       # lcicibank -> icicibank
         reg_parts = reg.split(".")
-        top_site = not hosting and host in (reg, "www." + reg) and (popularity_rank(reg) or 10**9) <= 10_000
+        top_site = not hosting and host in (reg, "www." + reg) and (rank or 10**9) <= 10_000
         country_site = len(reg_parts) in (2, 3) and len(reg_parts[-1]) == 2 and \
-            (len(reg_parts) == 2 or reg_parts[1] in SECOND_LEVEL) and (reg_parts[-1] in MAJOR_CC or top_site)
+            (len(reg_parts) == 2 or reg_parts[1] in SECOND_LEVEL) and \
+            (reg_parts[-1] in MAJOR_CC or top_site or (rank or 10**9) <= 100_000)
+        tokens = [t for t in re.split(r"[.\-]", host) if t]
         for brand, official in BRANDS.items():
             if _is_official(host, official):
                 continue  # e.g. s3.amazonaws.com really is run by Amazon
@@ -438,20 +694,38 @@ def analyze_structure(url: str) -> dict:
                 continue  # google.de, amazon.co.jp: the brand's own website for that country
             if top_site:
                 break  # one of the world's 10,000 most visited websites (kotaku.com, telegram.me), not a fake
-            if len(brand) <= 3:
-                hit_plain = re.search(rf"(^|[.\-]){brand}([.\-]|$)", host) is not None
-                hit_lookalike = False
+            hit_lookalike = False
+            if len(brand) <= 3 or brand in WORD_BRANDS or brand in STANDALONE_BRANDS:
+                # stands alone ("sbi-kyc", "telegram-premium") or starts a word joined to a scam word
+                # ("sbirewards", "appleid") - but not "theindiantelegram" or "pineapple"
+                hit_plain = re.search(rf"(^|[.\-]){brand}([.\-]|$)", host) is not None or any(
+                    t.startswith(brand) and len(t) > len(brand) and (
+                        brand in WORD_BRANDS and len(brand) > 3 or
+                        any(w in t[len(brand):] for w in PHISHING_WORDS if len(w) >= 3))
+                    for t in tokens)
             else:
                 hit_plain = brand in host_compact
-                hit_lookalike = not hit_plain and brand in host_lookalike
+                hit_lookalike = not hit_plain and (brand in host_lookalike or brand in host_lookalike2)
             if hit_plain or hit_lookalike:
                 how = "uses look-alike characters to imitate" if hit_lookalike else "mentions"
                 findings.append(f"Link {how} '{brand_name(brand)}' but is NOT {brand_name(brand)}'s official website ({reg})")
                 score += led.note(findings, 50 if hit_lookalike else 40)
                 brand_hit = brand
+                # spelled almost exactly like the real website (hdfcbannk.com vs hdfcbank.com)
+                labels = {d.split(".")[0] for d in official if "." in d}
+                cand = name_part.replace("-", "")
+                if any(0 < _edit_distance(cand, lab) <= (1 if len(lab) <= 6 else 2) for lab in labels if len(lab) >= 4):
+                    findings.append(f"The website name '{reg}' is spelled almost like {brand_name(brand)}'s real website, so it is easy to mistake")
+                    score += led.note(findings, 20)
+                # a second, different brand or government service in the same name (echallan + parivahan)
+                elif any(b2 != brand and BRANDS[b2] != official and len(b2) >= 5 and b2 in host_compact.replace(brand, " ")
+                         for b2 in BRANDS):
+                    findings.append("Website name strings together the names of two official services, which genuine websites don't do")
+                    score += led.note(findings, 15)
                 break
 
         # Misspelled brand name: amazom.in, flipkarrt.com, paytrn.com, g00gle.com
+        exact_name = False
         if not brand_hit and not top_site:
             candidates = {name_part, name_part.replace("-", ""),
                           name_part.translate(LOOKALIKE_MAP).replace("rn", "m").replace("vv", "w")}
@@ -461,6 +735,9 @@ def analyze_structure(url: str) -> dict:
                 if len(target) < 6:
                     continue
                 for cand in candidates:
+                    if cand == target and not (country_site and brand in GLOBAL_BRANDS) and (rank or 10**9) > 100_000:
+                        brand_hit, exact_name = brand, True     # sbionline.in, onlinesbi.co: the name itself, elsewhere
+                        break
                     # real typo-squats keep the first letter (amazom, flipkarrt); "tomato" is not "zomato"
                     if len(cand) < 5 or cand == target or cand[0] != target[0]:
                         continue
@@ -468,34 +745,52 @@ def analyze_structure(url: str) -> dict:
                     if _edit_distance(cand, target) <= limit:
                         brand_hit = brand
                         break
+                if brand_hit and exact_name:
+                    findings.append(f"Link uses the name '{brand_name(brand_hit)}' but is NOT {brand_name(brand_hit)}'s official website ({reg})")
+                    score += led.note(findings, 45)
+                    break
                 if brand_hit:
                     findings.append(f"The website name '{reg}' is a misspelling of '{brand_name(brand_hit)}'. Scammers use names like this to trick you")
                     score += led.note(findings, 50)
                     break
 
-        # Brand name hidden in the page address: some-site.com/sbi/login
+        # Brand name hidden in the page address: some-site.com/sbi/login, free-host.app/paytm.html
         if not brand_hit:
-            for brand, official in BRANDS.items():
-                if len(brand) >= 4 and re.search(rf"[/\-_.=]{brand}[/\-_.?=]", path + "/"):
-                    if any(w in path for w in ("login", "signin", "verify", "kyc", "update", "account", "secure", "wp-")):
-                        findings.append(f"The page address mentions '{brand_name(brand)}' and a login or verification page, but the website is not {brand_name(brand)}'s")
-                        score += led.note(findings, 30)
-                        brand_hit = brand
-                        break
+            b = brand_in_path(3 if hosting else 4)
+            if b and not _is_official(host, BRANDS[b]):
+                if any(w in path for w in _KIT_WORDS) or re.search(r"\.(php|html?|aspx?)\b", path):
+                    findings.append(f"The page address mentions '{brand_name(b)}' and a login or verification page, but the website is not {brand_name(b)}'s")
+                    score += led.note(findings, 40 if hosting else 30)
+                    brand_hit = b
+                elif hosting:
+                    findings.append(f"The page mentions '{brand_name(b)}' but sits on a free hosting service, not on {brand_name(b)}'s own website")
+                    score += led.note(findings, 25)
+                    brand_hit = b
 
-    _check(checks, "imitation", "fail" if brand_hit else "pass", brand_name(brand_hit) if brand_hit else None)
+    _check(checks, "imitation", "fail" if brand_hit else "pass", brand_name(brand_hit) if brand_hit in BRANDS else brand_hit)
 
     if not trusted:
         tokens = re.split(r"[.\-]", host)
         words_in_host = sorted(w for w in PHISHING_WORDS
                                if any(tok == w or (len(w) >= 5 and w in tok) for tok in tokens))
-        if words_in_host:
-            findings.append(f"Website name contains words scammers love: {', '.join(words_in_host[:3])}")
-            score += led.note(findings, 15)
+        theme_in_host = sorted(w for w in THEME_WORDS - set(words_in_host)
+                               if any(tok == w or (len(w) >= 7 and w in tok) for tok in tokens[:-1]))
+        n_words = len(words_in_host) + len(theme_in_host)
+        if words_in_host or n_words >= 2:
+            shown_words = (words_in_host + theme_in_host)[:3]
+            findings.append(f"Website name contains words scammers love: {', '.join(shown_words)}")
+            score += led.note(findings, 35 if n_words >= 3 else 25 if n_words == 2 else 15)
             tricks += 1
         elif any(w in path for w in ("login", "verify", "kyc", "update-account", "signin", "wp-admin")):
             findings.append("Link leads to a login or verification page. Never enter details on a page you reached from a message")
             score += led.note(findings, 5)
+
+        # pretends to be a government website: "pmkisan-gov.in.net", "incometax-refund-gov.in"
+        real_gov = re.search(r"(\.gov\.in|\.nic\.in|\.gov|\.mil|\.(gov|gob|go|govt|gouv|gv|mil)\.[a-z]{2})$", host)
+        if not real_gov and re.search(r"(^|[.\-])(gov|govt|gouv|sarkar|sarkari)([.\-]|$)", host):
+            findings.append("Website name pretends to be a government website, but it is not one (Indian government websites end in .gov.in or .nic.in)")
+            score += led.note(findings, 40)
+            tricks += 1
 
         if subdomain_part.count(".") >= 2:
             findings.append("Link has an unusually long chain of sub-domains (a trick to hide the real site)")
@@ -519,9 +814,33 @@ def analyze_structure(url: str) -> dict:
             tricks += 1
 
         if re.search(r"/wp-(content|includes|admin)/[^?#]*(login|signin|webmail|verify|secure|bank|account|auth|update|office|outlook|paypal|apple|netflix|wallet)", path) \
-                or re.search(r"/(signin|sign-in|login|logon|auth|verify|verification|validate|webmail|secure-?file|otp\w*)\.(php|html?|aspx?)\b", path):
+                or re.search(r"/(signin|sign-in|login|logon|auth|verify|verification|validate|webmail|secure-?file|otp\w*|bizmail|mailbox|owa|onedrive|sharepoint|office365|docusign|excel\w*)\.(php|html?|aspx?)\b", path):
             findings.append("The link's address looks like a fake login page hidden inside another website")
             score += led.note(findings, 25)
+            tricks += 1
+
+        # another website's address inside the path: evil.com/www.itau.com.br/login, x.com/www.sbi.co.in/
+        inner_site = re.search(r"/(www\.[a-z0-9-]+(?:\.[a-z]{2,6}){1,2})(?:/|$)", parsed.path.lower())
+        if inner_site and registered_domain(inner_site.group(1)) != reg:
+            findings.append(f"The page address contains another website's name ({inner_site.group(1)}) to look like it, but the page is on {reg}")
+            score += led.note(findings, 30)
+            tricks += 1
+
+        # the victim's email already filled in (?email=you@x.com, or hidden in base64): fake login pages
+        # do this so the page looks personal
+        email_inside = _EMAIL_IN_URL.search(raw_path) is not None
+        if not email_inside:
+            for blob in _B64_EMAIL.findall(raw_path)[:6]:
+                try:
+                    dec = base64.b64decode(blob.replace("-", "+").replace("_", "/") + "=" * (-len(blob) % 4)).decode("utf-8", "ignore")
+                except Exception:
+                    continue
+                if _EMAIL_IN_URL.search(dec):
+                    email_inside = True
+                    break
+        if email_inside:
+            findings.append("The link already contains an email address, as fake login pages do to look personal")
+            score += led.note(findings, 15)
             tricks += 1
 
         if re.search(r"\d{4,}", name_part):
@@ -536,14 +855,28 @@ def analyze_structure(url: str) -> dict:
         tricks += 1
 
     if "@" in (parsed.netloc or ""):
-        findings.append("Link contains an '@' symbol, which can hide the real destination")
-        score += led.note(findings, 20)
+        shown_part = parsed.netloc.rsplit("@", 1)[0]
+        if re.search(r"[a-z0-9-]+\.[a-z]{2,}", shown_part, re.I):
+            findings.append(f"Link is made to look like it opens '{shown_part[:60]}', but it really opens {host}")
+            score += led.note(findings, 45)
+        else:
+            findings.append("Link contains an '@' symbol, which can hide the real destination")
+            score += led.note(findings, 20)
         tricks += 1
 
-    if re.search(r"\.apk($|\?)", path):
+    apk = bool(_APK_IN_PATH.search(path))
+    if apk:
         findings.append("Link downloads an Android app (.apk) from outside the Play Store. This is a common way to steal OTPs")
-        score += led.note(findings, 40)
+        # on a big file-sharing website (Google Drive, MediaFire) the website is fine but the file is not
+        score += led.note(findings, 35 if (trusted or (rank or 10**9) <= 10_000) else 50)
         tricks += 1
+        named = next((b for b in BRANDS if len(b) >= 3 and re.search(rf"(^|[^a-z]){b}", path)), None) or \
+            next((w for w in ("kisan", "yojana", "challan", "rto", "bill", "kyc", "reward", "aadhaar", "aadhar", "pmkisan",
+                              "invoice", "wedding", "invitation", "income", "tax", "customs") if w in path), None)
+        if named and not _is_official(host, BRANDS.get(named, set())):
+            findings.append("The app file is named after a bank, a government scheme or an invitation. "
+                            "Fake apps with names like this are the most common way phones get taken over in India")
+            score += led.note(findings, 25)
     elif re.search(r"\.(exe|scr|bat|msi|vbs|js)($|\?)", path):
         findings.append("Link downloads a program file. Only install programs from the maker's official website or app store")
         score += led.note(findings, 30)
@@ -557,7 +890,7 @@ def analyze_structure(url: str) -> dict:
     _check(checks, "name_tricks", "pass" if tricks == 0 else ("fail" if tricks >= 3 else "warn"), tricks)
 
     return {"score": score, "findings": findings, "checks": checks, "parts": led.parts, "trusted": trusted,
-            "hosting": hosting, "shortener": shortener, "brand": brand_hit}
+            "hosting": hosting, "shortener": shortener, "brand": brand_hit, "apk": apk}
 
 
 # ---------------------------------------------------------------------------
@@ -1652,6 +1985,9 @@ def extract_url(raw: str) -> str:
     text = (raw or "").strip()
     if not text:
         return ""
+    # other dot characters (。．｡) and invisible characters people copy along with a link
+    text = re.sub(r"[。．｡]", ".", text)
+    text = re.sub(r"[\u200b-\u200f\u2060\ufeff\u00ad]", "", text)
     # defanged addresses used in security reports
     text = re.sub(r"\[\.\]|\(\.\)|\{\.\}|\s\[dot\]\s|\[dot\]", ".", text, flags=re.IGNORECASE)
     text = re.sub(r"\bhxxp", "http", text, flags=re.IGNORECASE)
@@ -1724,6 +2060,15 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     reg = host if is_ip(host) else registered_domain(host)
+    inner = unwrap_redirect(url) if _hop < 3 else ""
+    if inner:
+        # google.com/url?q=..., Facebook/Instagram/Outlook "safe" links: what matters is where it goes
+        result = scan_url(inner, _hop=_hop + 1)
+        inner_host = (urlparse(normalize_url(inner)).hostname or "").lower()
+        result["url"] = url
+        result.setdefault("details", {})["final_url"] = inner
+        result["findings"].insert(0, f"This link only passes through {host} and actually opens {inner_host}. The result below is for {inner_host}")
+        return result
     if reg in OFFICIAL_SHORTENERS and not _hop and not OFFLINE:
         judged = _scan_official_short_link(url, reg)
         if judged:
@@ -2043,7 +2388,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
 
     total = max(0, min(100, score))
     # Known-good sites keep a low score unless a blocklist says otherwise
-    if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail":
+    if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail" and not structure.get("apk"):
         if total > 15:
             led.add(ADJ_TRUSTED, 15 - total)
         total = min(total, 15)
@@ -2051,9 +2396,12 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     # One of the world's most visited websites: small warning signs (a new-looking name, a
     # risky word) matter less. Real danger signals (lists, security companies, fake login
     # page, lookalike name) are never softened. Lookalike sites are never in this list.
-    rank = None if (trusted or structure["hosting"] or is_ip(host)) else popularity_rank(reg)
+    # (a link shortener being popular says nothing about where this short link goes)
+    rank = None if (trusted or structure["hosting"] or is_ip(host) or (structure["shortener"] and not official_short)) \
+        else popularity_rank(reg)
     hard = gsb.get("listed") or feed["status"] == "fail" or vt.get("malicious", 0) >= 1 \
         or vt.get("domain_malicious", 0) >= 1 or dns["exists"] is False \
+        or structure.get("apk") \
         or any(c["id"] in ("imitation", "page", "cfscan", "community", "rbi") and c["status"] == "fail" for c in checks)
     if rank and not hard:
         _check(checks, "known", "pass", reg)

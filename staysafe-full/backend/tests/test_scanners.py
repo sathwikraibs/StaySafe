@@ -1068,6 +1068,23 @@ def test_tulu_translation_uses_gemini_then_kannada():
         translator._cache.clear()
 
 
+def test_hard_link_cases_from_india():
+    """Address-only checks (no lookups): scam stories told by several ordinary words, brand names on
+    other websites, app files on big file-sharing sites, and short links named after banks."""
+    risky = ["https://dtdc-courier-redelivery.com", "https://cbi-arrest-warrant.in", "https://trai-number-block.com",
+             "https://task-earn-daily.in", "https://sbionline.in", "https://phonepay-cashback.in",
+             "https://drive.google.com/uc?id=1xyz&export=download&name=SBI_YONO.apk",
+             "https://www.mediafire.com/file/abc/PM_Kisan.apk/file", "https://bit.ly/3sbi-kyc",
+             "https://evil-example.com/www.itau.com.br/login"]
+    for u in risky:
+        r = scan_url(u)
+        assert r["verdict"] != "SAFE", (u, r["risk_score"], r["findings"])
+    for u in ["https://www.trainman.in", "https://p.paytm.me/xCTH/abc", "https://phon.pe/abc123", "https://bit.ly/",
+              "https://github.com/someone/example.com", "https://www.redbus.in", "https://www.policybazaar.com"]:
+        r = scan_url(u)
+        assert r["verdict"] == "SAFE", (u, r["risk_score"], r["findings"])
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
