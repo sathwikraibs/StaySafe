@@ -81,6 +81,7 @@ def home():
         "assistant": assistant_ready(),
         "telegram_bot": telegram_status(),
         "long_memory": _store.status(),
+        "tulu_lexicon": __import__("scanners.tulu_lexicon", fromlist=["status"]).status(),
         "phone_reputation": __import__("scanners.number_check", fromlist=["ipqs_status"]).ipqs_status(),
         "max_upload_mb": MAX_UPLOAD_MB,
     }

@@ -12,6 +12,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+# Open Tulu and Kannada word lists (Wikilangs, MIT): help tell Tulu from Kannada. Optional: the
+# build carries on without them. pyarrow is only needed for this step, so it is removed after.
+RUN (pip install --no-cache-dir pyarrow && python scripts/fetch_lang_vocab.py; pip uninstall -y pyarrow) || true
 
 ENV PYTHONUNBUFFERED=1
 # Tesseract otherwise starts one thread per CPU it *thinks* it has; on Render's small

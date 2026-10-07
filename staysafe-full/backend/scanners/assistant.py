@@ -159,6 +159,13 @@ def kannada_script_hint(text: str):
         return "tcy"
     if scores["kn"] >= 2 and scores["kn"] > scores["tcy"]:
         return "kn"
+    # Not clear from the built-in words: ask the Tulu/Kannada Wikipedia word lists
+    from scanners.tulu_lexicon import lean
+    lang, _strength = lean(text)
+    if lang == "tcy" and scores["kn"] == 0:
+        return "tcy"
+    if lang == "kn" and scores["tcy"] == 0:
+        return "kn"
     return None
 
 
@@ -721,6 +728,16 @@ def _generate_in_time(messages, message: str, lang: str, hint=None):
                                    {"role": "user", "content": "That answer is in Kannada, but they need Tulu. Write the same answer again in "
                                     "Tulu (with the same letters they used), following the Tulu model sentences, as JSON."}]
             continue
+        # Tulu with several Kannada words mixed in: name the words and ask once for Tulu ones
+        if tulu and attempt == 0 and _script_share(out["reply"], "kn") >= 0.4:
+            from scanners.tulu_lexicon import kannada_only_words
+            slips = [w for w in kannada_only_words(tulu_polish(out["reply"])) if w not in ("StaySafe",)]
+            if len(slips) >= 3:
+                messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
+                                       {"role": "user", "content": "These words in your answer are Kannada, not Tulu: "
+                                        + ", ".join(slips[:6]) + ". Write the same answer again in Tulu only, following "
+                                        "the Tulu model sentences, as JSON."}]
+                continue
         # Tulu: a step they must do was written as "don't" (e.g. "don't file a complaint"): ask once to fix it
         if _wrong_dont(out["reply"]) and attempt == 0:
             messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},

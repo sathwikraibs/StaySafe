@@ -544,6 +544,36 @@ def test_blurry_screenshot_gets_a_second_reading_from_the_backup_reader():
         ms._tesseract_conf, ms._tesseract, ms._ocr_space, ms.ocr_languages, ms._detect_script = saved
 
 
+def test_tulu_and_kannada_word_lists_help_when_built_in_words_are_not_enough():
+    from scanners import tulu_lexicon as tl
+    from scanners.assistant import kannada_script_hint
+    saved = dict(tl._lex)
+    try:
+        tl._lex.update(loaded=True,
+                       tcy={"ಉಂಡು": 5000, "ಬೊಕ್ಕ": 4000, "ಇಜ್ಜಿ": 3000, "ಪೈಸೆ": 900, "ಬ್ಯಾಂಕ್": 500, "ಏರ್": 2000, "ಕಡಪುಡುಲೆ": 300},
+                       kn={"ಇದೆ": 90000, "ಮತ್ತು": 120000, "ಇಲ್ಲ": 50000, "ಮಾಡಿ": 30000, "ಬ್ಯಾಂಕ್": 4000, "ನಿಮ್ಮ": 60000,
+                           "ಕಳುಹಿಸಿ": 8000})
+        tl._lex.update(tcy_total=sum(tl._lex["tcy"].values()), kn_total=sum(tl._lex["kn"].values()))
+        assert tl.lean("ಏರ್ ಪೈಸೆ ಕಡಪುಡುಲೆ ಬ್ಯಾಂಕ್")[0] == "tcy"
+        assert tl.lean("ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಕಳುಹಿಸಿ")[0] == "kn"
+        assert tl.lean("ಬ್ಯಾಂಕ್")[0] is None                         # a shared word says nothing
+        assert kannada_script_hint("ಏರ್ ಪೈಸೆ ಕಡಪುಡುಲೆ") in ("tcy", None)
+        slips = tl.kannada_only_words("ಈ ಮೆಸೇಜ್ ಮೋಸ ಉಂಡು ಮತ್ತು ನಿಮ್ಮ ಬ್ಯಾಂಕ್‌ಗ್ ಕಾಲ್ ಮಾಡಿ")
+        assert "ಮತ್ತು" in slips and "ನಿಮ್ಮ" in slips and "ಉಂಡು" not in slips and "ಬ್ಯಾಂಕ್‌ಗ್" not in slips, slips
+    finally:
+        tl._lex.clear(); tl._lex.update(saved)
+
+
+def test_without_word_lists_nothing_changes():
+    from scanners import tulu_lexicon as tl
+    saved = dict(tl._lex)
+    try:
+        tl._lex.update(loaded=True, tcy={}, kn={}, tcy_total=0, kn_total=0)
+        assert tl.lean("ಏರ್ ಪೈಸೆ ಕಡಪುಡುಲೆ") == (None, 0.0) and tl.kannada_only_words("ಮತ್ತು ನಿಮ್ಮ") == []
+    finally:
+        tl._lex.clear(); tl._lex.update(saved)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
