@@ -210,12 +210,20 @@ def latin_language_hint(text: str):
     ordered = sorted(scores.values(), reverse=True)
     if ordered[0] >= 2 and ordered[0] >= ordered[1] + 2:
         return best
+    # Not clear from the built-in words: ask the Wikipedia word lists (typed in English letters)
+    from scanners.tulu_lexicon import latin_lean
+    lang, _strength = latin_lean(text)
+    if lang and scores.get(lang, 0) >= ordered[0] - 1:
+        return lang
     return None
 
 
 def _looks_indic_in_latin(text: str) -> bool:
     words = set(re.findall(r"[a-z]+", text.lower()))
-    return len(words & INDIC_LATIN_WORDS) >= 2
+    if len(words & INDIC_LATIN_WORDS) >= 2:
+        return True
+    from scanners.tulu_lexicon import romanized_indic
+    return romanized_indic(text)
 
 
 def _phrase_langs(site_lang: str, chosen: str, code, message: str) -> list:
@@ -616,8 +624,11 @@ def proofread(reply: str, lang: str) -> str:
     script = "kn" if lang == "kn" else "hi" if lang == "hi" else None
     if not script or _script_share(reply, script) < 0.5 or len(reply) > 1400:
         return reply
+    from scanners.tulu_lexicon import unusual_words
+    odd = unusual_words(reply, script)
+    hint = ("\nWords that may be misspelled (check them, change only if really wrong): " + ", ".join(odd)) if odd else ""
     body = {"contents": [{"role": "user", "parts": [{"text": PROOF_PROMPT.format(
-                name={"kn": "Kannada", "hi": "Hindi"}[script], text=reply)}]}],
+                name={"kn": "Kannada", "hi": "Hindi"}[script], text=reply) + hint}]}],
             "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "maxOutputTokens": 3000}}
     raw = tr.gemini_generate(body, wait=min(10.0, _wait()), priority="low", timeout=20, deadline=_finish_by())
     data = _json_object(raw or "")
@@ -729,9 +740,11 @@ def _generate_in_time(messages, message: str, lang: str, hint=None):
                                     "Tulu (with the same letters they used), following the Tulu model sentences, as JSON."}]
             continue
         # Tulu with several Kannada words mixed in: name the words and ask once for Tulu ones
-        if tulu and attempt == 0 and _script_share(out["reply"], "kn") >= 0.4:
-            from scanners.tulu_lexicon import kannada_only_words
-            slips = [w for w in kannada_only_words(tulu_polish(out["reply"])) if w not in ("StaySafe",)]
+        if tulu and attempt == 0:
+            from scanners.tulu_lexicon import kannada_only_words, kannada_only_latin
+            polished = tulu_polish(out["reply"])
+            slips = kannada_only_words(polished) if _script_share(out["reply"], "kn") >= 0.4 \
+                else kannada_only_latin(polished)
             if len(slips) >= 3:
                 messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
                                        {"role": "user", "content": "These words in your answer are Kannada, not Tulu: "

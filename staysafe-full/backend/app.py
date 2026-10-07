@@ -58,6 +58,8 @@ from scanners.url_scanner import ensure_feeds  # noqa: E402
 ensure_feeds()
 from scanners import store as _store  # noqa: E402
 _store.start_background()   # today's used allowances survive restarts
+import threading as _th  # noqa: E402
+_th.Thread(target=__import__("scanners.tulu_lexicon", fromlist=["latin_available"]).latin_available, daemon=True).start()
 
 
 @app.route("/")

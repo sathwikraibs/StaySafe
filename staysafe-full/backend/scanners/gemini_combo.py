@@ -30,6 +30,10 @@ def _needs(text: str, ui_lang: str) -> dict:
     mix = script_mix(text)
     non_latin = mix["supported"] + mix["other"]
     source = tr.guess_language(text)
+    if non_latin < 0.2:
+        from scanners.tulu_lexicon import romanized_indic
+        if romanized_indic(text):        # Tulu/Kannada/Hindi typed in English letters
+            non_latin = 1.0
     want_en = non_latin >= 0.2 and not tr.cached_translation(text, "en") and not tr._google_key()
     want_ui = (ui_lang != "en" and source != ui_lang and not tr.cached_translation(text, ui_lang)
                and (ui_lang in tr.TARGET_FALLBACK or not tr._google_key()))

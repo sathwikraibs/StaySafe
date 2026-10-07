@@ -956,7 +956,11 @@ def add_translation(result: dict, ui_lang: str) -> dict:
     non_latin = mix["supported"] + mix["other"]
     english = None
 
-    if non_latin >= 0.2:
+    # Tulu, Kannada or Hindi typed in English letters ("nimma account block aagide") gets the
+    # same English check, so the rules can read it
+    from scanners.tulu_lexicon import romanized_indic
+    romanized = non_latin < 0.2 and romanized_indic(text)
+    if non_latin >= 0.2 or romanized:
         english = translate(text, "en", priority="high", wait=30)
         if english and english["text"].strip():
             en_result = analyze_text(english["text"])
@@ -978,7 +982,7 @@ def add_translation(result: dict, ui_lang: str) -> dict:
     target = ui_lang
     meaning = english if (english and target == "en") else None
     if meaning is None and text.strip():
-        if non_latin >= 0.2 or target != "en":
+        if non_latin >= 0.2 or romanized or target != "en":
             meaning = translate(text, target, priority="normal", wait=20)
     if meaning and meaning.get("from") and meaning["from"].split("-")[0] not in (target, meaning.get("to")) \
             and meaning["text"].strip().lower() != text.strip().lower():

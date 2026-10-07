@@ -1,8 +1,8 @@
 """
 Build-time helper (runs inside the Docker build, never on a visitor's request):
-downloads the open Tulu and Kannada Wikipedia word-frequency lists from Wikilangs
+downloads the open Tulu, Kannada and Hindi Wikipedia word-frequency lists from Wikilangs
 (https://huggingface.co/wikilangs, MIT licence) and keeps them as small text files:
-    data/lexicon_tcy.tsv   data/lexicon_kn.tsv      (word<TAB>count, most frequent first)
+    data/lexicon_tcy.tsv   data/lexicon_kn.tsv   data/lexicon_hi.tsv   (word<TAB>count, most frequent first)
 StaySafe uses them to tell Tulu from Kannada (both use Kannada letters) and to spot
 Kannada words that slip into Tulu answers. If the download fails, the build carries on
 and StaySafe falls back to its built-in word lists.
@@ -14,7 +14,7 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HERE, "data")
-KEEP = {"tcy": 60000, "kn": 80000}
+KEEP = {"tcy": 60000, "kn": 80000, "hi": 80000}
 
 
 def fetch(lang: str) -> bool:
@@ -45,5 +45,5 @@ def fetch(lang: str) -> bool:
 
 
 if __name__ == "__main__":
-    ok = [fetch(lang) for lang in ("tcy", "kn")]
+    ok = [fetch(lang) for lang in ("tcy", "kn", "hi")]
     sys.exit(0)

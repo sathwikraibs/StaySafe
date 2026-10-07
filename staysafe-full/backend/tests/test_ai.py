@@ -574,6 +574,60 @@ def test_without_word_lists_nothing_changes():
         tl._lex.clear(); tl._lex.update(saved)
 
 
+def _sample_word_lists():
+    from scanners import tulu_lexicon as tl
+    tl._lex.update(loaded=True,
+                   tcy={"ಉಂಡು": 5000, "ಬೊಕ್ಕ": 4000, "ಇಜ್ಜಿ": 3000, "ಪೈಸೆ": 900, "ಬತ್ತುಂಡು": 700, "ಪೋಂಡ": 600, "ಎಂಕ್": 1500,
+                        "ಏರ್": 2000, "ಮಲ್ಪುಲೆ": 400, "ಬ್ಯಾಂಕ್": 500},
+                   kn={"ಇದೆ": 90000, "ಮತ್ತು": 120000, "ಇಲ್ಲ": 50000, "ಮಾಡಿ": 30000, "ನಿಮ್ಮ": 60000, "ಆಗಿದೆ": 40000,
+                       "ಬ್ಯಾಂಕ್": 4000, "ಖಾತೆ": 9000},
+                   hi={"आपका": 50000, "खाता": 8000, "बंद": 12000, "जायेगा": 6000, "पैसे": 7000, "करें": 30000,
+                       "तुरंत": 9000, "बैंक": 9000})
+    for lang in ("tcy", "kn", "hi"):
+        tl._lex[f"{lang}_total"] = sum(tl._lex[lang].values())
+    tl._latin.update(built=False, index={}, totals={}, english=set())
+
+
+def test_indian_languages_typed_in_english_letters_are_recognised():
+    from scanners import tulu_lexicon as tl
+    saved, saved_latin = dict(tl._lex), dict(tl._latin)
+    try:
+        _sample_word_lists()
+        assert tl.latin_lean("nimma khaate block aagide, kyc madi")[0] == "kn"
+        assert tl.latin_lean("yenk call battundu, paise ponda, eer bokka malpule")[0] == "tcy"
+        assert tl.latin_lean("aapka khata band ho jayega, turant kyc kare")[0] == "hi"
+        assert tl.latin_lean("your parcel is waiting at the post office today")[0] is None
+        assert tl.romanized_indic("nimma khaate block aagide, kyc madi")
+        assert not tl.romanized_indic("Your order has been shipped and will arrive tomorrow")
+        assert tl.kannada_only_latin("Ee message mosa undu, nimma bank g call madi") == ["nimma", "madi"]
+    finally:
+        tl._lex.clear(); tl._lex.update(saved); tl._latin.clear(); tl._latin.update(saved_latin)
+
+
+def test_scam_typed_in_english_letters_is_translated_and_checked():
+    from scanners import tulu_lexicon as tl
+    import scanners.message_scanner as ms
+    import scanners.translator as tr
+    saved, saved_latin, saved_tr = dict(tl._lex), dict(tl._latin), tr.translate
+    calls = []
+    try:
+        _sample_word_lists()
+
+        def fake_translate(text, target, priority="normal", wait=20.0):
+            calls.append(target)
+            if target == "en":
+                return {"text": "Your bank account is blocked. Update KYC immediately at http://kyc-update.xyz",
+                        "from": "kn", "to": "en", "provider": "test"}
+            return None
+        tr.translate = fake_translate
+        r = ms.analyze_text("nimma bank khaate block aagide, kyc update madi")
+        r = ms.add_translation(r, "en")
+        assert "en" in calls and r["patterns_detected"], r
+    finally:
+        tl._lex.clear(); tl._lex.update(saved); tl._latin.clear(); tl._latin.update(saved_latin)
+        tr.translate = saved_tr
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
