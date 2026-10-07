@@ -255,6 +255,8 @@ QUOTAS = {
     "leakcheck": Quota("leakcheck", 20, _env_int("LEAKCHECK_DAILY_LIMIT", 300)),
     "abusech": Quota("abusech", 60, None),
     "circl": Quota("circl", 60, None),
+    # Cloudflare URL Scanner free plan: 1 scan per 10 seconds, 5,000 a month
+    "cloudflare_scan": Quota("cloudflare_scan", 6, _env_int("CF_SCAN_DAILY_LIMIT", 160)),
     # Long memory of results (Upstash Redis free plan: 500k commands a month)
     "store": Quota("store", 600, _env_int("STORE_DAILY_LIMIT", 15000), low_reserve=0, normal_reserve=0, low_spread=0),
 }

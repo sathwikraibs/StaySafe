@@ -230,6 +230,11 @@ export const reportKn: ReportDict = {
   },
 
   checks: {
+    cfscan: {
+      pass: "Cloudflare ಪುಟವನ್ನು ಸುರಕ್ಷಿತ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ತೆರೆದು ನೋಡಿತು, ಹಾನಿಕಾರಕವೇನೂ ಸಿಗಲಿಲ್ಲ",
+      fail: "Cloudflare ಗೆ ಪುಟ ಹಾನಿಕಾರಕ ಎಂದು ಕಂಡುಬಂತು",
+      failV: "Cloudflare ಗೆ ಪುಟ ಹಾನಿಕಾರಕ ಎಂದು ಕಂಡುಬಂತು: {value}",
+    },
     community: {
       warn: "StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
       warnV: "{value} StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",

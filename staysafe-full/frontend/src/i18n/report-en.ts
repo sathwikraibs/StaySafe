@@ -230,6 +230,11 @@ export const reportEn = {
   },
 
   checks: {
+    cfscan: {
+      pass: "Cloudflare opened the page in a safe browser and found nothing harmful",
+      fail: "Cloudflare found the page harmful",
+      failV: "Cloudflare found the page harmful: {value}",
+    },
     community: {
       warn: "Reported as a scam by StaySafe users",
       warnV: "Reported as a scam by {value} StaySafe users",

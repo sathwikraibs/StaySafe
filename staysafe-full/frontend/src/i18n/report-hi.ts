@@ -230,6 +230,11 @@ export const reportHi: ReportDict = {
   },
 
   checks: {
+    cfscan: {
+      pass: "Cloudflare ने पेज को सुरक्षित ब्राउज़र में खोलकर देखा, कुछ हानिकारक नहीं मिला",
+      fail: "Cloudflare को पेज हानिकारक मिला",
+      failV: "Cloudflare को पेज हानिकारक मिला: {value}",
+    },
     community: {
       warn: "StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
       warnV: "{value} StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",

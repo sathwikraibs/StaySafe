@@ -274,7 +274,7 @@ def _keep(seconds):
     return lambda v: seconds if v is not None and not (isinstance(v, dict) and v.get("error")) else 0
 
 
-PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "phishstats": _keep(86400), "abuseip": _keep(86400),
+PERSIST = {"vt": _vt_keep, "urlscan": _keep(86400), "abusech": _keep(86400), "cfscan": lambda v: (7 * 86400 if v.get("status") == "fail" else 86400) if isinstance(v, dict) and v.get("status") in ("fail", "pass") else 0, "phishstats": _keep(86400), "abuseip": _keep(86400),
            "whois": _keep(2 * 86400), "rdap": _keep(2 * 86400), "crt": _keep(2 * 86400)}
 # A check that was skipped because a free limit was reached is never remembered as an answer.
 NOT_CHECKED = "_not_checked"
@@ -327,7 +327,8 @@ def _cached(key, fn):
         waiter.set()
 
 
-_PROBLEMS = {"safe_browsing": None, "virustotal": None, "abusech": None, "urlscan": None, "phishstats": None}
+_PROBLEMS = {"safe_browsing": None, "virustotal": None, "abusech": None, "urlscan": None, "phishstats": None,
+             "cloudflare_scan": None}
 
 
 def link_check_status() -> dict:
@@ -338,6 +339,7 @@ def link_check_status() -> dict:
         "virustotal": {"configured": bool(VIRUSTOTAL_API_KEY), "problem": _PROBLEMS["virustotal"]},
         "abusech": {"configured": bool(_abusech_key()), "problem": _PROBLEMS["abusech"]},
         "urlscan": {"configured": bool(os.environ.get("URLSCAN_API_KEY")), "problem": _PROBLEMS["urlscan"]},
+        "cloudflare_scan": {"configured": bool(_cf_scan_conf()), "problem": _PROBLEMS["cloudflare_scan"]},
         "abuseipdb": {"configured": bool(os.environ.get("ABUSEIPDB_KEY"))},
         "public_lists": {"links": sum(_FEEDS["counts"].values()), "counts": _FEEDS["counts"],
                          "problem": _FEEDS["problem"],
@@ -1197,6 +1199,84 @@ def check_abusech(url: str, host: str) -> dict:
     return _cached(("abusech", url), call)
 
 
+def _cf_scan_conf():
+    acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    token = os.environ.get("CLOUDFLARE_SCAN_TOKEN", "").strip()
+    return (acct, token) if acct and token else None
+
+
+_PRIVATE_QUERY = re.compile(r"@|%40|(^|[&?])(e?mail|user|login|token|session|key|otp|pass|pwd|phone|mobile|acc|account|id)=|\d{8,}",
+                            re.IGNORECASE)
+_CF_PENDING = {}     # link -> (time, scan id): a scan started earlier whose answer can be picked up later
+
+
+def _cf_safe_url(url: str) -> str:
+    """Cloudflare's free scans are public, so personal details in the address are left out."""
+    p = urlparse(url)
+    keep_query = p.query and not _PRIVATE_QUERY.search(p.query)
+    return f"{p.scheme}://{p.netloc}{p.path or '/'}" + (f"?{p.query}" if keep_query else "")
+
+
+def check_cloudflare_scan(url: str, wait: float = 55.0) -> dict:
+    """
+    Cloudflare's URL Scanner opens the page in a real browser and judges it (phishing kits,
+    malware). This catches brand-new scam pages that no list has yet.
+    {'status': 'fail'|'pass'|'skip', 'categories': [...]}
+    """
+    conf = _cf_scan_conf()
+    if OFFLINE or not conf:
+        return {"status": "skip"}
+    acct, token = conf
+    target = _cf_safe_url(url)
+    base = f"https://api.cloudflare.com/client/v4/accounts/{acct}/urlscanner/v2"
+    headers = {"Authorization": f"Bearer {token}"}
+
+    def verdict(data):
+        overall = ((data or {}).get("verdicts") or {}).get("overall") or {}
+        cats = [c.get("name") if isinstance(c, dict) else str(c) for c in (overall.get("categories") or [])]
+        cats += [str(c) for c in (overall.get("phishing") or [])]
+        cats = [c for c in cats if c][:3]
+        return {"status": "fail" if overall.get("malicious") else "pass", "categories": cats}
+
+    def call():
+        deadline = time.time() + wait
+        try:
+            pending = _CF_PENDING.get(target)
+            scan_id = pending[1] if pending and time.time() - pending[0] < 3600 else None
+            if not scan_id:
+                if not quota("cloudflare_scan").take(wait=min(20.0, wait / 3)):
+                    return {"status": "skip", NOT_CHECKED: True}
+                r = requests.post(f"{base}/scan", headers=headers, timeout=10,
+                                  json={"url": target, "visibility": "Public", "screenshotsResolutions": ["mobile"]})
+                if r.status_code == 429:
+                    quota("cloudflare_scan").cool_down(60)
+                    return {"status": "skip", NOT_CHECKED: True}
+                if r.status_code >= 400:
+                    _PROBLEMS["cloudflare_scan"] = f"HTTP {r.status_code}"
+                    return {"status": "skip", "error": True}
+                scan_id = (r.json() or {}).get("uuid")
+                if not scan_id:
+                    return {"status": "skip", "error": True}
+                _CF_PENDING[target] = (time.time(), scan_id)
+                time.sleep(12)
+            while time.time() < deadline:
+                g = requests.get(f"{base}/result/{scan_id}", headers=headers, timeout=10)
+                if g.status_code == 200:
+                    _CF_PENDING.pop(target, None)
+                    _PROBLEMS["cloudflare_scan"] = None
+                    return verdict(g.json())
+                if g.status_code != 404:
+                    _PROBLEMS["cloudflare_scan"] = f"HTTP {g.status_code}"
+                    return {"status": "skip", "error": True}
+                time.sleep(6)
+            return {"status": "skip", NOT_CHECKED: True}   # not ready yet: picked up on the next check
+        except Exception as e:
+            _PROBLEMS["cloudflare_scan"] = type(e).__name__
+            return {"status": "skip", "error": True}
+
+    return _cached(("cfscan", target), call)
+
+
 def check_urlscan(host: str) -> dict:
     """urlscan.io: has this exact website been scanned and marked malicious in the last 90 days?"""
     key = os.environ.get("URLSCAN_API_KEY", "")
@@ -1620,6 +1700,8 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     crt_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else _POOL.submit(first_certificate_days, host)
     abusech_f = _POOL.submit(check_abusech, url, host)
     urlscan_f = None if (trusted or official_short or is_ip(host)) else _POOL.submit(check_urlscan, host)
+    # Cloudflare opens unknown pages in a real browser (not needed for well-known or already-listed links)
+    cfscan_f = None if (well_known or listed or official_short) else _POOL.submit(check_cloudflare_scan, url)
     phishstats_f = None if (trusted or official_short or structure["hosting"] or is_ip(host)) else \
         _POOL.submit(check_phishstats, url, host)
 
@@ -1829,6 +1911,15 @@ def scan_url(url: str, _hop: int = 0) -> dict:
 
     # --- urlscan.io: scans by security researchers that found a scam page on this website
     shared_site = structure["hosting"] and host == structure["hosting"]
+    cf = result_of(cfscan_f, {"status": "skip"}, 60)
+    if cf.get("status") == "fail":
+        kinds = ", ".join(cf.get("categories") or []) or "scam or malware"
+        findings.insert(0, f"Cloudflare's scanner opened this page and found it harmful ({kinds})")
+        score = led.moved(findings, score, max(score + 50, 90))
+        _check(checks, "cfscan", "fail", kinds)
+    elif cf.get("status") == "pass":
+        _check(checks, "cfscan", "pass")
+
     us_res = result_of(urlscan_f, {"status": "skip"}, 12)
     if us_res["status"] == "fail" and not shared_site and (popularity_rank(reg) or 10**9) > 20_000:
         findings.append("Security scans on urlscan.io found a scam or malware page on this website in the last 3 months")
@@ -1885,7 +1976,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
     rank = None if (trusted or structure["hosting"] or is_ip(host)) else popularity_rank(reg)
     hard = gsb.get("listed") or feed["status"] == "fail" or vt.get("malicious", 0) >= 1 \
         or vt.get("domain_malicious", 0) >= 1 or dns["exists"] is False \
-        or any(c["id"] in ("imitation", "page") and c["status"] == "fail" for c in checks)
+        or any(c["id"] in ("imitation", "page", "cfscan", "community") and c["status"] == "fail" for c in checks)
     if rank and not hard:
         _check(checks, "known", "pass", reg)
         checks[:] = [c for c in checks if not (c["id"] == "known" and c["status"] == "info")]
@@ -1894,7 +1985,7 @@ def scan_url(url: str, _hop: int = 0) -> dict:
             led.add(ADJ_POPULAR, new_total - total)
         total = new_total
 
-    order = ["google", "feeds", "community", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
+    order = ["google", "feeds", "community", "cfscan", "urlscan", "virustotal", "server", "exists", "imitation", "page", "redirect", "age", "https", "known", "name_tricks"]
     checks.sort(key=lambda c: order.index(c["id"]) if c["id"] in order else 99)
 
     return {

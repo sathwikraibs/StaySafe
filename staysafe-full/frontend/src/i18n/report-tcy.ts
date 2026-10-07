@@ -231,6 +231,11 @@ export const reportTcy: ReportDict = {
   },
 
   checks: {
+    cfscan: {
+      pass: "Cloudflare ಪುಟೊನು ಸುರಕ್ಷಿತ ಬ್ರೌಸರ್‌ಡ್ ತೆರೆದ್ ತೂಂಡು, ಹಾನಿಕಾರಕ ದಾಲಾ ತಿಕ್ಕಿಜಿ",
+      fail: "Cloudflare ಗ್ ಪುಟ ಹಾನಿಕಾರಕ ಪಂಡ್‌ದ್ ತೋಜಿಂಡ್",
+      failV: "Cloudflare ಗ್ ಪುಟ ಹಾನಿಕಾರಕ ಪಂಡ್‌ದ್ ತೋಜಿಂಡ್: {value}",
+    },
     community: {
       warn: "StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
       warnV: "{value} StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
