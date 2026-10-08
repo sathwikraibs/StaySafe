@@ -7,13 +7,13 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    font-family: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif;
+    font-family: 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif;
     background-color: #FBF7F0;
     color: #4A4038;
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Comfortaa', 'Quicksand', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif;
+    font-family: 'Baloo 2', 'Baloo Tamma 2', system-ui, sans-serif;
   }
   * {
     -webkit-tap-highlight-color: transparent;

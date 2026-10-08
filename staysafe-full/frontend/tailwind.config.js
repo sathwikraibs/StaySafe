@@ -46,8 +46,9 @@ export default {
         },
       },
       fontFamily: {
-        heading: ['Comfortaa', 'Quicksand', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'system-ui', 'sans-serif'],
-        body: ['Nunito', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'system-ui', 'sans-serif'],
+        heading: ['"Baloo 2"', '"Baloo Tamma 2"', 'system-ui', 'sans-serif'],
+        body: ['"Noto Sans"', '"Noto Sans Devanagari"', '"Noto Sans Kannada"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       borderRadius: {
         'xl2': '20px',
