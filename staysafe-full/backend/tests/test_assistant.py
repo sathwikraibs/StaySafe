@@ -217,7 +217,7 @@ def test_one_language_rule_and_no_button_names_in_the_instructions():
     p = system_prompt("en")
     assert "Never start or mix in English sentences" in p and "Never write the button names" in p
     t = system_prompt("tcy")
-    assert "ಪೈಸೆ ಕೊರೊಡ್ಚಿ" in t and "paise korodchi" in t and "-odchi means DON'T" in t
+    assert "ಗಾಬರಿ ಆವೊಡ್ಚಿ" in t and "gaabari aavodchi" in t and "-odchi means DON'T" in t
 
 
 def test_better_gemini_model_answers_indian_languages_and_steps_aside_when_busy():
@@ -300,8 +300,8 @@ def test_tulu_dont_on_a_must_do_step_is_corrected():
 def test_phrases_are_sent_only_for_the_languages_needed():
     from scanners.assistant import system_prompt
     en = system_prompt("en", "", None, "my bank called me")
-    assert "ಪೈಸೆ ಕೊರೊಡ್ಚಿ" not in en and "कॉल काट" not in en
-    assert "ಪೈಸೆ ಕೊರೊಡ್ಚಿ" in system_prompt("en", "", ("tcy", "latin"), "yenk call battund")
+    assert "ಗಾಬರಿ ಆವೊಡ್ಚಿ" not in en and "कॉल काट" not in en
+    assert "ಗಾಬರಿ ಆವೊಡ್ಚಿ" in system_prompt("en", "", ("tcy", "latin"), "yenk call battund")
     assert "कॉल काट" in system_prompt("en", "", ("hi", "latin"), "mera paisa gaya")
 
 
