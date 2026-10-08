@@ -108,3 +108,7 @@ The verdict comes from deterministic rules and weighted scoring, so every result
 The scam knowledge base is manually curated content, not sourced from an external threat-intel framework such as MITRE ATT&CK, which is enterprise and network-intrusion focused and not suited to consumer scam education.
 
 Password breach checks use k-anonymity, meaning only a hash prefix is sent. The real password never leaves the server.
+
+## License
+
+TrustLight is open source under the [MIT License](LICENSE). The TrustLight name and lighthouse logo are not covered by the license: please don't use them for your own app.
