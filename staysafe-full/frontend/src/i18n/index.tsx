@@ -21,8 +21,27 @@ export const LANGUAGES: { code: Lang; native: string; english: string; short: st
   { code: "tcy", native: "ತುಳು", english: "Tulu", short: "ತು", beta: true },
 ];
 
-const DICTS: Record<Lang, DeepPartial<Dict>> = { en, hi, kn, tcy };
-const CONTENT: Partial<Record<Lang, LangContent>> = { hi: hiContent, kn: knContent, tcy: tcyContent };
+// Tulu text says "mobile" or "laptop" instead of the general word for device, so it reads naturally.
+function onPhone(): boolean {
+  try {
+    const nav = navigator as Navigator & { maxTouchPoints?: number };
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(nav.userAgent) || (/Macintosh/.test(nav.userAgent) && (nav.maxTouchPoints ?? 0) > 1);
+  } catch { return true; }
+}
+const DEVICE_WORD = onPhone() ? "ಮೊಬೈಲ್\u200c" : "ಲ್ಯಾಪ್‌ಟಾಪ್\u200c";
+function withDevice<T>(value: T): T {
+  if (typeof value === "string") return value.split("{device}").join(DEVICE_WORD) as T;
+  if (Array.isArray(value)) return value.map(withDevice) as T;
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = withDevice(v);
+    return out as T;
+  }
+  return value;
+}
+
+const DICTS: Record<Lang, DeepPartial<Dict>> = { en, hi, kn, tcy: withDevice(tcy) };
+const CONTENT: Partial<Record<Lang, LangContent>> = { hi: hiContent, kn: knContent, tcy: withDevice(tcyContent) };
 
 const STORAGE_KEY = "staysafe.lang.v1";
 

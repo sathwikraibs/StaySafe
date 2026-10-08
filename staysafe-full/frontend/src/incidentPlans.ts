@@ -9,7 +9,7 @@ export const INCIDENT_PLANS_EN: IncidentPlan[] = [
       "Don't enter any information if a page asks for login or payment details.",
       "Close the browser tab immediately.",
       "Run a virus scan on your device. No antivirus app? Download a free, trusted one from the links below.",
-      "Check your recent account activity for anything unusual.",
+      "Check your bank, Google (Gmail) and WhatsApp accounts for any recent activity you don't recognise.",
       "Avoid using that device for banking until you've scanned it."
     ]
   },
@@ -20,7 +20,7 @@ export const INCIDENT_PLANS_EN: IncidentPlan[] = [
       "Change that password immediately using the app or the site's real address (type it yourself, don't click a link).",
       "If you reuse that password anywhere else (especially email), change it there too.",
       "Turn on 2-step verification on the affected account.",
-      "Check the account's recent sign-in activity and sign out any devices you don't recognise.",
+      "Check that account's recent sign-ins (Google/Gmail, Facebook, Instagram and so on) and sign out any phones or laptops you don't recognise.",
       "Monitor the account for a few days for anything unusual."
     ]
   },
@@ -86,7 +86,7 @@ export const INCIDENT_PLANS_EN: IncidentPlan[] = [
     "label": "Someone accessed my account without permission",
     "steps": [
       "Change the password immediately from a trusted device.",
-      "Sign out of all devices from the account's security settings.",
+      "Sign out of all phones and laptops from the account's security settings (for Google: myaccount.google.com > Security).",
       "Turn on 2-step verification if it isn't on already.",
       "Check that the attacker hasn't changed the account's recovery details (backup email or phone).",
       "Look for anything you didn't do (sent emails, posts, purchases) and report or undo it where possible."

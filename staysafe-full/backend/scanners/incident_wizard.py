@@ -25,7 +25,7 @@ INCIDENT_PLANS = {
             "Don't enter any information if a page asks for login/payment details.",
             "Close the browser tab immediately.",
             "Run a virus scan on your device. No antivirus app? Download a free, trusted one from the links below.",
-            "Check your recent account activity for anything unusual.",
+            "Check your bank, Google (Gmail) and WhatsApp accounts for any recent activity you don't recognise.",
             "Avoid using that device for banking until you've scanned it.",
         ],
     },
