@@ -75,6 +75,9 @@ RULES = [
             r"\b(enter|type|put|dalo|daalo)\b[^.\n]{0,20}\bupi pin\b",
             r"\bupi pin\b[^.\n]{0,40}\b(receive|get|credit|refund|cashback)\b",
             r"\b(scan|accept)\b[^.\n]{0,30}\b(qr|request)\b[^.\n]{0,40}\b(receive|get|refund|cashback|prize)\b",
+            # typed in English letters: "pin daal ke approve kar do", "pin haaki approve maadi", "pin pathd approve malpule"
+            r"\bpin\b[^.\n]{0,25}\b(daal|dal|daalo|dalo|daal ?ke|haaki|haki|haku|pathd|pathdu|enter|type)\b[^.\n]{0,30}\b(approve|accept|confirm)",
+            r"\b(request|collect)\b[^.\n]{0,40}\b(pin|upi pin)\b[^.\n]{0,30}\b(approve|accept|daal|enter)",
         ],
         50,
     ),
@@ -145,7 +148,10 @@ RULES = [
         [
             r"(?=[^\n]*\b(earn|task|commission|paid|payment|salary|income|rs\.?|₹|inr|per (like|video|review|task))\b)[^\n]*\b(lik(e|ing)|rat(e|ing)|review(ing)?|subscrib(e|ing))\b[^.\n]{0,40}\b(videos?|youtube|hotels?|products?|google maps)\b",
             r"\b(hiring|job offer|vacancy)\b[^\n]{0,120}\b(telegram|whatsapp)\b",
-            r"\b(part[- ]time|work from home|ghar baithe)\b[^\n]{0,80}\b(earn|daily|salary|income|kamao)\b",
+            r"\b(part[- ]time|work from home|ghar baithe)\b[^\n]{0,80}\b(earn|daily|salary|income|kamao|kamaye|kamaiye|roz|dina|galisi|sampadisi)\b",
+            # typed in English letters: "YouTube video like karne hain ... Telegram", "video like maadi dina 4000"
+            r"\b(youtube|insta(gram)?|google)\b[^\n]{0,20}\b(video|videos|reviews?|posts?)\b[^\n]{0,10}\blike\b[^\n]{0,80}\b(telegram|whatsapp|roz|daily|dina|kamaye|kamao|galisi|earn|rs|rupaayi|rupees|\d{3,})",
+            r"\b(kamaye|kamao|kamaiye|galisi|sampadisi)\b[^\n]{0,30}\b\d{3,}\b[^\n]{0,15}\b(roz|daily|dina|dinakke|per day)\b",
             r"\b(registration|joining|security|training) (fee|deposit|charges?)\b",
             r"\bget rich (quick|fast)\b",
             r"\bearn\b[^.\n]{0,40}\b(daily|per day|a day|every day)\b[^.\n]{0,20}\b(from home|sitting at home|online)\b",
@@ -170,6 +176,8 @@ RULES = [
             r"\b(selected|chosen|eligible)\b for\b[^.\n]{0,25}\b(grant|scheme|subsidy|prize|reward|bonus)\b",
             r"\bcongratulations\b[^.\n]{0,60}\b(won(?!['’]t)(?! (our|my|your|the|everyone'?s|their|his|her) (hearts?|match|game|trust|love|race|election))|winner|reward|prize)\b",
             r"\b(inaam|lottery lagi)\b",
+            r"\b(won|win|winner)\b[^\n]{0,40}\b\d+\s?(crores?|lakhs?|lacs?)\b",
+            r"\b(mobile|phone|sim) (number )?(has )?won\b",
         ],
         30,
     ),
@@ -337,10 +345,21 @@ RULES = [
         30,
     ),
     (
+        "Says your card or account was blocked and asks you to call a number",
+        [
+            r"\b(atm|debit|credit|bank)\s*card\b[^\n]{0,80}\b(de-?activated|blocked|suspended|locked)\b[^\n]{0,140}\b(call|contact|ring|dial)\b",
+            r"\b(new )?(voicemail|voice message|urgent message)\b[^\n]{0,60}\b(call|dial|ring)\b",
+        ],
+        35,
+    ),
+    (
         "Says money was sent to you by mistake and asks you to return it",
         [
             r"\b(sent|credited|transferred|paid|deposited)\b[^\n]{0,60}\b(by mistake|mistakenly|wrongly|accidentally|galti se)\b[^\n]{0,120}\b(return|refund|send (it )?back|wapas|reverse)\b",
             r"\b(by mistake|mistakenly|wrongly|galti se)\b[^\n]{0,40}\b(sent|credited|transferred)\b[^\n]{0,120}\b(return|refund|send (it )?back|wapas)\b",
+            # typed in English letters (Hindi, Kannada, Tulu)
+            r"\b(galti se|galati se|tappagi|thappagi|tappi|thappu ?da|thappud|gotilde)\b[^\n]{0,60}\b(bhej|bheja|bhej diya|kalsidini|kaluhisidini|haakidini|kadaputhe|kadapudye|kadapudde|sent|transfer)",
+            r"\b(wapas|vapas|vaapas|waapas) (kar|karo|kar do|bhejo|bhej do)\b[^\n]{0,80}\b(request|pin|approve)",
         ],
         45,
     ),
@@ -366,6 +385,7 @@ RULES = [
         [
             r"\b(delivery|deliver|parcel|package|shipment|courier|india post|speed post)\b[^\n]{0,80}\b(failed|unable|could not|couldn'?t|on hold|held|incomplete address|address (is )?(incomplete|incorrect|wrong))\b[^\n]{0,100}\b(update|confirm|reschedule|click|pay|link|https?://|www\.)",
             r"\b(redeliver|re-deliver|reschedule (your )?delivery)\b[^\n]{0,60}\b(click|link|pay|fee|https?://|www\.)",
+            r"\b(unable|failed|could not|couldn\'t|tried)\b[^\n]{0,40}\b(deliver|delivery)\b[^\n]{0,100}\b(call|re-?schedule|click|update|contact)\b",
         ],
         30,
     ),
@@ -404,6 +424,10 @@ MONEY = r"(₹|rs\.?|ರೂ\.?|ರೂಪಾಯಿ|रु\.?|रुपये|र�
 NUM = r"(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}"
 
 NATIVE_PATTERNS = {
+    "Says your card or account was blocked and asks you to call a number": [
+        r"(ಎಟಿಎಂ|ಡೆಬಿಟ್|ಕ್ರೆಡಿಟ್|ಬ್ಯಾಂಕ್)[^\n]{0,10}ಕಾರ್ಡ್[^\n]{0,60}(ಬ್ಲಾಕ್|ನಿಷ್ಕ್ರಿಯ|ಸ್ಥಗಿತ|ಲಾಕ್)[^\n]{0,100}(ಕರೆ|ಕಾಲ್)",
+        r"(एटीएम|डेबिट|क्रेडिट|बैंक)[^\n]{0,10}कार्ड[^\n]{0,60}(ब्लॉक|बंद|निष्क्रिय|लॉक)[^\n]{0,100}(कॉल|फोन|फ़ोन|संपर्क)",
+    ],
     "Says money was sent to you by mistake and asks you to return it": [
         r"(ತಪ್ಪಾಗಿ|ಗೊತ್ತಿಲ್ಲದೆ|ತಪ್ಪಾದ್)[^\n]{0,60}(ಕಳುಹಿಸ|ಕಳಿಸ|ಜಮಾ|ಕ್ರೆಡಿಟ್|ಬಂದಿದೆ|ಕಡಪುಡ)[^\n]{0,100}(ಹಿಂದಿರುಗಿಸ|ವಾಪಸ್|ರಿಟರ್ನ್|ಮರಳಿ|ಪಿರ)",
         r"(गलती से)[^\n]{0,60}(भेज|आ गए|आ गया|क्रेडिट|जमा)[^\n]{0,100}(वापस|लौटा|रिटर्न)",
@@ -1200,7 +1224,33 @@ def fix_ocr_links(text: str) -> str:
                         return cand
         return host
 
-    return re.sub(r"(?<![\w@.-])(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?![\w-])", fix, text or "")
+    text = join_wrapped_links(text or "")
+    return re.sub(r"(?<![\w@.-])(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?![\w-])", fix, text)
+
+
+def join_wrapped_links(text: str) -> str:
+    """
+    In a screenshot a long link is often wrapped onto the next line ('http://sbi-' then
+    'yono-kyc.in/update'). Join the two halves when the first line ends inside a link
+    (after '-', '.', '/', '?', '=', '&', '_') and the next line carries on with link characters.
+    """
+    def joiner(m):
+        head, tail = m.group(1), m.group(2)
+        # "http://a.com/" then "The end": only join when the next line really looks like more link
+        if head[-1] != "-" and not re.search(r"[-./?=&_%\d]", tail):
+            return m.group(0)
+        return head + tail
+    # a line ending in the middle of a link, followed by a line starting with link characters
+    pattern = re.compile(r"((?:https?://|www\.)[^\s]*?[-./?=&_%])[ \t]*\r?\n[ \t]*([A-Za-z0-9][\w\-./?=&%#~+]*)")
+    for _ in range(3):      # a very long link can be wrapped over several lines
+        new = pattern.sub(joiner, text)
+        if new == text:
+            break
+        text = new
+    # 'http://kyc' + newline + '-update-sbi.in' (the break comes right before a '-' or '.')
+    text = re.sub(r"((?:https?://|www\.)[\w\-./?=&%]*[A-Za-z0-9])[ \t]*\r?\n[ \t]*([-.][A-Za-z0-9][\w\-./?=&%#~+]*)",
+                  lambda m: m.group(1) + m.group(2), text)
+    return text
 
 
 def _detect_script(img) -> str:
@@ -1464,6 +1514,35 @@ def _wait_for(future, timeout: float = 60):
         pass
 
 
+def scan_message_text(text: str, ui: str, sender: str = "") -> dict:
+    """The whole message check (also used by the owner's live self-test)."""
+    gemini_f, links = start_background_work(text, ui)
+    result = analyze_text(text)
+    _wait_for(gemini_f)
+    result = add_translation(result, ui)
+    result = add_sender_checks(result, sender)
+    result = add_entity_checks(result)
+    from scanners.ai_review import apply_review
+    result = apply_review(result, text)
+    result = check_links_in_result(result, started=links)
+    return finalize_parts(result)
+
+
+def scan_screenshot_text(extracted_text: str, ui: str, sender: str = "") -> dict:
+    """Check the text read from a screenshot (also used by the owner's live self-test)."""
+    extracted_text = fix_ocr_links(extracted_text)
+    gemini_f, links = start_background_work(extracted_text, ui, from_screenshot=True)
+    result = analyze_text(extracted_text)
+    _wait_for(gemini_f)
+    result = add_translation(result, ui)
+    result = add_sender_checks(result, sender)
+    result = add_entity_checks(result)
+    from scanners.ai_review import apply_review
+    result = apply_review(result, extracted_text)
+    result = check_links_in_result(result, from_screenshot=True, started=links)
+    return finalize_parts(result)
+
+
 @message_scanner_bp.route("/api/scan-message", methods=["POST"])
 def scan_message_route():
     data = request.get_json(silent=True) or {}
@@ -1472,17 +1551,7 @@ def scan_message_route():
     if not text:
         return jsonify({"error": "Please paste the message you want to check."}), 400
 
-    ui = request_language()
-    gemini_f, links = start_background_work(text, ui)
-    result = analyze_text(text)
-    _wait_for(gemini_f)
-    result = add_translation(result, ui)
-    result = add_sender_checks(result, str(data.get("sender") or "")[:300])
-    result = add_entity_checks(result)
-    from scanners.ai_review import apply_review
-    result = apply_review(result, text)
-    result = check_links_in_result(result, started=links)
-    result = finalize_parts(result)
+    result = scan_message_text(text, request_language(), str(data.get("sender") or "")[:300])
 
     from scanners.risk_engine import log_scan
     log_scan("message", result)
@@ -1531,18 +1600,7 @@ def scan_screenshot_route():
                      "or paste the message text instead."
         }), 400
 
-    extracted_text = fix_ocr_links(extracted_text)
-    ui = request_language()
-    gemini_f, links = start_background_work(extracted_text, ui, from_screenshot=True)
-    result = analyze_text(extracted_text)
-    _wait_for(gemini_f)
-    result = add_translation(result, ui)
-    result = add_sender_checks(result, request.form.get("sender", "")[:300])
-    result = add_entity_checks(result)
-    from scanners.ai_review import apply_review
-    result = apply_review(result, extracted_text)
-    result = check_links_in_result(result, from_screenshot=True, started=links)
-    result = finalize_parts(result)
+    result = scan_screenshot_text(extracted_text, request_language(), request.form.get("sender", "")[:300])
 
     from scanners.risk_engine import log_scan
     log_scan("screenshot", result)

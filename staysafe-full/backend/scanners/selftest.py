@@ -231,3 +231,68 @@ def selftest_files_route():
                     "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
                     "wrong": [r["file"] for r in graded if not r["right"]],
                     "seconds": round(time.time() - began, 1), "results": results})
+
+
+# ---------------------------------------------------------------------------
+# Messages: /api/selftest/messages?key=<STATUS_KEY>&set=1 ... 5
+# ---------------------------------------------------------------------------
+def _one_message(text, expect, ui):
+    from scanners.message_scanner import scan_message_text
+    t = time.time()
+    try:
+        r = scan_message_text(text, ui)
+    except Exception as e:
+        return {"message": text[:80], "expected": expect, "verdict": "ERROR", "right": False, "error": f"{type(e).__name__}: {str(e)[:120]}"}
+    v = r.get("verdict")
+    right = v in ("LIKELY_SAFE", "SAFE") if expect == "SAFE" else v in ("SUSPICIOUS", "SCAM_LIKELY")
+    return {"message": text[:90], "expected": "SCAM" if expect != "SAFE" else "SAFE", "verdict": v, "score": r.get("risk_score"),
+            "right": right, "seconds": round(time.time() - t, 1), "why": (r.get("patterns_detected") or [])[:4],
+            "ai": (r.get("ai_review") or {}).get("verdict") if isinstance(r.get("ai_review"), dict) else None,
+            "language": r.get("detected_language") or r.get("language")}
+
+
+def _one_screenshot(name, expect):
+    import os
+    from scanners.message_scanner import extract_text_from_image, ocr_status, scan_screenshot_text
+    t = time.time()
+    if not ocr_status():
+        return {"message": name, "expected": expect, "verdict": "NO_OCR", "right": False}
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "selftest", name)
+    try:
+        text = extract_text_from_image(open(path, "rb").read())
+        r = scan_screenshot_text(text, "en")
+    except Exception as e:
+        return {"message": name, "expected": expect, "verdict": "ERROR", "right": False, "error": f"{type(e).__name__}: {str(e)[:120]}"}
+    v = r.get("verdict")
+    right = v in ("LIKELY_SAFE", "SAFE") if expect == "SAFE" else v in ("SUSPICIOUS", "SCAM_LIKELY")
+    return {"message": name, "expected": "SCAM" if expect != "SAFE" else "SAFE", "verdict": v, "score": r.get("risk_score"),
+            "right": right, "seconds": round(time.time() - t, 1), "text_read": text[:160], "why": (r.get("patterns_detected") or [])[:4],
+            "links_checked": [l.get("url") for l in (r.get("links_checked") or [])][:3]}
+
+
+@selftest_bp.route("/api/selftest/messages", methods=["GET"])
+def selftest_messages_route():
+    from scanners.security import has_status_key
+    from scanners.selftest_messages import MESSAGES
+    if not has_status_key():
+        return jsonify({"error": "Not found"}), 404
+    pick = str(request.args.get("set") or "").strip()
+    if pick not in MESSAGES:
+        return jsonify({"how": "Add &set=1 (then 2 ... 6) to the address.", "sets": {k: v[0] for k, v in MESSAGES.items()}})
+    title, cases = MESSAGES[pick]
+    ui = {"2": "hi", "3": "kn", "4": "tcy"}.get(pick, "en")
+    began = time.time()
+    if pick == "6":     # screenshots: read with OCR on the server, one at a time (reading is heavy)
+        futures = [(name, e, _VT_POOL.submit(_one_screenshot, name, e)) for name, e in cases]
+    else:
+        futures = [(t, e, _POOL.submit(_one_message, t, e, ui)) for t, e in cases]
+    results = []
+    for t, e, f in futures:
+        try:
+            results.append(f.result(timeout=max(1, DEADLINE - (time.time() - began))))
+        except Exception:
+            results.append({"message": t[:80], "expected": e, "verdict": "STILL_RUNNING", "right": None})
+    graded = [r for r in results if r.get("right") is not None]
+    return jsonify({"set": pick, "title": title, "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
+                    "wrong": [r["message"] for r in graded if not r["right"]],
+                    "seconds": round(time.time() - began, 1), "results": results})

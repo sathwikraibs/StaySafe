@@ -1161,6 +1161,26 @@ def test_fresh_scam_patterns_from_blind_test():
         assert scan_url(u)["verdict"] == "SAFE", (u, scan_url(u)["findings"])
 
 
+def test_indian_messages_in_every_language():
+    """The owner's live message test samples give the right answer from the rules alone too."""
+    from scanners.selftest_messages import MESSAGES
+    from scanners.message_scanner import add_entity_checks
+    for key, (title, cases) in MESSAGES.items():
+        if key == "6":
+            continue
+        for text, expect in cases:
+            r = check_links_in_result(add_entity_checks(analyze_text(text), text))
+            ok = r["verdict"] == "LIKELY_SAFE" if expect == "SAFE" else r["verdict"] in ("SUSPICIOUS", "SCAM_LIKELY")
+            assert ok, (title, text, r["verdict"], r["patterns_detected"])
+
+
+def test_links_wrapped_in_screenshots_are_joined():
+    from scanners.message_scanner import join_wrapped_links
+    assert "http://sbi-yono-kyc.in/update" in join_wrapped_links("clicking http://sbi-\nyono-kyc.in/update now")
+    assert join_wrapped_links("http://a.com/\nThe end") == "http://a.com/\nThe end"
+    assert join_wrapped_links("see https://sbi.co.in\nThanks") == "see https://sbi.co.in\nThanks"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

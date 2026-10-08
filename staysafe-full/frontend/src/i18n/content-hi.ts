@@ -47,6 +47,7 @@ export const hiContent: LangContent = {
     "Asks you to share an OTP, PIN, CVV or password": "आपसे OTP, PIN, CVV या पासवर्ड माँगा जा रहा है",
     "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": "पैसे 'लेने' के लिए UPI PIN माँगा जा रहा है (पैसे लेने के लिए कभी PIN नहीं लगता)",
     "Bank / KYC / PAN impersonation": "बैंक / KYC / PAN के नाम पर धोखा",
+    "Says your card or account was blocked and asks you to call a number": "दावा करता है कि आपका कार्ड या खाता ब्लॉक हो गया है और किसी नंबर पर कॉल करने को कहता है",
     "Says money was sent to you by mistake and asks you to return it": "दावा करता है कि आपको गलती से पैसे भेजे गए, और उन्हें लौटाने को कहता है",
     "Threatens to cut your water, gas, internet or TV connection": "आपका पानी, गैस, इंटरनेट या टीवी कनेक्शन काटने की धमकी",
     "Asks for your SIM card number (used to take over your number)": "आपके सिम कार्ड का नंबर माँगता है (इससे आपका नंबर कब्ज़े में लिया जाता है)",

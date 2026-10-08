@@ -47,6 +47,7 @@ export const knContent: LangContent = {
     "Asks you to share an OTP, PIN, CVV or password": "ನಿಮ್ಮಿಂದ OTP, PIN, CVV ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಕೇಳಲಾಗುತ್ತಿದೆ",
     "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": "ಹಣ 'ಪಡೆಯಲು' UPI PIN ಕೇಳಲಾಗುತ್ತಿದೆ (ಹಣ ಪಡೆಯಲು ಎಂದಿಗೂ PIN ಬೇಕಿಲ್ಲ)",
     "Bank / KYC / PAN impersonation": "ಬ್ಯಾಂಕ್ / KYC / PAN ಹೆಸರಿನಲ್ಲಿ ಮೋಸ",
+    "Says your card or account was blocked and asks you to call a number": "ನಿಮ್ಮ ಕಾರ್ಡ್ ಅಥವಾ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗಿದೆ ಎಂದು ಹೇಳಿ, ಒಂದು ನಂಬರ್‌ಗೆ ಕರೆ ಮಾಡಲು ಕೇಳುತ್ತದೆ",
     "Says money was sent to you by mistake and asks you to return it": "ತಪ್ಪಾಗಿ ನಿಮಗೆ ಹಣ ಕಳುಹಿಸಲಾಗಿದೆ ಎಂದು ಹೇಳಿ, ಅದನ್ನು ಹಿಂದಿರುಗಿಸಲು ಕೇಳುತ್ತದೆ",
     "Threatens to cut your water, gas, internet or TV connection": "ನಿಮ್ಮ ನೀರು, ಗ್ಯಾಸ್, ಇಂಟರ್ನೆಟ್ ಅಥವಾ ಟಿವಿ ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸುವ ಬೆದರಿಕೆ",
     "Asks for your SIM card number (used to take over your number)": "ನಿಮ್ಮ SIM ಕಾರ್ಡ್ ಸಂಖ್ಯೆ ಕೇಳುತ್ತದೆ (ಇದನ್ನು ಬಳಸಿ ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಕಬಳಿಸುತ್ತಾರೆ)",
