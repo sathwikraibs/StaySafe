@@ -1,5 +1,5 @@
 """
-StaySafe - Translation with a ₹0 fallback chain
+TrustLight - Translation with a ₹0 fallback chain
 -------------------------------------------------
 Used for two things:
   1. CHECKING: messages in a language our rules don't cover are translated to
@@ -21,7 +21,7 @@ when it runs out. Nothing here can ever create a bill:
      BHASHINI_API_KEY). Free, no card. Built for the 22 Indian languages.
   4. MyMemory (free, no card, no key). 5,000 chars/day, or 50,000 with an email
      in MYMEMORY_EMAIL. When it says the daily quota is used, we stop for the day.
-  5. Nothing left → the result falls back to StaySafe's own built-in rules
+  5. Nothing left → the result falls back to TrustLight's own built-in rules
      (English, Hinglish, Kannada, Hindi, Tamil, Telugu, Malayalam, Marathi).
 
 TRANSLATE_DAILY_CHAR_LIMIT (default 15,000) is an extra per-day cap on Google

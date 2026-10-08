@@ -17,7 +17,7 @@ interface UploadZoneProps {
   camera?: boolean;
   /** offer "Crop" for pictures, so only the important part is checked */
   crop?: boolean;
-  /** a picture or file handed over from outside (shared to StaySafe from another app) */
+  /** a picture or file handed over from outside (shared to TrustLight from another app) */
   incoming?: File | null;
 }
 
@@ -85,7 +85,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
     onFile(file);
   }
 
-  // something shared to StaySafe: show it as if it had been picked here (no crop window, to be quick)
+  // something shared to TrustLight: show it as if it had been picked here (no crop window, to be quick)
   useEffect(() => {
     if (incoming) handleFile(incoming, false, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps

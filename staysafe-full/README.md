@@ -1,4 +1,4 @@
-# StaySafe
+# TrustLight
 
 A digital safety checkup tool for non-technical, first-time internet users.
 Checks links, messages, screenshots, QR codes, files, passwords, network

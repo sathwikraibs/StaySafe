@@ -1,11 +1,11 @@
-// "Ask StaySafe AI" / "Talk to a person" everywhere on the site opens the StaySafe Helper
-// (AI answers first, and a form that reaches the StaySafe team). No outside chat service is used.
+// "Ask TrustLight AI" / "Talk to a person" everywhere on the site opens the TrustLight Helper
+// (AI answers first, and a form that reaches the TrustLight team). No outside chat service is used.
 
 export type HelperMode = "home" | "person";
 export interface HelperRequest { mode: HelperMode; question?: string }
 const EVENT = "staysafe:helper";
 
-/** Open the StaySafe Helper; with `question`, the AI starts answering it straight away. */
+/** Open the TrustLight Helper; with `question`, the AI starts answering it straight away. */
 export function openHelper(mode: HelperMode = "home", question?: string): void {
   try {
     window.dispatchEvent(new CustomEvent<HelperRequest>(EVENT, { detail: { mode, question } }));

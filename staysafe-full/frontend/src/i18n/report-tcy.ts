@@ -26,7 +26,7 @@ export const reportTcy: ReportDict = {
       caution: "ಜಾಗ್ರತೆ",
       danger: "ಅಪಾಯ",
     },
-    slip: "StaySafe ವರದಿ",
+    slip: "TrustLight ವರದಿ",
     toolName: {
       link: "ಲಿಂಕ್",
       message: "ಮೆಸೇಜ್",
@@ -250,10 +250,10 @@ export const reportTcy: ReportDict = {
       failV: "Cloudflare ಗ್ ಪುಟ ಹಾನಿಕಾರಕ ಪಂಡ್‌ದ್ ತೋಜಿಂಡ್: {value}",
     },
     community: {
-      warn: "StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
-      warnV: "{value} StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
-      fail: "StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
-      failV: "{value} StaySafe ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      warn: "TrustLight ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      warnV: "{value} TrustLight ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      fail: "TrustLight ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+      failV: "{value} TrustLight ಬಳಕೆದಾರೆರ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
     },
     num_type: {
       pass: "ನಿಜವಾಯಿನ ಸರಕಾರಿ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ನಂಬರ್",
@@ -498,7 +498,7 @@ export const reportTcy: ReportDict = {
       warn: "ಈರೆನ ಕನೆಕ್ಷನ್ ಬೇತೆ ಟೈಮ್ ಝೋನ್ ತೋಜಾವುಂಡು ({value})",
     },
     net_https: {
-      pass: "StaySafe ಸುರಕ್ಷಿತವಾದ್ ತೆರೆಂಡ್ (HTTPS)",
+      pass: "TrustLight ಸುರಕ್ಷಿತವಾದ್ ತೆರೆಂಡ್ (HTTPS)",
       warn: "ಈ ಪುಟ ಸುರಕ್ಷಿತವಾದ್ ತೆರೆತಿಜಿ",
     },
     net_browser: {
@@ -559,7 +559,7 @@ export const reportTcy: ReportDict = {
       "10 ಲಕ್ಷಡ್ದ್ ಜಾಸ್ತಿ ಗೊತ್ತುಪ್ಪುನ ಮೋಸದ ಲಿಂಕ್‌ಲೆಡ್ ನಾಡೊಂದುಲ್ಲ",
       "70ಡ್ದ್ ಜಾಸ್ತಿ ಭದ್ರತಾ ಕಂಪನಿಲೆನ್ ಕೇನೊಂದುಲ್ಲ",
       "ಈ ವೆಬ್‌ಸೈಟ್‌ದ ದುಂಬುದ ಭದ್ರತಾ ಪರಿಶೀಲನೆಲೆನ್ ತೂವೊಂದುಲ್ಲ",
-      "RBI ದ ಪಟ್ಟಿ ಬೊಕ್ಕ ಬೇತೆ StaySafe ಬಳಕೆದಾರೆರೆನ ವರದಿಲೆನ್ ತೂವೊಂದುಲ್ಲ",
+      "RBI ದ ಪಟ್ಟಿ ಬೊಕ್ಕ ಬೇತೆ TrustLight ಬಳಕೆದಾರೆರೆನ ವರದಿಲೆನ್ ತೂವೊಂದುಲ್ಲ",
       "ಪುಟೊನು ಈರೆಗಾದ್ ಸುರಕ್ಷಿತವಾದ್ ತೆರೆವೊಂದುಲ್ಲ",
       "ವೆಬ್‌ಸೈಟ್ ಏತ್ ಪರತ್ ತೂವೊಂದುಲ್ಲ",
       "ಈರೆನ ವರದಿ ತಯಾರ್ ಮಲ್ಪೊಂದುಲ್ಲ",
@@ -727,7 +727,7 @@ export const reportTcy: ReportDict = {
   },
 
   homeX: {
-    askTitle: "ದಾದ ಆಂಡ್? StaySafe AI ಕೇನ್ಲೆ",
+    askTitle: "ದಾದ ಆಂಡ್? TrustLight AI ಕೇನ್ಲೆ",
     askIntro: "ಈರೆನ ಸಮಸ್ಯೆನ್ ಓವು ಭಾಷೆಡ್‌ಲಾ ಪನ್ಲೆ, ಅತ್ತಂಡ ಬತ್ತಿನ ಮೆಸೇಜ್ ಅತ್ತಂಡ ಲಿಂಕ್ ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ. ಇತ್ತೆನೇ ಉತ್ತರ ತಿಕ್ಕುಂಡು.",
     askPlaceholder: "ಉದಾ: ಏರೋ ಕಾಲ್ ಮಲ್ತ್‌ದ್ ಎನ್ನ OTP ಕೇಂಡೆರ್...",
     askButton: "ಕೇನ್ಲೆ",

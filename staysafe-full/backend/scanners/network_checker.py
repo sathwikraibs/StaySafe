@@ -1,5 +1,5 @@
 """
-StaySafe - Network / Wi-Fi Safety Checker
+TrustLight - Network / Wi-Fi Safety Checker
 ----------------------------------------------
 IMPORTANT SCOPE NOTE: No website can read a browser's actual Wi-Fi
 SSID, WPA2/WPA3 status, or router settings -- browsers deliberately
@@ -209,7 +209,7 @@ def _refresh_tor():
     import requests as _rq
     try:
         resp = _rq.get("https://check.torproject.org/torbulkexitlist", timeout=15,
-                       headers={"User-Agent": "StaySafe/2.0"})
+                       headers={"User-Agent": "TrustLight/2.0"})
         if resp.status_code == 200:
             ips = {l.strip() for l in resp.text.splitlines() if l.strip() and not l.startswith("#")}
             if len(ips) > 100:

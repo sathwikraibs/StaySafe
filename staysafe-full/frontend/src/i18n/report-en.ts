@@ -25,7 +25,7 @@ export const reportEn = {
       caution: "Careful",
       danger: "Risky",
     },
-    slip: "StaySafe report",
+    slip: "TrustLight report",
     toolName: {
       link: "Link",
       message: "Message",
@@ -249,10 +249,10 @@ export const reportEn = {
       failV: "Cloudflare found the page harmful: {value}",
     },
     community: {
-      warn: "Reported as a scam by StaySafe users",
-      warnV: "Reported as a scam by {value} StaySafe users",
-      fail: "Reported as a scam by StaySafe users",
-      failV: "Reported as a scam by {value} StaySafe users",
+      warn: "Reported as a scam by TrustLight users",
+      warnV: "Reported as a scam by {value} TrustLight users",
+      fail: "Reported as a scam by TrustLight users",
+      failV: "Reported as a scam by {value} TrustLight users",
     },
     num_type: {
       pass: "A real official or bank number",
@@ -503,7 +503,7 @@ export const reportEn = {
       warn: "Your connection shows a different time zone ({value})",
     },
     net_https: {
-      pass: "StaySafe opened securely (HTTPS)",
+      pass: "TrustLight opened securely (HTTPS)",
       warn: "This page did not open securely",
     },
     net_browser: {
@@ -565,7 +565,7 @@ export const reportEn = {
       "Searching more than a million known scam links",
       "Asking 70+ security companies",
       "Looking at past security scans of this website",
-      "Checking RBI's list and reports from other StaySafe users",
+      "Checking RBI's list and reports from other TrustLight users",
       "Opening the page safely for you",
       "Checking how old the website is",
       "Putting your report together",
@@ -733,7 +733,7 @@ export const reportEn = {
   },
 
   homeX: {
-    askTitle: "What happened? Ask StaySafe AI",
+    askTitle: "What happened? Ask TrustLight AI",
     askIntro: "Describe your problem in any language, or paste a message or link you got. You'll get an answer right away.",
     askPlaceholder: "For example: someone called and asked for my OTP...",
     askButton: "Ask",

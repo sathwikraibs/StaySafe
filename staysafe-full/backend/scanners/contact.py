@@ -1,7 +1,7 @@
 """
-StaySafe - "Talk to a person" form
+TrustLight - "Talk to a person" form
 -----------------------------------
-A visitor fills a short form in the StaySafe Helper. The message reaches the StaySafe team
+A visitor fills a short form in the TrustLight Helper. The message reaches the TrustLight team
 straight away on their phone, for free, even when nobody is logged in to the live chat:
 
   1. Telegram (TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID): an instant notification in the Telegram
@@ -80,7 +80,7 @@ def _send_telegram(text_html: str) -> bool:
 
 
 def _send_email(subject: str, text_html: str, reply_to: str) -> bool:
-    body = {"from": os.environ.get("CONTACT_FROM", "StaySafe <onboarding@resend.dev>"),
+    body = {"from": os.environ.get("CONTACT_FROM", "TrustLight <onboarding@resend.dev>"),
             "to": [os.environ.get("CONTACT_EMAIL", "")], "subject": subject[:150],
             "html": text_html.replace("\n", "<br>")}
     if reply_to:
@@ -150,7 +150,7 @@ def contact_route():
     text = "\n".join(lines)
 
     sent_tg = _send_telegram(text) if _telegram_ready() else False
-    sent_mail = _send_email(f"[StaySafe {ref}]{' URGENT' if urgent else ''} {name or 'New message'}", text, email) \
+    sent_mail = _send_email(f"[TrustLight {ref}]{' URGENT' if urgent else ''} {name or 'New message'}", text, email) \
         if _email_ready() else False
     if not (sent_tg or sent_mail):
         return jsonify({"error": "We couldn't send your message right now. Please try the live chat, or try again in a minute."}), 502

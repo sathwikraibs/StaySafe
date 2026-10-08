@@ -50,7 +50,7 @@ export const SCAMS_EN: Scam[] = [
     red_flags: ["Guaranteed or fixed high returns", "Pressure to deposit more once you're 'in profit' (to withdraw)", "Unregistered trading app, not on the Play Store or App Store"],
     what_to_do: "No legitimate investment guarantees returns. Check SEBI or RBI registration before investing anything.",
     example: "Join our VIP stock group. 30% guaranteed monthly returns. Our members made Rs 5 lakh last week!",
-    check: ["Check the adviser or broker on the SEBI website", "Only use apps from well-known, registered brokers", "If you can't withdraw without paying a 'tax', it's a scam", "Paste the app's website into StaySafe: it warns about platforms on RBI's Alert List"],
+    check: ["Check the adviser or broker on the SEBI website", "Only use apps from well-known, registered brokers", "If you can't withdraw without paying a 'tax', it's a scam", "Paste the app's website into TrustLight: it warns about platforms on RBI's Alert List"],
   },
   {
     id: "digital_arrest", category: "Government Impersonation", title: "'Digital Arrest' / Fake Police Scam", level: 3, icon: "police",

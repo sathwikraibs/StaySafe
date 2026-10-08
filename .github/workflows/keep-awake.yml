@@ -1,8 +1,8 @@
-# Keeps the free StaySafe server on Render awake, so the AI helper and checks answer at once,
+# Keeps the free TrustLight server on Render awake, so the AI helper and checks answer at once,
 # day and night. Render's free plan sleeps after 15 minutes without visitors; a ping every
-# 10 minutes prevents that. StaySafe is the only Render service, so 24x7 (at most 744 hours a
+# 10 minutes prevents that. TrustLight is the only Render service, so 24x7 (at most 744 hours a
 # month) stays inside Render's 750 free hours. GitHub Actions is free for public repositories.
-name: Keep StaySafe awake
+name: Keep TrustLight awake
 
 on:
   schedule:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Ping the StaySafe server
+      - name: Ping the TrustLight server
         run: |
           for i in 1 2 3; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://staysafe-api.onrender.com/ || true)

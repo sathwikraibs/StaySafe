@@ -25,7 +25,7 @@ export const reportHi: ReportDict = {
       caution: "सावधान",
       danger: "खतरनाक",
     },
-    slip: "StaySafe रिपोर्ट",
+    slip: "TrustLight रिपोर्ट",
     toolName: {
       link: "लिंक",
       message: "मैसेज",
@@ -249,10 +249,10 @@ export const reportHi: ReportDict = {
       failV: "Cloudflare को पेज हानिकारक मिला: {value}",
     },
     community: {
-      warn: "StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
-      warnV: "{value} StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
-      fail: "StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
-      failV: "{value} StaySafe उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      warn: "TrustLight उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      warnV: "{value} TrustLight उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      fail: "TrustLight उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
+      failV: "{value} TrustLight उपयोगकर्ताओं ने ठगी के रूप में रिपोर्ट किया",
     },
     num_type: {
       pass: "असली सरकारी या बैंक नंबर",
@@ -497,7 +497,7 @@ export const reportHi: ReportDict = {
       warn: "आपका कनेक्शन किसी दूसरे टाइम ज़ोन से आता दिखता है ({value})",
     },
     net_https: {
-      pass: "StaySafe सुरक्षित तरीके से खुला (HTTPS)",
+      pass: "TrustLight सुरक्षित तरीके से खुला (HTTPS)",
       warn: "यह पेज सुरक्षित तरीके से नहीं खुला",
     },
     net_browser: {
@@ -558,7 +558,7 @@ export const reportHi: ReportDict = {
       "10 लाख से ज़्यादा जाने-माने धोखे वाले लिंक में खोज रहे हैं",
       "70+ सुरक्षा कंपनियों से पूछ रहे हैं",
       "इस वेबसाइट की पुरानी सुरक्षा जाँचें देख रहे हैं",
-      "RBI की सूची और दूसरे StaySafe उपयोगकर्ताओं की रिपोर्ट देख रहे हैं",
+      "RBI की सूची और दूसरे TrustLight उपयोगकर्ताओं की रिपोर्ट देख रहे हैं",
       "पेज को आपके लिए सुरक्षित तरीके से खोल रहे हैं",
       "देख रहे हैं कि वेबसाइट कितनी पुरानी है",
       "आपकी रिपोर्ट तैयार कर रहे हैं",
@@ -726,7 +726,7 @@ export const reportHi: ReportDict = {
   },
 
   homeX: {
-    askTitle: "क्या हुआ? StaySafe AI से पूछें",
+    askTitle: "क्या हुआ? TrustLight AI से पूछें",
     askIntro: "किसी भी भाषा में अपनी समस्या बताएँ, या मिला हुआ मैसेज या लिंक पेस्ट करें। तुरंत जवाब मिलेगा।",
     askPlaceholder: "जैसे: किसी ने कॉल करके मेरा OTP माँगा...",
     askButton: "पूछें",

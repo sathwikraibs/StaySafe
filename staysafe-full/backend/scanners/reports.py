@@ -1,9 +1,9 @@
 """
-StaySafe - "Report as scam": StaySafe's own list, built by its users
+TrustLight - "Report as scam": TrustLight's own list, built by its users
 -----------------------------------------------------------------------
 People who were targeted can report a link, phone number or UPI ID. When enough different
 people report the same one, everybody who checks it later sees "Reported as a scam by N
-StaySafe users", without spending any outside allowance.
+TrustLight users", without spending any outside allowance.
 
 Kept in the long memory (store.py), as fingerprints only: the database holds a count per
 fingerprint, never the link, number or ID itself, and never who reported it.
@@ -117,7 +117,7 @@ def community_signal(kind: str, value: str):
     if n < REPORT_THRESHOLD:
         return None
     points = 50 if n >= 10 else (35 if n >= 5 else 25)
-    return f"Reported as a scam by {n} StaySafe users", points
+    return f"Reported as a scam by {n} TrustLight users", points
 
 
 def _reporter_id() -> str:

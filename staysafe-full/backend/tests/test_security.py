@@ -1,5 +1,5 @@
 """
-StaySafe security tests: fair-use limits, allowed websites, safe headers, hidden status
+TrustLight security tests: fair-use limits, allowed websites, safe headers, hidden status
 details, the link opener's address guard, zip bombs and long inputs.
 
 Run from the backend folder (no internet needed):

@@ -1,5 +1,5 @@
 """
-StaySafe - Main Flask App
+TrustLight - Main Flask App
 """
 import os
 from flask import Flask, jsonify
@@ -33,7 +33,7 @@ MAX_UPLOAD_MB = 20
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
-# Only StaySafe's own website may call the API from a browser
+# Only TrustLight's own website may call the API from a browser
 CORS(app, origins=allowed_origins())
 app.before_request(check_rate_limit)
 app.after_request(add_security_headers)
@@ -68,9 +68,9 @@ _th.Thread(target=__import__("scanners.tulu_lexicon", fromlist=["latin_available
 def home():
     # Public view: just "is it running". Full details need ?key=<STATUS_KEY> (set on Render).
     if not has_status_key():
-        return {"status": "StaySafe API running", "ocr": ocr_status(), "qr": qr_status()}
+        return {"status": "TrustLight API running", "ocr": ocr_status(), "qr": qr_status()}
     return {
-        "status": "StaySafe API running",
+        "status": "TrustLight API running",
         "ocr": ocr_status(),
         "ocr_languages": ocr_languages() if ocr_status() else "",
         "qr": qr_status(),

@@ -47,7 +47,7 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
-  // a picture shared to StaySafe had a QR code in it: check what it says
+  // a picture shared to TrustLight had a QR code in it: check what it says
   useSharedQr((v) => { checkText(v); });
 
 

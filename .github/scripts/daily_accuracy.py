@@ -1,5 +1,5 @@
 """
-StaySafe daily accuracy test (run by .github/workflows/daily-accuracy.yml).
+TrustLight daily accuracy test (run by .github/workflows/daily-accuracy.yml).
 
 Every day: today's real scam links (fair test x3, blind test x1), the newest real malware
 fingerprints, genuine messages, QR codes and phone numbers. Every Sunday also the full fixed

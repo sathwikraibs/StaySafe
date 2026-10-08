@@ -1,4 +1,4 @@
-// StaySafe Helper: ready answers to the questions people ask most, in every site language.
+// TrustLight Helper: ready answers to the questions people ask most, in every site language.
 // Works any time of day, with no server and no cost. "Talk to a person" opens the live chat.
 import { useEffect } from "react";
 import type { Lang } from "@/i18n";
@@ -155,10 +155,10 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       words: ["account", "login"],
     },
     {
-      id: "about", q: "Is StaySafe free? Is my data safe?",
-      a: ["Yes, StaySafe is completely free, with no sign-up.",
+      id: "about", q: "Is TrustLight free? Is my data safe?",
+      a: ["Yes, TrustLight is completely free, with no sign-up.",
         "Your check history stays on your own device. We never ask for your OTP, PIN, password or bank details."],
-      actions: [{ kind: "go", path: "/about", label: "How StaySafe works" }],
+      actions: [{ kind: "go", path: "/about", label: "How TrustLight works" }],
       words: [],
     },
   ],
@@ -225,10 +225,10 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       words: ["हैक", "खाता", "लॉगिन"],
     },
     {
-      id: "about", q: "क्या StaySafe मुफ़्त है? मेरी जानकारी सुरक्षित है?",
-      a: ["हाँ, StaySafe पूरी तरह मुफ़्त है, साइन-अप की ज़रूरत नहीं।",
+      id: "about", q: "क्या TrustLight मुफ़्त है? मेरी जानकारी सुरक्षित है?",
+      a: ["हाँ, TrustLight पूरी तरह मुफ़्त है, साइन-अप की ज़रूरत नहीं।",
         "आपकी जाँच की हिस्ट्री आपके ही डिवाइस पर रहती है। हम कभी OTP, PIN, पासवर्ड या बैंक की जानकारी नहीं माँगते।"],
-      actions: [{ kind: "go", path: "/about", label: "StaySafe कैसे काम करता है" }],
+      actions: [{ kind: "go", path: "/about", label: "TrustLight कैसे काम करता है" }],
       words: ["मुफ़्त", "मुफ्त", "फ्री", "सुरक्षित", "जानकारी"],
     },
   ],
@@ -295,10 +295,10 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       words: ["ಹ್ಯಾಕ್", "ಖಾತೆ", "ಲಾಗಿನ್"],
     },
     {
-      id: "about", q: "StaySafe ಉಚಿತವೇ? ನನ್ನ ಮಾಹಿತಿ ಸುರಕ್ಷಿತವೇ?",
-      a: ["ಹೌದು, StaySafe ಸಂಪೂರ್ಣ ಉಚಿತ, ಸೈನ್-ಅಪ್ ಬೇಕಿಲ್ಲ.",
+      id: "about", q: "TrustLight ಉಚಿತವೇ? ನನ್ನ ಮಾಹಿತಿ ಸುರಕ್ಷಿತವೇ?",
+      a: ["ಹೌದು, TrustLight ಸಂಪೂರ್ಣ ಉಚಿತ, ಸೈನ್-ಅಪ್ ಬೇಕಿಲ್ಲ.",
         "ನಿಮ್ಮ ಪರಿಶೀಲನೆಯ ಹಿಸ್ಟರಿ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಇರುತ್ತದೆ. ನಾವು ಎಂದಿಗೂ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅಥವಾ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇಳುವುದಿಲ್ಲ."],
-      actions: [{ kind: "go", path: "/about", label: "StaySafe ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ" }],
+      actions: [{ kind: "go", path: "/about", label: "TrustLight ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ" }],
       words: ["ಉಚಿತ", "ಫ್ರೀ", "ಸುರಕ್ಷಿತ", "ಮಾಹಿತಿ"],
     },
   ],
@@ -365,10 +365,10 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       words: ["ಹ್ಯಾಕ್", "ಖಾತೆ", "ಲಾಗಿನ್"],
     },
     {
-      id: "about", q: "StaySafe ಉಚಿತನಾ? ಎನ್ನ ಮಾಹಿತಿ ಸುರಕ್ಷಿತನಾ?",
-      a: ["ಅಂದ್, StaySafe ಪೂರ್ತಿ ಉಚಿತ, ಸೈನ್-ಅಪ್ ಬೋಡ್ಚಿ.",
+      id: "about", q: "TrustLight ಉಚಿತನಾ? ಎನ್ನ ಮಾಹಿತಿ ಸುರಕ್ಷಿತನಾ?",
+      a: ["ಅಂದ್, TrustLight ಪೂರ್ತಿ ಉಚಿತ, ಸೈನ್-ಅಪ್ ಬೋಡ್ಚಿ.",
         "ಈರೆನ ಪರಿಶೀಲನೆದ ಇತಿಹಾಸ ಈರೆನ ಮೊಬೈಲ್/ಲ್ಯಾಪ್‌ಟಾಪ್‌ಡೇ ಉಪ್ಪುಂಡು. ಎಂಕುಲು ಏಪಲಾ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇನುಜ."],
-      actions: [{ kind: "go", path: "/about", label: "StaySafe ಎಂಚ ಬೇಲೆ ಮಲ್ಪುಂಡು" }],
+      actions: [{ kind: "go", path: "/about", label: "TrustLight ಎಂಚ ಬೇಲೆ ಮಲ್ಪುಂಡು" }],
       words: ["ಉಚಿತ", "ಫ್ರೀ", "ಸುರಕ್ಷಿತ", "ಮಾಹಿತಿ"],
     },
   ],
@@ -376,7 +376,7 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
 
 export const HELP_TEXTS: Record<Lang, HelpTexts> = {
   en: {
-    title: "Ask StaySafe AI", subtitle: "Answers any time, in your language",
+    title: "Ask TrustLight AI", subtitle: "Answers any time, in your language",
     hello: "Hi! Tell me what happened, in any language. I'll help you right away.",
     pick: "Type below, or tap a common question.",
     placeholder: "Type your problem here...",
@@ -392,10 +392,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "Other questions", close: "Close",
     never: "We will never ask for your OTP, PIN, password or bank details.",
     urgent: "Lost money? Call 1930 now",
-    formIntro: "I'll pass your message to a real person from the StaySafe team. Please be patient: they reply when they're free, which may take a few hours or longer, and we can't promise a time. If you lost money, don't wait for us: call 1930 now.",
+    formIntro: "I'll pass your message to a real person from the TrustLight team. Please be patient: they reply when they're free, which may take a few hours or longer, and we can't promise a time. If you lost money, don't wait for us: call 1930 now.",
     chatNow: "Chat live now",
     writeToUs: "Write to us",
-    formTitle: "Write to the StaySafe team",
+    formTitle: "Write to the TrustLight team",
     formName: "Your name (optional)",
     formEmail: "Email",
     formPhone: "WhatsApp number",
@@ -411,8 +411,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "Back",
     sent: "Your message has been passed to a real person. Your reference is {ref}. They'll reply by email or WhatsApp when they're free. We can't promise when, but you won't be forgotten.",
     sentUrgent: "Since money was lost, please also call 1930 right now. The first hours matter most.",
-    aiLabel: "This answer is from the StaySafe AI Assistant, not a person. It can make mistakes.",
-    aiName: "StaySafe AI Assistant",
+    aiLabel: "This answer is from the TrustLight AI Assistant, not a person. It can make mistakes.",
+    aiName: "TrustLight AI Assistant",
     typing: "Thinking...",
     actIncident: "Recovery steps",
     actCheckMessage: "Check a message",
@@ -426,10 +426,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     tip: "Tip: write in the language you are most comfortable with (English, ಕನ್ನಡ, हिन्दी or ತುಳು), in short, simple sentences. English letters are fine too. For Tulu, Kannada letters give the most accurate answers. Never type your OTP, PIN or passwords.",
     tuluTip: "For Tulu, writing in Kannada letters (ಕನ್ನಡ ಅಕ್ಷರ) usually gives a more accurate answer.",
     aiTrouble: "I couldn't answer that properly. Please ask again in one or two simple sentences, or tap a common question below.",
-    aiBusy: "StaySafe AI can't answer right now. Here are answers to common questions, or you can write to our team.",
+    aiBusy: "TrustLight AI can't answer right now. Here are answers to common questions, or you can write to our team.",
   },
   hi: {
-    title: "StaySafe AI से पूछें", subtitle: "कभी भी, आपकी भाषा में जवाब",
+    title: "TrustLight AI से पूछें", subtitle: "कभी भी, आपकी भाषा में जवाब",
     hello: "नमस्ते! किसी भी भाषा में बताइए क्या हुआ। मैं तुरंत मदद करूँगा।",
     pick: "नीचे लिखें, या कोई आम सवाल चुनें।",
     placeholder: "अपनी समस्या यहाँ लिखें...",
@@ -445,10 +445,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "दूसरे सवाल", close: "बंद करें",
     never: "हम कभी आपका OTP, PIN, पासवर्ड या बैंक की जानकारी नहीं माँगेंगे।",
     urgent: "पैसे कटे? अभी 1930 पर कॉल करें",
-    formIntro: "मैं आपका मैसेज StaySafe टीम के एक असली व्यक्ति तक पहुँचा दूँगा। कृपया धैर्य रखें: वे खाली होने पर जवाब देते हैं, इसमें कुछ घंटे या ज़्यादा लग सकते हैं, और हम समय का वादा नहीं कर सकते। पैसे कटे हों तो हमारा इंतज़ार न करें, अभी 1930 पर कॉल करें।",
+    formIntro: "मैं आपका मैसेज TrustLight टीम के एक असली व्यक्ति तक पहुँचा दूँगा। कृपया धैर्य रखें: वे खाली होने पर जवाब देते हैं, इसमें कुछ घंटे या ज़्यादा लग सकते हैं, और हम समय का वादा नहीं कर सकते। पैसे कटे हों तो हमारा इंतज़ार न करें, अभी 1930 पर कॉल करें।",
     chatNow: "अभी लाइव चैट करें",
     writeToUs: "हमें लिखें",
-    formTitle: "StaySafe टीम को लिखें",
+    formTitle: "TrustLight टीम को लिखें",
     formName: "आपका नाम (ज़रूरी नहीं)",
     formEmail: "ईमेल",
     formPhone: "WhatsApp नंबर",
@@ -464,8 +464,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "वापस",
     sent: "आपका मैसेज एक असली व्यक्ति तक पहुँचा दिया गया है। आपका रेफ़रेंस नंबर {ref} है। वे खाली होने पर ईमेल या WhatsApp पर जवाब देंगे। हम समय का वादा नहीं कर सकते, पर आपको भूलेंगे नहीं।",
     sentUrgent: "पैसे कटे हैं, इसलिए अभी 1930 पर भी कॉल करें। शुरुआती घंटे सबसे ज़रूरी हैं।",
-    aiLabel: "यह StaySafe AI सहायक का जवाब है, किसी व्यक्ति का नहीं। इसमें गलती हो सकती है।",
-    aiName: "StaySafe AI सहायक",
+    aiLabel: "यह TrustLight AI सहायक का जवाब है, किसी व्यक्ति का नहीं। इसमें गलती हो सकती है।",
+    aiName: "TrustLight AI सहायक",
     typing: "सोच रहा है...",
     actIncident: "बचाव के कदम",
     actCheckMessage: "मैसेज जाँचें",
@@ -479,10 +479,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     tip: "सुझाव: जिस भाषा में आप सहज हों उसी में छोटे, आसान वाक्यों में लिखें (English, ಕನ್ನಡ, हिन्दी या ತುಳು)। अंग्रेज़ी अक्षरों में भी लिख सकते हैं। तुलु के लिए कन्नड़ अक्षरों में लिखने से सबसे सही जवाब मिलते हैं। अपना OTP, PIN या पासवर्ड कभी न लिखें।",
     tuluTip: "तुलु के लिए कन्नड़ अक्षरों में लिखने से आम तौर पर ज़्यादा सही जवाब मिलता है।",
     aiTrouble: "मैं इसका ठीक से जवाब नहीं दे सका। कृपया एक-दो आसान वाक्यों में फिर से पूछें, या नीचे कोई आम सवाल चुनें।",
-    aiBusy: "StaySafe AI अभी जवाब नहीं दे पा रहा। नीचे आम सवालों के जवाब हैं, या आप हमारी टीम को लिख सकते हैं।",
+    aiBusy: "TrustLight AI अभी जवाब नहीं दे पा रहा। नीचे आम सवालों के जवाब हैं, या आप हमारी टीम को लिख सकते हैं।",
   },
   kn: {
-    title: "StaySafe AI ಕೇಳಿ", subtitle: "ಯಾವಾಗ ಬೇಕಾದರೂ, ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರ",
+    title: "TrustLight AI ಕೇಳಿ", subtitle: "ಯಾವಾಗ ಬೇಕಾದರೂ, ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತರ",
     hello: "ನಮಸ್ಕಾರ! ಏನಾಯಿತು ಎಂದು ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಹೇಳಿ. ನಾನು ತಕ್ಷಣ ಸಹಾಯ ಮಾಡುತ್ತೇನೆ.",
     pick: "ಕೆಳಗೆ ಬರೆಯಿರಿ, ಅಥವಾ ಒಂದು ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆ ಆಯ್ಕೆ ಮಾಡಿ.",
     placeholder: "ನಿಮ್ಮ ಸಮಸ್ಯೆ ಇಲ್ಲಿ ಬರೆಯಿರಿ...",
@@ -498,10 +498,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "ಬೇರೆ ಪ್ರಶ್ನೆಗಳು", close: "ಮುಚ್ಚಿ",
     never: "ನಾವು ಎಂದಿಗೂ ನಿಮ್ಮ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅಥವಾ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇಳುವುದಿಲ್ಲ.",
     urgent: "ಹಣ ಹೋಯಿತೇ? ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ",
-    formIntro: "ನಿಮ್ಮ ಮೆಸೇಜ್ ಅನ್ನು StaySafe ತಂಡದ ಒಬ್ಬ ನಿಜವಾದ ವ್ಯಕ್ತಿಗೆ ತಲುಪಿಸುತ್ತೇನೆ. ದಯವಿಟ್ಟು ತಾಳ್ಮೆಯಿಂದಿರಿ: ಅವರು ಬಿಡುವಾದಾಗ ಉತ್ತರಿಸುತ್ತಾರೆ. ಇದಕ್ಕೆ ಕೆಲವು ಗಂಟೆಗಳು ಅಥವಾ ಅದಕ್ಕಿಂತ ಹೆಚ್ಚು ಸಮಯ ಆಗಬಹುದು, ಮತ್ತು ನಾವು ಸಮಯದ ಭರವಸೆ ನೀಡಲು ಆಗುವುದಿಲ್ಲ. ಹಣ ಹೋಗಿದ್ದರೆ ನಮಗಾಗಿ ಕಾಯಬೇಡಿ, ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ.",
+    formIntro: "ನಿಮ್ಮ ಮೆಸೇಜ್ ಅನ್ನು TrustLight ತಂಡದ ಒಬ್ಬ ನಿಜವಾದ ವ್ಯಕ್ತಿಗೆ ತಲುಪಿಸುತ್ತೇನೆ. ದಯವಿಟ್ಟು ತಾಳ್ಮೆಯಿಂದಿರಿ: ಅವರು ಬಿಡುವಾದಾಗ ಉತ್ತರಿಸುತ್ತಾರೆ. ಇದಕ್ಕೆ ಕೆಲವು ಗಂಟೆಗಳು ಅಥವಾ ಅದಕ್ಕಿಂತ ಹೆಚ್ಚು ಸಮಯ ಆಗಬಹುದು, ಮತ್ತು ನಾವು ಸಮಯದ ಭರವಸೆ ನೀಡಲು ಆಗುವುದಿಲ್ಲ. ಹಣ ಹೋಗಿದ್ದರೆ ನಮಗಾಗಿ ಕಾಯಬೇಡಿ, ಈಗಲೇ 1930 ಗೆ ಕರೆ ಮಾಡಿ.",
     chatNow: "ಈಗ ಲೈವ್ ಚಾಟ್ ಮಾಡಿ",
     writeToUs: "ನಮಗೆ ಬರೆಯಿರಿ",
-    formTitle: "StaySafe ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
+    formTitle: "TrustLight ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
     formName: "ನಿಮ್ಮ ಹೆಸರು (ಕಡ್ಡಾಯವಲ್ಲ)",
     formEmail: "ಇಮೇಲ್",
     formPhone: "WhatsApp ಸಂಖ್ಯೆ",
@@ -517,8 +517,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "ಹಿಂದೆ",
     sent: "ನಿಮ್ಮ ಮೆಸೇಜ್ ಒಬ್ಬ ನಿಜವಾದ ವ್ಯಕ್ತಿಗೆ ತಲುಪಿದೆ. ನಿಮ್ಮ ರೆಫರೆನ್ಸ್ ಸಂಖ್ಯೆ {ref}. ಅವರು ಬಿಡುವಾದಾಗ ಇಮೇಲ್ ಅಥವಾ WhatsApp ನಲ್ಲಿ ಉತ್ತರಿಸುತ್ತಾರೆ. ಯಾವಾಗ ಎಂದು ಹೇಳಲಾಗದು, ಆದರೆ ನಿಮ್ಮನ್ನು ಮರೆಯುವುದಿಲ್ಲ.",
     sentUrgent: "ಹಣ ಹೋಗಿರುವುದರಿಂದ ಈಗಲೇ 1930 ಗೂ ಕರೆ ಮಾಡಿ. ಮೊದಲ ಕೆಲವು ಗಂಟೆಗಳೇ ತುಂಬಾ ಮುಖ್ಯ.",
-    aiLabel: "ಇದು StaySafe AI ಸಹಾಯಕನ ಉತ್ತರ, ಒಬ್ಬ ವ್ಯಕ್ತಿಯದ್ದಲ್ಲ. ಇದರಲ್ಲಿ ತಪ್ಪುಗಳಿರಬಹುದು.",
-    aiName: "StaySafe AI ಸಹಾಯಕ",
+    aiLabel: "ಇದು TrustLight AI ಸಹಾಯಕನ ಉತ್ತರ, ಒಬ್ಬ ವ್ಯಕ್ತಿಯದ್ದಲ್ಲ. ಇದರಲ್ಲಿ ತಪ್ಪುಗಳಿರಬಹುದು.",
+    aiName: "TrustLight AI ಸಹಾಯಕ",
     typing: "ಯೋಚಿಸುತ್ತಿದೆ...",
     actIncident: "ಪರಿಹಾರದ ಹಂತಗಳು",
     actCheckMessage: "ಮೆಸೇಜ್ ಪರಿಶೀಲಿಸಿ",
@@ -532,10 +532,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     tip: "ಸಲಹೆ: ನಿಮಗೆ ಸುಲಭವಾದ ಭಾಷೆಯಲ್ಲಿ ಚಿಕ್ಕ, ಸರಳ ವಾಕ್ಯಗಳಲ್ಲಿ ಬರೆಯಿರಿ (English, ಕನ್ನಡ, हिन्दी ಅಥವಾ ತುಳು). ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಲ್ಲೂ ಬರೆಯಬಹುದು. ತುಳುವಿಗೆ ಕನ್ನಡ ಅಕ್ಷರಗಳಲ್ಲಿ ಬರೆದರೆ ಹೆಚ್ಚು ಸರಿಯಾದ ಉತ್ತರ ಸಿಗುತ್ತದೆ. ನಿಮ್ಮ OTP, PIN ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಎಂದಿಗೂ ಟೈಪ್ ಮಾಡಬೇಡಿ.",
     tuluTip: "ತುಳುವಿಗೆ ಕನ್ನಡ ಅಕ್ಷರಗಳಲ್ಲಿ ಬರೆದರೆ ಸಾಮಾನ್ಯವಾಗಿ ಹೆಚ್ಚು ಸರಿಯಾದ ಉತ್ತರ ಸಿಗುತ್ತದೆ.",
     aiTrouble: "ಇದಕ್ಕೆ ಸರಿಯಾಗಿ ಉತ್ತರಿಸಲು ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಒಂದೆರಡು ಸರಳ ವಾಕ್ಯಗಳಲ್ಲಿ ಮತ್ತೆ ಕೇಳಿ, ಅಥವಾ ಕೆಳಗಿನ ಒಂದು ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಯನ್ನು ಒತ್ತಿ.",
-    aiBusy: "StaySafe AI ಈಗ ಉತ್ತರಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ಕೆಳಗೆ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳ ಉತ್ತರಗಳಿವೆ, ಅಥವಾ ನಮ್ಮ ತಂಡಕ್ಕೆ ಬರೆಯಬಹುದು.",
+    aiBusy: "TrustLight AI ಈಗ ಉತ್ತರಿಸಲು ಆಗುತ್ತಿಲ್ಲ. ಕೆಳಗೆ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳ ಉತ್ತರಗಳಿವೆ, ಅಥವಾ ನಮ್ಮ ತಂಡಕ್ಕೆ ಬರೆಯಬಹುದು.",
   },
   tcy: {
-    title: "StaySafe AI ಕೇನ್ಲೆ", subtitle: "ಏಪ ಬೋಡಾಂಡಲಾ, ಈರೆನ ಭಾಷೆಡ್ ಉತ್ತರ",
+    title: "TrustLight AI ಕೇನ್ಲೆ", subtitle: "ಏಪ ಬೋಡಾಂಡಲಾ, ಈರೆನ ಭಾಷೆಡ್ ಉತ್ತರ",
     hello: "ನಮಸ್ಕಾರ! ದಾದ ಆಂಡ್ ಪಂಡ್‌ದ್ ಓವು ಭಾಷೆಡ್‌ಲಾ ಪನ್ಲೆ. ಯಾನ್ ಇತ್ತೆನೇ ಸಹಾಯ ಮಲ್ಪುವೆ.",
     pick: "ತಿರ್ತ್ ಬರೆಲೆ, ಅತ್ತಂಡ ಒಂಜಿ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ.",
     placeholder: "ಈರೆನ ಸಮಸ್ಯೆ ಮುಲ್ಪ ಬರೆಲೆ...",
@@ -551,10 +551,10 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     more: "ಬೇತೆ ಪ್ರಶ್ನೆಲು", close: "ಮುಚ್ಚುಲೆ",
     never: "ಎಂಕುಲು ಏಪಲಾ ಈರೆನ OTP, PIN, ಪಾಸ್‌ವರ್ಡ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್ ವಿವರ ಕೇನುಜ.",
     urgent: "ಪೈಸೆ ಪೋಂಡಾ? ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ",
-    formIntro: "ಈರೆನ ಮೆಸೇಜ್‌ನ್ StaySafe ತಂಡದ ಒರಿ ನಿಜವಾಯಿನ ನರಮನಿಗ್ ಎತ್ತಾವೆ. ತಾಳ್ಮೆಡ್ ಇಪ್ಪುಲೆ: ಅಕುಲು ಪುರುಸೊತ್ತು ಆನಗ ಉತ್ತರ ಕೊರ್ಪೆರ್, ಕೆಲವು ಗಂಟೆ ಅತ್ತಂಡ ಜಾಸ್ತಿ ಆವೊಲಿ, ಪೊರ್ತುದ ಭರವಸೆ ಕೊರೆರೆ ಆಪುಜಿ. ಪೈಸೆ ಪೋದಿತ್ತುಂಡ ಎಂಕ್ಲೆಗಾದ್ ಕಾಪೊಡ್ಚಿ, ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.",
+    formIntro: "ಈರೆನ ಮೆಸೇಜ್‌ನ್ TrustLight ತಂಡದ ಒರಿ ನಿಜವಾಯಿನ ನರಮನಿಗ್ ಎತ್ತಾವೆ. ತಾಳ್ಮೆಡ್ ಇಪ್ಪುಲೆ: ಅಕುಲು ಪುರುಸೊತ್ತು ಆನಗ ಉತ್ತರ ಕೊರ್ಪೆರ್, ಕೆಲವು ಗಂಟೆ ಅತ್ತಂಡ ಜಾಸ್ತಿ ಆವೊಲಿ, ಪೊರ್ತುದ ಭರವಸೆ ಕೊರೆರೆ ಆಪುಜಿ. ಪೈಸೆ ಪೋದಿತ್ತುಂಡ ಎಂಕ್ಲೆಗಾದ್ ಕಾಪೊಡ್ಚಿ, ಇತ್ತೆನೇ 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.",
     chatNow: "ಇತ್ತೆ ಲೈವ್ ಚಾಟ್ ಮಲ್ಪುಲೆ",
     writeToUs: "ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ",
-    formTitle: "StaySafe ತಂಡೊಗು ಬರೆಲೆ",
+    formTitle: "TrustLight ತಂಡೊಗು ಬರೆಲೆ",
     formName: "ಈರೆನ ಪುದರ್ (ಬೋಡಾಂಡ ಮಾತ್ರ)",
     formEmail: "ಇಮೇಲ್",
     formPhone: "WhatsApp ನಂಬರ್",
@@ -570,8 +570,8 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     formBack: "ಪಿರ",
     sent: "ಈರೆನ ಮೆಸೇಜ್ ಒರಿ ನಿಜವಾಯಿನ ನರಮನಿಗ್ ಎತ್ತ್‌ದ್ಂಡ್. ಈರೆನ ರೆಫರೆನ್ಸ್ ನಂಬರ್ {ref}. ಅಕುಲು ಪುರುಸೊತ್ತು ಆನಗ ಇಮೇಲ್ ಅತ್ತಂಡ WhatsApp ಡ್ ಉತ್ತರ ಕೊರ್ಪೆರ್. ಏಪ ಪಂಡ್‌ದ್ ಪನ್ಪೆರೆ ಆಪುಜಿ, ಆಂಡ ಈರೆನ್ ಮದಪುಜ.",
     sentUrgent: "ಪೈಸೆ ಪೋತಿನ ಕಾರಣ ಇತ್ತೆನೇ 1930 ಗ್‌ಲಾ ಕಾಲ್ ಮಲ್ಪುಲೆ. ಸುರುತ ಗಂಟೆಲು ಮಸ್ತ್ ಮುಖ್ಯ.",
-    aiLabel: "ಉಂದು StaySafe AI ಸಹಾಯಕನ ಉತ್ತರ, ಒರಿ ವ್ಯಕ್ತಿದ ಅತ್ತ್. ಅಯಿಟ್ ತಪ್ಪು ಇಪ್ಪೊಲಿ.",
-    aiName: "StaySafe AI ಸಹಾಯಕ",
+    aiLabel: "ಉಂದು TrustLight AI ಸಹಾಯಕನ ಉತ್ತರ, ಒರಿ ವ್ಯಕ್ತಿದ ಅತ್ತ್. ಅಯಿಟ್ ತಪ್ಪು ಇಪ್ಪೊಲಿ.",
+    aiName: "TrustLight AI ಸಹಾಯಕ",
     typing: "ಯೋಚನೆ ಮಲ್ಪುಂಡು...",
     actIncident: "ಪರಿಹಾರದ ಹಂತೊಲು",
     actCheckMessage: "ಮೆಸೇಜ್ ಪರಿಶೀಲನೆ",
@@ -585,7 +585,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     tip: "ಸಲಹೆ: ಈರೆಗ್ ಸುಲಭ ಆಪಿನ ಭಾಷೆಡ್ ಎಲ್ಯ, ಸರಳ ವಾಕ್ಯೊಲೆಡ್ ಬರೆಲೆ (English, ಕನ್ನಡ, हिन्दी ಅತ್ತಂಡ ತುಳು). ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರೊಡುಲಾ ಬರೆಯೊಲಿ. ತುಳುನು ಕನ್ನಡ ಅಕ್ಷರೊಡು ಬರೆಯಿಂಡ ನನಲಾ ಸರಿಯಾಯಿನ ಉತ್ತರ ಬರ್ಪುಂಡು. ಈರೆನ OTP, PIN ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಏಪಲಾ ಟೈಪ್ ಮಲ್ಪೊಡ್ಚಿ.",
     tuluTip: "ತುಳುನು ಕನ್ನಡ ಅಕ್ಷರೊಡು ಬರೆಯಿಂಡ ಮಸ್ತ್ ಸರ್ತಿ ನನಲಾ ಸರಿಯಾಯಿನ ಉತ್ತರ ಬರ್ಪುಂಡು.",
     aiTrouble: "ಉಂದೆಕ್ ಸರಿಯಾದ್ ಉತ್ತರ ಕೊರೆರೆ ಆಯಿಜಿ. ದಯಮಲ್ತ್ ಒಂಜಿ-ರಡ್ಡ್ ಸರಳ ವಾಕ್ಯೊಡು ಕುಡೊರ ಕೇನ್ಲೆ, ಅತ್ತಂಡ ತಿರ್ತ್‌ದ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆನ್ ಒತ್ತುಲೆ.",
-    aiBusy: "StaySafe AI ಇತ್ತೆ ಉತ್ತರ ಕೊರೆರೆ ಆಪುಜಿ. ತಿರ್ತ್ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಲೆನ ಉತ್ತರ ಉಂಡು, ಅತ್ತಂಡ ಎಂಕ್ಲೆನ ತಂಡೊಗು ಬರೆಯೊಲಿ.",
+    aiBusy: "TrustLight AI ಇತ್ತೆ ಉತ್ತರ ಕೊರೆರೆ ಆಪುಜಿ. ತಿರ್ತ್ ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಲೆನ ಉತ್ತರ ಉಂಡು, ಅತ್ತಂಡ ಎಂಕ್ಲೆನ ತಂಡೊಗು ಬರೆಯೊಲಿ.",
   },
 };
 
@@ -684,13 +684,13 @@ const TOOL_WORDS: [ToolId, RegExp][] = [
 /** Asking to check something ("check", "is it safe", "how can I check", Hindi/Kannada/Tulu words too). */
 const CHECK_WORDS = /check|chek|chk|scan|verify|test|safe|genuine|legit|fake|real|trust|is (this|it)|jaa?n?ch|dekh|nodi|nodu|parishil|pariks|malpu|maadi|madi|tupu|toole|where|how (can|do|to|i)|kaise|hege|yencha|enchi|जाँच|जांच|चेक|देख|सुरक्षित|असली|नकली|कैसे|कहाँ|ಚೆಕ್|ಪರಿಶೀಲ|ಪರೀಕ್ಷ|ನೋಡ|ಸುರಕ್ಷಿತ|ಸೇಫ್|ನಕಲಿ|ಅಸಲಿ|ಮಲ್ಪು|ತೂಲೆ|ತೂಪು|ಹೇಗೆ|ಎಂಚ|ಎಲ್ಲಿ|ಓಲು/;
 
-/** Signs of a real problem or a question the tool can't answer: those always go to StaySafe AI. */
+/** Signs of a real problem or a question the tool can't answer: those always go to TrustLight AI. */
 const NEEDS_AI = /lost|paid|\bpay|sent (the )?money|transfer|debit|deduct|\botp\b|\bpin\b|cvv|clicked|shared|gave|told|police|1930|complain|report|what (should|to|do|now)|\bwhy\b|what does|mean|result|said|says|show|how does|\bwork(s|ing|ed)?\b|error|not (open|work|load)|help me|scared|worried|money|saying|asking|asked|lottery|\bwon\b|prize|\bjob\b|\bkyc\b|\bbank|arrest|parcel|courier|refund|\bloan|rupees|\brs\b|₹|पैसे|पैसा|कट|क्यों|मतलब|डर|ಹಣ|ದುಡ್ಡು|ಪೈಸೆ|ಕಳೆದ|ಕ್ಲಿಕ್|ಏಕೆ|ಯಾಕೆ|ಅರ್ಥ|ಭಯ|ದಾಯೆ|ಬಾರ್ನ/;
 
 /**
  * A short request to use one of our checks ("check this mail", "ee message check maadi",
  * "is this QR safe?"). Returns the matching tools (at most two) or null. Anything longer,
- * or about something that happened, is left for StaySafe AI.
+ * or about something that happened, is left for TrustLight AI.
  */
 export function toolRequest(input: string): ToolId[] | null {
   const text = input.trim().toLowerCase();
@@ -711,7 +711,7 @@ export interface ToolTexts { intro: string; hint: Record<ToolId, string>; askAi:
 
 export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
   en: {
-    intro: "You can check this yourself right here on StaySafe. Tap the button below to open it.",
+    intro: "You can check this yourself right here on TrustLight. Tap the button below to open it.",
     hint: {
       message: "Paste the message there, or upload a screenshot of it.",
       link: "Paste the link there and we'll check it carefully.",
@@ -723,10 +723,10 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       network: "Open it while you're on the Wi-Fi or network you want to check.",
       number: "Type the phone number or UPI ID there, and tell us what they asked you to do.",
     },
-    askAi: "Ask StaySafe AI instead",
+    askAi: "Ask TrustLight AI instead",
   },
   hi: {
-    intro: "आप इसे यहीं StaySafe पर खुद जाँच सकते हैं। खोलने के लिए नीचे का बटन दबाएँ।",
+    intro: "आप इसे यहीं TrustLight पर खुद जाँच सकते हैं। खोलने के लिए नीचे का बटन दबाएँ।",
     hint: {
       message: "वहाँ मैसेज पेस्ट करें, या उसका स्क्रीनशॉट अपलोड करें।",
       link: "वहाँ लिंक पेस्ट करें, हम उसे ध्यान से जाँचेंगे।",
@@ -738,10 +738,10 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       network: "जिस Wi-Fi या नेटवर्क को जाँचना है, उस पर रहते हुए इसे खोलें।",
       number: "वहाँ फ़ोन नंबर या UPI ID डालें, और बताएँ कि उन्होंने आपसे क्या करने को कहा।",
     },
-    askAi: "इसके बजाय StaySafe AI से पूछें",
+    askAi: "इसके बजाय TrustLight AI से पूछें",
   },
   kn: {
-    intro: "ಇದನ್ನು ನೀವೇ ಇಲ್ಲೇ StaySafe ನಲ್ಲಿ ಪರಿಶೀಲಿಸಬಹುದು. ತೆರೆಯಲು ಕೆಳಗಿನ ಬಟನ್ ಒತ್ತಿ.",
+    intro: "ಇದನ್ನು ನೀವೇ ಇಲ್ಲೇ TrustLight ನಲ್ಲಿ ಪರಿಶೀಲಿಸಬಹುದು. ತೆರೆಯಲು ಕೆಳಗಿನ ಬಟನ್ ಒತ್ತಿ.",
     hint: {
       message: "ಅಲ್ಲಿ ಮೆಸೇಜ್ ಪೇಸ್ಟ್ ಮಾಡಿ, ಅಥವಾ ಅದರ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.",
       link: "ಅಲ್ಲಿ ಲಿಂಕ್ ಪೇಸ್ಟ್ ಮಾಡಿ, ನಾವು ಅದನ್ನು ಜಾಗ್ರತೆಯಿಂದ ಪರಿಶೀಲಿಸುತ್ತೇವೆ.",
@@ -753,10 +753,10 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       network: "ಪರಿಶೀಲಿಸಬೇಕಾದ Wi-Fi ಅಥವಾ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಇರುವಾಗಲೇ ಇದನ್ನು ತೆರೆಯಿರಿ.",
       number: "ಅಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ UPI ID ಹಾಕಿ, ಅವರು ನಿಮಗೆ ಏನು ಮಾಡಲು ಹೇಳಿದರು ಎಂದೂ ತಿಳಿಸಿ.",
     },
-    askAi: "ಬದಲಿಗೆ StaySafe AI ಕೇಳಿ",
+    askAi: "ಬದಲಿಗೆ TrustLight AI ಕೇಳಿ",
   },
   tcy: {
-    intro: "ಉಂದೆನ್ ಈರೇ ಮುಲ್ಪನೇ StaySafe ಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪೊಲಿ. ತೆರೆಯೆರೆ ತಿರ್ತ್‌ದ ಬಟನ್ ಒತ್ತುಲೆ.",
+    intro: "ಉಂದೆನ್ ಈರೇ ಮುಲ್ಪನೇ TrustLight ಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪೊಲಿ. ತೆರೆಯೆರೆ ತಿರ್ತ್‌ದ ಬಟನ್ ಒತ್ತುಲೆ.",
     hint: {
       message: "ಅಲ್ಪ ಮೆಸೇಜ್ ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಅಯಿತ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",
       link: "ಅಲ್ಪ ಲಿಂಕ್ ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ, ಎಂಕುಲು ಜಾಗ್ರತೆಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪುವ.",
@@ -768,7 +768,7 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
       network: "ಪರಿಶೀಲನೆ ಮಲ್ಪೊಡಾಯಿನ Wi-Fi ಅತ್ತಂಡ ನೆಟ್‌ವರ್ಕ್‌ಡ್ ಉಪ್ಪುನಗನೇ ಉಂದೆನ್ ತೆರೆಲೆ.",
       number: "ಅಲ್ಪ ಫೋನ್ ನಂಬರ್ ಅತ್ತಂಡ UPI ID ಪಾಡ್ಲೆ, ಅಕುಲು ಈರೆಗ್ ದಾದ ಮಲ್ಪುಲೆ ಪಂಡೆರ್ ಪಂಡ್‌ದ್ಲಾ ಪನ್ಲೆ.",
     },
-    askAi: "ಅವೆತ ಬದಲ್ StaySafe AI ಡ್ ಕೇನ್ಲೆ",
+    askAi: "ಅವೆತ ಬದಲ್ TrustLight AI ಡ್ ಕೇನ್ಲೆ",
   },
 };
 

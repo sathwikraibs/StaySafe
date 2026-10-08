@@ -203,9 +203,9 @@ def test_off_topic_questions_get_the_safety_only_line_in_the_visitors_language()
 
 def test_small_talk_is_answered_normally():
     fresh(GROQ_API_KEY="k")
-    use(lambda url, **kw: openai_ok('{"kind": "smalltalk", "reply": "Hi! I am StaySafe\'s AI assistant, an automatic helper."}'))
+    use(lambda url, **kw: openai_ok('{"kind": "smalltalk", "reply": "Hi! I am TrustLight\'s AI assistant, an automatic helper."}'))
     d = c.post("/api/assistant", json={"message": "who are you", "lang": "en"}).get_json()
-    assert "StaySafe" in d["reply"] and d["kind"] == "smalltalk"
+    assert "TrustLight" in d["reply"] and d["kind"] == "smalltalk"
 
 
 def test_the_helper_answers_when_groq_and_gemini_are_both_used_up():

@@ -1,5 +1,5 @@
 """
-StaySafe - "I Already Clicked It" Incident Response Wizard
+TrustLight - "I Already Clicked It" Incident Response Wizard
 --------------------------------------------------------------
 User selects what happened (clicked a link, entered password, shared OTP,
 installed an app, sent money, etc.) and gets an immediate, ordered

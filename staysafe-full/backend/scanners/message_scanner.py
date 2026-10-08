@@ -1,5 +1,5 @@
 """
-StaySafe - Message / Screenshot Scam Detector
+TrustLight - Message / Screenshot Scam Detector
 -----------------------------------------------
 Analyzes pasted text OR an uploaded screenshot for common scam patterns,
 with a focus on scams seen in India (English + Hinglish):
@@ -1462,7 +1462,7 @@ def add_entity_checks(result: dict, text: str = None) -> dict:
     for name in rbi_alert.names_in_text(text, _us_rbi.OFFLINE):
         added.append((f"Mentions {name}, which is on RBI's Alert List of unauthorised forex trading platforms", 40))
 
-    # StaySafe's own list: a UPI ID in the message that its users reported as a scam
+    # TrustLight's own list: a UPI ID in the message that its users reported as a scam
     for upi in upis[:2]:
         try:
             from scanners.reports import community_signal

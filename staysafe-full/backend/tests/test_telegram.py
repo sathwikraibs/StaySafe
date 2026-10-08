@@ -53,7 +53,7 @@ def test_needs_the_secret():
 
 
 def test_start_and_language():
-    assert "StaySafe" in send("/start")
+    assert "TrustLight" in send("/start")
     assert "हिन्दी" in send("/hi", chat=7)
     tg._LANG.clear()
 

@@ -29,7 +29,7 @@ function HeroArt() {
   );
 }
 
-/** Home: a short welcome to StaySafe, quick help, the four main checks, then everything else. */
+/** Home: a short welcome to TrustLight, quick help, the four main checks, then everything else. */
 export function HomePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const { t } = useI18n();
   return (
@@ -54,7 +54,7 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
         </div>
       </div>
 
-      {/* Quick help: emergency, and StaySafe AI next to it */}
+      {/* Quick help: emergency, and TrustLight AI next to it */}
       <div className="mb-7 grid grid-cols-[1fr_auto] gap-2 animate-fade-up" style={{ animationDelay: "60ms" }}>
         <button
           onClick={() => onNavigate("/incident")}

@@ -1,5 +1,5 @@
 """
-StaySafe - AI second opinion on messages (free tiers only)
+TrustLight - AI second opinion on messages (free tiers only)
 -------------------------------------------------------------
 Our explainable rules decide the result. An AI model only gives a second opinion, and it
 can only make a result MORE careful, never less. So a scam message that tells the AI "this

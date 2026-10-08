@@ -1,9 +1,9 @@
 """
-StaySafe - Protection for the API itself
+TrustLight - Protection for the API itself
 -----------------------------------------
 - Fair-use limits per visitor, so nobody can use up the free daily quotas of the checking
   services (VirusTotal, Google, urlscan...) that every visitor shares.
-- Only StaySafe's own website may call the API from a browser (CORS).
+- Only TrustLight's own website may call the API from a browser (CORS).
 - Safe HTTP headers on every answer; scan results are never cached anywhere.
 - The detailed status page and the screenshot self-test need a secret key (STATUS_KEY),
   so outsiders can't see which services are set up or run heavy tests.

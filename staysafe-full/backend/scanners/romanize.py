@@ -1,5 +1,5 @@
 """
-StaySafe - Indian words in English letters
+TrustLight - Indian words in English letters
 --------------------------------------------
 People often type Tulu, Kannada and Hindi in English letters ("yenk call battundu",
 "nimma account block aagide", "aapka khata band ho jayega"). To recognise those words we

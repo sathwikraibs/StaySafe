@@ -1,5 +1,5 @@
 """
-StaySafe - Telegram bot (@YourStaySafeBot)
+TrustLight - Telegram bot (@YourTrustLightBot)
 --------------------------------------------
 People forward a message, a link, a screenshot, a QR photo, a file, a phone number or a UPI
 ID to the bot and get the same check the website gives, in a short reply.
@@ -9,7 +9,7 @@ Free: Telegram's Bot API costs nothing. Setup (once):
   2. On Render, add the environment variable TELEGRAM_SCAN_BOT_TOKEN = that token. (This must be a
      NEW bot: TELEGRAM_BOT_TOKEN is the private bot that brings contact-form messages to you.)
   3. Open https://<backend>/api/telegram/setup?key=<STATUS_KEY> once. It tells Telegram
-     where to send messages (a webhook, with a secret only Telegram and StaySafe know).
+     where to send messages (a webhook, with a secret only Telegram and TrustLight know).
 
 The bot reuses the website's own checks by calling the API routes inside this server, so
 both always give the same answer. Each Telegram chat has its own rate limit.
@@ -55,7 +55,7 @@ def telegram_status() -> bool:
 # --- Texts ---------------------------------------------------------------------------------
 TEXTS = {
     "en": {
-        "hello": ("Hi! I'm StaySafe. Send or forward me anything you're not sure about and I'll check it for scams:\n"
+        "hello": ("Hi! I'm TrustLight. Send or forward me anything you're not sure about and I'll check it for scams:\n"
                   "• a message (SMS, WhatsApp, email)\n• a link\n• a screenshot or a photo of a QR code\n"
                   "• a file (APK, PDF...)\n• a phone number or UPI ID\n\n"
                   "Language: /en English, /hi हिन्दी, /kn ಕನ್ನಡ, /tcy ತುಳು\n"
@@ -76,7 +76,7 @@ TEXTS = {
         "lang": "OK, I'll reply in English.",
     },
     "hi": {
-        "hello": ("नमस्ते! मैं StaySafe हूँ। जिस चीज़ पर शक हो, मुझे भेजें या फ़ॉरवर्ड करें, मैं जाँच करूँगा कि कहीं यह ठगी तो नहीं:\n"
+        "hello": ("नमस्ते! मैं TrustLight हूँ। जिस चीज़ पर शक हो, मुझे भेजें या फ़ॉरवर्ड करें, मैं जाँच करूँगा कि कहीं यह ठगी तो नहीं:\n"
                   "• मैसेज (SMS, WhatsApp, ईमेल)\n• लिंक\n• स्क्रीनशॉट या QR कोड की फ़ोटो\n"
                   "• फ़ाइल (APK, PDF...)\n• फ़ोन नंबर या UPI ID\n\n"
                   "भाषा: /en English, /hi हिन्दी, /kn ಕನ್ನಡ, /tcy ತುಳು\n"
@@ -97,7 +97,7 @@ TEXTS = {
         "lang": "ठीक है, मैं हिन्दी में जवाब दूँगा।",
     },
     "kn": {
-        "hello": ("ನಮಸ್ಕಾರ! ನಾನು StaySafe. ಅನುಮಾನವಿರುವ ಯಾವುದನ್ನಾದರೂ ನನಗೆ ಕಳುಹಿಸಿ ಅಥವಾ ಫಾರ್ವರ್ಡ್ ಮಾಡಿ, ಅದರಲ್ಲಿ ವಂಚನೆ ಇದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸುತ್ತೇನೆ:\n"
+        "hello": ("ನಮಸ್ಕಾರ! ನಾನು TrustLight. ಅನುಮಾನವಿರುವ ಯಾವುದನ್ನಾದರೂ ನನಗೆ ಕಳುಹಿಸಿ ಅಥವಾ ಫಾರ್ವರ್ಡ್ ಮಾಡಿ, ಅದರಲ್ಲಿ ವಂಚನೆ ಇದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸುತ್ತೇನೆ:\n"
                   "• ಮೆಸೇಜ್ (SMS, WhatsApp, ಇಮೇಲ್)\n• ಲಿಂಕ್\n• ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅಥವಾ QR ಕೋಡ್‌ನ ಫೋಟೋ\n"
                   "• ಫೈಲ್ (APK, PDF...)\n• ಫೋನ್ ಸಂಖ್ಯೆ ಅಥವಾ UPI ID\n\n"
                   "ಭಾಷೆ: /en English, /hi हिन्दी, /kn ಕನ್ನಡ, /tcy ತುಳು\n"
@@ -118,7 +118,7 @@ TEXTS = {
         "lang": "ಸರಿ, ನಾನು ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸುತ್ತೇನೆ.",
     },
     "tcy": {
-        "hello": ("ನಮಸ್ಕಾರ! ಯಾನ್ StaySafe. ಸಂಶಯ ಉಪ್ಪುನ ದಾದಾಂಡಲ ಎಂಕ್ ಕಡಪುಡ್ಲೆ ಅತ್ತಂಡ ಫಾರ್ವರ್ಡ್ ಮಲ್ಪುಲೆ, ಯಾನ್ ಮೋಸೊಗು ಪರಿಶೀಲನೆ ಮಲ್ಪುವೆ:\n"
+        "hello": ("ನಮಸ್ಕಾರ! ಯಾನ್ TrustLight. ಸಂಶಯ ಉಪ್ಪುನ ದಾದಾಂಡಲ ಎಂಕ್ ಕಡಪುಡ್ಲೆ ಅತ್ತಂಡ ಫಾರ್ವರ್ಡ್ ಮಲ್ಪುಲೆ, ಯಾನ್ ಮೋಸೊಗು ಪರಿಶೀಲನೆ ಮಲ್ಪುವೆ:\n"
                   "• ಮೆಸೇಜ್ (SMS, WhatsApp, ಇಮೇಲ್)\n• ಲಿಂಕ್\n• ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅತ್ತಂಡ QR ಕೋಡ್‌ದ ಫೋಟೋ\n"
                   "• ಫೈಲ್ (APK, PDF...)\n• ಫೋನ್ ನಂಬರ್ ಅತ್ತಂಡ UPI ID\n\n"
                   "ಭಾಷೆ: /en English, /hi हिन्दी, /kn ಕನ್ನಡ, /tcy ತುಳು\n"
@@ -333,7 +333,7 @@ def telegram_setup():
         }, timeout=20).json()
         me = requests.get(f"{API}/bot{_token()}/getMe", timeout=20).json()
         requests.post(f"{API}/bot{_token()}/setMyCommands", json={"commands": [
-            {"command": "start", "description": "How to use StaySafe"},
+            {"command": "start", "description": "How to use TrustLight"},
             {"command": "en", "description": "Reply in English"},
             {"command": "hi", "description": "हिन्दी में जवाब"},
             {"command": "kn", "description": "ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರ"},

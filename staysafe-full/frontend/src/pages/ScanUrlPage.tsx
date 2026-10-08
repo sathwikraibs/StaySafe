@@ -42,7 +42,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
       setLoading(false);
     }
   }
-  // shared to StaySafe from another app: check it straight away
+  // shared to TrustLight from another app: check it straight away
   useEffect(() => {
     if (auto && url.trim()) { setAuto(false); handleCheck(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps

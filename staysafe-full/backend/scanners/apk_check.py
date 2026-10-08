@@ -1,5 +1,5 @@
 """
-StaySafe - What an Android app (APK) asks to do, read offline
+TrustLight - What an Android app (APK) asks to do, read offline
 ----------------------------------------------------------------
 Fake "wedding card", "RTO challan", "bank KYC" and "electricity bill" apps sent on WhatsApp are
 among the most common scams in India. Once installed they read your SMS (bank OTPs), take over

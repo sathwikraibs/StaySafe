@@ -1,5 +1,5 @@
 """
-StaySafe - Long memory for check results (survives restarts)
+TrustLight - Long memory for check results (survives restarts)
 ---------------------------------------------------------------
 The server's own memory is wiped every time it restarts (each update, and whenever the free
 server sleeps). Results that cost a limited free allowance (VirusTotal, urlscan, the AI second

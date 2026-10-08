@@ -34,8 +34,8 @@ const FILE_TYPES: Record<string, string> = {
 export const tcyContent: LangContent = {
   server: withFileTypes(FILE_TYPES, {
     // ---- connection / general errors
-    "We couldn't reach the StaySafe server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
-      "StaySafe ಸರ್ವರ್‌ಗ್ ಸಂಪರ್ಕ ತಿಕ್ಕಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ. (ಸೈಟ್ ಮಸ್ತ್ ಪೊರ್ತು ಬಳಕೆ ಆಯಿಜಿಂಡ, ಸರ್ವರ್ ಸುರು ಆಯೆರೆ ಒಂಜಿ ನಿಮಿಷ ಮುಟ್ಟ ಬೋಡಾವು.)",
+    "We couldn't reach the TrustLight server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
+      "TrustLight ಸರ್ವರ್‌ಗ್ ಸಂಪರ್ಕ ತಿಕ್ಕಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ. (ಸೈಟ್ ಮಸ್ತ್ ಪೊರ್ತು ಬಳಕೆ ಆಯಿಜಿಂಡ, ಸರ್ವರ್ ಸುರು ಆಯೆರೆ ಒಂಜಿ ನಿಮಿಷ ಮುಟ್ಟ ಬೋಡಾವು.)",
     "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರ ಕೊರೆರೆ ಮಸ್ತ್ ಪೊರ್ತು ದೆತೊಂಡ್. ಒಂಚೂರು ಪೊರ್ತು ಬೊಕ್ಕ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "That file is too big to upload.": "ಈ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪೆರೆ ಮಸ್ತ್ ಮಲ್ಲ ಉಂಡು.",
     "Something went wrong on the server. Please try again.": "ಸರ್ವರ್‌ಡ್ ದಾದಾಂಡಲ ತೊಂದರೆ ಆಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
@@ -118,7 +118,7 @@ export const tcyContent: LangContent = {
     "Security researchers have reported this website for phishing or scams (AlienVault OTX)": "ಭದ್ರತಾ ಸಂಶೋಧಕೆರ್ ಈ ವೆಬ್‌ಸೈಟ್‌ನ್ ಫಿಶಿಂಗ್ ಅತ್ತಂಡ ಮೋಸೊಗಾದ್ ವರದಿ ಮಲ್ತೆರ್ (AlienVault OTX)",
     "Security researchers have reported this website for spreading malware (AlienVault OTX)": "ಭದ್ರತಾ ಸಂಶೋಧಕೆರ್ ಈ ವೆಬ್‌ಸೈಟ್‌ನ್ ಮಾಲ್‌ವೇರ್ ಪರಡಾವುನೆಗಾದ್ ವರದಿ ಮಲ್ತೆರ್ (AlienVault OTX)",
     "Cloudflare's scanner opened this page and found it harmful ({kinds})": "Cloudflare ಸ್ಕ್ಯಾನರ್ ಈ ಪುಟೊನು ತೆರೆದ್ ತೂದು ಉಂದು ಹಾನಿಕಾರಕ ಪಂಡ್‌ದ್ ಪನ್ಪುಂಡು ({kinds})",
-    "Reported as a scam by {n} StaySafe users": "{n} StaySafe ಬಳಕೆದಾರೆರ್ ಉಂದೆನ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
+    "Reported as a scam by {n} TrustLight users": "{n} TrustLight ಬಳಕೆದಾರೆರ್ ಉಂದೆನ್ ಮೋಸ ಪಂಡ್‌ದ್ ವರದಿ ಮಲ್ತೆರ್",
     "The UPI ID {upi} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ದ UPI ID {upi}: {reason}",
     "This is {reason}. It is a real government number": "ಉಂದು {reason}. ಉಂದು ನಿಜವಾಯಿನ ಸರಕಾರಿ ನಂಬರ್",
     "the national cyber-crime helpline": "ರಾಷ್ಟ್ರೀಯ ಸೈಬರ್ ಅಪರಾಧ ಸಹಾಯವಾಣಿ",
@@ -224,7 +224,7 @@ export const tcyContent: LangContent = {
     "Link uses the name '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್ '{brand}' ಪುದರ್ ಬಳಕೆ ಮಲ್ಪುಂಡು, ಆಂಡ ಉಂದು {brand2} ದ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅತ್ತ್ ({domain})",
     "The page address contains another website's name ({site}) to look like it, but the page is on {domain}": "ಪುಟೊದ ವಿಳಾಸೊಡು ಬೇತೆ ವೆಬ್‌ಸೈಟ್‌ದ ಪುದರ್ ({site}) ಪಾಡ್ದೆರ್, ಅವುದ ಲೆಕ್ಕ ತೋಜೆರೆ. ಆಂಡ ಪುಟ ಉಪ್ಪುನು {domain} ಡ್",
     "The app file is named after a bank, a government scheme or an invitation. Fake apps with names like this are the most common way phones get taken over in India": "ಆ್ಯಪ್ ಫೈಲ್‌ಗ್ ಬ್ಯಾಂಕ್, ಸರಕಾರದ ಯೋಜನೆ ಅತ್ತಂಡ ಲಗ್ನದ ಕರೆಯೋಲೆದ ಪುದರ್ ದೀತೆರ್. ಇಂಚಿನ ಪುದರ್‌ದ ನಕಲಿ ಆ್ಯಪ್‌ಲು ಭಾರತೊಡು ಫೋನ್ ಕೈವಶ ಮಲ್ಪುನ ಮಸ್ತ್ ಸಾಮಾನ್ಯ ದಾರಿ",
-    "This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it as a virus, so StaySafe does too": "ಉಂದು ಆ್ಯಂಟಿವೈರಸ್ ಪರೀಕ್ಷೆದ ಪ್ರಮಾಣಿತ ಫೈಲ್ (EICAR). ಉಂದು ಹಾನಿ ಮಲ್ಪುಜಿ, ಆಂಡ ಮಾತ ಸುರಕ್ಷತೆದ ಪ್ರೋಗ್ರಾಂಲು ಉಂದೆನ್ ವೈರಸ್ ಪಂಡ್‌ದೇ ತೂಪುಂಡು, ಅಂಚಾದ್ StaySafe ಲಾ",
+    "This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it as a virus, so TrustLight does too": "ಉಂದು ಆ್ಯಂಟಿವೈರಸ್ ಪರೀಕ್ಷೆದ ಪ್ರಮಾಣಿತ ಫೈಲ್ (EICAR). ಉಂದು ಹಾನಿ ಮಲ್ಪುಜಿ, ಆಂಡ ಮಾತ ಸುರಕ್ಷತೆದ ಪ್ರೋಗ್ರಾಂಲು ಉಂದೆನ್ ವೈರಸ್ ಪಂಡ್‌ದೇ ತೂಪುಂಡು, ಅಂಚಾದ್ TrustLight ಲಾ",
     "This PDF tries to start another program on your computer when opened. Genuine documents never do this": "ಈ PDF ತೆರೆಯಿನ ಕೂಡಲೇ ಈರೆನ ಕಂಪ್ಯೂಟರ್‌ಡ್ ಬೇತೆ ಪ್ರೋಗ್ರಾಂ ಸುರು ಮಲ್ಪೆರೆ ಪ್ರಯತ್ನ ಮಲ್ಪುಂಡು. ನಿಜವಾಯಿನ ಡಾಕ್ಯುಮೆಂಟ್‌ಲು ಏಪಲಾ ಇಂಚ ಮಲ್ಪುಜಿ",
     "runs JavaScript as soon as it is opened": "ತೆರೆಯಿನ ಕೂಡಲೇ JavaScript ನಡಪಾವುಂಡು",
     "This document downloads a hidden part from the internet when it is opened (a known trick to run harmful code without macros)": "ಈ ಡಾಕ್ಯುಮೆಂಟ್ ತೆರೆಯಿನಗ ಇಂಟರ್ನೆಟ್‌ಡ್ದ್ ಒಂಜಿ ದೆಂಗ್‌ದಿನ ಭಾಗೊನು ಡೌನ್‌ಲೋಡ್ ಮಲ್ಪುಂಡು (ಮ್ಯಾಕ್ರೋ ದಾಂತೆ ಹಾನಿ ಮಲ್ಪುನ ಕೋಡ್ ನಡಪಾವುನ ಗೊತ್ತಿತ್ತಿನ ತಂತ್ರ)",

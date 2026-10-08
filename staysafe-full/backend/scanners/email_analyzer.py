@@ -1,5 +1,5 @@
 """
-StaySafe - Email Analyzer
+TrustLight - Email Analyzer
 ------------------------------
 User pastes the RAW email source (headers + body) -- most email clients
 have a "View Original" / "Show Source" / "Download .eml" option that

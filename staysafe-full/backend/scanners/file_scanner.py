@@ -1,5 +1,5 @@
 """
-StaySafe - File / Download Scanner
+TrustLight - File / Download Scanner
 --------------------------------------
 User uploads a file before opening it. We:
   1. Compute its SHA-256 hash
@@ -199,7 +199,7 @@ def check_content(filename: str, data: bytes, led=None) -> tuple:
 
     if EICAR in data[:4096] and real_type != "ZIP archive":
         note("This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it "
-             "as a virus, so StaySafe does too", 90)
+             "as a virus, so TrustLight does too", 90)
 
     if real_type == "PDF":
         # names can be hidden with #xx codes (/J#61vaScript is /JavaScript)
@@ -562,7 +562,7 @@ def check_known_good(sha256: str) -> dict:
         return {"known": False}
     try:
         resp = requests.get(f"https://hashlookup.circl.lu/lookup/sha256/{sha256}", timeout=5,
-                            headers={"Accept": "application/json", "User-Agent": "StaySafe/2.0"})
+                            headers={"Accept": "application/json", "User-Agent": "TrustLight/2.0"})
         if resp.status_code != 200:
             return {"known": False}
         data = resp.json()
@@ -588,7 +588,7 @@ def check_malwarebazaar(sha256: str) -> dict:
         return {"found": False}
     try:
         resp = requests.post("https://mb-api.abuse.ch/api/v1/", data={"query": "get_info", "hash": sha256},
-                             headers={"Auth-Key": key, "User-Agent": "StaySafe/2.0"}, timeout=8)
+                             headers={"Auth-Key": key, "User-Agent": "TrustLight/2.0"}, timeout=8)
         data = resp.json()
     except Exception:
         return {"found": False}

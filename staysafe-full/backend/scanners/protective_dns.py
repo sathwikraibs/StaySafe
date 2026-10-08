@@ -1,5 +1,5 @@
 """
-StaySafe - Protective DNS: two more free, independent opinions on every website
+TrustLight - Protective DNS: two more free, independent opinions on every website
 --------------------------------------------------------------------------------
 Some free public DNS services refuse to look up websites that their threat-intelligence
 partners know spread malware or phishing:

@@ -305,7 +305,7 @@ export function IconFolder({ className, strokeWidth }: IconProps) {
   );
 }
 
-/** The StaySafe lighthouse app icon: warns you before danger. Full colour tile. */
+/** The TrustLight lighthouse app icon: warns you before danger. Full colour tile. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 100 100" className={className} aria-hidden>

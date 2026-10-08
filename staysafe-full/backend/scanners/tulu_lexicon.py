@@ -1,12 +1,12 @@
 """
-StaySafe - Tulu or Kannada? (both are written in Kannada letters)
+TrustLight - Tulu or Kannada? (both are written in Kannada letters)
 --------------------------------------------------------------------
 Uses open word-frequency lists from the Tulu and Kannada Wikipedias (Wikilangs, MIT licence),
 downloaded when the server is built (scripts/fetch_lang_vocab.py). A word that is common in
 Tulu writing but rare in Kannada (ಉಂಡು, ಬೊಕ್ಕ, ಇಜ್ಜಿ...) points to Tulu, and the other way round
 (ಇದೆ, ಮತ್ತು, ಇಲ್ಲ...) points to Kannada. Words both languages share count for neither.
 
-If the lists are missing, every function answers "don't know" and StaySafe keeps using its
+If the lists are missing, every function answers "don't know" and TrustLight keeps using its
 built-in word lists.
 """
 

@@ -1,5 +1,5 @@
 """
-StaySafe - Who sent the message, and which phone numbers it asks you to contact
+TrustLight - Who sent the message, and which phone numbers it asks you to contact
 -----------------------------------------------------------------------------------
 Works offline, no API.
 

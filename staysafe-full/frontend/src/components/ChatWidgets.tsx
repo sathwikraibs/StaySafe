@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { IconChat, IconLock } from "@/icons";
 import { HelpBot } from "@/components/HelpBot";
 
-/** Floating "Need help?" button: opens the StaySafe Helper (sits above the phone menu). */
+/** Floating "Need help?" button: opens the TrustLight Helper (sits above the phone menu). */
 export function FloatingHelpButton({ onNavigate, currentPath }: { onNavigate: (p: string) => void; currentPath: string }) {
   const { t } = useI18n();
   const [helper, setHelper] = useState<(HelperRequest & { n: number }) | null>(null);

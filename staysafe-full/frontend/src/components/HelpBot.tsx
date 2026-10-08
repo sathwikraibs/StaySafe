@@ -34,7 +34,7 @@ function cleanReply(text: unknown): string | null {
 const LANG_CHOICES: [string, string][] = [["kn", "ಕನ್ನಡ"], ["tcy", "ತುಳು"], ["en", "English"], ["hi", "हिन्दी"]];
 
 /**
- * StaySafe Helper, AI first: people type their problem in any language and StaySafe AI answers
+ * TrustLight Helper, AI first: people type their problem in any language and TrustLight AI answers
  * straight away. Common questions are one tap. Writing to the team is offered only as the next
  * step, after the AI has answered (or when the AI can't be reached).
  */
@@ -129,7 +129,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
     say({ from: "bot", lines: topic.a, buttons: topic.actions ?? [], team: true });
   }
 
-  /** Ask StaySafe AI. If it can't answer, fall back to the ready answers. */
+  /** Ask TrustLight AI. If it can't answer, fall back to the ready answers. */
   async function askAssistant(text: string, fallback: () => void, pickedLang?: string) {
     setThinking(true);
     pending.current = text;

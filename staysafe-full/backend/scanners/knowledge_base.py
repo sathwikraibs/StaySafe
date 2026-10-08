@@ -1,5 +1,5 @@
 """
-StaySafe - Scam Knowledge Base
+TrustLight - Scam Knowledge Base
 ------------------------------------
 A searchable reference of common scam categories, useful when the user
 doesn't have a specific link/message to check but wants to know

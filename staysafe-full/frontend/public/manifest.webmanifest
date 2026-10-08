@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "StaySafe",
-  "short_name": "StaySafe",
-  "description": "Check links, messages, QR codes, screenshots and files for scams.",
+  "name": "TrustLight",
+  "short_name": "TrustLight",
+  "description": "A light you can trust. Check links, messages, QR codes, screenshots and files for scams.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

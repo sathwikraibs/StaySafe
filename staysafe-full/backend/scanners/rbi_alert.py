@@ -1,11 +1,11 @@
 """
-StaySafe - RBI Alert List of unauthorised forex trading platforms
+TrustLight - RBI Alert List of unauthorised forex trading platforms
 -------------------------------------------------------------------
 The Reserve Bank of India lists apps and websites that are NOT allowed to offer forex trading
 to people in India (FEMA). Fake "forex / binary option / trading tips" groups push exactly
 these, and money lost on them is not protected.
 
-A copy of the list ships with StaySafe (data/rbi_alert_list.json). Once a week the server also
+A copy of the list ships with TrustLight (data/rbi_alert_list.json). Once a week the server also
 reads RBI's own page and adds any new websites it finds there, so the list keeps up without
 anyone editing the file. Names are matched in messages; websites are matched in links.
 """
@@ -58,7 +58,7 @@ def _load_bundled() -> None:
 def _refresh_from_rbi() -> None:
     """Add websites from RBI's live page (names stay from the bundled copy)."""
     try:
-        r = requests.get(RBI_PAGE, timeout=30, headers={"User-Agent": "Mozilla/5.0 StaySafe/2.0"})
+        r = requests.get(RBI_PAGE, timeout=30, headers={"User-Agent": "Mozilla/5.0 TrustLight/2.0"})
         if r.status_code != 200:
             raise RuntimeError(f"HTTP {r.status_code}")
         found = set(_base(m) for m in re.findall(r"https?://[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", r.text))

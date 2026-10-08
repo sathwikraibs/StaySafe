@@ -6,7 +6,7 @@ import { IconAlert, IconCheck } from "@/icons";
 
 type State = "idle" | "sending" | "sent" | "already" | "limit" | "notReportable" | "unavailable";
 
-/** "Report as scam": builds StaySafe's own list. Shown under link, number and QR results. */
+/** "Report as scam": builds TrustLight's own list. Shown under link, number and QR results. */
 export function ReportButton({ kind, value }: { kind: "link" | "number" | "upi"; value: string }) {
   const { t } = useI18n();
   const [state, setState] = useState<State>("idle");

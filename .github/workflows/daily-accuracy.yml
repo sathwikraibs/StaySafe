@@ -1,4 +1,4 @@
-# StaySafe daily accuracy test. Runs every day at 02:44 India time (21:14 UTC).
+# TrustLight daily accuracy test. Runs every day at 02:44 India time (21:14 UTC).
 # Tests today's real scam links plus fixed samples for every checker on the live server, and
 # saves the results in staysafe-full/accuracy/. Stops by itself after 250 scam links.
 # Needs the repository secret STAYSAFE_STATUS_KEY (Settings > Secrets and variables > Actions).

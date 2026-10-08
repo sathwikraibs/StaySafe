@@ -1,5 +1,5 @@
 """
-StaySafe - Checks on the sender's email domain (free, no key)
+TrustLight - Checks on the sender's email domain (free, no key)
 ---------------------------------------------------------------
 - Throwaway addresses: the community "disposable-email-domains" list (CC0, ~5,000 services
   like mailinator or 10minutemail), downloaded once a day, plus a small built-in list.
@@ -32,7 +32,7 @@ _DNS_CACHE: dict = {}
 
 def _refresh_disposable():
     try:
-        resp = requests.get(DISPOSABLE_URL, timeout=20, headers={"User-Agent": "StaySafe/2.0"})
+        resp = requests.get(DISPOSABLE_URL, timeout=20, headers={"User-Agent": "TrustLight/2.0"})
         if resp.status_code == 200:
             domains = {l.strip().lower() for l in resp.text.splitlines() if l.strip() and not l.startswith("#")}
             if len(domains) > 500:

@@ -8,8 +8,8 @@ const enBase = {
 
   common: {
     close: "Close",
-    appName: "StaySafe",
-    tagline: "Your safety checkup",
+    appName: "TrustLight",
+    tagline: "A light you can trust",
     checking: "Checking...",
     unknown: "Unknown",
     back: "Back",
@@ -285,10 +285,10 @@ const enBase = {
       "Not sure if a message, call or link is a scam",
       "You clicked a link or installed an app you now regret",
       "Someone is asking you for money, an OTP or a PIN",
-      "You don't understand a result StaySafe showed you",
+      "You don't understand a result TrustLight showed you",
     ],
     promiseTitle: "Our promise",
-    promise: "StaySafe will never ask for your OTP, UPI PIN, password, card number or bank details, whether in chat, on a call or anywhere else. If \"StaySafe support\" ever asks for these, it's a scam.",
+    promise: "TrustLight will never ask for your OTP, UPI PIN, password, card number or bank details, whether in chat, on a call or anywhere else. If \"TrustLight support\" ever asks for these, it's a scam.",
     clickedTitle: "I clicked a scam",
     clickedText: "Get a step-by-step recovery plan",
     learnTitle: "Learn about scams",
@@ -314,7 +314,7 @@ const enBase = {
   },
 
   chat: {
-    title: "Talk to the StaySafe team",
+    title: "Talk to the TrustLight team",
     online: "We're online now",
     away: "We'll reply shortly",
     offline: "Leave a message. We'll reply soon",
@@ -324,10 +324,10 @@ const enBase = {
     start: "Write to us",
     openNew: "Open chat ({count} new)",
     never: "We will never ask for your OTP, PIN, password or bank details.",
-    floating: "Ask StaySafe AI",
-    floatingAria: "Need help? Open the StaySafe Helper",
+    floating: "Ask TrustLight AI",
+    floatingAria: "Need help? Open the TrustLight Helper",
     chatInEnglish: "You can write in any language you're comfortable with.",
-    askAi: "Ask StaySafe AI now",
+    askAi: "Ask TrustLight AI now",
   },
 
   library: {
@@ -355,23 +355,23 @@ const enBase = {
     dataText: "Your check history is stored only in this browser.",
     clear: "Clear my check history",
     cleared: "History cleared",
-    about: "About StaySafe & privacy",
+    about: "About TrustLight & privacy",
   },
   install: {
-    title: "Add StaySafe to your phone",
-    text: "Then you can share any message, link, screenshot or file straight to StaySafe from WhatsApp, SMS or any app, and it is checked at once.",
+    title: "Add TrustLight to your phone",
+    text: "Then you can share any message, link, screenshot or file straight to TrustLight from WhatsApp, SMS or any app, and it is checked at once.",
     button: "Add to my phone",
     later: "Not now",
-    done: "StaySafe is on your phone. In any app, tap Share and choose StaySafe.",
-    tip: "Tip: in WhatsApp or Messages, press and hold a message, tap Share, then choose StaySafe.",
+    done: "TrustLight is on your phone. In any app, tap Share and choose TrustLight.",
+    tip: "Tip: in WhatsApp or Messages, press and hold a message, tap Share, then choose TrustLight.",
   },
 
 
   about: {
     title: "About & Privacy",
-    subtitle: "What StaySafe is, how it works, and what happens to what you check.",
-    whatTitle: "What is StaySafe?",
-    what: "StaySafe is a free tool that helps you check links, messages, QR codes, files, passwords and emails for signs of scams, and explains the result in plain language. It was built by a cybersecurity student.",
+    subtitle: "What TrustLight is, how it works, and what happens to what you check.",
+    whatTitle: "What is TrustLight?",
+    what: "TrustLight is a free tool that helps you check links, messages, QR codes, files, passwords and emails for signs of scams, and explains the result in plain language. It was built by a cybersecurity student.",
     howTitle: "How the checks work",
     how: "Clear safety rules decide every result, so each point in the score has a reason you can read. For messages, an AI can add a second opinion, but it can only make us more careful, never less.",
     notGuaranteeTitle: "A second opinion, not a guarantee",
@@ -385,7 +385,7 @@ const enBase = {
       "Only the web address of a link is shared with safety services, never who you are.",
       "Files are compared using only their fingerprint (a code that identifies the file). The file itself stays with us unless you choose a full antivirus scan.",
       "Phone numbers, OTPs, account numbers, email addresses and UPI IDs are hidden before a message is translated or double-checked.",
-      "Passwords never leave StaySafe in readable form. Only a scrambled fragment is compared with leak records.",
+      "Passwords never leave TrustLight in readable form. Only a scrambled fragment is compared with leak records.",
       "The email leak check only returns the names of leaks, never your leaked data.",
       "Your check history is saved in your own browser.",
       "When you write to us, only what you type is shared with our team.",
@@ -404,7 +404,7 @@ const enBase = {
     toolsTitle: "What each check looks at",
     tools: {
       number: "What a phone number or UPI ID shows, who the caller says they are and what they asked for, plus the government's own lookup.",
-      link: "Whether the website is real, how old it is, who it pretends to be, what safety lists and security companies say about it, and whether it is on RBI's list of unapproved trading platforms or was reported by other StaySafe users.",
+      link: "Whether the website is real, how old it is, who it pretends to be, what safety lists and security companies say about it, and whether it is on RBI's list of unapproved trading platforms or was reported by other TrustLight users.",
       message: "Scam tricks in the words, the sender, phone numbers, UPI IDs, email addresses and every link inside. Works in English, Hindi, Kannada, Tulu and more.",
       qr: "Where the code leads or who gets paid, and whether it's a trick to take money instead of giving it.",
       file: "What the file really is, hidden programs or macros, what Android apps ask to do, and what 70+ antivirus companies say.",
@@ -417,7 +417,7 @@ const enBase = {
   hiddenLink: {
     title: "Link hidden behind “Click here”?",
     summary: "We can't see links hidden behind words or buttons in a screenshot or copied text. Tap to see how to check them.",
-    why: "Many scam messages and emails hide the real web address behind words like “Click here”, “Verify now”, “Claim reward” or a button. A screenshot, or text you copy, only shows those words, not the link underneath, so StaySafe can't check where it really goes.",
+    why: "Many scam messages and emails hide the real web address behind words like “Click here”, “Verify now”, “Claim reward” or a button. A screenshot, or text you copy, only shows those words, not the link underneath, so TrustLight can't check where it really goes.",
     warning: "Don't tap the link to find out where it goes. Copying a link is safe. Opening it is not.",
     stepsTitle: "How to check a hidden link safely:",
     steps: [

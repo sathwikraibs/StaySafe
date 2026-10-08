@@ -1,5 +1,5 @@
 """
-StaySafe - Careful use of every free service with a limit
+TrustLight - Careful use of every free service with a limit
 ----------------------------------------------------------
 Every outside service we use for free has limits (so many requests a minute, so many a day).
 Instead of hitting a limit and quietly skipping a check, each call asks its Quota first:

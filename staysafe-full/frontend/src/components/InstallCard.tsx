@@ -10,9 +10,9 @@ function hiddenOnHome(): boolean {
 }
 
 /**
- * "Add StaySafe to your phone", so people can share messages, links and screenshots to it.
+ * "Add TrustLight to your phone", so people can share messages, links and screenshots to it.
  * place="home": only when the phone offers it, and it can be closed.
- * place="settings": also shows how to share once StaySafe is on the phone.
+ * place="settings": also shows how to share once TrustLight is on the phone.
  */
 export function InstallCard({ place }: { place: "home" | "settings" }) {
   const { t } = useI18n();

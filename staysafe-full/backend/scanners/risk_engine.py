@@ -1,5 +1,5 @@
 """
-StaySafe - Risk Engine + Dashboard
+TrustLight - Risk Engine + Dashboard
 ------------------------------------
 Each scan result carries a `history_entry` that the frontend saves in the
 visitor's own browser, where the dashboard is built.

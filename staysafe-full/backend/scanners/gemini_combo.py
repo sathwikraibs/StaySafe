@@ -1,5 +1,5 @@
 """
-StaySafe - One Gemini request per message instead of three
+TrustLight - One Gemini request per message instead of three
 -----------------------------------------------------------
 A message check can need up to three things from Gemini:
   1. an English translation (so our rules can check a Kannada/Hindi message),

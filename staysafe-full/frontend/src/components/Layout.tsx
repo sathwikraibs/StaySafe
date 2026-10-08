@@ -47,7 +47,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
         <button onClick={() => onNavigate("/")} className="flex items-center gap-3 px-6 py-6 text-left">
           <BrandMark className="h-11 w-11 shrink-0 shadow-warm-sm rounded-xl" />
           <div>
-            <p className="font-heading text-xl font-bold text-ink-900">StaySafe</p>
+            <p className="font-heading text-xl font-bold text-ink-900">TrustLight</p>
             <p className="font-body text-xs text-dustyblue-600">{t("common.tagline")}</p>
           </div>
         </button>
@@ -97,7 +97,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
             <button onClick={() => onNavigate("/")} className="flex items-center gap-2 lg:hidden">
               <BrandMark className="h-8 w-8 shrink-0" />
               {/* hide the word on narrow phones so the emergency button always fits */}
-              <span className="hidden font-heading text-lg font-bold text-ink-900 min-[420px]:inline">StaySafe</span>
+              <span className="hidden font-heading text-lg font-bold text-ink-900 min-[420px]:inline">TrustLight</span>
             </button>
 
             {/* Phone: always-visible emergency shortcut + settings */}
@@ -155,7 +155,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
 }
 
 /**
- * Phone bottom menu: five fixed buttons, no sideways scrolling. "Ask AI" opens StaySafe AI;
+ * Phone bottom menu: five fixed buttons, no sideways scrolling. "Ask AI" opens TrustLight AI;
  * "More" opens a sheet with every other tool, help, settings and privacy.
  */
 function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigate: (p: string) => void }) {

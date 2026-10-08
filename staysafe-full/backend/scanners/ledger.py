@@ -1,5 +1,5 @@
 """
-StaySafe - Score breakdown ("how we got this score")
+TrustLight - Score breakdown ("how we got this score")
 ------------------------------------------------------
 Every checker records, next to each warning sign, how many points it added, so the result
 page can show the score as a simple bill: reason, points, and any adjustment at the end.

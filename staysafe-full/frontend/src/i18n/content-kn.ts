@@ -33,8 +33,8 @@ const FILE_TYPES: Record<string, string> = {
 export const knContent: LangContent = {
   server: withFileTypes(FILE_TYPES, {
     // ---- connection / general errors
-    "We couldn't reach the StaySafe server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
-      "StaySafe ಸರ್ವರ್ ಸಂಪರ್ಕ ಸಿಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. (ಸೈಟ್ ತುಂಬಾ ಹೊತ್ತು ಬಳಕೆಯಾಗದಿದ್ದರೆ, ಸರ್ವರ್ ಆನ್ ಆಗಲು ಒಂದು ನಿಮಿಷದವರೆಗೆ ಸಮಯ ಬೇಕಾಗಬಹುದು.)",
+    "We couldn't reach the TrustLight server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
+      "TrustLight ಸರ್ವರ್ ಸಂಪರ್ಕ ಸಿಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. (ಸೈಟ್ ತುಂಬಾ ಹೊತ್ತು ಬಳಕೆಯಾಗದಿದ್ದರೆ, ಸರ್ವರ್ ಆನ್ ಆಗಲು ಒಂದು ನಿಮಿಷದವರೆಗೆ ಸಮಯ ಬೇಕಾಗಬಹುದು.)",
     "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರಿಸಲು ತುಂಬಾ ಸಮಯ ತೆಗೆದುಕೊಂಡಿತು. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "That file is too big to upload.": "ಈ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ತುಂಬಾ ದೊಡ್ಡದಾಗಿದೆ.",
     "Something went wrong on the server. Please try again.": "ಸರ್ವರ್‌ನಲ್ಲಿ ಏನೋ ತೊಂದರೆಯಾಯಿತು. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
@@ -117,7 +117,7 @@ export const knContent: LangContent = {
     "Security researchers have reported this website for phishing or scams (AlienVault OTX)": "ಭದ್ರತಾ ಸಂಶೋಧಕರು ಈ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ಫಿಶಿಂಗ್ ಅಥವಾ ವಂಚನೆಗಾಗಿ ವರದಿ ಮಾಡಿದ್ದಾರೆ (AlienVault OTX)",
     "Security researchers have reported this website for spreading malware (AlienVault OTX)": "ಭದ್ರತಾ ಸಂಶೋಧಕರು ಈ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ಮಾಲ್‌ವೇರ್ ಹರಡುವುದಕ್ಕಾಗಿ ವರದಿ ಮಾಡಿದ್ದಾರೆ (AlienVault OTX)",
     "Cloudflare's scanner opened this page and found it harmful ({kinds})": "Cloudflare ಸ್ಕ್ಯಾನರ್ ಈ ಪುಟವನ್ನು ತೆರೆದು ನೋಡಿ ಇದು ಹಾನಿಕಾರಕ ಎಂದು ಕಂಡುಕೊಂಡಿದೆ ({kinds})",
-    "Reported as a scam by {n} StaySafe users": "{n} StaySafe ಬಳಕೆದಾರರು ಇದನ್ನು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+    "Reported as a scam by {n} TrustLight users": "{n} TrustLight ಬಳಕೆದಾರರು ಇದನ್ನು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
     "The UPI ID {upi} in this message: {reason}": "ಈ ಮೆಸೇಜ್‌ನಲ್ಲಿರುವ UPI ID {upi}: {reason}",
     "This is {reason}. It is a real government number": "ಇದು {reason}. ಇದು ನಿಜವಾದ ಸರ್ಕಾರಿ ಸಂಖ್ಯೆ",
     "the national cyber-crime helpline": "ರಾಷ್ಟ್ರೀಯ ಸೈಬರ್ ಅಪರಾಧ ಸಹಾಯವಾಣಿ",
@@ -223,7 +223,7 @@ export const knContent: LangContent = {
     "Link uses the name '{brand}' but is NOT {brand2}'s official website ({domain})": "ಲಿಂಕ್ '{brand}' ಹೆಸರನ್ನು ಬಳಸುತ್ತದೆ, ಆದರೆ ಇದು {brand2} ನ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ಅಲ್ಲ ({domain})",
     "The page address contains another website's name ({site}) to look like it, but the page is on {domain}": "ಪುಟದ ವಿಳಾಸದಲ್ಲಿ ಬೇರೆ ವೆಬ್‌ಸೈಟ್‌ನ ಹೆಸರು ({site}) ಸೇರಿಸಲಾಗಿದೆ, ಅದರಂತೆ ಕಾಣಲು. ಆದರೆ ಪುಟ ಇರುವುದು {domain} ನಲ್ಲಿ",
     "The app file is named after a bank, a government scheme or an invitation. Fake apps with names like this are the most common way phones get taken over in India": "ಆ್ಯಪ್ ಫೈಲ್‌ಗೆ ಬ್ಯಾಂಕ್, ಸರ್ಕಾರಿ ಯೋಜನೆ ಅಥವಾ ಆಮಂತ್ರಣದ ಹೆಸರು ಇಡಲಾಗಿದೆ. ಇಂತಹ ಹೆಸರಿನ ನಕಲಿ ಆ್ಯಪ್‌ಗಳು ಭಾರತದಲ್ಲಿ ಫೋನ್ ವಶಪಡಿಸಿಕೊಳ್ಳುವ ಅತಿ ಸಾಮಾನ್ಯ ದಾರಿ",
-    "This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it as a virus, so StaySafe does too": "ಇದು ಆಂಟಿವೈರಸ್ ಪರೀಕ್ಷೆಯ ಪ್ರಮಾಣಿತ ಫೈಲ್ (EICAR). ಇದು ಹಾನಿ ಮಾಡುವುದಿಲ್ಲ, ಆದರೆ ಎಲ್ಲಾ ಸುರಕ್ಷತಾ ಪ್ರೋಗ್ರಾಂಗಳು ಇದನ್ನು ವೈರಸ್ ಎಂದೇ ಪರಿಗಣಿಸುತ್ತವೆ, ಹಾಗಾಗಿ StaySafe ಕೂಡ",
+    "This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it as a virus, so TrustLight does too": "ಇದು ಆಂಟಿವೈರಸ್ ಪರೀಕ್ಷೆಯ ಪ್ರಮಾಣಿತ ಫೈಲ್ (EICAR). ಇದು ಹಾನಿ ಮಾಡುವುದಿಲ್ಲ, ಆದರೆ ಎಲ್ಲಾ ಸುರಕ್ಷತಾ ಪ್ರೋಗ್ರಾಂಗಳು ಇದನ್ನು ವೈರಸ್ ಎಂದೇ ಪರಿಗಣಿಸುತ್ತವೆ, ಹಾಗಾಗಿ TrustLight ಕೂಡ",
     "This PDF tries to start another program on your computer when opened. Genuine documents never do this": "ಈ PDF ತೆರೆದ ತಕ್ಷಣ ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಬೇರೆ ಪ್ರೋಗ್ರಾಂ ಆರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತದೆ. ನಿಜವಾದ ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳು ಎಂದಿಗೂ ಹೀಗೆ ಮಾಡುವುದಿಲ್ಲ",
     "runs JavaScript as soon as it is opened": "ತೆರೆದ ತಕ್ಷಣ JavaScript ಚಲಾಯಿಸುತ್ತದೆ",
     "This document downloads a hidden part from the internet when it is opened (a known trick to run harmful code without macros)": "ಈ ಡಾಕ್ಯುಮೆಂಟ್ ತೆರೆದಾಗ ಇಂಟರ್ನೆಟ್‌ನಿಂದ ಒಂದು ಗುಪ್ತ ಭಾಗವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡುತ್ತದೆ (ಮ್ಯಾಕ್ರೋ ಇಲ್ಲದೆ ಹಾನಿಕಾರಕ ಕೋಡ್ ಚಲಾಯಿಸುವ ಗೊತ್ತಿರುವ ತಂತ್ರ)",

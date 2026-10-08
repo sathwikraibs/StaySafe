@@ -123,7 +123,7 @@ def test_reports_need_several_different_people():
     _report_from("10.0.0.3", "number", "9845011111")
     reports._cache.clear()
     r = check_number("98450 11111")
-    assert r["findings"][0] == "Reported as a scam by 3 StaySafe users" and r["verdict"] == "CAUTION", r
+    assert r["findings"][0] == "Reported as a scam by 3 TrustLight users" and r["verdict"] == "CAUTION", r
 
 
 def test_official_numbers_and_big_websites_cannot_be_reported():

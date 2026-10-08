@@ -1,4 +1,4 @@
-// StaySafe service worker. It does one job: receive things people share to StaySafe
+// TrustLight service worker. It does one job: receive things people share to TrustLight
 // from other apps (a message, a link, a screenshot or a file) and hand them to the page.
 // Nothing is cached for offline use, so the site is always the newest version.
 const SHARE_CACHE = "staysafe-share";

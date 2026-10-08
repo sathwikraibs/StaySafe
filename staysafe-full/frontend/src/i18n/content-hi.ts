@@ -33,8 +33,8 @@ const FILE_TYPES: Record<string, string> = {
 export const hiContent: LangContent = {
   server: withFileTypes(FILE_TYPES, {
     // ---- connection / general errors
-    "We couldn't reach the StaySafe server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
-      "StaySafe सर्वर से कनेक्ट नहीं हो पाया। अपना इंटरनेट देखें और दोबारा कोशिश करें। (अगर साइट काफ़ी देर से इस्तेमाल नहीं हुई थी, तो सर्वर को चालू होने में एक मिनट तक लग सकता है।)",
+    "We couldn't reach the TrustLight server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
+      "TrustLight सर्वर से कनेक्ट नहीं हो पाया। अपना इंटरनेट देखें और दोबारा कोशिश करें। (अगर साइट काफ़ी देर से इस्तेमाल नहीं हुई थी, तो सर्वर को चालू होने में एक मिनट तक लग सकता है।)",
     "The server took too long to respond. Please try again in a moment.": "सर्वर ने जवाब देने में बहुत देर लगाई। थोड़ी देर बाद दोबारा कोशिश करें।",
     "That file is too big to upload.": "यह फ़ाइल अपलोड करने के लिए बहुत बड़ी है।",
     "Something went wrong on the server. Please try again.": "सर्वर पर कुछ गड़बड़ हुई। दोबारा कोशिश करें।",
@@ -117,7 +117,7 @@ export const hiContent: LangContent = {
     "Security researchers have reported this website for phishing or scams (AlienVault OTX)": "सुरक्षा शोधकर्ताओं ने इस वेबसाइट को फ़िशिंग या ठगी के लिए रिपोर्ट किया है (AlienVault OTX)",
     "Security researchers have reported this website for spreading malware (AlienVault OTX)": "सुरक्षा शोधकर्ताओं ने इस वेबसाइट को मैलवेयर फैलाने के लिए रिपोर्ट किया है (AlienVault OTX)",
     "Cloudflare's scanner opened this page and found it harmful ({kinds})": "Cloudflare के स्कैनर ने यह पेज खोलकर देखा और इसे हानिकारक पाया ({kinds})",
-    "Reported as a scam by {n} StaySafe users": "{n} StaySafe उपयोगकर्ताओं ने इसे ठगी के रूप में रिपोर्ट किया है",
+    "Reported as a scam by {n} TrustLight users": "{n} TrustLight उपयोगकर्ताओं ने इसे ठगी के रूप में रिपोर्ट किया है",
     "The UPI ID {upi} in this message: {reason}": "इस मैसेज में दी गई UPI ID {upi}: {reason}",
     "This is {reason}. It is a real government number": "यह {reason} है। यह असली सरकारी नंबर है",
     "the national cyber-crime helpline": "राष्ट्रीय साइबर क्राइम हेल्पलाइन",
@@ -223,7 +223,7 @@ export const hiContent: LangContent = {
     "Link uses the name '{brand}' but is NOT {brand2}'s official website ({domain})": "लिंक '{brand}' नाम इस्तेमाल करता है, लेकिन यह {brand2} की असली वेबसाइट नहीं है ({domain})",
     "The page address contains another website's name ({site}) to look like it, but the page is on {domain}": "पेज के पते में दूसरी वेबसाइट का नाम ({site}) डाला गया है ताकि वह उसी जैसा दिखे, लेकिन पेज {domain} पर है",
     "The app file is named after a bank, a government scheme or an invitation. Fake apps with names like this are the most common way phones get taken over in India": "ऐप फ़ाइल का नाम किसी बैंक, सरकारी योजना या निमंत्रण पर रखा गया है। ऐसे नाम वाले नकली ऐप भारत में फ़ोन पर कब्ज़ा करने का सबसे आम तरीका हैं",
-    "This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it as a virus, so StaySafe does too": "यह एंटीवायरस जाँचने की मानक टेस्ट फ़ाइल (EICAR) है। यह नुकसान नहीं करती, लेकिन हर सुरक्षा प्रोग्राम इसे वायरस मानता है, इसलिए StaySafe भी",
+    "This is the standard antivirus test file (EICAR). It is harmless, but every security program treats it as a virus, so TrustLight does too": "यह एंटीवायरस जाँचने की मानक टेस्ट फ़ाइल (EICAR) है। यह नुकसान नहीं करती, लेकिन हर सुरक्षा प्रोग्राम इसे वायरस मानता है, इसलिए TrustLight भी",
     "This PDF tries to start another program on your computer when opened. Genuine documents never do this": "यह PDF खुलते ही आपके कंप्यूटर पर दूसरा प्रोग्राम चलाने की कोशिश करता है। असली डॉक्यूमेंट ऐसा कभी नहीं करते",
     "runs JavaScript as soon as it is opened": "खुलते ही JavaScript चलाता है",
     "This document downloads a hidden part from the internet when it is opened (a known trick to run harmful code without macros)": "यह डॉक्यूमेंट खुलते ही इंटरनेट से एक छिपा हिस्सा डाउनलोड करता है (मैक्रो के बिना नुकसानदेह कोड चलाने की जानी-मानी तरकीब)",

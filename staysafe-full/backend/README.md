@@ -1,4 +1,4 @@
-# StaySafe — Backend
+# TrustLight — Backend
 
 Flask API with one module per checker in `scanners/`.
 

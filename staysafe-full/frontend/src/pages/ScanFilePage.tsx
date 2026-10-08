@@ -45,7 +45,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
       setResult(data);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
-  // shared to StaySafe from another app: check it straight away
+  // shared to TrustLight from another app: check it straight away
   useEffect(() => {
     if (auto && file) { setAuto(false); handleCheck(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,5 +1,5 @@
 """
-StaySafe - Careful use of Groq's free plan
+TrustLight - Careful use of Groq's free plan
 ------------------------------------------
 Groq's free plan limits EACH MODEL separately, in four ways (published free-plan numbers for
 the text models we use, Sep 2026):

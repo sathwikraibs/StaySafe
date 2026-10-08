@@ -1,4 +1,4 @@
-# StaySafe — Frontend
+# TrustLight — Frontend
 
 A friendly, non-technical digital safety checkup tool. React + TypeScript + Tailwind, built with Vite.
 

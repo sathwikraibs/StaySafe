@@ -25,7 +25,7 @@ export const reportKn: ReportDict = {
       caution: "ಎಚ್ಚರ",
       danger: "ಅಪಾಯ",
     },
-    slip: "StaySafe ವರದಿ",
+    slip: "TrustLight ವರದಿ",
     toolName: {
       link: "ಲಿಂಕ್",
       message: "ಮೆಸೇಜ್",
@@ -249,10 +249,10 @@ export const reportKn: ReportDict = {
       failV: "Cloudflare ಪ್ರಕಾರ ಈ ಪುಟ ಹಾನಿಕಾರಕ: {value}",
     },
     community: {
-      warn: "StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
-      warnV: "{value} StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
-      fail: "StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
-      failV: "{value} StaySafe ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      warn: "TrustLight ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      warnV: "{value} TrustLight ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      fail: "TrustLight ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
+      failV: "{value} TrustLight ಬಳಕೆದಾರರು ವಂಚನೆ ಎಂದು ವರದಿ ಮಾಡಿದ್ದಾರೆ",
     },
     num_type: {
       pass: "ನಿಜವಾದ ಅಧಿಕೃತ ಅಥವಾ ಬ್ಯಾಂಕ್ ಸಂಖ್ಯೆ",
@@ -497,7 +497,7 @@ export const reportKn: ReportDict = {
       warn: "ನಿಮ್ಮ ಕನೆಕ್ಷನ್ ಬೇರೆ ಟೈಮ್ ಝೋನ್‌ನಲ್ಲಿ ಕಾಣುತ್ತಿದೆ ({value})",
     },
     net_https: {
-      pass: "StaySafe ಸುರಕ್ಷಿತವಾಗಿ ತೆರೆಯಿತು (HTTPS)",
+      pass: "TrustLight ಸುರಕ್ಷಿತವಾಗಿ ತೆರೆಯಿತು (HTTPS)",
       warn: "ಈ ಪುಟ ಸುರಕ್ಷಿತವಾಗಿ ತೆರೆಯಲಿಲ್ಲ",
     },
     net_browser: {
@@ -558,7 +558,7 @@ export const reportKn: ReportDict = {
       "10 ಲಕ್ಷಕ್ಕೂ ಹೆಚ್ಚು ಗೊತ್ತಿರುವ ವಂಚನೆ ಲಿಂಕ್‌ಗಳಲ್ಲಿ ಹುಡುಕುತ್ತಿದ್ದೇವೆ",
       "70ಕ್ಕೂ ಹೆಚ್ಚು ಭದ್ರತಾ ಕಂಪನಿಗಳನ್ನು ಕೇಳುತ್ತಿದ್ದೇವೆ",
       "ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಹಿಂದಿನ ಭದ್ರತಾ ಪರಿಶೀಲನೆಗಳನ್ನು ನೋಡುತ್ತಿದ್ದೇವೆ",
-      "RBI ಪಟ್ಟಿ ಮತ್ತು ಇತರ StaySafe ಬಳಕೆದಾರರ ವರದಿಗಳನ್ನು ನೋಡುತ್ತಿದ್ದೇವೆ",
+      "RBI ಪಟ್ಟಿ ಮತ್ತು ಇತರ TrustLight ಬಳಕೆದಾರರ ವರದಿಗಳನ್ನು ನೋಡುತ್ತಿದ್ದೇವೆ",
       "ಪುಟವನ್ನು ನಿಮಗಾಗಿ ಸುರಕ್ಷಿತವಾಗಿ ತೆರೆಯುತ್ತಿದ್ದೇವೆ",
       "ವೆಬ್‌ಸೈಟ್ ಎಷ್ಟು ಹಳೆಯದು ಎಂದು ನೋಡುತ್ತಿದ್ದೇವೆ",
       "ನಿಮ್ಮ ವರದಿ ಸಿದ್ಧಪಡಿಸುತ್ತಿದ್ದೇವೆ",
@@ -726,7 +726,7 @@ export const reportKn: ReportDict = {
   },
 
   homeX: {
-    askTitle: "ಏನಾಯಿತು? StaySafe AI ಕೇಳಿ",
+    askTitle: "ಏನಾಯಿತು? TrustLight AI ಕೇಳಿ",
     askIntro: "ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಹೇಳಿ, ಅಥವಾ ಬಂದ ಮೆಸೇಜ್ ಅಥವಾ ಲಿಂಕ್ ಪೇಸ್ಟ್ ಮಾಡಿ. ತಕ್ಷಣ ಉತ್ತರ ಸಿಗುತ್ತದೆ.",
     askPlaceholder: "ಉದಾ: ಯಾರೋ ಕರೆ ಮಾಡಿ ನನ್ನ OTP ಕೇಳಿದರು...",
     askButton: "ಕೇಳಿ",

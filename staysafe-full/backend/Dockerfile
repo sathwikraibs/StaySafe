@@ -1,4 +1,4 @@
-# StaySafe backend — Docker image for Render
+# TrustLight backend — Docker image for Render
 # Render's normal Python runtime can't install system programs, but screenshot
 # reading needs Tesseract OCR (with English, Kannada and Hindi language packs) and QR decoding works best with the zbar library.
 # This image installs both, so image uploads work in production.

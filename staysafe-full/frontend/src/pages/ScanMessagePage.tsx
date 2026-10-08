@@ -79,7 +79,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
       setResult(data); setFromScreenshot(true);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
-  // shared to StaySafe from another app: check it straight away
+  // shared to TrustLight from another app: check it straight away
   useEffect(() => {
     if (auto === "text" && text.trim()) { setAuto(""); handleCheckText(); }
     if (auto === "shot" && file) { setAuto(""); handleCheckScreenshot(); }

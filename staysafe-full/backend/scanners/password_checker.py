@@ -1,5 +1,5 @@
 """
-StaySafe - Password Health & Breach Checker
+TrustLight - Password Health & Breach Checker
 ----------------------------------------------
 Two checks, both privacy-safe:
 
@@ -310,7 +310,7 @@ def _breach_lookup(email: str) -> dict:
     if key:
         try:
             resp = requests.get(f"https://haveibeenpwned.com/api/v3/breachedaccount/{requests.utils.quote(email)}",
-                                headers={"hibp-api-key": key, "user-agent": "StaySafe"}, timeout=8)
+                                headers={"hibp-api-key": key, "user-agent": "TrustLight"}, timeout=8)
             if resp.status_code == 404:
                 return {"breached": False, "breaches": [], "source": "Have I Been Pwned"}
             if resp.status_code == 200:
@@ -322,7 +322,7 @@ def _breach_lookup(email: str) -> dict:
         if not quota("xposedornot").take(wait=8):
             raise RuntimeError("busy")
         resp = requests.get(f"https://api.xposedornot.com/v1/check-email/{requests.utils.quote(email)}",
-                            timeout=8, headers={"User-Agent": "StaySafe/2.0"})
+                            timeout=8, headers={"User-Agent": "TrustLight/2.0"})
         if resp.status_code == 429:
             quota("xposedornot").cool_down(60)
         if resp.status_code == 404:
@@ -348,7 +348,7 @@ def _breach_lookup(email: str) -> dict:
         if not quota("leakcheck").take(wait=8):
             raise RuntimeError("busy")
         resp = requests.get("https://leakcheck.io/api/public", params={"check": email}, timeout=8,
-                            headers={"User-Agent": "StaySafe/2.0"})
+                            headers={"User-Agent": "TrustLight/2.0"})
         data = resp.json()
         if data.get("success") and data.get("found"):
             names = [str(src.get("name", "")).strip() for src in data.get("sources", []) if isinstance(src, dict)]

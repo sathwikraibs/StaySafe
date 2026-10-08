@@ -1,6 +1,6 @@
-// "Share to StaySafe": things people share from other apps (a message, a link, a screenshot,
+// "Share to TrustLight": things people share from other apps (a message, a link, a screenshot,
 // a file) arrive through the service worker (public/sw.js) and open the right check, which
-// then starts by itself. Also: the "Add StaySafe to your phone" button.
+// then starts by itself. Also: the "Add TrustLight to your phone" button.
 import { useEffect, useState } from "react";
 import { setPrefill } from "@/helpBot";
 
@@ -11,7 +11,7 @@ export type SharedFileKind = "screenshot" | "file";
 let pendingFile: { kind: SharedFileKind; file: File } | null = null;
 let pendingQr: string | null = null;
 
-/** Start the service worker (needed for sharing and for adding StaySafe to the phone). */
+/** Start the service worker (needed for sharing and for adding TrustLight to the phone). */
 export function registerServiceWorker(): void {
   try {
     if (!("serviceWorker" in navigator) || !window.isSecureContext) return;
@@ -59,7 +59,7 @@ async function qrInPicture(file: File): Promise<string | null> {
   }
 }
 
-/** If StaySafe was opened by sharing something to it: which page to open (and get ready to check). */
+/** If TrustLight was opened by sharing something to it: which page to open (and get ready to check). */
 export async function receiveShare(): Promise<string | null> {
   try {
     const params = new URLSearchParams(location.search);
@@ -109,7 +109,7 @@ export function takeAutoRun(kind: "url" | "message"): boolean {
   }
 }
 
-/** For the screenshot and file pages: the picture or file shared to StaySafe (given once). */
+/** For the screenshot and file pages: the picture or file shared to TrustLight (given once). */
 export function useSharedFile(kind: SharedFileKind, take: (file: File) => void): void {
   useEffect(() => {
     if (pendingFile && pendingFile.kind === kind) {
@@ -133,7 +133,7 @@ export function useSharedQr(take: (text: string) => void): void {
   }, []);
 }
 
-// ---- "Add StaySafe to your phone" ----
+// ---- "Add TrustLight to your phone" ----
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -164,7 +164,7 @@ export function isInstalledApp(): boolean {
   }
 }
 
-/** Whether the browser offers installing StaySafe, and a function that asks it to. */
+/** Whether the browser offers installing TrustLight, and a function that asks it to. */
 export function useInstall(): { canInstall: boolean; install: () => Promise<boolean> } {
   const [, bump] = useState(0);
   useEffect(() => {

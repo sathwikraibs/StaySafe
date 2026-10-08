@@ -1,5 +1,5 @@
 """
-StaySafe - Link (URL) checker
+TrustLight - Link (URL) checker
 -------------------------------
 Checks a web address step by step and explains every step:
 
@@ -1098,7 +1098,7 @@ def rdap_details(domain: str) -> dict:
             return {"error": True, NOT_CHECKED: True}
         try:
             resp = requests.get(f"https://rdap.org/domain/{domain}", timeout=8,
-                                headers={"Accept": "application/rdap+json", "User-Agent": "StaySafe/2.0"})
+                                headers={"Accept": "application/rdap+json", "User-Agent": "TrustLight/2.0"})
             if resp.status_code != 200:
                 return {"error": True}
             data = resp.json()
@@ -1146,7 +1146,7 @@ def first_certificate_days(host: str):
             return {"days": None, NOT_CHECKED: True}
         try:
             resp = requests.get("https://crt.sh/", params={"q": host, "output": "json", "exclude": "expired"},
-                                timeout=8, headers={"User-Agent": "StaySafe/2.0"})
+                                timeout=8, headers={"User-Agent": "TrustLight/2.0"})
             if resp.status_code != 200:
                 return {"days": None}
             dates = [_as_date(c.get("not_before")) for c in resp.json()[:500] if isinstance(c, dict)]
@@ -1307,7 +1307,7 @@ def refresh_feeds() -> None:
     urls, hosts, counts, problems = {}, {}, {}, []
     for name, src in FEED_SOURCES.items():
         try:
-            hdrs = {"User-Agent": "StaySafe/2.0"}
+            hdrs = {"User-Agent": "TrustLight/2.0"}
             if "abuse.ch" in src and _abusech_key():
                 hdrs["Auth-Key"] = _abusech_key()
             resp = requests.get(src, timeout=25, headers=hdrs)
@@ -1415,7 +1415,7 @@ def refresh_big_feeds() -> None:
     for name, sources in BIG_FEEDS.items():
         for src, kind in sources:
             try:
-                resp = requests.get(src, timeout=60, stream=True, headers={"User-Agent": "StaySafe/2.0"})
+                resp = requests.get(src, timeout=60, stream=True, headers={"User-Agent": "TrustLight/2.0"})
                 if resp.status_code != 200:
                     problems.append(f"{name} {kind}: HTTP {resp.status_code}")
                     continue
@@ -1446,7 +1446,7 @@ def refresh_tranco() -> None:
     import io
     import zipfile
     try:
-        resp = requests.get(TRANCO_URL, timeout=60, headers={"User-Agent": "StaySafe/2.0"})
+        resp = requests.get(TRANCO_URL, timeout=60, headers={"User-Agent": "TrustLight/2.0"})
         if resp.status_code != 200:
             raise RuntimeError(f"HTTP {resp.status_code}")
         ranks = {}
@@ -1484,7 +1484,7 @@ def popularity_rank(domain: str):
 
 
 def community_listed(kind: str, value: str) -> bool:
-    """Reported as a scam by enough different StaySafe users (scanners/reports.py)."""
+    """Reported as a scam by enough different TrustLight users (scanners/reports.py)."""
     if OFFLINE:
         return False
     try:
@@ -1591,7 +1591,7 @@ def check_abusech(url: str, host: str) -> dict:
     def call():
         if not quota("abusech").take(wait=5, cost=3):
             return {"status": "skip", NOT_CHECKED: True}
-        headers = {"Auth-Key": key, "User-Agent": "StaySafe/2.0"}
+        headers = {"Auth-Key": key, "User-Agent": "TrustLight/2.0"}
         out = {"status": "pass"}
         try:
             r = requests.post("https://urlhaus-api.abuse.ch/v1/url/", data={"url": url}, headers=headers, timeout=6).json()
@@ -1731,7 +1731,7 @@ def check_otx(domain: str) -> dict:
             return {"status": "skip", NOT_CHECKED: True}
         try:
             r = requests.get(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/general",
-                             headers={"X-OTX-API-KEY": key, "User-Agent": "StaySafe/2.0"}, timeout=8)
+                             headers={"X-OTX-API-KEY": key, "User-Agent": "TrustLight/2.0"}, timeout=8)
             if r.status_code in (400, 404):
                 return {"status": "pass", "pulses": 0}
             if r.status_code != 200:
@@ -1770,7 +1770,7 @@ def check_urlscan(host: str) -> dict:
         if not quota("urlscan").take(wait=10):
             return {"status": "skip", NOT_CHECKED: True}
         try:
-            headers = {"API-Key": key, "User-Agent": "StaySafe/2.0"}
+            headers = {"API-Key": key, "User-Agent": "TrustLight/2.0"}
             resp = requests.get("https://urlscan.io/api/v1/search/", timeout=8,
                                 params={"q": f'page.domain:"{host}" AND verdicts.malicious:true AND date:>now-90d', "size": 5},
                                 headers=headers)
@@ -1982,7 +1982,7 @@ def _page_title(html: str) -> str:
 def fetch_page(url: str) -> dict:
     """
     Follows the link (max 5 redirects) without running anything on the page.
-    Refuses private/internal addresses so nobody can use StaySafe to poke at our own server.
+    Refuses private/internal addresses so nobody can use TrustLight to poke at our own server.
     Returns {'ok', 'final_url', 'hops', 'status', 'ssl_error', 'title', 'has_password',
              'text', 'download', 'blocked', 'error'}.
     """
@@ -2189,7 +2189,7 @@ def _scan_official_short_link(url: str, reg: str):
 
 def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False) -> dict:
     """blind=True (owner's test only): ignore every outside list and reputation service, to measure
-    what StaySafe's own checks catch on a brand-new scam link that no list knows yet."""
+    what TrustLight's own checks catch on a brand-new scam link that no list knows yet."""
     url = normalize_url(url)
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
@@ -2226,7 +2226,7 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
     # Well-known sites (official brands, the world's 10,000 most visited) use VirusTotal only when
     # plenty of today's allowance is left, so it is saved for the unknown links that need it
     well_known = trusted or (not structure["hosting"] and (popularity_rank(reg) or 10**9) <= 10_000)
-    # Already on a downloaded scam list (or StaySafe's own reports)? The answer is clear without
+    # Already on a downloaded scam list (or TrustLight's own reports)? The answer is clear without
     # VirusTotal, so it only uses VirusTotal when plenty is left (for the engine details).
     listed = not trusted and not blind and not nolists and (feed_lookup([url], host)["status"] == "fail"
                               or big_feed_lookup([url], host, reg)["status"] == "fail"
@@ -2478,7 +2478,7 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
     else:
         _check(checks, "feeds", "pass")
 
-    # --- StaySafe's own list: reported as a scam by its users
+    # --- TrustLight's own list: reported as a scam by its users
     if not trusted and not OFFLINE and not blind:
         try:
             from scanners.reports import community_signal

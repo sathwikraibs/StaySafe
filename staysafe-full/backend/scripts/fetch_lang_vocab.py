@@ -3,9 +3,9 @@ Build-time helper (runs inside the Docker build, never on a visitor's request):
 downloads the open Tulu, Kannada and Hindi Wikipedia word-frequency lists from Wikilangs
 (https://huggingface.co/wikilangs, MIT licence) and keeps them as small text files:
     data/lexicon_tcy.tsv   data/lexicon_kn.tsv   data/lexicon_hi.tsv   (word<TAB>count, most frequent first)
-StaySafe uses them to tell Tulu from Kannada (both use Kannada letters) and to spot
+TrustLight uses them to tell Tulu from Kannada (both use Kannada letters) and to spot
 Kannada words that slip into Tulu answers. If the download fails, the build carries on
-and StaySafe falls back to its built-in word lists.
+and TrustLight falls back to its built-in word lists.
 """
 import io
 import os
@@ -21,7 +21,7 @@ def fetch(lang: str) -> bool:
     url = f"https://huggingface.co/wikilangs/{lang}/resolve/main/models/vocabulary/{lang}_vocabulary.parquet"
     try:
         import pyarrow.parquet as pq
-        raw = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "StaySafe-build"}),
+        raw = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "TrustLight-build"}),
                                      timeout=120).read()
         table = pq.read_table(io.BytesIO(raw))
     except Exception as e:  # noqa: BLE001

@@ -1,5 +1,5 @@
 """
-StaySafe - QR Code Safety Scanner
+TrustLight - QR Code Safety Scanner
 ------------------------------------
 User uploads a photo/screenshot of a QR code. We decode it and:
   - URL      -> run it through the SAME checks as the link scanner

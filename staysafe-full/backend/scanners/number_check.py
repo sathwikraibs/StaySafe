@@ -1,5 +1,5 @@
 """
-StaySafe - "Who is this?" check for a phone number or a UPI ID
+TrustLight - "Who is this?" check for a phone number or a UPI ID
 ------------------------------------------------------------------
 Works offline, no API. Nobody can tell who owns a number from the number alone, so the
 check combines three things:
@@ -366,7 +366,7 @@ def check_number(value: str, claim: str = "", ask: str = "") -> dict:
                 findings.append("This is an internet (VOIP) number. Scammers use these to hide who they are")
                 score += led.note(findings, 20 if claim in ("bank", "official", "delivery") else 10)
 
-    # StaySafe's own list: reported as a scam by its users (official numbers can't be reported)
+    # TrustLight's own list: reported as a scam by its users (official numbers can't be reported)
     if part["info"].get("number_type") not in ("helpline", "bank_1600"):
         try:
             from scanners.reports import community_signal

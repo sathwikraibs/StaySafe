@@ -1,5 +1,5 @@
 """
-StaySafe checker tests — real-world scam and genuine samples.
+TrustLight checker tests — real-world scam and genuine samples.
 
 Run from the backend folder (no internet or API keys needed):
     python tests/test_scanners.py          # plain Python, prints a report

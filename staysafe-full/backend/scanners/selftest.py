@@ -1,5 +1,5 @@
 """
-StaySafe - live accuracy test for the owner
+TrustLight - live accuracy test for the owner
 --------------------------------------------
 Open on the live server (needs the secret STATUS_KEY):
 
@@ -65,8 +65,8 @@ LINK_SETS = {
     ]),
     "7": ("Real scam links reported in the last few hours (picked from today's public lists)", None),
     "9": ("BLIND test: today's real scam links, judged WITHOUT any scam list, Google or VirusTotal "
-          "(what StaySafe's own checks catch before anyone has reported a link)", None),
-    "10": ("FAIR test: today's real scam links, with StaySafe's own downloaded scam lists switched off (the lists these "
+          "(what TrustLight's own checks catch before anyone has reported a link)", None),
+    "10": ("FAIR test: today's real scam links, with TrustLight's own downloaded scam lists switched off (the lists these "
            "links come from), but Google, VirusTotal, Cloudflare and the other live checks on, as for a real visitor", None),
     "8": ("Big shared websites that scammers also misuse (the websites themselves are fine)", [
         ("https://github.com/sathwikraibs/StaySafe", SAFE), ("https://www.karnatakabank.com", SAFE),
@@ -185,7 +185,7 @@ def _recent_bazaar(n=3):
         return []
     try:
         data = requests.post("https://mb-api.abuse.ch/api/v1/", data={"query": "get_recent", "selector": "time"},
-                             headers={"Auth-Key": key, "User-Agent": "StaySafe/2.0"}, timeout=10).json()
+                             headers={"Auth-Key": key, "User-Agent": "TrustLight/2.0"}, timeout=10).json()
         return [(d.get("sha256_hash"), d.get("signature") or d.get("file_type") or "") for d in (data.get("data") or [])[:n]
                 if d.get("sha256_hash")]
     except Exception:
