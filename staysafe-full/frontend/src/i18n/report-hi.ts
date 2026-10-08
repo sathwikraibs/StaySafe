@@ -742,7 +742,7 @@ export const reportHi: ReportDict = {
       message: "SMS, WhatsApp या स्क्रीनशॉट",
       qr: "स्कैन करके पैसे देने से पहले",
       file: "अटैचमेंट और डाउनलोड",
-      password: "मज़बूत है? कभी लीक हुआ?",
+      password: "मज़बूत है? ईमेल या पासवर्ड लीक हुआ?",
       network: "आपका इंटरनेट कनेक्शन सुरक्षित है?",
       email: "नकली भेजने वाले और फ़िशिंग",
       number: "कॉल, WhatsApp नंबर और UPI ID",

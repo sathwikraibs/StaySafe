@@ -749,7 +749,7 @@ export const reportEn = {
       message: "SMS, WhatsApp or a screenshot",
       qr: "Before you scan and pay",
       file: "Attachments and downloads",
-      password: "Strong enough? Ever leaked?",
+      password: "Strong enough? Email or password leaked?",
       network: "Is your internet connection safe?",
       email: "Fake senders and phishing",
       number: "Calls, WhatsApp numbers and UPI IDs",

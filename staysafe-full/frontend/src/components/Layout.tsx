@@ -46,13 +46,16 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
     <div className="min-h-screen bg-mist">
       {/* ---------- Laptop sidebar ---------- */}
       <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-cream-200 bg-cream-100/80 backdrop-blur-md lg:flex">
-        <button onClick={() => onNavigate("/")} className="flex items-center gap-3 px-6 py-6 text-left">
-          <BrandMark className="h-11 w-11 shrink-0 shadow-warm-sm rounded-xl" />
-          <div>
+        <div className="flex items-center gap-3 px-6 py-6">
+          <button onClick={() => onNavigate("/")} aria-label={t("nav.home")} className="btn-press shrink-0">
+            <BrandMark className="h-11 w-11 shrink-0 shadow-warm-sm rounded-xl" />
+          </button>
+          {/* the name opens About & Privacy: what TrustLight is and how it handles your data */}
+          <button onClick={() => onNavigate("/about")} aria-label={t("nav.about")} className="text-left">
             <Wordmark className="block text-[22px]" />
-            <p className="mt-1 font-body text-[11px] font-semibold text-dustyblue-500">{t("common.tagline")}</p>
-          </div>
-        </button>
+            <span className="mt-1 block font-body text-[11px] font-semibold text-dustyblue-500">{t("common.tagline")}</span>
+          </button>
+        </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-1 scrollbar-warm">
           <SideGroup items={[ALL_NAV[0]]} currentPath={currentPath} onNavigate={onNavigate} />
@@ -100,11 +103,15 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
         {/* ---------- Top bar ---------- */}
         <header className="sticky top-0 z-20 border-b border-cream-200 bg-cream-50/90 backdrop-blur-md">
           <div className="flex items-center gap-2 px-4 py-3 sm:px-5 lg:px-8">
-            <button onClick={() => onNavigate("/")} className="flex items-center gap-2 lg:hidden">
-              <BrandMark className="h-8 w-8 shrink-0" />
-              {/* hide the word on narrow phones so the emergency button always fits */}
-              <Wordmark className="hidden text-[19px] min-[360px]:inline" />
-            </button>
+            <div className="flex items-center gap-2 lg:hidden">
+              <button onClick={() => onNavigate("/")} aria-label={t("nav.home")} className="btn-press shrink-0">
+                <BrandMark className="h-8 w-8 shrink-0" />
+              </button>
+              {/* hide the word on very narrow phones so the emergency button always fits; it opens About & Privacy */}
+              <button onClick={() => onNavigate("/about")} aria-label={t("nav.about")} className="hidden min-[360px]:inline">
+                <Wordmark className="text-[19px]" />
+              </button>
+            </div>
 
             {/* Phone: always-visible emergency shortcut + settings */}
             <div className="ml-auto flex items-center gap-2 lg:hidden">

@@ -45,6 +45,8 @@ export interface ScanUrlResponse {
 }
 
 export interface ScanMessageResponse {
+  /** a QR code found in the screenshot (offered to Check a QR Code) */
+  qr_in_picture?: string;
   score_parts?: ScorePart[];
   risk_score: number;
   verdict: Verdict;
@@ -98,6 +100,8 @@ export interface CheckNumberResponse {
 }
 
 export interface ScanFileResponse {
+  /** a QR code found in the picture (offered to Check a QR Code) */
+  qr_in_picture?: string;
   filename: string;
   sha256: string;
   detected_type?: string;

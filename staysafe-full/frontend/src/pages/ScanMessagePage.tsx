@@ -5,9 +5,9 @@ import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice, QrAlsoNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
-import { apiPostJSON, apiPostForm, errorMessage } from "@/api";
+import { apiPostJSON, apiPostForm, errorMessage, rememberInput } from "@/api";
 import { API_BASE } from "@/config";
 import type { Check, ScanMessageResponse } from "@/types";
 import { verdictTone } from "@/verdict";
@@ -62,6 +62,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
     setPendingTool("message");
     setLoading(true); setError(null); setResult(null);
     try {
+      rememberInput({ text: text.trim() });
       const data = await pace("message", apiPostJSON<ScanMessageResponse>(`${API_BASE}/api/scan-message`, { text: text.trim(), sender: sender.trim() }));
       setResult(data); setFromScreenshot(false);
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
@@ -72,6 +73,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
     setPendingTool("screenshot");
     setLoading(true); setError(null); setResult(null);
     try {
+      rememberInput({ file });
       const fd = new FormData();
       fd.append("image", file);
       if (sender.trim()) fd.append("sender", sender.trim());
@@ -164,6 +166,7 @@ export function ScanMessagePage({ onNavigate }: { onNavigate?: (path: string) =>
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
+      {result && <QrAlsoNotice qr={result.qr_in_picture} />}
       {result && (
         <ResultReport
           tool="message"

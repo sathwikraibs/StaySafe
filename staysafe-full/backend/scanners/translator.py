@@ -595,6 +595,23 @@ def cached_translation(text: str, target: str):
         return _cache.get(((text or "").strip()[:MAX_CHARS], target))
 
 
+def _romanized(text: str) -> bool:
+    try:
+        from scanners.tulu_lexicon import romanized_indic
+        return romanized_indic(text)
+    except Exception:
+        return False
+
+
+def _romanized_language(text: str) -> str:
+    """'kn', 'tcy' or 'hi' for a message typed in English letters, or '' if unsure."""
+    try:
+        from scanners.tulu_lexicon import latin_lean
+        return latin_lean(text)[0] or ""
+    except Exception:
+        return ""
+
+
 def translate(text: str, target: str, priority: str = "normal", wait: float = 20.0):
     """
     Translate `text` into `target` ("en", "kn", ...). Returns
@@ -631,8 +648,25 @@ def translate(text: str, target: str, priority: str = "normal", wait: float = 20
     # card numbers, email addresses and UPI IDs are swapped for placeholders like [#1] before
     # translating, and put back afterwards.
     masked, secrets = mask_personal(text)
-    result = (_google(masked, target) or _gemini(masked, target, wait, priority)
-              or _bhashini(masked, target) or _mymemory(masked, target))
+    script = guess_language(text)
+    romanized = script == "en" and _romanized(text)
+    if not romanized and target != "en" and script == target:
+        # Already in that language (a Kannada message asked for in Kannada): nothing to translate
+        return {"text": text, "from": target, "to": target, "provider": "none"}
+    if romanized:
+        # Kannada, Tulu or Hindi typed in English letters. Google often takes it for English and
+        # sends it back unchanged, so ask Gemini first and refuse any answer that is unchanged.
+        result = None
+        for attempt in (lambda: _gemini(masked, target, wait, priority), lambda: _google(masked, target)):
+            got = attempt()
+            if got and _looks_like_translation(masked, got.get("text", ""), target):
+                result = got
+                break
+        if result and (result.get("from") or "en").split("-")[0] == "en":
+            result = dict(result, **{"from": _romanized_language(text) or ""})
+    else:
+        result = (_google(masked, target) or _gemini(masked, target, wait, priority)
+                  or _bhashini(masked, target) or _mymemory(masked, target))
     if result:
         result = dict(result, text=unmask_personal(result["text"], secrets))
     if result:

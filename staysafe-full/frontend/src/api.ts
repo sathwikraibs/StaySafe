@@ -9,11 +9,20 @@ const TIMEOUT_MS = 170_000; // careful checks may wait for a free slot on a chec
 /** An error the server explained to us — safe to show to the user as-is. */
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, wrongTool?: string, qrData?: string) {
     super(message);
     this.status = status;
+    if (wrongTool) WRONG_TOOL.set(message, { tool: wrongTool, qrData });
   }
 }
+
+/** Server errors that mean "this belongs in another tool", by message (shown with a button). */
+export const WRONG_TOOL = new Map<string, { tool: string; qrData?: string }>();
+
+let lastInput: { text?: string; file?: File } = {};
+/** Pages call this before checking, so "Open the right tool" can carry the input over. */
+export function rememberInput(input: { text?: string; file?: File }): void { lastInput = input; }
+export function getLastInput(): { text?: string; file?: File } { return lastInput; }
 
 /** Turn any caught error into a friendly message for the page. */
 export function errorMessage(err: unknown): string {
@@ -45,12 +54,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch { /* not JSON */ }
 
   if (!res.ok) {
-    const serverMsg = body && typeof body === "object" && "error" in body ? String((body as { error: unknown }).error) : "";
+    const b = (body && typeof body === "object" ? body : {}) as { error?: unknown; wrong_tool?: unknown; qr_data?: unknown };
+    const serverMsg = b.error ? String(b.error) : "";
     const fallback =
       res.status === 413 ? "That file is too big to upload." :
       res.status >= 500 ? "Something went wrong. Please try again." :
       `Request failed (${res.status}).`;
-    throw new ApiError(serverMsg || fallback, res.status);
+    throw new ApiError(serverMsg || fallback, res.status, b.wrong_tool ? String(b.wrong_tool) : undefined, b.qr_data ? String(b.qr_data) : undefined);
   }
 
   // Save every completed scan in this browser's history for the dashboard

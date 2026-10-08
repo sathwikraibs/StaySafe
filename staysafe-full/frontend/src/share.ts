@@ -109,6 +109,11 @@ export function takeAutoRun(kind: "url" | "message"): boolean {
   }
 }
 
+/** Give a picture or file to the screenshot or file page (used when it was uploaded in the wrong tool). */
+export function handOffFile(kind: SharedFileKind, file: File): void { pendingFile = { kind, file }; }
+/** Give the text of a QR code to the QR page. */
+export function handOffQr(text: string): void { pendingQr = text; }
+
 /** For the screenshot and file pages: the picture or file shared to TrustLight (given once). */
 export function useSharedFile(kind: SharedFileKind, take: (file: File) => void): void {
   useEffect(() => {

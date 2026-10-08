@@ -6,7 +6,7 @@ import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
 import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
-import { apiPostForm, apiPostJSON, errorMessage } from "@/api";
+import { apiPostForm, apiPostJSON, errorMessage, rememberInput } from "@/api";
 import { QrCameraScanner } from "@/components/QrCameraScanner";
 import { ChoiceTabs } from "@/components/ChoiceTabs";
 import { API_BASE } from "@/config";
@@ -31,6 +31,7 @@ export function ScanQrPage({ onNavigate }: { onNavigate?: (path: string) => void
     if (!img || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
+      rememberInput({ file: img });
       const fd = new FormData();
       fd.append("image", img);
       const data = await pace("qr", apiPostForm<ScanQrResponse>(`${API_BASE}/api/scan-qr`, fd));

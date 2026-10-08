@@ -262,6 +262,21 @@ def scan_email(data: dict) -> dict:
     """The whole email check (also used by the owner's live self-test)."""
     raw_email = str(data.get("raw_email") or "").strip()[:300_000]
     form_mode = False
+    from scanners.input_kind import kind_of, MESSAGES
+
+    if raw_email:
+        # "Paste full source" must really be an email: something with a From line and headers.
+        kind = kind_of(raw_email)
+        if kind in ("link", "upi", "phone"):
+            return {"error": MESSAGES["link" if kind == "link" else "number"],
+                    "wrong_tool": "link" if kind == "link" else "number"}
+        if kind == "email_address":
+            return {"error": "That's only an email address. Please use the form: put it in the sender box and paste the message below it."}
+        has_from = re.search(r"^from\s*:.*@", raw_email[:20_000], re.I | re.M)
+        if kind != "email_source" or not has_from:
+            return {"error": "This doesn't look like a full email. Use the form instead, or paste the email's 'Show original' text "
+                             "(it starts with lines like From:, To: and Subject:). If it's a text message, check it in Check a Message.",
+                    "wrong_tool": "message" if kind == "message" else None}
 
     if not raw_email:
         # The simple form: sender, subject and message typed or pasted into separate boxes
@@ -269,8 +284,22 @@ def scan_email(data: dict) -> dict:
         body_in = str(data.get("body") or "").strip()[:50_000]
         if not body_in and not sender:
             return {"error": "Please fill in the sender's email address and paste the message."}
-        if str(data.get("sender_email") or "").strip() and not sender:
+        typed_sender = str(data.get("sender_email") or "").strip()
+        if typed_sender and not sender:
+            k = kind_of(typed_sender)
+            if k in ("link", "upi", "phone"):
+                return {"error": MESSAGES["link" if k == "link" else "number"], "wrong_tool": "link" if k == "link" else "number"}
             return {"error": "That sender email address doesn't look right. It should look like name@example.com"}
+        if not sender:
+            # only a link, number or UPI ID in the message box: that belongs to another check
+            k = kind_of(body_in)
+            if k in ("link", "upi", "phone"):
+                return {"error": MESSAGES["link" if k == "link" else "number"], "wrong_tool": "link" if k == "link" else "number"}
+            if k == "email_source":
+                return scan_email({"raw_email": body_in})
+            return {"error": "Please fill in the sender's email address. You can see it by tapping the sender's name in your email app."}
+        if not body_in:
+            return {"error": "Please paste the email's message."}
         name = (str(data.get("sender_name") or "")[:300].strip() or name_in).replace("\n", " ")[:120]
         reply = split_sender(data.get("reply_to") or "")[1]
         subject = str(data.get("subject") or "")[:1000].strip().replace("\n", " ")[:300]

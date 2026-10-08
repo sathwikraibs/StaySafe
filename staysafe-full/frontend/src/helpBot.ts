@@ -150,7 +150,7 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       a: ["1. Use 'Forgot password' on the app or website to take the account back, then set a new strong password.",
         "2. Turn on two-step verification (WhatsApp: Settings, Account, Two-step verification).",
         "3. Tell your friends not to send money or codes to 'you'.",
-        "4. On Check a Password, check whether your email has appeared in a data leak."],
+        "4. On Check Password & Email Leaks, check whether your email has appeared in a data leak."],
       actions: [{ kind: "go", path: "/check-password", label: "Check my password and email" }],
       words: ["account", "login"],
     },
@@ -220,7 +220,7 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       a: ["1. ऐप या वेबसाइट पर 'पासवर्ड भूल गए' से खाता वापस लें, फिर नया मज़बूत पासवर्ड रखें।",
         "2. टू-स्टेप वेरिफ़िकेशन चालू करें (WhatsApp: सेटिंग्स, अकाउंट, टू-स्टेप वेरिफ़िकेशन)।",
         "3. दोस्तों को बताएँ कि 'आपके' नाम से माँगे जाने पर पैसे या कोड न भेजें।",
-        "4. 'पासवर्ड जाँचें' में देखें कि आपका ईमेल किसी डेटा लीक में है या नहीं।"],
+        "4. 'पासवर्ड और ईमेल लीक जाँचें' में देखें कि आपका ईमेल किसी डेटा लीक में है या नहीं।"],
       actions: [{ kind: "go", path: "/check-password", label: "पासवर्ड और ईमेल जाँचें" }],
       words: ["हैक", "खाता", "लॉगिन"],
     },
@@ -290,7 +290,7 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       a: ["1. ಆ್ಯಪ್ ಅಥವಾ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ 'ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿದ್ದೀರಾ' ಬಳಸಿ ಖಾತೆ ಮರಳಿ ಪಡೆಯಿರಿ, ನಂತರ ಹೊಸ ಬಲವಾದ ಪಾಸ್‌ವರ್ಡ್ ಇಡಿ.",
         "2. 2-step verification ಆನ್ ಮಾಡಿ (WhatsApp: Settings, Account, Two-step verification).",
         "3. 'ನೀವು' ಎಂದು ಹೇಳಿಕೊಂಡು ಯಾರಾದರೂ ಕೇಳಿದರೆ ಹಣ ಅಥವಾ ಕೋಡ್ ಕಳುಹಿಸಬೇಡಿ ಎಂದು ಸ್ನೇಹಿತರಿಗೆ ತಿಳಿಸಿ.",
-        "4. 'ಪಾಸ್‌ವರ್ಡ್ ಪರಿಶೀಲಿಸಿ' ಯಲ್ಲಿ ನಿಮ್ಮ ಇಮೇಲ್ ಡೇಟಾ ಸೋರಿಕೆಯಲ್ಲಿ ಇದೆಯೇ ಎಂದು ನೋಡಿ."],
+        "4. 'ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಇಮೇಲ್ ಸೋರಿಕೆ ಪರಿಶೀಲಿಸಿ' ಯಲ್ಲಿ ನಿಮ್ಮ ಇಮೇಲ್ ಡೇಟಾ ಸೋರಿಕೆಯಲ್ಲಿ ಇದೆಯೇ ಎಂದು ನೋಡಿ."],
       actions: [{ kind: "go", path: "/check-password", label: "ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ" }],
       words: ["ಹ್ಯಾಕ್", "ಖಾತೆ", "ಲಾಗಿನ್"],
     },
@@ -360,7 +360,7 @@ const TOPICS: Record<Lang, HelpTopic[]> = {
       a: ["1. ಆ್ಯಪ್ ಅತ್ತಂಡ ವೆಬ್‌ಸೈಟ್‌ಡ್ 'ಪಾಸ್‌ವರ್ಡ್ ಮದತ್ತ್‌ಂಡ' ಬಳಕೆ ಮಲ್ತ್ ಖಾತೆ ಪಿರ ದೆತೊನ್ಲೆ, ಬೊಕ್ಕ ಪೊಸ ಗಟ್ಟಿ ಪಾಸ್‌ವರ್ಡ್ ದೀಲೆ.",
         "2. ಟೂ-ಸ್ಟೆಪ್ ವೆರಿಫಿಕೇಶನ್ ಆನ್ ಮಲ್ಪುಲೆ (WhatsApp: ಸೆಟ್ಟಿಂಗ್ಸ್, ಅಕೌಂಟ್, ಟೂ-ಸ್ಟೆಪ್ ವೆರಿಫಿಕೇಶನ್).",
         "3. 'ಈರೆನ' ಪುದರ್‌ಡ್ ಪೈಸೆ ಅತ್ತಂಡ ಕೋಡ್ ಕಡಪುಡೊಡ್ಚಿ ಪಂಡ್‌ದ್ ದೋಸ್ತಿಲೆಗ್ ತೆರಿಪಾಲೆ.",
-        "4. 'ಪಾಸ್‌ವರ್ಡ್ ಪರಿಶೀಲನೆ' ಡ್ ಈರೆನ ಇಮೇಲ್ ಡೇಟಾ ಸೋರಿಕೆಡ್ ಉಂಡಾ ತೂಲೆ."],
+        "4. 'ಪಾಸ್‌ವರ್ಡ್ ಬೊಕ್ಕ ಇಮೇಲ್ ಲೀಕ್ ಪರಿಶೀಲನೆ' ಡ್ ಈರೆನ ಇಮೇಲ್ ಡೇಟಾ ಸೋರಿಕೆಡ್ ಉಂಡಾ ತೂಲೆ."],
       actions: [{ kind: "go", path: "/check-password", label: "ಪಾಸ್‌ವರ್ಡ್ ಬೊಕ್ಕ ಇಮೇಲ್ ಪರಿಶೀಲನೆ" }],
       words: ["ಹ್ಯಾಕ್", "ಖಾತೆ", "ಲಾಗಿನ್"],
     },
@@ -775,7 +775,9 @@ export const TOOL_TEXTS: Record<Lang, ToolTexts> = {
 // ---- Hand a link or message over to the check pages ----
 const PREFILL_KEY = "staysafe.prefill.v1";
 
-export function setPrefill(kind: "url" | "message", value: string): void {
+export type PrefillKind = "url" | "message" | "number" | "email";
+
+export function setPrefill(kind: PrefillKind, value: string): void {
   try { sessionStorage.setItem(PREFILL_KEY, JSON.stringify({ kind, value: value.slice(0, 5000) })); } catch { /* ignore */ }
 }
 
@@ -785,7 +787,7 @@ export function announcePrefill(): void {
 }
 
 /** The link or message handed over by the helper (read once). */
-export function takePrefill(kind: "url" | "message"): string {
+export function takePrefill(kind: PrefillKind): string {
   try {
     const raw = sessionStorage.getItem(PREFILL_KEY);
     if (!raw) return "";
@@ -799,7 +801,7 @@ export function takePrefill(kind: "url" | "message"): string {
 }
 
 /** For the check pages: fill the box with what the helper handed over (now and later). */
-export function usePrefill(kind: "url" | "message", fill: (value: string) => void): void {
+export function usePrefill(kind: PrefillKind, fill: (value: string) => void): void {
   useEffect(() => {
     const apply = () => {
       const v = takePrefill(kind);

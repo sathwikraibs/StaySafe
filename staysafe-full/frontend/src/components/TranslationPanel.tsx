@@ -66,7 +66,10 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
   }, []);
 
   const slot = picked ? slots[picked] : undefined;
-  const done = slot && slot !== "busy" && !("error" in slot) ? slot : null;
+  const got = slot && slot !== "busy" && !("error" in slot) ? slot : null;
+  // Tulu asked for while only Kannada was available, and the message is already Kannada
+  const same = !!got && got.to === source && got.to !== picked;
+  const done = same ? null : got;
   const sourceName = source ? languageName(source, lang) : "";
   const summary = done && sourceName ? `${sourceName} → ${languageName(done.to, lang)}` : sourceName || undefined;
 
@@ -92,6 +95,8 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
             <p className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-brand-100 p-3 font-body text-sm text-ink-800 scrollbar-warm">
               {done.text}
             </p>
+          ) : same ? (
+            <p className="rounded-xl border-2 border-dashed border-cream-200 p-3 font-body text-sm text-dustyblue-600">{t("message.tuluSame")}</p>
           ) : slot === "busy" ? (
             <p className="flex items-center gap-2 rounded-xl bg-cream-100 p-3 font-body text-sm text-dustyblue-600">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-dustyblue-300 border-t-transparent" />

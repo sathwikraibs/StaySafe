@@ -211,7 +211,9 @@ def scan_qr_route():
 
     if not qr_data:
         return jsonify({
-            "error": "We couldn't find a QR code in this image. Try a clearer photo with the whole QR code visible."
+            "error": "We couldn't find a QR code in this image. Try a clearer photo with the whole QR code visible. "
+                     "If it's a screenshot of a message, check it in Check a Message.",
+            "wrong_tool": "message",
         }), 400
 
     return jsonify(analyze_qr_data(qr_data))

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
-import { ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice, GoToToolButton } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
-import { apiPostJSON, errorMessage } from "@/api";
+import { apiPostJSON, errorMessage, rememberInput } from "@/api";
+import { looksLikeLink, WRONG_TEXT, type ToolId } from "@/wrongTool";
+import { usePrefill } from "@/helpBot";
 import { API_BASE } from "@/config";
 import type { CheckNumberResponse } from "@/types";
 import { useI18n } from "@/i18n";
@@ -48,7 +50,7 @@ function Pills<T extends string>({ items, value, onChange, label, disabled }: {
 }
 
 export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
-  const { t } = useI18n();
+  const { t, ts } = useI18n();
   const pace = usePace();
   const [value, setValue] = useState("");
   const [claim, setClaim] = useState<(typeof CLAIMS)[number] | "">("");
@@ -58,6 +60,13 @@ export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) =>
   const [error, setError] = useState<string | null>(null);
   const usable = looksUsable(value);
   const typedBad = value.trim().length >= 3 && !usable;
+  // a link, an email address or a whole message typed here: offer the right tool
+  const belongs: ToolId | null = !typedBad ? null
+    : looksLikeLink(value) ? "link"
+    : /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(value.trim()) ? "email"
+    : value.trim().split(/\s+/).length >= 4 ? "message" : null;
+  useEffect(() => { if (belongs) rememberInput({ text: value.trim() }); }, [belongs, value]);
+  usePrefill("number", (v) => setValue(v));
 
   async function handleCheck() {
     if (!usable || loading) return;
@@ -90,7 +99,13 @@ export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) =>
             placeholder={t("number.placeholder")}
             className={`${inputCls} ${typedBad ? "border-rust-400" : ""}`}
           />
-          {typedBad && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("number.badInput")}</span>}
+          {typedBad && !belongs && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("number.badInput")}</span>}
+          {belongs && (
+            <div className="mt-3 rounded-xl border border-brand-200 bg-brand-50 p-3">
+              <p className="font-body text-sm font-semibold text-ink-800">{ts(WRONG_TEXT[belongs])}</p>
+              <GoToToolButton tool={belongs} />
+            </div>
+          )}
         </label>
 
         <p className="mt-5 font-body text-sm font-semibold text-ink-800">{t("number.claimTitle")}</p>

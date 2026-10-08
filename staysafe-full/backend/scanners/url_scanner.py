@@ -2624,6 +2624,10 @@ def scan_url_route():
     if not raw:
         return jsonify({"error": "Please paste the link you want to check."}), 400
     raw = raw[:5000]
+    from scanners.input_kind import wrong_tool_answer
+    wrong = wrong_tool_answer(raw, "link")
+    if wrong:
+        return jsonify(wrong), 400
     if not extract_url(raw):
         return jsonify({"error": "We couldn't find a web address in what you pasted. Try something like example.com"}), 400
     url = normalize_url(raw)

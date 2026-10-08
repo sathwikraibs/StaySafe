@@ -4,9 +4,9 @@ import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
 import { UploadZone } from "@/components/UploadZone";
-import { ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice, QrAlsoNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
-import { apiPostForm, errorMessage } from "@/api";
+import { apiPostForm, errorMessage, rememberInput } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanFileResponse } from "@/types";
 import { useI18n } from "@/i18n";
@@ -38,6 +38,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
     if (!file || loading) return;
     setLoading(true); setError(null); setResult(null);
     try {
+      rememberInput({ file });
       const fd = new FormData();
       fd.append("file", file);
       if (fullScan) fd.append("vt_upload", "1");
@@ -88,6 +89,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
 
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
+      {result && <QrAlsoNotice qr={result.qr_in_picture} />}
       {result && (
         <ResultReport
           tool="file"

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { useI18n } from "@/i18n";
+import { WRONG_TOOL } from "@/api";
+import { goToTool, isToolId, TOOL_LABEL, type ToolId } from "@/wrongTool";
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -32,9 +34,50 @@ export function FindingsList({ items, title }: { items: string[]; title?: string
   );
 }
 
-/** Error box. Plain-text server errors are translated automatically. */
+/** "Open Check a Link" style button: takes people to the tool their input belongs in. */
+export function GoToToolButton({ tool, qrData }: { tool: ToolId; qrData?: string }) {
+  const { t } = useI18n();
+  return (
+    <button type="button" onClick={() => goToTool(tool, qrData)}
+      className="btn-press mt-3 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-brand-700">
+      {t("wrongTool.open", { tool: t(TOOL_LABEL[tool]) })}
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+    </button>
+  );
+}
+
+/** "This picture also has a QR code": shown above screenshot and file results. */
+export function QrAlsoNotice({ qr }: { qr?: string }) {
+  const { t } = useI18n();
+  if (!qr) return null;
+  return (
+    <div className="mb-4 rounded-2xl border border-brand-200 bg-brand-50 p-4 animate-fade-up">
+      <p className="font-body text-sm font-semibold text-ink-800">{t("wrongTool.qrInPicture")}</p>
+      <GoToToolButton tool="qr" qrData={qr} />
+    </div>
+  );
+}
+
+/** Error box. Plain-text server errors are translated automatically. When the server said the
+ *  input belongs in another tool, a button to open that tool is shown under the message. */
 export function ErrorNotice({ children }: { children: ReactNode }) {
   const { ts } = useI18n();
+  const wrong = typeof children === "string" ? WRONG_TOOL.get(children) : undefined;
+  if (wrong && isToolId(wrong.tool)) {
+    return (
+      <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4 animate-fade-up">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-cream-50">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 8v.01M11 12h1v5h1" /></svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-body text-sm font-semibold text-ink-800">{ts(children as string)}</p>
+            <GoToToolButton tool={wrong.tool} qrData={wrong.qrData} />
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex items-start gap-3 rounded-2xl border-2 border-rust-400 bg-rust-400/15 p-4 animate-fade-up">
       <div className="shrink-0 text-rust-500">

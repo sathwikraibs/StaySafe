@@ -7,7 +7,7 @@ import { ResultReport } from "@/components/ResultReport";
 import { LinkDetails } from "@/components/WebsiteDetails";
 import { ErrorNotice } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
-import { apiPostJSON, errorMessage } from "@/api";
+import { apiPostJSON, errorMessage, rememberInput } from "@/api";
 import { API_BASE } from "@/config";
 import type { ScanUrlResponse } from "@/types";
 import { useI18n } from "@/i18n";
@@ -32,6 +32,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
     setResult(null);
     try {
       setAsked(url.trim());
+      rememberInput({ text: url.trim() });
       const data = await pace("link", apiPostJSON<ScanUrlResponse>(`${API_BASE}/api/scan-url`, { url: url.trim() }));
       setResult(data);
       // show the tidied address in the box so the person sees exactly what was checked

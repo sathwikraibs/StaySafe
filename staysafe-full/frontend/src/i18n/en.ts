@@ -40,7 +40,7 @@ const enBase = {
     message: "Check a Message", messageShort: "Message",
     qr: "Check a QR Code", qrShort: "QR Code",
     file: "Check a File", fileShort: "File",
-    password: "Check a Password", passwordShort: "Password",
+    password: "Check Password & Email Leaks", passwordShort: "Leak check",
     network: "Check My Connection", networkShort: "Connection",
     email: "Check an Email", emailShort: "Email",
     number: "Check a Number or UPI ID", numberShort: "Number",
@@ -68,7 +68,7 @@ const enBase = {
     helpTitle: "Need help?",
     helpText: "Quick answers, or write to a real person",
     toolsTitle: "What would you like to check?",
-    privacy: "Your check history stays on this device. Links are also checked with Google and VirusTotal.",
+    privacy: "Your check history stays only on this device. Every check is compared with trusted global safety lists and many security companies at the same time.",
     privacyLink: "How we handle your data",
   },
 
@@ -112,6 +112,7 @@ const enBase = {
     trPick: "Pick a language to read this message in it.",
     trFailed: "We couldn't translate this right now. Please try again in a moment.",
     tuluAsKannada: "Tulu wasn't available just now, so this is shown in Kannada.",
+    tuluSame: "A Tulu translation isn't available just now. The message is already in Kannada, so you can read it as it is.",
   },
 
   qr: {
@@ -139,8 +140,8 @@ const enBase = {
   },
 
   password: {
-    title: "Check a Password",
-    subtitle: "See how strong your password is and whether it has been found in any known leaks.",
+    title: "Check Password & Email Leaks",
+    subtitle: "See how strong your password is, and whether your password or email address has been found in known data leaks.",
     label: "Type a password",
     placeholder: "Your password",
     show: "Show", hide: "Hide",
@@ -432,6 +433,7 @@ const enBase = {
     goEmail: "Check an Email instead",
   },
 
+  wrongTool: { open: "Open {tool}", qrInPicture: "This picture also has a QR code. You can check where it leads." },
   upload: { choose: "Choose a different file", camera: "Take a photo", gallery: "Choose a photo", files: "Choose a file", drag: "or drag and drop it here", photo: "Photo" },
 };
 

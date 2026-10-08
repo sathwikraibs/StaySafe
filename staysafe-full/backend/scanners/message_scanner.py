@@ -1063,8 +1063,12 @@ def translate_route():
         return jsonify({"error": "That language isn't available."}), 400
     out = translate(text, target, priority="low", wait=20)
     src = (out or {}).get("from", "").split("-")[0]
-    if not out or not out.get("text", "").strip() or (src and src == out.get("to")):
+    if not out or not out.get("text", "").strip():
         return jsonify({"error": "We couldn't translate this right now. Please try again in a moment."}), 503
+    if src and src == out.get("to") and out.get("to") != target:
+        # Tulu asked for, Tulu not available just now, and the message is already Kannada:
+        # show it as it is (the page says Tulu wasn't available, so it's shown in Kannada)
+        return jsonify({"text": text, "from": src, "to": out["to"]})
     return jsonify({"text": out["text"], "from": (out.get("from") or "").split("-")[0], "to": out.get("to", target)})
 
 
@@ -1579,6 +1583,10 @@ def scan_message_route():
 
     if not text:
         return jsonify({"error": "Please paste the message you want to check."}), 400
+    from scanners.input_kind import wrong_tool_answer
+    wrong = wrong_tool_answer(text, "message")
+    if wrong:
+        return jsonify(wrong), 400
 
     result = scan_message_text(text, request_language(), str(data.get("sender") or "")[:300])
 
@@ -1602,6 +1610,15 @@ def ocr_check_route():
     return jsonify(ocr_self_check())
 
 
+def _qr_in_picture(image_bytes: bytes) -> str:
+    """The text of a QR code in the picture, or '' (never fails)."""
+    try:
+        from scanners.qr_scanner import decode_qr_image, CV2_AVAILABLE
+        return (decode_qr_image(image_bytes) or "") if CV2_AVAILABLE else ""
+    except Exception:
+        return ""
+
+
 @message_scanner_bp.route("/api/scan-screenshot", methods=["POST"])
 def scan_screenshot_route():
     if not ocr_status():
@@ -1616,12 +1633,18 @@ def scan_screenshot_route():
     if not image_bytes:
         return jsonify({"error": "The uploaded image was empty."}), 400
 
+    qr_text = _qr_in_picture(image_bytes)
     try:
         extracted_text = extract_text_from_image(image_bytes)
     except RuntimeError:
         return jsonify({"error": "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead."}), 400
     except Exception:
         return jsonify({"error": "We couldn't open this image. Please upload a PNG or JPG screenshot."}), 400
+
+    if qr_text and len(re.sub(r"\W", "", extracted_text)) < 40:
+        # mostly a QR code with little or no message text around it
+        from scanners.input_kind import MESSAGES
+        return jsonify({"error": MESSAGES["qr"], "wrong_tool": "qr", "qr_data": qr_text[:2000]}), 400
 
     if len(extracted_text) < 5:
         return jsonify({
@@ -1630,6 +1653,8 @@ def scan_screenshot_route():
         }), 400
 
     result = scan_screenshot_text(extracted_text, request_language(), request.form.get("sender", "")[:300])
+    if qr_text:
+        result["qr_in_picture"] = qr_text[:2000]  # the website offers to check the QR code too
 
     from scanners.risk_engine import log_scan
     log_scan("screenshot", result)

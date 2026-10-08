@@ -1,11 +1,13 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
-import { ErrorNotice } from "@/components/PageBits";
+import { ErrorNotice, GoToToolButton } from "@/components/PageBits";
 import { ToolHeader } from "@/components/ToolHeader";
 import { CheckedLinks } from "@/components/WebsiteDetails";
-import { apiPostJSON, errorMessage } from "@/api";
+import { apiPostJSON, errorMessage, rememberInput } from "@/api";
+import { looksLikeLink, WRONG_TEXT } from "@/wrongTool";
+import { usePrefill } from "@/helpBot";
 import { API_BASE } from "@/config";
 import type { ScanEmailResponse } from "@/types";
 import { useI18n } from "@/i18n";
@@ -66,7 +68,7 @@ function Field({ label, need, hint, children }: { label: string; need: "required
 const inputCls = "w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-brand-400 focus:bg-cream-50";
 
 export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
-  const { t } = useI18n();
+  const { t, ts } = useI18n();
   const pace = usePace();
   const [mode, setMode] = useState<"form" | "source">("form");
   const [sender, setSender] = useState("");
@@ -83,10 +85,22 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
   const [cleaned, setCleaned] = useState<string | null>(null);
   const [movedName, setMovedName] = useState<string | null>(null);
   const senderBad = sender.trim() !== "" && !FIND_EMAIL.test(unhide(sender));
+  const senderLink = senderBad && looksLikeLink(sender);
+  useEffect(() => { if (senderLink) rememberInput({ text: sender.trim() }); }, [senderLink, sender]);
+  // only a link in the message box and no sender: that's a link to check, not an email
+  const bodyLink = !FIND_EMAIL.test(unhide(sender)) && looksLikeLink(body);
+  useEffect(() => { if (bodyLink && !senderLink) rememberInput({ text: body.trim() }); }, [bodyLink, senderLink, body]);
+  // handed over from another tool: a whole email, an address, or just the message
+  usePrefill("email", (v) => {
+    if (/^from\s*:/im.test(v)) { setMode("source"); setRaw(v); }
+    else if (FIND_EMAIL.test(v) && !/\s/.test(v.trim())) { setMode("form"); setSender(v.trim()); }
+    else { setMode("form"); setBody(v); }
+  });
   const canCheck = mode === "form" ? FIND_EMAIL.test(unhide(sender)) && body.trim().length > 0 : raw.trim().length > 0;
 
   // Tidy up whatever was pasted into an email box, e.g. 'Name <address' or 'From: x@y.com'
   function tidySender() {
+    if (looksLikeLink(sender)) { setMovedName(null); setCleaned(null); return; }  // a link: offer Check a Link
     const { name: n, email } = splitSender(sender);
     const typed = sender.trim();
     // Only a company or person's name was typed: move it to the name box and ask for the address
@@ -111,6 +125,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
   async function handleCheck() {
     if (!canCheck || loading) return;
     setLoading(true); setError(null); setResult(null);
+    rememberInput({ text: mode === "source" ? raw.trim() : looksLikeLink(sender) ? sender.trim() : (body.trim() || sender.trim()) });
     try {
       const payload = mode === "form"
         ? { sender_email: splitSender(sender).email || sender.trim(), sender_name: name.trim() || splitSender(sender).name, subject: subject.trim(), body: body.trim(), reply_to: splitSender(replyTo).email }
@@ -154,7 +169,13 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
                 placeholder="alerts@example.com"
                 className={`${inputCls} ${senderBad ? "border-rust-400" : ""}`}
               />
-              {senderBad && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("emailForm.badEmail")}</span>}
+              {senderBad && !senderLink && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("emailForm.badEmail")}</span>}
+              {senderLink && (
+                <span className="mt-2 block rounded-xl border border-brand-200 bg-brand-50 p-3">
+                  <span className="block font-body text-sm font-semibold text-ink-800">{ts(WRONG_TEXT.link)}</span>
+                  <GoToToolButton tool="link" />
+                </span>
+              )}
               {cleaned && <span className="mt-1 block font-body text-xs font-semibold text-brand-700">{t("emailForm.cleaned", { email: cleaned })}</span>}
               {movedName && <span className="mt-1 block font-body text-xs font-semibold text-terracotta-700">{t("emailForm.movedName", { name: movedName })}</span>}
             </Field>
@@ -172,6 +193,12 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
                 placeholder={t("emailForm.bodyPh")}
                 className={`${inputCls} scrollbar-warm`}
               />
+              {bodyLink && !senderLink && (
+                <span className="mt-2 block rounded-xl border border-brand-200 bg-brand-50 p-3">
+                  <span className="block font-body text-sm font-semibold text-ink-800">{ts(WRONG_TEXT.link)}</span>
+                  <GoToToolButton tool="link" />
+                </span>
+              )}
             </Field>
             <button
               type="button"

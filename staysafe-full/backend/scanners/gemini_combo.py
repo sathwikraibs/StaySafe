@@ -30,13 +30,15 @@ def _needs(text: str, ui_lang: str) -> dict:
     mix = script_mix(text)
     non_latin = mix["supported"] + mix["other"]
     source = tr.guess_language(text)
+    romanized = False
     if non_latin < 0.2:
         from scanners.tulu_lexicon import romanized_indic
         if romanized_indic(text):        # Tulu/Kannada/Hindi typed in English letters
-            non_latin = 1.0
-    want_en = non_latin >= 0.2 and not tr.cached_translation(text, "en") and not tr._google_key()
-    want_ui = (ui_lang != "en" and source != ui_lang and not tr.cached_translation(text, ui_lang)
-               and (ui_lang in tr.TARGET_FALLBACK or not tr._google_key()))
+            non_latin, romanized = 1.0, True
+    # Google can't read Indian languages typed in English letters, so those always come here
+    want_en = non_latin >= 0.2 and not tr.cached_translation(text, "en") and (romanized or not tr._google_key())
+    want_ui = (ui_lang != "en" and (romanized or source != ui_lang) and not tr.cached_translation(text, ui_lang)
+               and (romanized or ui_lang in tr.TARGET_FALLBACK or not tr._google_key()))
     want_review = False
     if len(text.strip()) >= 15 and os.environ.get("AI_REVIEW", "on").lower() != "off" \
             and not os.environ.get("GROQ_API_KEY") \
@@ -44,6 +46,10 @@ def _needs(text: str, ui_lang: str) -> dict:
         masked, _ = tr.mask_personal(text.strip()[:1500])
         want_review = ai_review.known_verdict(ai_review.review_key(masked)) is None
     return {"en": want_en, "ui": ui_lang if want_ui else None, "review": want_review}
+
+
+def romanized_text(text: str) -> bool:
+    return tr.guess_language(text) == "en" and tr._romanized(text)
 
 
 def _prompt(masked: str, need: dict) -> str:
@@ -101,6 +107,8 @@ def prefetch(text: str, ui_lang: str) -> bool:
         return False
 
     source = str(data.get("source_language", "")).strip().lower()[:5] or tr.guess_language(text)
+    if romanized_text(text) and source.split("-")[0] == "en":
+        source = tr._romanized_language(text) or source
     if need["en"]:
         en = str(data.get("english", "")).strip()
         if tr._looks_like_translation(masked, en, "en"):

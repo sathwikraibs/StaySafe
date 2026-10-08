@@ -402,6 +402,10 @@ def check_number_route():
     value = str(data.get("value", ""))
     if not value.strip():
         return jsonify({"error": "Please enter a phone number or a UPI ID."}), 400
+    from scanners.input_kind import wrong_tool_answer
+    wrong = wrong_tool_answer(value, "number")
+    if wrong:
+        return jsonify(wrong), 400
     result = check_number(value, str(data.get("claim", "")), str(data.get("ask", "")))
     if "error" in result:
         return jsonify(result), 400

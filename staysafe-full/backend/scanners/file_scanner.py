@@ -628,6 +628,14 @@ def scan_file_route():
         return jsonify({"error": "This file is empty."}), 400
 
     result = scan_file_bytes(filename, file_bytes, vt_upload=request.form.get("vt_upload") == "1")
+    if file_bytes[:3] == b"\xff\xd8\xff" or file_bytes[:4] in (b"\x89PNG", b"RIFF"):
+        try:
+            from scanners.qr_scanner import decode_qr_image, CV2_AVAILABLE
+            qr = decode_qr_image(file_bytes) if CV2_AVAILABLE and len(file_bytes) < 15_000_000 else None
+        except Exception:
+            qr = None
+        if qr:
+            result["qr_in_picture"] = qr[:2000]  # the website suggests Check a QR Code
     log_scan("file", result)
     return jsonify(result)
 
