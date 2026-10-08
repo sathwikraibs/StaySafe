@@ -36,10 +36,10 @@ export const tcyContent: LangContent = {
     // ---- connection / general errors
     "We couldn't reach the StaySafe server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
       "StaySafe ಸರ್ವರ್‌ಗ್ ಸಂಪರ್ಕ ತಿಕ್ಕಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ. (ಸೈಟ್ ಮಸ್ತ್ ಪೊರ್ತು ಬಳಕೆ ಆಯಿಜಿಂಡ, ಸರ್ವರ್ ಸುರು ಆಯೆರೆ ಒಂಜಿ ನಿಮಿಷ ಮುಟ್ಟ ಬೋಡಾವು.)",
-    "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರ ಕೊರೆರೆ ಮಸ್ತ್ ಪೊರ್ತು ದೆತೊಂಡ್. ಎಲ್ಯ ಪೊರ್ತು ಬೊಕ್ಕ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರ ಕೊರೆರೆ ಮಸ್ತ್ ಪೊರ್ತು ದೆತೊಂಡ್. ಒಂಚೂರು ಪೊರ್ತು ಬೊಕ್ಕ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "That file is too big to upload.": "ಈ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪೆರೆ ಮಸ್ತ್ ಮಲ್ಲ ಉಂಡು.",
     "Something went wrong on the server. Please try again.": "ಸರ್ವರ್‌ಡ್ ದಾದಾಂಡಲ ತೊಂದರೆ ಆಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
-    "You've asked a lot of questions in a short time. Please wait a few minutes, or talk to a person.": "ಈರ್ ಎಲ್ಯ ಪೊರ್ತುಡು ಮಸ್ತ್ ಪ್ರಶ್ನೆಲೆನ್ ಕೇಂಡರ್. ದಯಮಲ್ತ್ ಕೆಲವು ನಿಮಿಷ ಕಾಪುಲೆ, ಅತ್ತಂಡ ಒರಿ ಆಳ್‌ನೊಟ್ಟುಗು ಪಾತೆರ್ಲೆ.",
+    "You've asked a lot of questions in a short time. Please wait a few minutes, or talk to a person.": "ಈರ್ ಒಂಚೂರು ಪೊರ್ತುಡು ಮಸ್ತ್ ಪ್ರಶ್ನೆಲೆನ್ ಕೇಂಡರ್. ದಯಮಲ್ತ್ ಕೆಲವು ನಿಮಿಷ ಕಾಪುಲೆ, ಅತ್ತಂಡ ಒರಿ ನರಮನಿಡ ಪಾತೆರ್ಲೆ.",
     "Something went wrong on our side. Please try again.": "ಎಂಕ್ಲೆನ ಕಡೆಟ್ ದಾದಾಂಡಲ ತೊಂದರೆ ಆಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "Request failed ({status}).": "ಕೋರಿಕೆ ವಿಫಲ ಆಂಡ್ ({status}).",
     "That file is too big. Please upload something under {mb} MB.": "ಈ ಫೈಲ್ ಮಸ್ತ್ ಮಲ್ಲ. {mb} MB ಡ್ದ್ ಎಲ್ಯ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",
@@ -78,7 +78,7 @@ export const tcyContent: LangContent = {
     "The link {url} looks suspicious: {reason}": "ಲಿಂಕ್ {url} ಸಂಶಯ ಬರ್ಪಿನ ಲೆಕ್ಕ ತೋಜುಂಡು: {reason}",
     "The link {url} looks suspicious": "ಲಿಂಕ್ {url} ಸಂಶಯ ಬರ್ಪಿನ ಲೆಕ್ಕ ತೋಜುಂಡು",
     "This message has {count} links; we checked the first {max}": "ಈ ಮೆಸೇಜ್‌ಡ್ {count} ಲಿಂಕ್‌ಲು ಉಂಡು; ಸುರುತ {max} ಲಿಂಕ್ ಮಾತ್ರ ಪರಿಶೀಲನೆ ಮಲ್ತ",
-    "You've done a lot of checks in a short time. Please wait a few minutes and try again.": "ಈರ್ ಎಲ್ಯ ಪೊರ್ತುಡು ಮಸ್ತ್ ಪರಿಶೀಲನೆ ಮಲ್ತರ್. ಕೆಲವು ನಿಮಿಷ ಕಾತೊಂದು ಕುಡೊರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "You've done a lot of checks in a short time. Please wait a few minutes and try again.": "ಈರ್ ಒಂಚೂರು ಪೊರ್ತುಡು ಮಸ್ತ್ ಪರಿಶೀಲನೆ ಮಲ್ತರ್. ಕೆಲವು ನಿಮಿಷ ಕಾತೊಂದು ಕುಡೊರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "That picture is too large to read. Please send a normal screenshot or photo.": "ಈ ಪಟ ಓದೆರೆ ಮಸ್ತ್ ಮಲ್ಲ ಉಂಡು. ಸಾಮಾನ್ಯ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅತ್ತಂಡ ಫೋಟೋ ಕಡಪುಡ್ಲೆ.",
     "That password is too long to check. Please use one under 256 characters.": "ಈ ಪಾಸ್‌ವರ್ಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪೆರೆ ಮಸ್ತ್ ಉದ್ದ ಉಂಡು. 256 ಅಕ್ಷರೊಗು ಕಮ್ಮಿ ಉಪ್ಪುನೆನ್ ಬಳಕೆ ಮಲ್ಪುಲೆ.",
     "Messages can't be sent right now. Please use the live chat instead.": "ಇತ್ತೆ ಮೆಸೇಜ್ ಕಡಪುಡೆರೆ ಆಪುಜಿ. ಬದಲ್ ಆದ್ ಲೈವ್ ಚಾಟ್ ಬಳಕೆ ಮಲ್ಪುಲೆ.",
@@ -354,9 +354,9 @@ export const tcyContent: LangContent = {
 
     // ---- connection messages
     "We couldn't connect right now. Please check your internet and try again.": "ಇತ್ತೆ ಸಂಪರ್ಕ ಆಯಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
-    "This is taking longer than usual. Please try again in a moment.": "ಉಂದೆಕ್ ಸಾಮಾನ್ಯೊಡ್ದ್ ಜಾಸ್ತಿ ಪೊರ್ತು ದೆತೊಂದುಂಡು. ಎಲ್ಯ ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
+    "This is taking longer than usual. Please try again in a moment.": "ಉಂದೆಕ್ ಸಾಮಾನ್ಯೊಡ್ದ್ ಜಾಸ್ತಿ ಪೊರ್ತು ದೆತೊಂದುಂಡು. ಒಂಚೂರು ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "Something went wrong. Please try again.": "ದಾದಾಂಡಲ ತಪ್ಪಾಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
-    "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead.": "ಇತ್ತೆ ಈ ಪಟೊನು ಓದೆರೆ ಆಯಿಜಿ. ಎಲ್ಯ ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಮೆಸೇಜ್‌ದ ಬರವು ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
+    "We couldn't read this picture right now. Please try again in a moment, or paste the message text instead.": "ಇತ್ತೆ ಈ ಪಟೊನು ಓದೆರೆ ಆಯಿಜಿ. ಒಂಚೂರು ಪೊರ್ತು ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಮೆಸೇಜ್‌ದ ಬರವು ಪೇಸ್ಟ್ ಮಲ್ಪುಲೆ.",
 
     // ---- new message rules and public lists
     "Asks you to install an app from a link or file (APK)": "ಲಿಂಕ್ ಅತ್ತಂಡ ಫೈಲ್‌ಡ್ದ್ (APK) ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು",
@@ -508,7 +508,7 @@ export const tcyContent: LangContent = {
     money_transferred: {
       label: "ಪೈಸೆ ಕಡಪುಡ್‌ದಾಂಡ್ / ಪೋಂಡ್",
       steps: [
-        "ಬೇಗನೇ ಬ್ಯಾಂಕ್‌ದ ಮೋಸದ ಸಹಾಯವಾಣಿಗ್ ಕಾಲ್ ಮಲ್ತ್ ವಹಿವಾಟು ಉಂತಾವೆರೆ/ಪಿರ ಕೊರೆರೆ ಕೇನುಲೆ.",
+        "ಬೇಗನೇ ಬ್ಯಾಂಕ್‌ದ ಮೋಸದ ಸಹಾಯವಾಣಿಗ್ ಕಾಲ್ ಮಲ್ತ್ ವಹಿವಾಟು ಉಂತಾವೆರೆ/ಪಿರ ಕೊರೆರೆ ಕೇನ್ಲೆ.",
         "ಬೇಗನೇ cybercrime.gov.in ಡ್ ದೂರು ಕೊರ್ಲೆ ಅತ್ತಂಡ 1930 (ಭಾರತದ ರಾಷ್ಟ್ರೀಯ ಸೈಬರ್ ವಂಚನೆ ಸಹಾಯವಾಣಿ) ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ. ಸುರುತ ಕೆಲವು ಗಂಟೆಲೇ ಮುಖ್ಯ.",
         "ಮಾತಾ ಸಾಕ್ಷಿಲೆನ್ ದೀಲೆ: ಮೆಸೇಜ್‌ಲೆನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್, ವಹಿವಾಟು ID, ಸ್ಕ್ಯಾಮರ್‌ದ ನಂಬರ್/UPI ID.",
         "ಪೋರ್ಟಲ್ ಪಂಡ್‌ಂಡ ಬರಿತ ಪೊಲೀಸ್ ಠಾಣೆಡ್‌ಲಾ ದೂರು ಕೊರ್ಲೆ.",
