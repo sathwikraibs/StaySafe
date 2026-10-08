@@ -95,6 +95,9 @@ def allowed_origins() -> list:
     extra = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
     return extra + [
         "https://staysafe-tool.vercel.app",  # add preview or custom domains with ALLOWED_ORIGINS
+        "https://trustlight.vercel.app",
+        "https://trustlight-tool.vercel.app",
+        "https://trustlight-app.vercel.app",
         re.compile(r"^http://(localhost|127\.0\.0\.1)(:\d+)?$"),    # local development
     ]
 
