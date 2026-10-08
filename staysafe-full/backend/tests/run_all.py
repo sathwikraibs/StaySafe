@@ -27,6 +27,10 @@ def main() -> int:
         if not passed:
             bad.append(name)
             print(out[-3000:])
+            if os.environ.get("GITHUB_ACTIONS"):
+                # shown on the run's summary page, so a failure can be read without the full log
+                detail = "\n".join(fails[:15]) + "\n---\n" + out[-1800:]
+                print(f"::error title={name}::" + detail.replace("%", "%25").replace("\r", "").replace("\n", "%0A"))
     print(f"\n{total} tests in {len(glob.glob(os.path.join(HERE, 'test_*.py')))} files; "
           + ("all passed" if not bad else f"failed: {', '.join(bad)}"))
     return 1 if bad else 0
