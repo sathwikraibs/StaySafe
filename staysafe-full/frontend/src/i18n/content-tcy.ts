@@ -287,7 +287,7 @@ export const tcyContent: LangContent = {
     "That is a large amount for a QR payment. Double-check before paying": "QR ಪೇಮೆಂಟ್‌ಗ್ ಉಂದು ಮಲ್ಲ ಮೊತ್ತ. ಪೈಸೆ ಕೊರ್ಪುನೆಡ್ದ್ ದುಂಬು ಪಿರ ಒರ ತೂಲೆ",
     "The amount in this QR is not a valid number": "ಈ QR ಡ್ ಉಪ್ಪುನ ಮೊತ್ತ ಸರಿಯಾಯಿನ ಸಂಖ್ಯೆ ಅತ್ತ್",
     "The payment note says “{note}”. Scammers use notes like this to make you think you'll RECEIVE money": "ಪೇಮೆಂಟ್ ನೋಟ್‌ಡ್ “{note}” ಪಂಡ್‌ದ್ ಉಂಡು. ಈರೆಗ್ ಪೈಸೆ ಬರ್ಪುಂಡು ಪಂಡ್‌ದ್ ನಂಬಾವೆರೆ ಸ್ಕ್ಯಾಮರ್‌ಲು ಇಂಚಿನ ನೋಟ್ ಬಳಕೆ ಮಲ್ಪುವೆರ್",
-    "Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.": "ನೆಂಪು ದೀಲೆ: QR ಸ್ಕ್ಯಾನ್ ಮಲ್ತ್ UPI PIN ಪಾಡುಂಡ ಏಪಲಾ ಪೈಸೆ ಪೋಪುಂಡು. ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ QR ಸ್ಕ್ಯಾನ್ ಮಲ್ಪೊಡಾಪುಜಿ, PIN ಪಾಡೊಡಾಪುಜಿ.",
+    "Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.": "ನೆನಪುಡು ದೀಲೆ: QR ಸ್ಕ್ಯಾನ್ ಮಲ್ತ್ UPI PIN ಪಾಡುಂಡ ಏಪಲಾ ಪೈಸೆ ಪೋಪುಂಡು. ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ QR ಸ್ಕ್ಯಾನ್ ಮಲ್ಪೊಡಾಪುಜಿ, PIN ಪಾಡೊಡಾಪುಜಿ.",
     "QR reading from a picture isn't available right now. Try the camera button instead.": "ಪಟೊಡ್ದ್ QR ಓದುನ ಸೌಲಭ್ಯ ಇತ್ತೆ ಇಜ್ಜಿ. ಬದಲ್ ಆದ್ ಕ್ಯಾಮೆರಾ ಬಟನ್ ಬಳಕೆ ಮಲ್ಪುಲೆ.",
     "Please choose a photo of the QR code to upload.": "ಅಪ್‌ಲೋಡ್ ಮಲ್ಪೆರೆ QR ಕೋಡ್‌ದ ಫೋಟೋ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ.",
     "We couldn't open this image. Please upload a PNG or JPG photo.": "ಈ ಪಟ ತೆರೆಯೆರೆ ಆಯಿಜಿ. PNG ಅತ್ತಂಡ JPG ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",
