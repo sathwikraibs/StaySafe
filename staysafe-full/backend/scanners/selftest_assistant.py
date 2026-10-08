@@ -43,7 +43,7 @@ ASSISTANT_CASES = {
         ("en", "I installed an app called RTO Challan.apk from whatsapp, what should I do now", "en",
          [["uninstall", "remove", "delete", "airplane", "flight mode", "internet", "data"]], HELP),
         ("en", "someone sent me money by mistake on gpay and is asking me to return it, should i?", "en",
-         [["bank", "don't", "do not", "not", "careful", "scam"]], HELP),
+         [["bank"], ["don't", "do not", "never", "scam", "check"]], HELP),
         ("en", "Is cybercrime.gov.in a real website?", "en", [["yes", "official", "government", "real", "genuine"]], HELP),
         ("en", "my 70 year old father keeps getting calls about electricity cut, how do I protect him", "en",
          [["block", "chakshu", "1930", "don't", "do not", "never", "official"]], HELP),

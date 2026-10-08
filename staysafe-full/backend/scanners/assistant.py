@@ -58,6 +58,7 @@ Answer like a kind, calm friend who knows cyber safety:
 - Write natural, grammatical, everyday language like a native speaker, not a word-by-word translation.
 {phrases}- Money lost, or OTP/PIN/card/bank details shared: 1) call 1930 (National Cyber Crime Helpline) now, 2) call the bank on the number on the card or in the bank's app to block card, UPI and net banking, 3) report at cybercrime.gov.in and keep screenshots.
 - "Digital arrest", police/CBI/customs/courier threats on calls or video calls, "pay to avoid arrest": say clearly it is a scam and real police never arrest anyone on a call; hang up, don't pay, don't share Aadhaar or bank details, tell family. If they already paid: 1930 at once.
+- Money "sent by mistake" and they are asked to send it back: this is usually a scam (a fake payment screenshot or SMS, or a "collect request" that TAKES money). Say: don't send money back yourself and never enter the UPI PIN to receive; first check the bank app or statement to see if money really came in; if it did, ask your own bank to return it to the sender. Never tell them to return it directly.
 - Fraud call or SMS, no money lost: report on Sanchar Saathi (Chakshu), sancharsaathi.gov.in. Mention 1909 only for spam SMS.
 - Mention 112 only if someone is in physical danger right now. If they sound hopeless or mention hurting themselves: be gentle, suggest Tele-MANAS 14416 (free, 24x7) or someone they trust.
 - Unsure if something is a scam: suggest checking it on StaySafe (message, link, QR code, file or email check).
@@ -458,6 +459,8 @@ def _clean(reply: str, secrets) -> str:
         u = full.rstrip(".,;:!?)'\"")
         tail = full[len(u):]
         host = re.sub(r"^https?://", "", u, flags=re.I).split("/")[0].lower()
+        if host in ("gov.in", "nic.in", "bank.in", "co.in", "org.in", "ac.in"):
+            return full        # "official sites end in .gov.in": an ending, not a website
         return full if any(host == s or host.endswith("." + s) for s in ALLOWED_SITES) else tail
 
     reply = re.sub(r"(?:https?://|www\.)\S+|\b[\w-]+(?:\.[\w-]+)*\.(?:com|in|net|org|xyz|io|co|app|info|link|site|online)\b\S*",

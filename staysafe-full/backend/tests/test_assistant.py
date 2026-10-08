@@ -424,6 +424,14 @@ def test_kannada_grammar_inside_tulu_is_noticed():
     assert kannada_grammar_slips("ಈರೆನ ಪಾಸ್‌ವರ್ಡ್ ಬದಲ್ ಮಲ್ಪುಲೆ, 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ") == []
 
 
+def test_mistaken_money_advice_and_official_endings_kept():
+    from scanners.assistant import system_prompt, _clean
+    p = system_prompt("en")
+    assert "sent by mistake" in p and "Never tell them to return it directly" in p
+    assert ".gov.in" in _clean("Real government sites end in .gov.in, like cybercrime.gov.in", [])
+    assert "evil-site.xyz" not in _clean("Do not open evil-site.xyz", [])
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
