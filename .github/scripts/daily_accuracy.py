@@ -58,6 +58,8 @@ def main():
         runs += [("links", "/api/selftest/links", {"set": s}) for s in "12345678"]
         runs += [("files", "/api/selftest/files", {"set": s}) for s in "12345"]
         runs += [("messages", "/api/selftest/messages", {"set": s}) for s in "12346"]
+        runs += [("assistant", "/api/selftest/assistant", {"set": s}) for s in "1234"]
+        runs += [("other", "/api/selftest/emails", {})]
 
     day = {"date": today.isoformat(), "results": [], "missed_scam_links": [], "wrong": []}
     for kind, path, params in runs:

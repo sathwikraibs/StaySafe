@@ -473,3 +473,29 @@ def selftest_assistant_route():
     return jsonify({"set": pick, "title": title, "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
                     "wrong": [r["question"] for r in graded if not r["right"]],
                     "seconds": round(time.time() - began, 1), "results": results})
+
+
+@selftest_bp.route("/api/selftest/emails", methods=["GET"])
+def selftest_emails_route():
+    from scanners.security import has_status_key
+    from scanners.email_analyzer import scan_email
+    from scanners.selftest_emails import EMAILS
+    if not has_status_key():
+        return jsonify({"error": "Not found"}), 404
+    began = time.time()
+
+    def one(desc, data, expect):
+        r = scan_email(dict(data))
+        return {"email": desc, "expected": expect, "verdict": r.get("verdict"), "score": r.get("risk_score"),
+                "right": _grade(expect, r.get("verdict")), "why": [f[:150] for f in (r.get("findings") or [])[:3]]}
+    futures = [(d, e, _POOL.submit(one, d, data, e)) for d, data, e in EMAILS]
+    results = []
+    for d, e, f in futures:
+        try:
+            results.append(f.result(timeout=max(1, DEADLINE - (time.time() - began))))
+        except Exception:
+            results.append({"email": d, "expected": e, "verdict": "STILL_RUNNING", "right": None})
+    graded = [r for r in results if r.get("right") is not None]
+    return jsonify({"title": "Emails: fake banks, tax refunds, job offers, spoofed senders and genuine emails",
+                    "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
+                    "wrong": [r["email"] for r in graded if not r["right"]], "seconds": round(time.time() - began, 1), "results": results})
