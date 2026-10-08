@@ -1,0 +1,41 @@
+# StaySafe daily accuracy test. Runs every day at 02:44 India time (21:14 UTC).
+# Tests today's real scam links plus fixed samples for every checker on the live server, and
+# saves the results in staysafe-full/accuracy/. Stops by itself after 250 scam links.
+# Needs the repository secret STAYSAFE_STATUS_KEY (Settings > Secrets and variables > Actions).
+# To pause: Actions tab > "Daily accuracy test" > "..." > Disable workflow.
+name: Daily accuracy test
+
+on:
+  schedule:
+    - cron: "14 21 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-accuracy
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run the tests on the live server
+        env:
+          STAYSAFE_STATUS_KEY: ${{ secrets.STAYSAFE_STATUS_KEY }}
+        run: python .github/scripts/daily_accuracy.py
+      - name: Save the results in the repository
+        run: |
+          git config user.name "staysafe-accuracy-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add staysafe-full/accuracy
+          git diff --cached --quiet && exit 0
+          git commit -m "Daily accuracy results $(date -u +%F)"
+          git pull --rebase -q origin main
+          git push -q origin HEAD:main
