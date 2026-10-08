@@ -1,0 +1,50 @@
+# TrustLight tests. Runs on every change to main and on every pull request:
+# all backend tests (no API keys needed, outside services are faked) and a full website build
+# with a type check of the code. Free for public repositories.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: staysafe-full/backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: System packages (QR and picture reading)
+        run: sudo apt-get update -q && sudo apt-get install -y -q libzbar0 tesseract-ocr
+      - name: Python packages
+        run: pip install -q -r requirements.txt
+      - name: Run all backend tests
+        run: python tests/run_all.py
+
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: staysafe-full/frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Type-check
+        run: npx tsc -p tsconfig.app.json --noEmit
+      - name: Build
+        run: npm run build
