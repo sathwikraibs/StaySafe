@@ -270,6 +270,8 @@ export const knContent: LangContent = {
     "Contains repeated characters (e.g. 'aaa')": "ಒಂದೇ ಅಕ್ಷರ ಪದೇ ಪದೇ ಇದೆ (ಉದಾ. 'aaa')",
     "Contains a predictable sequence (like 1234, abcd or qwerty)": "ಸುಲಭವಾಗಿ ಊಹಿಸಬಹುದಾದ ಕ್ರಮವಿದೆ (1234, abcd ಅಥವಾ qwerty ಹಾಗೆ)",
     "Ends with a year (like a birth year). Easy to guess if someone knows you": "ಕೊನೆಯಲ್ಲಿ ಒಂದು ವರ್ಷ ಇದೆ (ಹುಟ್ಟಿದ ವರ್ಷದಂತೆ). ಪರಿಚಯದವರು ಸುಲಭವಾಗಿ ಊಹಿಸಬಹುದು",
+    "It's built from a name, place, god, film or team with numbers or symbols added. Attackers try these first, especially with birth years": "ಇದು ಒಂದು ಹೆಸರು, ಸ್ಥಳ, ದೇವರು, ಸಿನಿಮಾ ಅಥವಾ ತಂಡದ ಹೆಸರಿಗೆ ಅಂಕಿ ಅಥವಾ ಚಿಹ್ನೆ ಸೇರಿಸಿ ಮಾಡಿದ್ದು. ದಾಳಿಕೋರರು ಮೊದಲು ಇವನ್ನೇ ಪ್ರಯತ್ನಿಸುತ್ತಾರೆ, ಮುಖ್ಯವಾಗಿ ಹುಟ್ಟಿದ ವರ್ಷದೊಂದಿಗೆ",
+    "This looks like a mobile number. Anyone who knows you, or any leaked contact list, can guess it": "ಇದು ಮೊಬೈಲ್ ನಂಬರ್‌ನಂತೆ ಕಾಣುತ್ತದೆ. ನಿಮ್ಮನ್ನು ಬಲ್ಲ ಯಾರಾದರೂ, ಅಥವಾ ಸೋರಿಕೆಯಾದ ಯಾವುದೇ ಸಂಪರ್ಕ ಪಟ್ಟಿಯಿಂದ, ಇದನ್ನು ಊಹಿಸಬಹುದು",
     "Follows the very common pattern Word + symbol + numbers": "ತುಂಬಾ ಸಾಮಾನ್ಯ ಮಾದರಿ: ಪದ + ಚಿಹ್ನೆ + ಸಂಖ್ಯೆ",
     "No obvious weaknesses found": "ಸ್ಪಷ್ಟ ದೌರ್ಬಲ್ಯ ಏನೂ ಕಾಣಲಿಲ್ಲ",
     "This password has appeared in {count} known data breaches. Change it everywhere you use it": "ಈ ಪಾಸ್‌ವರ್ಡ್ {count} ಡೇಟಾ ಲೀಕ್‌ಗಳಲ್ಲಿ ಸಿಕ್ಕಿದೆ. ಇದನ್ನು ಬಳಸುವ ಎಲ್ಲಾ ಕಡೆ ಬದಲಾಯಿಸಿ",

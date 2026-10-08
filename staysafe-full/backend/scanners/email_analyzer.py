@@ -127,7 +127,9 @@ FREE_MAIL = {
 }
 COMPANY_WORDS = re.compile(
     r"\b(bank|support|customer care|helpdesk|service|kyc|income tax|police|cyber ?cell|courier|delivery|refund|"
-    r"security|team|official|government|govt|department|rbi|npci|uidai|trai|electricity|admin)\b", re.IGNORECASE)
+    r"security|team|official|government|govt|department|rbi|npci|uidai|trai|electricity|admin|hr|human resources|"
+    r"recruit(ment|er|ing)?|careers?|hiring|placement|talent|infosys|tcs|wipro|accenture|cognizant|hcl|capgemini|"
+    r"deloitte|tech ?mahindra|ibm|microsoft|google|amazon|flipkart|reliance|tata)\b", re.IGNORECASE)
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
 FIND_EMAIL = re.compile(r"[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
 
@@ -249,6 +251,15 @@ def check_sender_identity(from_name: str, from_addr: str) -> dict:
 @email_analyzer_bp.route("/api/scan-email", methods=["POST"])
 def scan_email_route():
     data = request.get_json(silent=True) or {}
+    result = scan_email(data)
+    if "error" in result:
+        return jsonify(result), 400
+    log_scan("email", result)
+    return jsonify(result)
+
+
+def scan_email(data: dict) -> dict:
+    """The whole email check (also used by the owner's live self-test)."""
     raw_email = str(data.get("raw_email") or "").strip()[:300_000]
     form_mode = False
 
@@ -257,9 +268,9 @@ def scan_email_route():
         name_in, sender = split_sender(str(data.get("sender_email") or "")[:300])
         body_in = str(data.get("body") or "").strip()[:50_000]
         if not body_in and not sender:
-            return jsonify({"error": "Please fill in the sender's email address and paste the message."}), 400
+            return {"error": "Please fill in the sender's email address and paste the message."}
         if str(data.get("sender_email") or "").strip() and not sender:
-            return jsonify({"error": "That sender email address doesn't look right. It should look like name@example.com"}), 400
+            return {"error": "That sender email address doesn't look right. It should look like name@example.com"}
         name = (str(data.get("sender_name") or "")[:300].strip() or name_in).replace("\n", " ")[:120]
         reply = split_sender(data.get("reply_to") or "")[1]
         subject = str(data.get("subject") or "")[:1000].strip().replace("\n", " ")[:300]
@@ -347,19 +358,26 @@ def scan_email_route():
                     identity.setdefault("parts", []).append({"label": finding, "points": 40})
                     identity["status"], identity["value"] = "fail", sender_domain
 
-    total_score = min(
-        100,
-        auth_result["score"] + sender_result["score"] + identity["score"] + (body_result["risk_score"] // 2) + url_score,
-    )
+    body_points = body_result["risk_score"] if body_result["risk_score"] >= 35 else body_result["risk_score"] // 2
+    total_score = min(100, auth_result["score"] + sender_result["score"] + identity["score"] + body_points + url_score)
+    # A genuine company email that passed every sender check (DMARC) and comes from that company's own
+    # website: wording like "secure your account" is normal there. Only a risky link can still raise it.
+    from scanners.url_scanner import TRUSTED_DOMAINS, registered_domain as _reg
+    if "dmarc=pass" in raw_email.lower() and sender_domain and _reg(sender_domain) in TRUSTED_DOMAINS \
+            and not sender_result["score"] and not risky_links:
+        total_score = min(total_score, 10)
+        body_points = min(body_points, 10)
 
     parts = list(identity.get("parts", []))
     if auth_result["score"] and auth_result["findings"]:
         parts.append({"label": auth_result["findings"][0], "points": auth_result["score"]})
     if sender_result["score"] and sender_result["findings"]:
         parts.append({"label": sender_result["findings"][0], "points": sender_result["score"]})
+    halve = body_result["risk_score"] < 35
     for bp in body_result.get("score_parts", []):
-        if bp["points"] // 2:
-            parts.append({"label": f"In the email text: {bp['label']}", "points": bp["points"] // 2})
+        pts = bp["points"] // 2 if halve else bp["points"]
+        if pts:
+            parts.append({"label": f"In the email text: {bp['label']}", "points": pts})
     if url_score and url_findings:
         parts.append({"label": url_findings[0], "points": url_score})
     from scanners.ledger import Ledger
@@ -399,6 +417,4 @@ def scan_email_route():
         "checks": checks,
         "score_parts": score_parts,
     }
-
-    log_scan("email", result)
-    return jsonify(result)
+    return result

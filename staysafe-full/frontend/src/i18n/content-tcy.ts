@@ -271,6 +271,8 @@ export const tcyContent: LangContent = {
     "Contains repeated characters (e.g. 'aaa')": "ಒಂಜೇ ಅಕ್ಷರ ಪಿರ ಪಿರ ಉಂಡು (ಉದಾ. 'aaa')",
     "Contains a predictable sequence (like 1234, abcd or qwerty)": "ಸುಲಭ ಆದ್ ಊಹೆ ಮಲ್ಪೊಲಿನ ಕ್ರಮ ಉಂಡು (1234, abcd ಅತ್ತಂಡ qwerty ಲೆಕ್ಕ)",
     "Ends with a year (like a birth year). Easy to guess if someone knows you": "ಅಕೇರಿಡ್ ಒಂಜಿ ವರ್ಷ ಉಂಡು (ಪುಟ್ಟಿನ ವರ್ಷದ ಲೆಕ್ಕ). ಗೊತ್ತಿತ್ತಿನಾಕುಲು ಸುಲಭ ಆದ್ ಊಹೆ ಮಲ್ಪುವೆರ್",
+    "It's built from a name, place, god, film or team with numbers or symbols added. Attackers try these first, especially with birth years": "ಉಂದು ಒಂಜಿ ಪುದರ್, ಊರು, ದೇವೆರ್, ಸಿನಿಮಾ ಅತ್ತಂಡ ತಂಡದ ಪುದರ್‌ಗ್ ಅಂಕಿ ಅತ್ತಂಡ ಚಿಹ್ನೆ ಸೇರಾದ್ ಮಲ್ತಿನವು. ದಾಳಿ ಮಲ್ಪುನಾಕುಲು ಸುರುಕ್ಕು ಉಂದೆನೇ ಪ್ರಯತ್ನ ಮಲ್ಪುವೆರ್, ಮುಖ್ಯವಾದ್ ಪುಟ್ಟಿನ ವರ್ಷದೊಟ್ಟುಗು",
+    "This looks like a mobile number. Anyone who knows you, or any leaked contact list, can guess it": "ಉಂದು ಮೊಬೈಲ್ ನಂಬರ್‌ದ ಲೆಕ್ಕ ತೋಜುಂಡು. ಇರೆನ್ ಗೊತ್ತುಪ್ಪುನ ಏರಾಂಡಲ, ಅತ್ತಂಡ ಸೋರಿ ಆಯಿನ ಏತೇ ಕಾಂಟ್ಯಾಕ್ಟ್ ಪಟ್ಟಿಡ್ದ್, ಉಂದೆನ್ ಊಹೆ ಮಲ್ಪೊಲಿ",
     "Follows the very common pattern Word + symbol + numbers": "ಮಸ್ತ್ ಸಾಮಾನ್ಯ ಮಾದರಿ: ಪದ + ಚಿಹ್ನೆ + ಸಂಖ್ಯೆ",
     "No obvious weaknesses found": "ಸ್ಪಷ್ಟ ಆಯಿನ ಒವ್ವೇ ಕೊರತೆ ತಿಕ್ಕಿಜಿ",
     "This password has appeared in {count} known data breaches. Change it everywhere you use it": "ಈ ಪಾಸ್‌ವರ್ಡ್ {count} ಡೇಟಾ ಲೀಕ್‌ಲೆಡ್ ತಿಕ್ಕ್‌ದುಂಡು. ಉಂದೆನ್ ಬಳಕೆ ಮಲ್ಪುನ ಮಾತಾ ಜಾಗೆಡ್ ಬದಲ್ ಮಲ್ಪುಲೆ",

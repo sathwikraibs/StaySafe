@@ -38,6 +38,23 @@ COMMON_BASE_WORDS = {
     "ram", "sairam", "jaishreeram", "mother", "baby", "qwertyuiop", "asdf", "zxcv",
 }
 
+# Names, places, gods, films and teams Indians often build passwords from (in English letters).
+# Attackers' guess lists for India start with exactly these.
+INDIAN_WORDS = set("""
+aishwarya priya pooja divya kavya anjali sneha shreya ananya deepika lakshmi sita radha durga parvati saraswati
+rahul rohit amit ankit arjun karan vikas suresh ramesh mahesh ganesh rajesh rakesh naresh dinesh mukesh santosh
+sachin virat dhoni rohith rishabh sanju hardik bumrah kohli tendulkar yuvraj sehwag dravid kumble
+krishna rama shiva hanuman ganapathi ganapati murugan ayyappa venkatesh balaji sairam saibaba om omsairam
+jaishriram jaishreeram harekrishna mahadev bholenath jaimatadi radhakrishna
+india bharat hindustan karnataka kannada tulu tulunadu kerala tamil telugu marathi mumbai delhi chennai
+bangalore bengaluru mangalore mangaluru udupi mysore mysuru hubli dharwad belgaum shimoga hassan kolkata pune
+hyderabad goa manipal kundapura puttur karkala
+rcb csk mi kkr srh dc rr pbks royalchallengers
+kgf bahubali pushpa kantara salaar rrr leo jailer dangal sholay
+sbi hdfc icici axis kotak paytm phonepe gpay jio airtel bsnl
+mummy papa amma appa anna akka thammudu chinnu kanna chinni bunty pinky sweety honey lucky happy
+""".split())
+
 LEET = str.maketrans({"@": "a", "4": "a", "0": "o", "1": "i", "!": "i", "3": "e", "$": "s", "5": "s", "7": "t"})
 
 SEQUENCES = [
@@ -53,6 +70,21 @@ def has_sequence(pw: str, length: int = 4) -> bool:
             if chunk in low or chunk[::-1] in low:
                 return True
     return False
+
+
+def _only_known_words(letters: str) -> bool:
+    """'aishwarya', 'rcbvirat', 'krishnabengaluru': nothing but common names and words joined together."""
+    if len(letters) < 3:
+        return False
+    words = INDIAN_WORDS | COMMON_BASE_WORDS
+    ok = [False] * (len(letters) + 1)
+    ok[0] = True
+    for i in range(1, len(letters) + 1):
+        for j in range(max(0, i - 20), i):
+            if ok[j] and letters[j:i] in words and (i - j >= 3 or letters[j:i] in ("om", "mi", "dc", "rr")):
+                ok[i] = True
+                break
+    return ok[len(letters)]
 
 
 def crack_time_seconds(password: str):
@@ -86,12 +118,21 @@ def analyze_strength(password: str) -> dict:
     # strip leading/trailing digits+symbols, then undo leetspeak: "P@ssw0rd2024!" -> "password"
     core = re.sub(r"^[^a-z@$]+|[^a-z]+$", "", lower)
     base = re.sub(r"[^a-z]", "", core.translate(LEET))
+    letters_only = re.sub(r"[^a-z]", "", lower)
     if lower in COMMON_PASSWORDS:
         findings.append("This is one of the most commonly used passwords in the world")
         score -= led.note(findings, 60)
-    elif length >= 6 and (base in COMMON_BASE_WORDS or re.sub(r"[^a-z]", "", lower) in COMMON_BASE_WORDS):
+    elif length >= 6 and (base in COMMON_BASE_WORDS or letters_only in COMMON_BASE_WORDS):
         findings.append("It's a very common word with numbers or symbols added (e.g. Password@123). Attackers try these first")
         score -= led.note(findings, 45)
+    elif _only_known_words(base) or _only_known_words(letters_only):
+        findings.append("It's built from a name, place, god, film or team with numbers or symbols added. "
+                        "Attackers try these first, especially with birth years")
+        score -= led.note(findings, 40)
+
+    if re.fullmatch(r"(\+?91)?[6-9]\d{9}", re.sub(r"[\s-]", "", password)):
+        findings.append("This looks like a mobile number. Anyone who knows you, or any leaked contact list, can guess it")
+        score -= led.note(findings, 50)
 
     # Missing character types matter less for long passphrases
     class_penalty = 5 if length >= 16 else 10
@@ -107,12 +148,15 @@ def analyze_strength(password: str) -> dict:
             score -= led.note(findings, class_penalty)
 
     if re.search(r"(.)\1{2,}", password):
+        most = max(lower.count(c) for c in set(lower))
         findings.append("Contains repeated characters (e.g. 'aaa')")
-        score -= led.note(findings, 10)
+        score -= led.note(findings, 35 if most * 2 >= length else 10)
 
     if has_sequence(password):
+        whole = any(re.sub(r"[^a-z0-9]", "", lower) in (seq * 2) or re.sub(r"[^a-z0-9]", "", lower) in (seq[::-1] * 2)
+                    for seq in SEQUENCES) and length >= 6
         findings.append("Contains a predictable sequence (like 1234, abcd or qwerty)")
-        score -= led.note(findings, 15)
+        score -= led.note(findings, 40 if whole else 15)
 
     if re.search(r"(19[5-9]\d|20[0-3]\d)[^0-9]*$", password):
         findings.append("Ends with a year (like a birth year). Easy to guess if someone knows you")

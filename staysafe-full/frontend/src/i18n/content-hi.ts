@@ -270,6 +270,8 @@ export const hiContent: LangContent = {
     "Contains repeated characters (e.g. 'aaa')": "एक ही अक्षर बार-बार है (जैसे 'aaa')",
     "Contains a predictable sequence (like 1234, abcd or qwerty)": "आसानी से अंदाज़ा लगने वाला क्रम है (जैसे 1234, abcd या qwerty)",
     "Ends with a year (like a birth year). Easy to guess if someone knows you": "आख़िर में कोई साल है (जैसे जन्म का साल)। जान-पहचान वाला आसानी से अंदाज़ा लगा सकता है",
+    "It's built from a name, place, god, film or team with numbers or symbols added. Attackers try these first, especially with birth years": "यह किसी नाम, जगह, भगवान, फ़िल्म या टीम के नाम में अंक या चिह्न जोड़कर बना है। हमलावर सबसे पहले यही आज़माते हैं, खासकर जन्म वर्ष के साथ",
+    "This looks like a mobile number. Anyone who knows you, or any leaked contact list, can guess it": "यह मोबाइल नंबर जैसा दिखता है। आपको जानने वाला कोई भी, या लीक हुई कोई भी कॉन्टैक्ट लिस्ट, इसे अंदाज़ा लगा सकती है",
     "Follows the very common pattern Word + symbol + numbers": "बहुत आम पैटर्न है: शब्द + चिह्न + नंबर",
     "No obvious weaknesses found": "कोई साफ़ कमज़ोरी नहीं मिली",
     "This password has appeared in {count} known data breaches. Change it everywhere you use it": "यह पासवर्ड {count} डेटा लीक में मिला है। जहाँ-जहाँ इस्तेमाल करते हैं, हर जगह बदल दें",
