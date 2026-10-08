@@ -25,7 +25,7 @@ function ResourceRow({ res }: { res: Resource }) {
     res.kind === "report" ? t("resources.report") :
     res.kind === "guide" ? t("resources.guide") : t("resources.open");
   const tone =
-    res.kind === "download" ? "bg-sage-500 text-cream-50" :
+    res.kind === "download" ? "bg-brand-500 text-cream-50" :
     res.kind === "call" || res.kind === "report" ? "bg-rust-500 text-cream-50" : "bg-dustyblue-500 text-cream-50";
   const external = !res.url.startsWith("tel:");
   return (
@@ -38,7 +38,7 @@ function ResourceRow({ res }: { res: Resource }) {
         <p className="flex flex-wrap items-center gap-1.5 font-body text-sm font-bold text-ink-900">
           {res.name}
           {res.platform && <span className="rounded-full bg-cream-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-dustyblue-600">{t(`resources.${res.platform}`)}</span>}
-          {res.govt && <span className="rounded-full bg-sage-200 px-1.5 py-0.5 text-[10px] font-bold uppercase text-sage-700">{t("resources.govt")}</span>}
+          {res.govt && <span className="rounded-full bg-brand-200 px-1.5 py-0.5 text-[10px] font-bold uppercase text-brand-700">{t("resources.govt")}</span>}
         </p>
         <p className="font-body text-xs text-dustyblue-600">{t(`resources.desc.${res.desc}`)}</p>
       </div>
@@ -150,8 +150,8 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
           <p className="mb-2 px-1 font-body text-xs font-bold uppercase tracking-wide text-rust-600">{t("incidentX.lostMoney")}</p>
           <UrgentBar />
         </div>
-        <button onClick={() => openHelper("home")} className="btn-press flex w-full items-center gap-3 rounded-2xl border-2 border-sage-300 bg-cream-50 p-4 text-left hover:bg-sage-100 disabled:opacity-60">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-500 text-cream-50"><IconChat className="h-5 w-5" /></span>
+        <button onClick={() => openHelper("home")} className="btn-press flex w-full items-center gap-3 rounded-2xl border-2 border-brand-300 bg-cream-50 p-4 text-left hover:bg-brand-100 disabled:opacity-60">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-cream-50"><IconChat className="h-5 w-5" /></span>
           <span className="min-w-0 flex-1">
             <span className="block font-body text-sm font-bold text-ink-900">{t("incident.chatScared")}</span>
             <span className="block font-body text-xs text-dustyblue-600">{t("chat.never")}</span>
@@ -183,7 +183,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
             );
           })}
         </div>
-        <button onClick={() => openHelper("home")} className="btn-press mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-sage-700 disabled:opacity-60">
+        <button onClick={() => openHelper("home")} className="btn-press mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-brand-700 disabled:opacity-60">
           <IconChat className="h-4 w-4" /> {t("incident.chatNotListed")}
         </button>
       </div>
@@ -195,7 +195,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
   const Icon = INCIDENT_ICONS[plan.id] ?? IconAlert;
   return (
     <div>
-      <button onClick={() => setStage("pick")} className="btn-press mb-4 flex items-center gap-2 font-body text-sm font-semibold text-dustyblue-600 hover:text-terracotta-600">
+      <button onClick={() => setStage("pick")} className="btn-press mb-4 flex items-center gap-2 font-body text-sm font-semibold text-dustyblue-600 hover:text-brand-600">
         <IconArrowLeft className="h-4 w-4" /> {t("incident.pickOther")}
       </button>
 
@@ -238,7 +238,7 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
       </ol>
 
       {doneCount === count ? (
-        <div className="mb-4 rounded-2xl bg-sage-500 p-5 text-cream-50 shadow-warm animate-fade-up">
+        <div className="mb-4 rounded-2xl bg-brand-600 p-5 text-cream-50 shadow-warm animate-fade-up">
           <p className="flex items-center gap-2 font-heading text-lg font-bold"><IconCheck className="h-5 w-5" /> {t("incidentX.allDone")}</p>
           <p className="mt-1 font-body text-sm text-cream-50/90">{t("incident.youCanText")}</p>
         </div>
@@ -253,11 +253,11 @@ export function IncidentPage({ onNavigate }: { onNavigate?: (path: string) => vo
 
       <div className="grid gap-2.5 sm:grid-cols-2">
         {!MONEY.has(plan.id) && <div className="sm:col-span-2"><UrgentBar /></div>}
-        <button onClick={() => openHelper("home")} className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-sage-500 px-4 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm disabled:opacity-60">
+        <button onClick={() => openHelper("home")} className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-brand-500 px-4 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm disabled:opacity-60">
           <IconChat className="h-4 w-4" /> {t("incident.chatStillWorried")}
         </button>
         {onNavigate && (
-          <button onClick={() => onNavigate("/help")} className="btn-press rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-sage-700">
+          <button onClick={() => onNavigate("/help")} className="btn-press rounded-2xl border-2 border-brand-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-brand-700">
             {t("incident.moreHelp")}
           </button>
         )}

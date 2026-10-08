@@ -9,7 +9,7 @@ const TOOL_PATH: Record<WaitingTool, string> = {
   link: "/scan-url", message: "/scan-message", screenshot: "/scan-message", qr: "/scan-qr", file: "/scan-file",
   password: "/check-password", network: "/check-network", email: "/scan-email", number: "/check-number", incident: "",
 };
-const INCIDENT_THEME: ToolTheme = { soft: "#F3DEDA", ink: "#8B3A2E", from: "#C26A5A", to: "#8B3A2E" };
+const INCIDENT_THEME: ToolTheme = { soft: "#FCE5E2", ink: "#A52A21", from: "#E5675A", to: "#A52A21" };
 
 /** A small moving picture that is different for every tool. */
 function ToolAnimation({ tool, th }: { tool: WaitingTool; th: ToolTheme }) {
@@ -52,7 +52,7 @@ function ToolAnimation({ tool, th }: { tool: WaitingTool; th: ToolTheme }) {
             <g key={`${x}${y}`}><rect x={x} y={y} width="20" height="20" rx="3" {...s} /><rect x={x + 6} y={y + 6} width="8" height="8" rx="1" fill={th.ink} /></g>
           ))}
           {[[60, 60], [70, 66], [62, 72], [74, 76], [48, 50], [48, 64], [66, 48]].map(([x, y]) => <rect key={`${x}-${y}`} x={x} y={y} width="6" height="6" rx="1" fill={light} />)}
-          <rect x="12" y="14" width="72" height="4" rx="2" fill="#D0634F" opacity="0.85" className="anim-scan" />
+          <rect x="12" y="14" width="72" height="4" rx="2" fill="#E5675A" opacity="0.85" className="anim-scan" />
         </svg>
       );
     case "file":
@@ -87,7 +87,7 @@ function ToolAnimation({ tool, th }: { tool: WaitingTool; th: ToolTheme }) {
     case "email":
       return (
         <svg viewBox="0 0 96 96" className="h-full w-full">
-          <g className="anim-rise"><rect x="30" y="22" width="36" height="34" rx="3" fill="#FBF7F0" stroke={light} strokeWidth="3" /><path d="M37 32h22M37 40h16" stroke={light} strokeWidth="3" strokeLinecap="round" /></g>
+          <g className="anim-rise"><rect x="30" y="22" width="36" height="34" rx="3" fill="#FFFFFF" stroke={light} strokeWidth="3" /><path d="M37 32h22M37 40h16" stroke={light} strokeWidth="3" strokeLinecap="round" /></g>
           <path {...s} fill={th.soft} d="M16 40l32 22 32-22v38H16z" />
           <path {...s} d="M16 78l24-20M80 78 56 58" />
         </svg>

@@ -8,8 +8,8 @@
   }
   body {
     font-family: 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, sans-serif;
-    background-color: #FBF7F0;
-    color: #4A4038;
+    background-color: #F5F6FB;
+    color: #363A57;
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
@@ -45,21 +45,21 @@
     width: 8px;
   }
   .scrollbar-warm::-webkit-scrollbar-track {
-    background: #F7F0E4;
+    background: #F4F5FA;
     border-radius: 8px;
   }
   .scrollbar-warm::-webkit-scrollbar-thumb {
-    background: #CFD9C4;
+    background: #D2D6E4;
     border-radius: 8px;
   }
   .scrollbar-warm::-webkit-scrollbar-thumb:hover {
-    background: #A7B897;
+    background: #ABB2C9;
   }
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #97AEB7;
+  color: #9AA1B9;
 }
 
 /* Sideways-scrolling rows without a visible scrollbar (phone bottom menu) */
@@ -142,3 +142,28 @@ textarea::placeholder {
 @keyframes sparkle { 0%, 100% { transform: scale(0); opacity: 0 } 50% { transform: scale(1); opacity: 1 } }
 .sparkle { animation: sparkle 2.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .badge-glow, .badge-pulse, .draw-path, .sparkle, .ring-draw, .qr-cam-line { animation: none !important; } }
+
+/* ---------- TrustLight lighthouse (home page) ---------- */
+@keyframes lh-sweep { 0% { transform: rotate(-16deg) } 100% { transform: rotate(16deg) } }
+@keyframes lh-on { from { opacity: 0 } to { opacity: 1 } }
+.lh-beams { transform-box: view-box; transform-origin: 60px 40px; animation: lh-on .9s .5s ease-out both, lh-sweep 5.5s 1.4s ease-in-out infinite alternate; }
+@keyframes lh-glow { 0%, 100% { opacity: .55; transform: scale(.85) } 50% { opacity: 1; transform: scale(1.15) } }
+.lh-glow { transform-box: fill-box; transform-origin: center; animation: lh-glow 2.8s ease-in-out infinite; }
+@keyframes lh-rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+.lh-tower { animation: lh-rise .7s cubic-bezier(.22,1,.36,1) both; }
+@keyframes lh-sea { from { transform: translateX(0) } to { transform: translateX(40px) } }
+.lh-sea { animation: lh-sea 6s linear infinite; }
+.lh-sea-2 { animation-duration: 9s; animation-direction: reverse; }
+@keyframes lh-star { 0%, 100% { opacity: .25 } 50% { opacity: 1 } }
+.lh-star { animation: lh-star 3.2s ease-in-out infinite; }
+
+/* A soft band of light that passes once over page headers: the lighthouse beam, used gently. */
+@keyframes light-pass { 0% { transform: translateX(-120%) skewX(-18deg); opacity: 0 } 15% { opacity: 1 } 100% { transform: translateX(260%) skewX(-18deg); opacity: 0 } }
+.light-pass { position: relative; overflow: hidden; isolation: isolate; }
+.light-pass::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; pointer-events: none; z-index: 1;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); animation: light-pass 1.6s .25s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-beams, .lh-glow, .lh-tower, .lh-sea, .lh-star, .light-pass::after { animation: none !important; }
+  .lh-beams { opacity: 1; }
+}

@@ -11,21 +11,21 @@ export type ReportTool = "link" | "message" | "qr" | "file" | "password" | "netw
 const TONE_STYLE: Record<Tone, { hero: string; ring: string; text: string; soft: string; chip: string }> = {
   safe: {
     hero: "from-sage-400 to-sage-600",
-    ring: "#647A4F",
+    ring: "#22905C",
     text: "text-sage-700",
     soft: "bg-sage-100",
     chip: "bg-sage-100 text-sage-700",
   },
   caution: {
     hero: "from-terracotta-400 to-terracotta-600",
-    ring: "#C57A5E",
+    ring: "#D98324",
     text: "text-terracotta-700",
     soft: "bg-terracotta-300/25",
     chip: "bg-terracotta-300/30 text-terracotta-700",
   },
   danger: {
     hero: "from-rust-400 to-rust-600",
-    ring: "#A84A3A",
+    ring: "#CC3A2E",
     text: "text-rust-600",
     soft: "bg-rust-400/15",
     chip: "bg-rust-400/15 text-rust-600",
@@ -300,7 +300,7 @@ export function ResultReport({ tool, verdict, riskScore, subject, checks, findin
           )}
           <button
             onClick={() => openHelper("home")}
-            className={`btn-press flex items-center justify-between gap-3 rounded-2xl border-2 border-sage-300 bg-cream-50 px-4 py-3.5 text-left font-body text-sm font-bold text-sage-700 hover:bg-sage-100 ${tone === "caution" ? "sm:col-span-2" : ""}`}
+            className={`btn-press flex items-center justify-between gap-3 rounded-2xl border-2 border-brand-300 bg-cream-50 px-4 py-3.5 text-left font-body text-sm font-bold text-brand-700 hover:bg-brand-100 ${tone === "caution" ? "sm:col-span-2" : ""}`}
           >
             <span>{t("report.askUs")}</span>
             <IconChat className="h-5 w-5 shrink-0" />

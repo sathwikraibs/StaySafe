@@ -31,7 +31,7 @@ export function ChoiceTabs<T extends string>({ value, onChange, choices, disable
             className={`btn-press flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-3 font-body text-sm font-bold leading-tight transition-colors disabled:opacity-60
               ${active ? "bg-cream-50 text-ink-900 shadow-warm-sm" : "text-dustyblue-600 hover:text-ink-800"}`}
           >
-            {c.icon && <c.icon className={`h-5 w-5 shrink-0 ${active ? "text-sage-600" : ""}`} />}
+            {c.icon && <c.icon className={`h-5 w-5 shrink-0 ${active ? "text-brand-600" : ""}`} />}
             <span className="min-w-0 text-center">{c.label}</span>
           </button>
         );

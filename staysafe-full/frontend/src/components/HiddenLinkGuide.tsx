@@ -31,7 +31,7 @@ export function HiddenLinkGuide({ onNavigate, defaultOpen = false, showLinkButto
         <ol className="space-y-2">
           {tl("hiddenLink.steps").map((step, i) => (
             <li key={i} className="flex items-start gap-3 font-body text-sm text-ink-700">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage-200 font-heading text-xs font-bold text-sage-700">{i + 1}</span>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-200 font-heading text-xs font-bold text-brand-700">{i + 1}</span>
               <span className="pt-0.5">{step}</span>
             </li>
           ))}
@@ -40,13 +40,13 @@ export function HiddenLinkGuide({ onNavigate, defaultOpen = false, showLinkButto
           <div className="flex flex-wrap gap-2 pt-1">
             <button
               onClick={() => onNavigate("/scan-url")}
-              className="btn-press rounded-xl bg-sage-400 px-4 py-2.5 font-body text-sm font-bold text-cream-50 hover:bg-sage-500"
+              className="btn-press rounded-xl bg-brand-400 px-4 py-2.5 font-body text-sm font-bold text-cream-50 hover:bg-brand-500"
             >
               {t("hiddenLink.goLink")}
             </button>
             <button
               onClick={() => onNavigate("/scan-email")}
-              className="btn-press rounded-xl border-2 border-sage-300 bg-cream-50 px-4 py-2.5 font-body text-sm font-bold text-sage-700 hover:bg-sage-100"
+              className="btn-press rounded-xl border-2 border-brand-300 bg-cream-50 px-4 py-2.5 font-body text-sm font-bold text-brand-700 hover:bg-brand-100"
             >
               {t("hiddenLink.goEmail")}
             </button>

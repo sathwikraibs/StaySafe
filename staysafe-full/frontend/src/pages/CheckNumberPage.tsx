@@ -37,7 +37,7 @@ function Pills<T extends string>({ items, value, onChange, label, disabled }: {
             aria-pressed={on}
             onClick={() => onChange(on ? "" : id)}
             className={`btn-press rounded-full border-2 px-3.5 py-2 text-left font-body text-sm font-semibold transition-colors
-              ${on ? "border-sage-500 bg-sage-500 text-cream-50" : "border-cream-200 bg-cream-100 text-ink-800 hover:border-sage-300"}`}
+              ${on ? "border-brand-500 bg-brand-500 text-cream-50" : "border-cream-200 bg-cream-100 text-ink-800 hover:border-brand-300"}`}
           >
             {label(id)}
           </button>
@@ -68,7 +68,7 @@ export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) =>
     } catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
   }
 
-  const inputCls = "w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-lg text-ink-800 outline-none transition-colors focus:border-sage-400 focus:bg-cream-50";
+  const inputCls = "w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-lg text-ink-800 outline-none transition-colors focus:border-brand-400 focus:bg-cream-50";
   const linkBtn = "btn-press mt-3 inline-flex items-center justify-center rounded-xl px-4 py-2.5 font-body text-sm font-bold shadow-warm-sm";
 
   return (
@@ -131,11 +131,11 @@ export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) =>
           {result.details?.number_type !== "helpline" && (
             <div className="rounded-2xl bg-cream-50 p-5 shadow-warm-sm">
               <div className="flex items-center gap-2">
-                <IconSearch className="h-5 w-5 text-sage-600" />
+                <IconSearch className="h-5 w-5 text-brand-600" />
                 <h3 className="font-heading text-base font-semibold text-ink-900">{t("number.govTitle")}</h3>
               </div>
               <p className="mt-1.5 font-body text-sm text-ink-800">{t("number.govText")}</p>
-              <a href={SUSPECT_SEARCH} target="_blank" rel="noopener noreferrer" className={`${linkBtn} bg-sage-500 text-cream-50 hover:bg-sage-600`}>
+              <a href={SUSPECT_SEARCH} target="_blank" rel="noopener noreferrer" className={`${linkBtn} bg-brand-500 text-cream-50 hover:bg-brand-600`}>
                 {t("number.govButton")}
               </a>
             </div>
@@ -149,7 +149,7 @@ export function CheckNumberPage({ onNavigate }: { onNavigate?: (path: string) =>
               <h3 className="font-heading text-base font-semibold text-ink-900">{t("number.reportTitle")}</h3>
             </div>
             <p className="mt-1.5 font-body text-sm text-ink-800">{t("number.reportText")}</p>
-            <a href={CHAKSHU} target="_blank" rel="noopener noreferrer" className={`${linkBtn} border-2 border-sage-300 bg-cream-50 text-sage-700 hover:bg-cream-100`}>
+            <a href={CHAKSHU} target="_blank" rel="noopener noreferrer" className={`${linkBtn} border-2 border-brand-300 bg-cream-50 text-brand-700 hover:bg-cream-100`}>
               {t("number.reportButton")}
             </a>
           </div>

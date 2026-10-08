@@ -69,7 +69,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           incoming={incoming}
         />
         <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-cream-100 p-3">
-          <input type="checkbox" checked={fullScan} onChange={(e) => setFullScan(e.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#647A4F]" />
+          <input type="checkbox" checked={fullScan} onChange={(e) => setFullScan(e.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#3730A3]" />
           <span className="font-body text-sm text-ink-800">
             <b>{t("vt.uploadTitle")}</b>
             <span className="mt-0.5 block text-xs text-dustyblue-600">{t("vt.uploadNote")}</span>

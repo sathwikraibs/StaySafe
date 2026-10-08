@@ -52,6 +52,7 @@ const tcyBase: BaseDict = {
     getHelp: "ಸಹಾಯ",
     clickedScamPill: "ಸ್ಕ್ಯಾಮ್ ಆಂಡಾ?",
     settingsAria: "ಸೆಟ್ಟಿಂಗ್ಸ್ ಬೊಕ್ಕ ಭಾಷೆ",
+    writeUs: "ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ",
   },
 
   loading: {

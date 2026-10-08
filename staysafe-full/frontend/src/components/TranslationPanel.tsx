@@ -89,7 +89,7 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
             {done ? languageName(done.to, lang) : t("message.trShowIn")}
           </p>
           {done ? (
-            <p className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-sage-100 p-3 font-body text-sm text-ink-800 scrollbar-warm">
+            <p className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-brand-100 p-3 font-body text-sm text-ink-800 scrollbar-warm">
               {done.text}
             </p>
           ) : slot === "busy" ? (

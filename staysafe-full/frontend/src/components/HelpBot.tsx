@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
-import { IconChat, IconClose, IconLock, IconShield } from "@/icons";
+import { BrandMark, IconChat, IconClose, IconLock, IconShield } from "@/icons";
 import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
 import { apiGet, apiPostJSON, errorMessage, ApiError } from "@/api";
 import { API_BASE } from "@/config";
@@ -259,8 +259,8 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
       {/* header */}
-      <div className="flex items-center gap-3 bg-gradient-to-br from-sage-400 to-sage-600 px-4 py-3.5 text-cream-50">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20"><IconShield className="h-6 w-6" /></span>
+      <div className="flex items-center gap-3 bg-gradient-to-br from-brand-800 to-brand-600 px-4 py-3.5 text-cream-50">
+        <BrandMark className="h-10 w-10 shrink-0 rounded-2xl ring-2 ring-white/20" />
         <div className="min-w-0 flex-1">
           <p className="font-heading text-base font-bold leading-tight">{tx.title}</p>
           <p className="font-body text-xs text-cream-50/85">{tx.subtitle}</p>
@@ -289,9 +289,9 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       <div ref={list} hidden={form} className="relative flex-1 space-y-3 overflow-y-auto px-3 py-4 scrollbar-warm">
         {bubbles.map((b, i) => (
           <div key={i} data-me={b.from === "me" ? "" : undefined} className={b.from === "me" ? "flex justify-end" : "flex flex-col items-start"}>
-            <div className={`max-w-[88%] ${b.from === "me" ? "rounded-2xl rounded-br-md bg-sage-500 px-3.5 py-2.5 text-cream-50" : "rounded-2xl rounded-bl-md bg-cream-100 px-3.5 py-2.5 text-ink-800"}`}>
+            <div className={`max-w-[88%] ${b.from === "me" ? "rounded-2xl rounded-br-md bg-brand-500 px-3.5 py-2.5 text-cream-50" : "rounded-2xl rounded-bl-md bg-cream-100 px-3.5 py-2.5 text-ink-800"}`}>
               {b.ai && (
-                <p className="mb-1.5 flex items-center gap-1.5 font-body text-[11px] font-bold uppercase tracking-wide text-sage-700">
+                <p className="mb-1.5 flex items-center gap-1.5 font-body text-[11px] font-bold uppercase tracking-wide text-brand-700">
                   <IconShield className="h-3.5 w-3.5" />{tx.aiName}
                 </p>
               )}
@@ -308,7 +308,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                 <p key={j} className={`whitespace-pre-wrap break-words font-body text-sm leading-relaxed ${j ? "mt-1.5" : ""}`}>{l}</p>
               ))}
               {b.note && (
-                <p className="mt-2 rounded-lg bg-sage-100 px-2.5 py-1.5 font-body text-xs leading-snug text-sage-700">{b.note}</p>
+                <p className="mt-2 rounded-lg bg-brand-100 px-2.5 py-1.5 font-body text-xs leading-snug text-brand-700">{b.note}</p>
               )}
               {b.ai && (
                 <p className="mt-2 border-t border-cream-200 pt-2 font-body text-[11px] leading-snug text-dustyblue-600">{tx.aiLabel}</p>
@@ -317,7 +317,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {LANG_CHOICES.map(([code, name]) => (
                     <button key={code} type="button" onClick={() => pickLanguage(code)} disabled={thinking}
-                      className="rounded-full bg-sage-500 px-3.5 py-1.5 font-body text-sm font-bold text-cream-50 hover:bg-sage-600 disabled:opacity-50">
+                      className="rounded-full bg-brand-500 px-3.5 py-1.5 font-body text-sm font-bold text-cream-50 hover:bg-brand-600 disabled:opacity-50">
                       {name}
                     </button>
                   ))}
@@ -328,7 +328,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                   {b.buttons.map((btn, k) => (
                     <button key={k} type="button" onClick={() => press(btn)}
                       className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 font-body text-sm font-bold transition-colors ${
-                        btn.kind === "person" || btn.kind === "form" ? "bg-cream-50 text-sage-700 ring-1 ring-sage-300 hover:bg-sage-100" : "bg-sage-500 text-cream-50 hover:bg-sage-600"}`}>
+                        btn.kind === "person" || btn.kind === "form" ? "bg-cream-50 text-brand-700 ring-1 ring-brand-300 hover:bg-brand-100" : "bg-brand-500 text-cream-50 hover:bg-brand-600"}`}>
                       {(btn.kind === "person" || btn.kind === "form") && <IconChat className="h-4 w-4" />}
                       {btn.label}
                     </button>
@@ -339,7 +339,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {topics.map((tp) => (
                     <button key={tp.id} type="button" onClick={() => ask(tp.q, tp)} disabled={thinking}
-                      className="rounded-full bg-cream-50 px-3 py-1.5 text-left font-body text-[13px] font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-sage-100 hover:ring-sage-300 disabled:opacity-50">
+                      className="rounded-full bg-cream-50 px-3 py-1.5 text-left font-body text-[13px] font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-brand-100 hover:ring-brand-300 disabled:opacity-50">
                       {tp.q}
                     </button>
                   ))}
@@ -348,14 +348,14 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
             </div>
             {b.aiAnyway && i === bubbles.length - 1 && !thinking && (
               <button type="button" onClick={() => { const q = b.aiAnyway!; setBubbles((all) => all.map((x) => x === b ? { ...x, aiAnyway: undefined } : x)); void askAssistant(q, () => say({ from: "bot", lines: [tx.noMatch], topics: true, team: true })); }}
-                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-sage-700 underline underline-offset-2 hover:text-sage-600">
+                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-600">
                 <IconShield className="h-3.5 w-3.5" />{tt.askAi}
               </button>
             )}
             {/* writing to the team: a quiet second option, after an answer */}
             {b.team && i === bubbles.length - 1 && !thinking && (
               <button type="button" onClick={person}
-                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-dustyblue-600 hover:text-sage-700">
+                className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-dustyblue-600 hover:text-brand-700">
                 <IconChat className="h-3.5 w-3.5" />{tx.stillNeed} <span className="underline underline-offset-2">{tx.writeTeam}</span>
               </button>
             )}
@@ -365,19 +365,19 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
         {/* first screen: common questions (they go to the AI too) */}
         {noAnswerYet && (
           <div className="pt-1">
-            <p className="mb-3 rounded-xl bg-sage-100 px-3 py-2 font-body text-xs leading-snug text-sage-700">{tx.tip}</p>
+            <p className="mb-3 rounded-xl bg-brand-100 px-3 py-2 font-body text-xs leading-snug text-brand-700">{tx.tip}</p>
             <p className="mb-2 px-1 font-body text-xs font-bold uppercase tracking-wide text-dustyblue-500">{tx.commonTitle}</p>
             <div className="flex flex-wrap gap-1.5">
               {topics.map((tp) => (
                 <button key={tp.id} type="button" onClick={() => ask(tp.q, tp)} disabled={thinking}
-                  className="rounded-full bg-cream-100 px-3 py-1.5 text-left font-body text-[13px] font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-sage-100 hover:ring-sage-300 disabled:opacity-50">
+                  className="rounded-full bg-cream-100 px-3 py-1.5 text-left font-body text-[13px] font-semibold text-ink-800 ring-1 ring-cream-200 transition-colors hover:bg-brand-100 hover:ring-brand-300 disabled:opacity-50">
                   {tp.q}
                 </button>
               ))}
             </div>
             {teamOnly && (
               <button type="button" onClick={person}
-                className="mt-3 flex items-center gap-1.5 px-1 font-body text-sm font-bold text-sage-700 underline underline-offset-2">
+                className="mt-3 flex items-center gap-1.5 px-1 font-body text-sm font-bold text-brand-700 underline underline-offset-2">
                 <IconChat className="h-4 w-4" />{tx.writeTeam}
               </button>
             )}
@@ -391,10 +391,10 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
           <textarea ref={box} value={input} onChange={(e) => setInput(e.target.value)} placeholder={tx.placeholder}
             rows={2} maxLength={5000}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(e); } }}
-            className={`min-w-0 flex-1 resize-none rounded-2xl border-2 bg-cream-100 px-3.5 py-2.5 font-body text-base text-ink-800 outline-none focus:border-sage-500 ${
-              noAnswerYet ? "border-sage-400 ring-4 ring-sage-200/60" : "border-cream-200"}`} />
+            className={`min-w-0 flex-1 resize-none rounded-2xl border-2 bg-cream-100 px-3.5 py-2.5 font-body text-base text-ink-800 outline-none focus:border-brand-500 ${
+              noAnswerYet ? "border-brand-400 ring-4 ring-brand-200/60" : "border-cream-200"}`} />
           <button type="submit" disabled={!input.trim() || thinking}
-            className="shrink-0 rounded-2xl bg-sage-500 px-4 py-3 font-body text-sm font-bold text-cream-50 transition-colors hover:bg-sage-600 disabled:opacity-50">
+            className="shrink-0 rounded-2xl bg-brand-500 px-4 py-3 font-body text-sm font-bold text-cream-50 transition-colors hover:bg-brand-600 disabled:opacity-50">
             {tx.send}
           </button>
         </div>
@@ -441,7 +441,7 @@ function ContactForm({ tx, onBack, onSent, send, errorText, initialMessage = "" 
     }
   }
 
-  const field = "mt-1 w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-3 py-2 font-body text-base text-ink-800 outline-none focus:border-sage-400";
+  const field = "mt-1 w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-3 py-2 font-body text-base text-ink-800 outline-none focus:border-brand-400";
   const label = "block font-body text-xs font-bold text-ink-800";
   return (
     <form onSubmit={go} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 scrollbar-warm">
@@ -469,7 +469,7 @@ function ContactForm({ tx, onBack, onSent, send, errorText, initialMessage = "" 
           {([["yes", tx.lostYes], ["no", tx.lostNo], ["unsure", tx.lostUnsure]] as const).map(([v, t]) => (
             <button key={v} type="button" onClick={() => setLost(lost === v ? "" : v)} aria-pressed={lost === v}
               className={`rounded-full px-3.5 py-1.5 font-body text-sm font-bold transition-colors ${
-                lost === v ? (v === "yes" ? "bg-rust-500 text-cream-50" : "bg-sage-500 text-cream-50") : "bg-cream-200 text-ink-800 hover:bg-cream-300"}`}>
+                lost === v ? (v === "yes" ? "bg-rust-500 text-cream-50" : "bg-brand-500 text-cream-50") : "bg-cream-200 text-ink-800 hover:bg-cream-300"}`}>
               {t}
             </button>
           ))}
@@ -487,7 +487,7 @@ function ContactForm({ tx, onBack, onSent, send, errorText, initialMessage = "" 
       </p>
       {error && <p className="rounded-xl bg-rust-400/15 p-2.5 font-body text-sm text-rust-600">{error}</p>}
       <button type="submit" disabled={!canSend}
-        className="w-full rounded-2xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 transition-colors hover:bg-sage-600 disabled:opacity-50">
+        className="w-full rounded-2xl bg-brand-500 px-4 py-3 font-body text-base font-bold text-cream-50 transition-colors hover:bg-brand-600 disabled:opacity-50">
         {busy ? tx.formSending : tx.formSend}
       </button>
     </form>

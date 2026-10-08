@@ -32,7 +32,7 @@ export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void })
       <PageHeader title={t("help.title")} subtitle={t("help.subtitle")} />
 
       {/* 1. Emergency */}
-      <Section accent="#A84A3A" icon={<IconAlert className="h-4 w-4" />} title={t("help.urgentTitle")}>
+      <Section accent="#CC3A2E" icon={<IconAlert className="h-4 w-4" />} title={t("help.urgentTitle")}>
         <p className="font-body text-sm text-ink-700">{t("helpX.urgentShort")}</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <a href="tel:1930" className="btn-press flex items-center justify-center gap-2 rounded-xl bg-rust-500 px-3 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-rust-600">
@@ -46,16 +46,16 @@ export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void })
       </Section>
 
       {/* 2. Talk to a person */}
-      <Section accent="#647A4F" icon={<IconChat className="h-4 w-4" />} title={t("chat.title")} delay={60}>
-        <p className="font-body text-xs font-semibold text-sage-700">{t("chat.unknown")}</p>
+      <Section accent="#3730A3" icon={<IconChat className="h-4 w-4" />} title={t("chat.title")} delay={60}>
+        <p className="font-body text-xs font-semibold text-brand-700">{t("chat.unknown")}</p>
         <p className="mt-2 font-body text-sm text-ink-700">{t("chat.intro")}</p>
         <button
           onClick={() => openHelper("home")}
-          className="btn-press mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600"
+          className="btn-press mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 font-body text-base font-bold text-cream-50 shadow-warm-sm hover:bg-brand-600"
         >
           <IconChat className="h-5 w-5" /> {t("chat.askAi")}
         </button>
-        <button onClick={() => openHelper("person")} className="mt-2 w-full text-center font-body text-sm font-semibold text-sage-700 underline underline-offset-2">
+        <button onClick={() => openHelper("person")} className="mt-2 w-full text-center font-body text-sm font-semibold text-brand-700 underline underline-offset-2">
           {t("chat.start")}
         </button>
         <p className="mt-2.5 flex items-center gap-1.5 font-body text-xs text-dustyblue-600">
@@ -64,11 +64,11 @@ export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void })
       </Section>
 
       {/* 3. What we help with */}
-      <Section accent="#54707B" icon={<IconCheck className="h-4 w-4" />} title={t("help.canHelpTitle")} delay={120}>
+      <Section accent="#22905C" icon={<IconCheck className="h-4 w-4" />} title={t("help.canHelpTitle")} delay={120}>
         <ul className="space-y-2">
           {tl("help.topics").map((topic) => (
             <li key={topic} className="flex items-start gap-2.5 font-body text-sm text-ink-800">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage-100 text-sage-600"><IconCheck className="h-3 w-3" /></span>
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600"><IconCheck className="h-3 w-3" /></span>
               {topic}
             </li>
           ))}
@@ -86,7 +86,7 @@ export function HelpPage({ onNavigate }: { onNavigate: (path: string) => void })
           <IconArrowRight className="h-4 w-4 text-dustyblue-400" />
         </button>
         <button onClick={() => onNavigate("/scam-library")} className="btn-press card-hover flex items-center gap-3 rounded-2xl bg-cream-50 p-4 text-left shadow-warm">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sage-100 text-sage-600"><IconBook className="h-5 w-5" /></span>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600"><IconBook className="h-5 w-5" /></span>
           <span className="min-w-0 flex-1">
             <span className="block font-body text-sm font-bold text-ink-800">{t("help.learnTitle")}</span>
             <span className="block font-body text-xs text-dustyblue-600">{t("help.learnText")}</span>

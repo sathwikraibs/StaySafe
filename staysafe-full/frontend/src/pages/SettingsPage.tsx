@@ -18,7 +18,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
       {/* Language */}
       <Card className="p-5 sm:p-6">
         <div className="mb-1 flex items-center gap-2">
-          <IconLanguage className="h-5 w-5 text-sage-600" />
+          <IconLanguage className="h-5 w-5 text-brand-600" />
           <h2 className="font-heading text-lg font-semibold text-ink-900">{t("settings.language")}</h2>
         </div>
         <p className="mb-4 font-body text-sm text-dustyblue-600">{t("settings.languageNote")}</p>
@@ -34,14 +34,14 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
                 onClick={() => setLang(l.code)}
                 lang={l.code}
                 className={`btn-press relative flex flex-col items-start rounded-2xl border-2 p-4 pr-10 text-left transition-colors
-                  ${active ? "border-sage-400 bg-sage-100" : "border-cream-200 bg-cream-50 hover:border-sage-300 hover:bg-cream-100"}`}
+                  ${active ? "border-brand-400 bg-brand-100" : "border-cream-200 bg-cream-50 hover:border-brand-300 hover:bg-cream-100"}`}
               >
                 <span className="font-heading text-xl font-bold text-ink-900">{l.native}</span>
                 <span className="mt-0.5 font-body text-xs font-semibold text-dustyblue-600">
                   {l.english}{l.beta ? " · beta" : ""}
                 </span>
                 {active && (
-                  <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-sage-500 text-cream-50">
+                  <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-cream-50">
                     <IconCheck className="h-4 w-4" strokeWidth={3} />
                   </span>
                 )}
@@ -68,7 +68,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
       {/* Data */}
       <Card className="p-5 sm:p-6">
         <div className="mb-1 flex items-center gap-2">
-          <IconHistory className="h-5 w-5 text-sage-600" />
+          <IconHistory className="h-5 w-5 text-brand-600" />
           <h2 className="font-heading text-lg font-semibold text-ink-900">{t("settings.data")}</h2>
         </div>
         <p className="mb-4 font-body text-sm text-dustyblue-600">{t("settings.dataText")}</p>
@@ -86,7 +86,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
         onClick={() => onNavigate("/about")}
         className="btn-press card-hover flex w-full items-center gap-3 rounded-2xl bg-cream-50 p-5 text-left shadow-warm"
       >
-        <IconInfo className="h-5 w-5 text-sage-600" />
+        <IconInfo className="h-5 w-5 text-brand-600" />
         <span className="flex-1 font-body text-base font-semibold text-ink-800">{t("settings.about")}</span>
         <IconArrowRight className="h-5 w-5 text-dustyblue-400" />
       </button>

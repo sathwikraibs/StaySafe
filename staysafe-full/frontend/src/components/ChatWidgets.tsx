@@ -21,7 +21,7 @@ export function FloatingHelpButton({ onNavigate, currentPath }: { onNavigate: (p
       onClick={() => setHelper({ mode: "home", n: Date.now() })}
       aria-label={t("chat.floatingAria")}
       data-help-fab
-      className="btn-press fixed bottom-6 right-6 z-40 hidden items-center gap-2 rounded-full bg-sage-500 py-3 pl-3 pr-5 text-cream-50 shadow-warm-lg transition-colors hover:bg-sage-600 lg:flex"
+      className="btn-press fixed bottom-6 right-6 z-40 hidden items-center gap-2 rounded-full bg-brand-500 py-3 pl-3 pr-5 text-cream-50 shadow-warm-lg transition-colors hover:bg-brand-600 lg:flex"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
       <span className="relative flex h-7 w-7 items-center justify-center">
@@ -36,7 +36,7 @@ export function FloatingHelpButton({ onNavigate, currentPath }: { onNavigate: (p
 export function ChatCard({ title, compact = false }: { title?: string; compact?: boolean }) {
   const { t, lang } = useI18n();
   return (
-    <div className={`overflow-hidden rounded-2xl bg-gradient-to-br from-sage-400 to-sage-600 text-cream-50 shadow-warm-lg ${compact ? "p-5" : "p-6 sm:p-7"}`}>
+    <div className={`overflow-hidden rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 text-cream-50 shadow-warm-lg ${compact ? "p-5" : "p-6 sm:p-7"}`}>
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cream-50/20">
           <IconChat className="h-7 w-7" />
@@ -49,7 +49,7 @@ export function ChatCard({ title, compact = false }: { title?: string; compact?:
       {!compact && <p className="mt-4 font-body text-sm leading-relaxed text-cream-50/90">{t("chat.intro")}</p>}
       <button
         onClick={() => openHelper("home")}
-        className="btn-press mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cream-50 px-6 py-3.5 font-body text-base font-bold text-sage-700 shadow-warm transition-colors hover:bg-cream-100"
+        className="btn-press mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cream-50 px-6 py-3.5 font-body text-base font-bold text-brand-700 shadow-warm transition-colors hover:bg-cream-100"
       >
         <IconChat className="h-5 w-5" />
         {t("chat.askAi")}

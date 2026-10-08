@@ -119,7 +119,7 @@ export function ImageCropper({ file, onDone, onCancel }: {
       className={`absolute z-10 h-7 w-7 touch-none ${cls}`}
       style={{ cursor: `${kind}-resize` }}
     >
-      <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-sage-600 bg-cream-50 shadow-warm-sm" />
+      <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand-600 bg-cream-50 shadow-warm-sm" />
     </span>
   );
 
@@ -178,7 +178,7 @@ export function ImageCropper({ file, onDone, onCancel }: {
           {t("crop.cancel")}
         </button>
         <button type="button" onClick={finish} disabled={busy}
-          className="rounded-2xl bg-sage-500 px-4 py-3 font-body text-base font-bold text-cream-50 hover:bg-sage-600 disabled:opacity-60">
+          className="rounded-2xl bg-brand-500 px-4 py-3 font-body text-base font-bold text-cream-50 hover:bg-brand-600 disabled:opacity-60">
           {t("crop.use")}
         </button>
       </div>

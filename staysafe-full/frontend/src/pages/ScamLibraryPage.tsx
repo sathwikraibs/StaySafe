@@ -48,8 +48,8 @@ const LEVEL_STYLE = {
   1: "bg-dustyblue-100 text-dustyblue-600",
 } as const;
 
-const ICON_BG = ["#DCEBEA", "#ECE3F0", "#F5EAD2", "#F4E1D8", "#DDE6EB", "#E3EBDC", "#E2E4F1", "#F3DFDF"];
-const ICON_FG = ["#2F6E70", "#6E4E7C", "#86621A", "#A85F47", "#3E5862", "#4D6039", "#48548F", "#944A4A"];
+const ICON_BG = ["#E0F4F1", "#EEE8FC", "#FDF1DA", "#FCE6EE", "#DFF3F7", "#E5EAFE", "#ECEDFE", "#FDE8E2"];
+const ICON_FG = ["#0E6E69", "#5737B0", "#8C5409", "#A2305B", "#1A6B82", "#2D3FB0", "#3730A3", "#A9402A"];
 
 export function ScamLibraryPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t, lang, content } = useI18n();
@@ -86,7 +86,7 @@ export function ScamLibraryPage({ onNavigate }: { onNavigate?: (path: string) =>
       <div>
         <button
           onClick={() => setSelectedId(null)}
-          className="btn-press mb-4 flex items-center gap-2 font-body text-sm font-semibold text-dustyblue-600 hover:text-terracotta-600"
+          className="btn-press mb-4 flex items-center gap-2 font-body text-sm font-semibold text-dustyblue-600 hover:text-brand-600"
         >
           <IconArrowLeft className="h-4 w-4" /> {t("library.backToList")}
         </button>
@@ -113,7 +113,7 @@ export function ScamLibraryPage({ onNavigate }: { onNavigate?: (path: string) =>
           </Card>
 
           {selected.example && (
-            <div className="rounded-2xl bg-[#E7F0E4] p-5">
+            <div className="rounded-2xl bg-sage-100 p-5">
               <h3 className="mb-3 font-heading text-lg font-semibold text-ink-900">{t("libraryX.example")}</h3>
               <div className="relative max-w-md rounded-2xl rounded-tl-sm bg-cream-50 px-4 py-3 shadow-warm-sm">
                 <p className="font-body text-[15px] text-ink-800">{selected.example}</p>
@@ -156,7 +156,7 @@ export function ScamLibraryPage({ onNavigate }: { onNavigate?: (path: string) =>
 
           <div className="grid gap-2.5 sm:grid-cols-2">
             {selected.tool && onNavigate && (
-              <button onClick={() => onNavigate(selected.tool!)} className="btn-press flex items-center justify-between gap-2 rounded-2xl bg-sage-500 px-4 py-3.5 text-left font-body text-sm font-bold text-cream-50 shadow-warm hover:bg-sage-600 sm:col-span-2">
+              <button onClick={() => onNavigate(selected.tool!)} className="btn-press flex items-center justify-between gap-2 rounded-2xl bg-brand-500 px-4 py-3.5 text-left font-body text-sm font-bold text-cream-50 shadow-warm hover:bg-brand-600 sm:col-span-2">
                 {t("libraryX.tryTool")} <IconArrowRight className="h-5 w-5 shrink-0" />
               </button>
             )}
@@ -190,7 +190,7 @@ export function ScamLibraryPage({ onNavigate }: { onNavigate?: (path: string) =>
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("library.search")}
-          className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-12 py-3.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400"
+          className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-12 py-3.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-brand-400"
         />
       </div>
 

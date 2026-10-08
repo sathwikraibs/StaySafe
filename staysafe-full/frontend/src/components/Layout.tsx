@@ -1,9 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ALL_NAV, MAIN_TOOLS, MORE_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from "@/nav";
-import { BrandMark, IconChevronRight, IconAlert, IconSettings, IconChat, IconClose, IconHome, IconMessage, IconLink } from "@/icons";
+import { BrandMark, IconChevronRight, IconAlert, IconSettings, IconChat, IconClose, IconHome, IconMessage, IconLink, IconEmail as IconMail } from "@/icons";
 import { openHelper } from "@/chat";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { FloatingHelpButton } from "@/components/ChatWidgets";
+import { Wordmark } from "@/components/Brand";
+import { themeFor } from "@/toolTheme";
 
 interface LayoutProps {
   children: ReactNode;
@@ -24,9 +26,9 @@ function SideGroup({ title, items, currentPath, onNavigate }: { title?: string; 
             key={item.path}
             onClick={() => onNavigate(item.path)}
             className={`btn-press mb-0.5 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left font-body text-sm font-semibold
-              ${active ? "bg-sage-200 text-sage-700" : "text-ink-700 hover:bg-cream-200"}`}
+              ${active ? "bg-brand-50 text-brand-700 ring-1 ring-brand-100" : "text-ink-700 hover:bg-cream-100"}`}
           >
-            <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-sage-600" : "text-dustyblue-500"}`} />
+            <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-brand-600" : "text-dustyblue-400"}`} />
             <span>{t(item.label)}</span>
           </button>
         );
@@ -41,14 +43,14 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
   const langShort = LANGUAGES.find((l) => l.code === lang)?.short ?? "EN";
 
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className="min-h-screen bg-mist">
       {/* ---------- Laptop sidebar ---------- */}
       <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-cream-200 bg-cream-100/80 backdrop-blur-md lg:flex">
         <button onClick={() => onNavigate("/")} className="flex items-center gap-3 px-6 py-6 text-left">
           <BrandMark className="h-11 w-11 shrink-0 shadow-warm-sm rounded-xl" />
           <div>
-            <p className="font-heading text-xl font-bold text-ink-900">TrustLight</p>
-            <p className="font-body text-xs text-dustyblue-600">{t("common.tagline")}</p>
+            <Wordmark className="block text-[22px]" />
+            <p className="mt-1 font-body text-[11px] font-semibold text-dustyblue-500">{t("common.tagline")}</p>
           </div>
         </button>
 
@@ -56,7 +58,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
           <SideGroup items={[ALL_NAV[0]]} currentPath={currentPath} onNavigate={onNavigate} />
           <button
             onClick={() => openHelper("home")}
-            className="btn-press mb-3 flex w-full items-center gap-3 rounded-xl bg-sage-500 px-3.5 py-2.5 text-left font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600"
+            className="btn-press mb-3 flex w-full items-center gap-3 rounded-xl bg-brand-500 px-3.5 py-2.5 text-left font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-brand-600"
           >
             <IconChat className="h-5 w-5 shrink-0" />
             <span>{t("chat.floating")}</span>
@@ -79,7 +81,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
                   key={item.path}
                   onClick={() => onNavigate(item.path)}
                   className={`btn-press flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 font-body text-xs font-semibold
-                    ${active ? "bg-sage-200 text-sage-700" : "text-dustyblue-600 hover:bg-cream-200"}`}
+                    ${active ? "bg-brand-200 text-brand-700" : "text-dustyblue-600 hover:bg-cream-200"}`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{t(item.label)}</span>
@@ -87,6 +89,10 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
               );
             })}
           </div>
+          <button onClick={() => openHelper("person")}
+            className="btn-press flex w-full items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 font-body text-xs font-semibold text-dustyblue-500 hover:bg-cream-100 hover:text-brand-600">
+            <IconMail className="h-4 w-4 shrink-0" />{t("nav.writeUs")}
+          </button>
         </div>
       </aside>
 
@@ -97,7 +103,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
             <button onClick={() => onNavigate("/")} className="flex items-center gap-2 lg:hidden">
               <BrandMark className="h-8 w-8 shrink-0" />
               {/* hide the word on narrow phones so the emergency button always fits */}
-              <span className="hidden font-heading text-lg font-bold text-ink-900 min-[420px]:inline">TrustLight</span>
+              <Wordmark className="hidden text-[19px] min-[360px]:inline" />
             </button>
 
             {/* Phone: always-visible emergency shortcut + settings */}
@@ -118,7 +124,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
                 onClick={() => onNavigate("/settings")}
                 aria-label={t("nav.settingsAria")}
                 className={`btn-press flex h-9 items-center gap-1 rounded-full border-2 px-2.5 font-body text-xs font-bold
-                  ${currentPath === "/settings" ? "border-sage-400 bg-sage-200 text-sage-700" : "border-cream-200 bg-cream-100 text-dustyblue-600"}`}
+                  ${currentPath === "/settings" ? "border-brand-400 bg-brand-200 text-brand-700" : "border-cream-200 bg-cream-100 text-dustyblue-600"}`}
               >
                 <IconSettings className="h-4 w-4" />
                 <span>{langShort}</span>
@@ -131,7 +137,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
                   {i > 0 && <IconChevronRight className="h-4 w-4 text-dustyblue-400" />}
                   <button
                     onClick={() => onNavigate(c.path)}
-                    className={`font-body text-sm ${i === crumbs.length - 1 ? "font-semibold text-ink-800" : "text-dustyblue-600 hover:text-terracotta-600"}`}
+                    className={`font-body text-sm ${i === crumbs.length - 1 ? "font-semibold text-ink-800" : "text-dustyblue-600 hover:text-brand-600"}`}
                   >
                     {t(c.label)}
                   </button>
@@ -167,10 +173,10 @@ function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigat
   const tab = (key: string, label: string, Icon: NavItem["icon"], active: boolean, onClick: () => void, strong = false) => (
     <button key={key} onClick={onClick}
       className={`btn-press relative flex flex-1 flex-col items-center gap-1 px-1 pb-2.5 pt-2.5 ${
-        strong ? "text-sage-700" : active ? "text-sage-700" : "text-dustyblue-500"} ${active ? "bg-cream-200/80" : ""}`}>
+        strong ? "text-brand-700" : active ? "text-brand-700" : "text-dustyblue-500"} ${active ? "bg-cream-200/80" : ""}`}>
       {active && <span className="absolute left-3 right-3 top-0 h-[3px] rounded-b-full bg-current" />}
       {strong ? (
-        <span className="-mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-sage-500 text-cream-50 shadow-warm-sm"><Icon className="h-5 w-5" /></span>
+        <span className="-mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-cream-50 shadow-warm-sm"><Icon className="h-5 w-5" /></span>
       ) : <Icon className="h-5 w-5" />}
       <span className="whitespace-nowrap font-body text-[10px] font-semibold">{label}</span>
     </button>
@@ -191,8 +197,10 @@ function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigat
               {[...MAIN_TOOLS.slice(2), ...MORE_TOOLS].map((item) => (
                 <button key={item.path} onClick={() => onNavigate(item.path)}
                   className={`flex items-center gap-2.5 rounded-xl px-3 py-3 text-left font-body text-sm font-semibold ${
-                    currentPath === item.path ? "bg-sage-200 text-sage-700" : "bg-cream-100 text-ink-800"}`}>
-                  <item.icon className="h-5 w-5 shrink-0 text-dustyblue-500" />{t(item.label)}
+                    currentPath === item.path ? "bg-brand-200 text-brand-700" : "bg-cream-100 text-ink-800"}`}>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: themeFor(item.path).soft, color: themeFor(item.path).ink }}>
+                    <item.icon className="h-[18px] w-[18px]" />
+                  </span>{t(item.label)}
                 </button>
               ))}
             </div>
@@ -200,7 +208,7 @@ function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigat
               {HELP_NAV.map((item) => (
                 <button key={item.path} onClick={() => onNavigate(item.path)}
                   className={`flex items-center gap-2.5 rounded-xl px-3 py-3 text-left font-body text-sm font-bold ${
-                    item.tone === "urgent" ? "bg-rust-500 text-cream-50" : "border-2 border-sage-300 text-sage-700"}`}>
+                    item.tone === "urgent" ? "bg-rust-500 text-cream-50" : "border-2 border-brand-300 text-brand-700"}`}>
                   <item.icon className="h-5 w-5 shrink-0" />{t(item.label)}
                 </button>
               ))}
@@ -213,6 +221,10 @@ function PhoneMenu({ currentPath, onNavigate }: { currentPath: string; onNavigat
                 </button>
               ))}
             </div>
+            <button onClick={() => { setMore(false); openHelper("person"); }}
+              className="mt-3 flex w-full items-center justify-center gap-1.5 py-1.5 font-body text-xs font-semibold text-dustyblue-500">
+              <IconMail className="h-4 w-4" />{t("nav.writeUs")}
+            </button>
           </div>
         </div>
       )}
@@ -266,7 +278,7 @@ function SidebarHelpButton({ item, active, onNavigate }: { item: NavItem; active
     <button
       onClick={() => onNavigate(item.path)}
       className={`btn-press flex w-full items-center gap-3 rounded-xl border-2 px-3.5 py-2.5 text-left font-body text-sm font-bold transition-colors
-        ${active ? "border-sage-400 bg-sage-200 text-sage-700" : "border-sage-300 bg-cream-50 text-sage-700 hover:bg-sage-100"}`}
+        ${active ? "border-brand-400 bg-brand-200 text-brand-700" : "border-brand-300 bg-cream-50 text-brand-700 hover:bg-brand-100"}`}
     >
       <item.icon className="h-5 w-5" />
       <span>{t(item.label)}</span>

@@ -52,6 +52,7 @@ const enBase = {
     getHelp: "Get help",
     clickedScamPill: "Clicked a scam?",
     settingsAria: "Settings and language",
+    writeUs: "Write to us",
   },
 
 

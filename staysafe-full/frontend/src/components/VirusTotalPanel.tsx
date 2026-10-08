@@ -9,11 +9,11 @@ function DetectionRing({ flagged, total }: { flagged: number; total: number }) {
   const r = 42;
   const c = 2 * Math.PI * r;
   const part = total ? flagged / total : 0;
-  const color = flagged === 0 ? "#647A4F" : flagged < 3 ? "#C57A5E" : "#A84A3A";
+  const color = flagged === 0 ? "#22905C" : flagged < 3 ? "#D98324" : "#CC3A2E";
   return (
     <div className="relative h-24 w-24 shrink-0">
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#EFE3D0" strokeWidth="10" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#E6E8F1" strokeWidth="10" />
         <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
           strokeDasharray={`${Math.max(flagged ? 6 : 0, part * c)} ${c}`} className="ring-draw" />
       </svg>

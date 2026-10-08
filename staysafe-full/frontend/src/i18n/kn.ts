@@ -51,6 +51,7 @@ const knBase: BaseDict = {
     getHelp: "ಸಹಾಯ ಪಡೆಯಿರಿ",
     clickedScamPill: "ವಂಚನೆ ಆಯ್ತಾ?",
     settingsAria: "ಸೆಟ್ಟಿಂಗ್ಸ್ ಮತ್ತು ಭಾಷೆ",
+    writeUs: "ನಮಗೆ ಬರೆಯಿರಿ",
   },
 
   loading: {

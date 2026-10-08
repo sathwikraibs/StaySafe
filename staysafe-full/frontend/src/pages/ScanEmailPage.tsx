@@ -63,7 +63,7 @@ function Field({ label, need, hint, children }: { label: string; need: "required
   );
 }
 
-const inputCls = "w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400 focus:bg-cream-50";
+const inputCls = "w-full rounded-xl border-2 border-cream-200 bg-cream-100 px-4 py-3 font-body text-base text-ink-800 outline-none transition-colors focus:border-brand-400 focus:bg-cream-50";
 
 export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const { t } = useI18n();
@@ -155,7 +155,7 @@ export function ScanEmailPage({ onNavigate }: { onNavigate?: (path: string) => v
                 className={`${inputCls} ${senderBad ? "border-rust-400" : ""}`}
               />
               {senderBad && <span className="mt-1 block font-body text-xs font-semibold text-rust-600">{t("emailForm.badEmail")}</span>}
-              {cleaned && <span className="mt-1 block font-body text-xs font-semibold text-sage-700">{t("emailForm.cleaned", { email: cleaned })}</span>}
+              {cleaned && <span className="mt-1 block font-body text-xs font-semibold text-brand-700">{t("emailForm.cleaned", { email: cleaned })}</span>}
               {movedName && <span className="mt-1 block font-body text-xs font-semibold text-terracotta-700">{t("emailForm.movedName", { name: movedName })}</span>}
             </Field>
             <Field label={t("emailForm.senderName")} need="optional">

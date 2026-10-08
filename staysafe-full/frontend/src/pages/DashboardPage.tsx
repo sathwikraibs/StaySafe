@@ -26,7 +26,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
     return (
       <div>
         <ToolHeader path="/dashboard" title={t("dashboard.title")} subtitle={t("dashboard.subtitleEmpty")} />
-        <div className="rounded-2xl bg-gradient-to-br from-sage-100 to-cream-100 p-8 text-center shadow-warm">
+        <div className="rounded-2xl bg-gradient-to-br from-brand-100 to-cream-100 p-8 text-center shadow-warm">
           <IconHistory className="mx-auto mb-3 h-10 w-10 text-dustyblue-400" />
           <p className="mb-5 font-body text-base text-ink-700/80">
             {t("dashboard.empty")}
@@ -46,11 +46,11 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
           <div className="mb-5 flex gap-2">
             <button
               onClick={() => setTab("overview")}
-              className={`btn-press rounded-xl px-4 py-2 font-body text-sm font-semibold ${tab === "overview" ? "bg-sage-200 text-sage-700" : "bg-cream-100 text-dustyblue-600"}`}
+              className={`btn-press rounded-xl px-4 py-2 font-body text-sm font-semibold ${tab === "overview" ? "bg-brand-200 text-brand-700" : "bg-cream-100 text-dustyblue-600"}`}
             >{t("dashboard.overview")}</button>
             <button
               onClick={() => setTab("history")}
-              className={`btn-press rounded-xl px-4 py-2 font-body text-sm font-semibold ${tab === "history" ? "bg-sage-200 text-sage-700" : "bg-cream-100 text-dustyblue-600"}`}
+              className={`btn-press rounded-xl px-4 py-2 font-body text-sm font-semibold ${tab === "history" ? "bg-brand-200 text-brand-700" : "bg-cream-100 text-dustyblue-600"}`}
             >{t("dashboard.history")}</button>
           </div>
 
@@ -61,10 +61,10 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
                 <p className="font-body text-sm text-dustyblue-600">{t("dashboard.yourScore")}</p>
                 <div className="relative mx-auto my-4 flex h-32 w-32 items-center justify-center">
                   <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="#EFE3D0" strokeWidth="10" />
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="#E6E8F1" strokeWidth="10" />
                     <circle
                       cx="60" cy="60" r="52" fill="none"
-                      stroke={data.safety_score >= 70 ? "#7E9168" : data.safety_score >= 40 ? "#D4896A" : "#A84A3A"}
+                      stroke={data.safety_score >= 70 ? "#22905C" : data.safety_score >= 40 ? "#D98324" : "#CC3A2E"}
                       strokeWidth="10" strokeLinecap="round"
                       strokeDasharray={`${(data.safety_score / 100) * 327} 327`}
                     />
@@ -102,7 +102,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (path: string) => vo
               </Button>
               <p className="text-center font-body text-xs text-dustyblue-500">
                 {t("dashboard.savedHere")}{" "}
-                <button onClick={handleClear} className="underline hover:text-terracotta-600">{t("dashboard.clear")}</button>
+                <button onClick={handleClear} className="underline hover:text-brand-600">{t("dashboard.clear")}</button>
               </p>
             </div>
           )}

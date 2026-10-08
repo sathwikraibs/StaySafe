@@ -3,7 +3,7 @@ interface IconProps {
   strokeWidth?: number;
 }
 
-const base = (sw = 2) => ({
+const base = (sw = 1.9) => ({
   fill: "none" as const,
   stroke: "currentColor",
   strokeWidth: sw,
@@ -24,9 +24,9 @@ export function IconHome({ className, strokeWidth }: IconProps) {
 export function IconLink({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M9 15 15 9" />
-      <path d="M10.5 7.5 11.8 6.2a3.5 3.5 0 0 1 5 5l-1.3 1.3" />
-      <path d="M13.5 16.5 12.2 17.8a3.5 3.5 0 0 1-5-5l1.3-1.3" />
+      <rect x="2.6" y="8.2" width="11" height="7.6" rx="3.8" transform="rotate(-45 8.1 12)" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M10.4 13.6a3.3 3.3 0 0 0 4.7 0l3.3-3.3a3.3 3.3 0 0 0-4.7-4.7l-1.1 1.1" />
+      <path d="M13.6 10.4a3.3 3.3 0 0 0-4.7 0l-3.3 3.3a3.3 3.3 0 0 0 4.7 4.7l1.1-1.1" />
     </svg>
   );
 }
@@ -34,8 +34,9 @@ export function IconLink({ className, strokeWidth }: IconProps) {
 export function IconMessage({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H8l-4 3V6a1 1 0 0 1 1-1z" />
-      <path d="M8 9h8M8 12h5" />
+      <path d="M5.5 4.5h13a2.5 2.5 0 0 1 2.5 2.5v7.5a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17A2.5 2.5 0 0 1 3 14.5V7a2.5 2.5 0 0 1 2.5-2.5z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M5.5 4.5h13a2.5 2.5 0 0 1 2.5 2.5v7.5a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V17A2.5 2.5 0 0 1 3 14.5V7a2.5 2.5 0 0 1 2.5-2.5z" />
+      <path d="M7.5 9h9M7.5 12.5h5.5" />
     </svg>
   );
 }
@@ -43,10 +44,12 @@ export function IconMessage({ className, strokeWidth }: IconProps) {
 export function IconQr({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <rect x="4" y="4" width="6" height="6" rx="1" />
-      <rect x="14" y="4" width="6" height="6" rx="1" />
-      <rect x="4" y="14" width="6" height="6" rx="1" />
-      <path d="M14 14h2v2M18 14v6M14 18h2M14 20h6" />
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" fill="currentColor" opacity=".16" stroke="none" />
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.8" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.8" />
+      <path d="M6.5 6.5h1v1h-1zM16.5 6.5h1v1h-1zM6.5 16.5h1v1h-1z" fill="currentColor" />
+      <path d="M14 14h2.5v2.5M20.5 14v.01M14 20.5h2.5M20.5 17.5v3h-1.5" />
     </svg>
   );
 }
@@ -54,9 +57,10 @@ export function IconQr({ className, strokeWidth }: IconProps) {
 export function IconFile({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M6.5 3h7.5l5 5v11.5A1.5 1.5 0 0 1 17.5 21h-11A1.5 1.5 0 0 1 5 19.5v-15A1.5 1.5 0 0 1 6.5 3z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" />
       <path d="M14 3v5h5" />
-      <path d="M10 13h5M10 16h5" />
+      <path d="M8.5 13h7M8.5 16.5h4.5" />
     </svg>
   );
 }
@@ -64,8 +68,10 @@ export function IconFile({ className, strokeWidth }: IconProps) {
 export function IconKey({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <circle cx="8" cy="15" r="4" />
-      <path d="M10.8 12.2 20 3M17 6l2 2M14 9l2.5 2.5" />
+      <circle cx="8" cy="15" r="4.5" fill="currentColor" opacity=".16" stroke="none" />
+      <circle cx="8" cy="15" r="4.5" />
+      <path d="M11.3 11.7 20 3M16.5 6.5l2.5 2.5M14 9l2 2" />
+      <circle cx="8" cy="15" r="1.2" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -73,10 +79,11 @@ export function IconKey({ className, strokeWidth }: IconProps) {
 export function IconNetwork({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M5 12a7 7 0 0 1 14 0" />
-      <path d="M8 12a4 4 0 0 1 8 0" />
-      <circle cx="12" cy="12" r="1.5" />
-      <path d="M12 13.5V18M12 18l-2 2M12 18l2 2" />
+      <path d="M12 20.5 6.6 14a8 8 0 0 1 10.8 0z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M2.5 8.5a14 14 0 0 1 19 0" />
+      <path d="M5.5 11.8a9.5 9.5 0 0 1 13 0" />
+      <path d="M8.6 15a5 5 0 0 1 6.8 0" />
+      <circle cx="12" cy="18.6" r="1.4" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -84,8 +91,9 @@ export function IconNetwork({ className, strokeWidth }: IconProps) {
 export function IconEmail({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
+      <rect x="3" y="5" width="18" height="14" rx="2.5" fill="currentColor" opacity=".16" stroke="none" />
+      <rect x="3" y="5" width="18" height="14" rx="2.5" />
+      <path d="m3.8 6.5 7 5.5a2 2 0 0 0 2.4 0l7-5.5" />
     </svg>
   );
 }
@@ -93,10 +101,11 @@ export function IconEmail({ className, strokeWidth }: IconProps) {
 export function IconDashboard({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M4 13a8 8 0 0 1 16 0" />
-      <path d="M12 13l4-3" />
-      <circle cx="12" cy="13" r="1.5" />
-      <path d="M3 18h18" />
+      <path d="M3.5 16a8.5 8.5 0 0 1 17 0z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M3.5 16a8.5 8.5 0 0 1 17 0" />
+      <path d="M12 16l3.5-4.5" />
+      <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M3.5 19.5h17" />
     </svg>
   );
 }
@@ -113,9 +122,9 @@ export function IconAlert({ className, strokeWidth }: IconProps) {
 export function IconBook({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M5 4a1 1 0 0 1 1-1h6v17H6a1 1 0 0 1-1-1V4z" />
-      <path d="M19 4a1 1 0 0 0-1-1h-6v17h6a1 1 0 0 0 1-1V4z" />
-      <path d="M8 7h2M8 10h2" />
+      <path d="M12 6.5C10 5 7.2 4.5 3.5 4.8v13.5c3.7-.3 6.5.2 8.5 1.7z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M12 6.5C10 5 7.2 4.5 3.5 4.8v13.5c3.7-.3 6.5.2 8.5 1.7 2-1.5 4.8-2 8.5-1.7V4.8C16.8 4.5 14 5 12 6.5z" />
+      <path d="M12 6.5V20" />
     </svg>
   );
 }
@@ -209,8 +218,9 @@ export function IconHistory({ className, strokeWidth }: IconProps) {
 export function IconChat({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.1A8 8 0 1 1 20 12z" />
-      <path d="M8.5 11h.01M12 11h.01M15.5 11h.01" />
+      <path d="M12 3.5c4.7 0 8.5 3.3 8.5 7.4s-3.8 7.4-8.5 7.4c-1 0-2-.15-2.9-.43L4.5 19.8l1.2-3.6C4.3 14.8 3.5 13 3.5 10.9c0-4.1 3.8-7.4 8.5-7.4z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M12 3.5c4.7 0 8.5 3.3 8.5 7.4s-3.8 7.4-8.5 7.4c-1 0-2-.15-2.9-.43L4.5 19.8l1.2-3.6C4.3 14.8 3.5 13 3.5 10.9c0-4.1 3.8-7.4 8.5-7.4z" />
+      <path d="M8.5 11h.01M12 11h.01M15.5 11h.01" strokeWidth="2.6" />
     </svg>
   );
 }
@@ -218,7 +228,8 @@ export function IconChat({ className, strokeWidth }: IconProps) {
 export function IconPhone({ className, strokeWidth }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base(strokeWidth)}>
-      <path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+      <path d="M6.6 3.5h2.6l1.6 4.2-2 1.4a11.5 11.5 0 0 0 6.1 6.1l1.4-2 4.2 1.6v2.6a2 2 0 0 1-2.2 2A16.6 16.6 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" fill="currentColor" opacity=".16" stroke="none" />
+      <path d="M6.6 3.5h2.6l1.6 4.2-2 1.4a11.5 11.5 0 0 0 6.1 6.1l1.4-2 4.2 1.6v2.6a2 2 0 0 1-2.2 2A16.6 16.6 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" />
     </svg>
   );
 }

@@ -64,7 +64,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleCheck(); }}
           placeholder="https://example.com"
-          className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-sage-400"
+          className="w-full rounded-2xl border-2 border-cream-200 bg-cream-100 px-4 py-3.5 font-body text-base text-ink-800 outline-none transition-colors focus:border-brand-400"
         />
         <div className="mt-4">
           <Button onClick={handleCheck} disabled={loading || !url.trim()} fullWidth>
@@ -78,7 +78,7 @@ export function ScanUrlPage({ onNavigate }: { onNavigate?: (path: string) => voi
       {error && <div className="mt-4"><ErrorNotice>{error}</ErrorNotice></div>}
 
       {result && asked && !result.url.replace(/^https?:\/\//i, "").startsWith(asked.replace(/^https?:\/\//i, "").replace(/\/$/, "")) && (
-        <p className="mt-4 break-all rounded-xl bg-sage-100 px-4 py-2.5 font-body text-sm text-sage-700">{t("urlX.cleaned", { url: result.url })}</p>
+        <p className="mt-4 break-all rounded-xl bg-brand-100 px-4 py-2.5 font-body text-sm text-brand-700">{t("urlX.cleaned", { url: result.url })}</p>
       )}
 
       {result && (

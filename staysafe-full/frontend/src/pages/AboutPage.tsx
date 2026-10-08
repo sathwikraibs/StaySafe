@@ -13,7 +13,7 @@ export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }
 
       <Card className="p-5 sm:p-6">
         <div className="mb-2 flex items-center gap-2">
-          <IconShield className="h-5 w-5 text-sage-600" />
+          <IconShield className="h-5 w-5 text-brand-600" />
           <h2 className="font-heading text-lg font-semibold text-ink-900">{t("about.whatTitle")}</h2>
         </div>
         <p className="font-body text-sm leading-relaxed text-ink-700">{t("about.what")}</p>
@@ -24,7 +24,7 @@ export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }
         <ol className="mt-3 space-y-3">
           {tl("about.steps").map((step, i) => (
             <li key={i} className="flex items-start gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage-500 font-heading text-sm font-bold text-cream-50">{i + 1}</span>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-sm font-bold text-cream-50">{i + 1}</span>
               <span className="pt-0.5 font-body text-sm leading-relaxed text-ink-800">{step}</span>
             </li>
           ))}
@@ -53,29 +53,29 @@ export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }
 
       <Card className="p-5 sm:p-6">
         <div className="mb-3 flex items-center gap-2">
-          <IconLock className="h-5 w-5 text-sage-600" />
+          <IconLock className="h-5 w-5 text-brand-600" />
           <h2 className="font-heading text-lg font-semibold text-ink-900">{t("about.dataTitle")}</h2>
         </div>
         <ul className="space-y-2.5">
           {tl("about.dataItems").map((item) => (
             <li key={item} className="flex items-start gap-2.5 font-body text-sm text-ink-700">
-              <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-sage-500" />
+              <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
               <span>{item}</span>
             </li>
           ))}
         </ul>
       </Card>
 
-      <div className="rounded-2xl bg-sage-100 p-5">
-        <p className="font-heading text-base font-semibold text-sage-700">{t("about.neverTitle")}</p>
-        <p className="mt-1 font-body text-sm text-sage-700">{t("about.never")}</p>
+      <div className="rounded-2xl bg-brand-100 p-5">
+        <p className="font-heading text-base font-semibold text-brand-700">{t("about.neverTitle")}</p>
+        <p className="mt-1 font-body text-sm text-brand-700">{t("about.never")}</p>
       </div>
 
       <button
         onClick={() => onNavigate("/help")}
         className="btn-press card-hover flex w-full items-center gap-3 rounded-2xl bg-cream-50 p-5 text-left shadow-warm"
       >
-        <IconChat className="h-5 w-5 shrink-0 text-sage-600" />
+        <IconChat className="h-5 w-5 shrink-0 text-brand-600" />
         <span className="flex-1">
           <span className="block font-body text-base font-semibold text-ink-800">{t("about.contactTitle")}</span>
           <span className="block font-body text-sm text-dustyblue-600">{t("about.contact")}</span>

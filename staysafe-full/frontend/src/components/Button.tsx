@@ -20,9 +20,9 @@ export function Button({
   fullWidth = false,
 }: ButtonProps) {
   const variants = {
-    primary: "bg-terracotta-500 text-cream-50 hover:bg-terracotta-600 shadow-warm",
-    secondary: "bg-sage-400 text-cream-50 hover:bg-sage-500 shadow-warm",
-    outline: "bg-cream-50 text-ink-800 border-2 border-sage-300 hover:border-sage-400 hover:bg-sage-100",
+    primary: "bg-brand-600 text-cream-50 hover:bg-brand-700 shadow-warm",
+    secondary: "bg-brand-400 text-cream-50 hover:bg-brand-500 shadow-warm",
+    outline: "bg-cream-50 text-ink-800 border-2 border-brand-300 hover:border-brand-400 hover:bg-brand-100",
   };
   return (
     <button

@@ -51,6 +51,7 @@ const hiBase: BaseDict = {
     getHelp: "मदद लें",
     clickedScamPill: "स्कैम हुआ?",
     settingsAria: "सेटिंग्स और भाषा",
+    writeUs: "हमें लिखें",
   },
 
   loading: {

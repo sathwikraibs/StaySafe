@@ -1,6 +1,7 @@
 import { MAIN_TOOLS, MORE_TOOLS } from "@/nav";
 import { InstallCard } from "@/components/InstallCard";
-import { IconShield, IconArrowRight, IconAlert, IconLock, IconChevronRight, IconCheck, IconChat } from "@/icons";
+import { IconArrowRight, IconAlert, IconLock, IconChevronRight, IconCheck, IconChat } from "@/icons";
+import { LighthouseHero } from "@/components/Brand";
 import { useI18n } from "@/i18n";
 import { themeFor } from "@/toolTheme";
 import { openHelper } from "@/chat";
@@ -11,46 +12,31 @@ const TOOL_IDS: Record<string, string> = {
   "/dashboard": "dashboard", "/scam-library": "library",
 };
 
-/** Shield with gentle rings: the picture on the welcome card. */
-function HeroArt() {
-  return (
-    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center sm:h-36 sm:w-36" aria-hidden>
-      <span className="hero-ring absolute inset-0 rounded-full border-2 border-sage-300" />
-      <span className="hero-ring absolute inset-3 rounded-full border-2 border-sage-300/70" style={{ animationDelay: "0.8s" }} />
-      <span className="absolute inset-3 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 opacity-90 shadow-warm-lg sm:inset-6" />
-      <IconShield className="relative h-8 w-8 text-cream-50 sm:h-14 sm:w-14" />
-      <span className="hero-float absolute -right-1 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-cream-50 text-sage-600 shadow-warm sm:top-3 sm:h-8 sm:w-8">
-        <IconCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-      </span>
-      <span className="hero-float absolute -left-1 bottom-1 hidden h-7 w-7 items-center justify-center rounded-full bg-cream-50 text-terracotta-600 shadow-warm sm:flex" style={{ animationDelay: "1.2s" }}>
-        <IconLock className="h-3.5 w-3.5" />
-      </span>
-    </div>
-  );
-}
-
 /** Home: a short welcome to TrustLight, quick help, the four main checks, then everything else. */
 export function HomePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const { t } = useI18n();
   return (
     <div>
-      {/* Welcome */}
-      <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-sage-100 via-cream-100 to-dustyblue-100 p-5 shadow-warm animate-fade-up sm:p-8">
-        <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sage-200/50 blur-2xl" />
-        <span className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-terracotta-300/30 blur-2xl" />
-        <div className="relative flex items-center gap-4 sm:gap-6">
-          <div className="min-w-0 flex-1">
-            <h1 className="font-heading text-[22px] font-bold leading-tight text-ink-900 sm:text-3xl">{t("home.title")}</h1>
-            <p className="mt-2 max-w-lg font-body text-sm text-ink-700/85 sm:mt-3 sm:text-base">{t("home.intro")}</p>
-            <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
+      {/* Welcome: the lighthouse on a night sea, its light sweeping slowly */}
+      <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 p-5 text-white shadow-warm-lg animate-fade-up sm:p-8">
+        <span className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-brand-400/25 blur-3xl" />
+        <span className="pointer-events-none absolute -bottom-24 -left-10 h-56 w-56 rounded-full bg-beam-400/10 blur-3xl" />
+        <div className="relative grid grid-cols-[1fr_auto] items-center gap-x-3 sm:gap-x-8">
+          <div className="min-w-0">
+            <p className="font-body text-[11px] font-bold uppercase tracking-[0.14em] text-beam-200 sm:text-xs">{t("common.tagline")}</p>
+            <h1 className="mt-1.5 font-heading text-[24px] font-bold leading-[1.15] sm:text-[34px]">{t("home.title")}</h1>
+          </div>
+          <LighthouseHero className="h-24 w-24 shrink-0 sm:row-span-2 sm:h-44 sm:w-44" />
+          <div className="col-span-2 sm:col-span-1">
+            <p className="mt-2 max-w-lg font-body text-sm leading-relaxed text-white/80 sm:mt-3 sm:text-base">{t("home.intro")}</p>
+            <div className="mt-3.5 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
               {["homeX.chip1", "homeX.chip2", "homeX.chip3"].map((k) => (
-                <span key={k} className="flex items-center gap-1 rounded-full bg-cream-50/80 px-2.5 py-1 font-body text-[11px] font-bold text-sage-700 shadow-warm-sm sm:text-xs">
-                  <IconCheck className="h-3.5 w-3.5" /> {t(k)}
+                <span key={k} className="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 font-body text-[11px] font-semibold text-white ring-1 ring-white/15 sm:text-xs">
+                  <IconCheck className="h-3.5 w-3.5 text-beam-300" /> {t(k)}
                 </span>
               ))}
             </div>
           </div>
-          <HeroArt />
         </div>
       </div>
 
@@ -72,12 +58,12 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
         </button>
         <button
           onClick={() => openHelper("home")}
-          className="btn-press flex items-center gap-2 rounded-full border-2 border-sage-300 bg-cream-50 py-1.5 pl-1.5 pr-3 hover:bg-sage-100"
+          className="btn-press flex items-center gap-2 rounded-full border-2 border-brand-300 bg-cream-50 py-1.5 pl-1.5 pr-3 hover:bg-brand-100"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-500 text-cream-50">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-cream-50">
             <IconChat className="h-4 w-4" />
           </span>
-          <span className="whitespace-nowrap font-body text-sm font-bold text-sage-700">{t("nav.ask")}</span>
+          <span className="whitespace-nowrap font-body text-sm font-bold text-brand-700">{t("nav.ask")}</span>
         </button>
       </div>
 
@@ -138,7 +124,7 @@ export function HomePage({ onNavigate }: { onNavigate: (path: string) => void })
         <IconLock className="mt-0.5 h-5 w-5 shrink-0 text-dustyblue-500" />
         <p className="font-body text-sm text-dustyblue-600">
           {t("home.privacy")}{" "}
-          <button onClick={() => onNavigate("/about")} className="font-semibold text-sage-700 underline underline-offset-2">
+          <button onClick={() => onNavigate("/about")} className="font-semibold text-brand-700 underline underline-offset-2">
             {t("home.privacyLink")}
           </button>
         </p>

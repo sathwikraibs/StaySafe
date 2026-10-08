@@ -10,19 +10,19 @@ export interface ToolTheme {
 }
 
 export const TOOL_THEMES: Record<string, ToolTheme> = {
-  "/scan-url": { soft: "#DCEBEA", ink: "#2F6E70", from: "#5C9A9B", to: "#2F6E70" },
-  "/scan-message": { soft: "#E3EBDC", ink: "#4D6039", from: "#8AA173", to: "#4D6039" },
-  "/scan-qr": { soft: "#ECE3F0", ink: "#6E4E7C", from: "#A283B0", to: "#6E4E7C" },
-  "/scan-file": { soft: "#F5EAD2", ink: "#86621A", from: "#D2A649", to: "#86621A" },
-  "/check-password": { soft: "#F4E1D8", ink: "#A85F47", from: "#DB9B7D", to: "#A85F47" },
-  "/check-network": { soft: "#DDE6EB", ink: "#3E5862", from: "#7F9DA9", to: "#3E5862" },
-  "/check-number": { soft: "#DCE6F0", ink: "#365E86", from: "#7A9CC0", to: "#365E86" },
-  "/scan-email": { soft: "#F3DFDF", ink: "#944A4A", from: "#CF8A86", to: "#944A4A" },
-  "/dashboard": { soft: "#E0E8DA", ink: "#3A4A2C", from: "#7E9168", to: "#3A4A2C" },
-  "/scam-library": { soft: "#E2E4F1", ink: "#48548F", from: "#8792C6", to: "#48548F" },
+  "/scan-message": { soft: "#E0F4F1", ink: "#0E6E69", from: "#2CB3A6", to: "#0F7C77" },
+  "/scan-url": { soft: "#E5EAFE", ink: "#2D3FB0", from: "#6382F8", to: "#3346C8" },
+  "/scan-qr": { soft: "#EEE8FC", ink: "#5737B0", from: "#9D7DEB", to: "#6744C7" },
+  "/scan-file": { soft: "#FDF1DA", ink: "#8C5409", from: "#F0B240", to: "#C77A10" },
+  "/check-number": { soft: "#E1F0FC", ink: "#185F9F", from: "#43A4E9", to: "#1C6FBF" },
+  "/scan-email": { soft: "#FDE8E2", ink: "#A9402A", from: "#F28B6E", to: "#D0533A" },
+  "/check-password": { soft: "#FCE6EE", ink: "#A2305B", from: "#EC709C", to: "#C13D6E" },
+  "/check-network": { soft: "#DFF3F7", ink: "#1A6B82", from: "#47B7D0", to: "#1E7E99" },
+  "/scam-library": { soft: "#ECEDFE", ink: "#3730A3", from: "#7578DD", to: "#3730A3" },
+  "/dashboard": { soft: "#E3F4EB", ink: "#16673F", from: "#4FB07F", to: "#1A784B" },
 };
 
-export const DEFAULT_THEME: ToolTheme = TOOL_THEMES["/scan-message"];
+export const DEFAULT_THEME: ToolTheme = TOOL_THEMES["/scam-library"];
 
 export function themeFor(path: string): ToolTheme {
   return TOOL_THEMES[path] ?? DEFAULT_THEME;

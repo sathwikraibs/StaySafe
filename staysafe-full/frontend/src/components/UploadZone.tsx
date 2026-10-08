@@ -123,11 +123,11 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
             if (f) handleFile(f);
           }}
           className={`rounded-2xl border-2 border-dashed p-5 transition-colors sm:p-6
-            ${dragging ? "border-sage-400 bg-sage-100" : "border-sage-300 bg-cream-100"}
+            ${dragging ? "border-brand-400 bg-brand-100" : "border-brand-300 bg-cream-100"}
             ${disabled ? "pointer-events-none opacity-50" : ""}`}
         >
           <div className="flex flex-col items-center gap-2 text-center">
-            <div className="upload-bob flex h-14 w-14 items-center justify-center rounded-2xl bg-sage-200 text-sage-600">
+            <div className="upload-bob flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-200 text-brand-600">
               <IconUpload className="h-7 w-7" />
             </div>
             <p className="font-body text-base font-semibold text-ink-800">{label}</p>
@@ -138,7 +138,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
               type="button"
               disabled={disabled}
               onClick={() => cameraRef.current?.click()}
-              className="btn-press flex flex-col items-center justify-center gap-1.5 rounded-xl bg-sage-500 px-3 py-3.5 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600 sm:flex-row"
+              className="btn-press flex flex-col items-center justify-center gap-1.5 rounded-xl bg-brand-500 px-3 py-3.5 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-brand-600 sm:flex-row"
             >
               <IconCamera className="h-5 w-5" /> {t("upload.camera")}
             </button>}
@@ -146,7 +146,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
               type="button"
               disabled={disabled}
               onClick={() => pickRef.current?.click()}
-              className="btn-press flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-sage-300 bg-cream-50 px-3 py-3 font-body text-sm font-bold text-sage-700 hover:bg-sage-100 sm:flex-row"
+              className="btn-press flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-brand-300 bg-cream-50 px-3 py-3 font-body text-sm font-bold text-brand-700 hover:bg-brand-100 sm:flex-row"
             >
               {imagesOnly ? <IconImage className="h-5 w-5" /> : <IconFolder className="h-5 w-5" />}
               {imagesOnly ? t("upload.gallery") : t("upload.files")}
@@ -155,8 +155,8 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
           <p className="mt-3 hidden text-center font-body text-xs text-dustyblue-500 sm:block">{t("upload.drag")}</p>
         </div>
       ) : (
-        <div className="flex items-center gap-4 rounded-2xl border-2 border-sage-200 bg-cream-100 p-3 animate-fade-up">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-sage-200 text-sage-600">
+        <div className="flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-cream-100 p-3 animate-fade-up">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-200 text-brand-600">
             {preview ? <img src={preview} alt="" className="h-full w-full object-cover" /> : selectedPreview ?? <IconUpload className="h-6 w-6" />}
           </div>
           <div className="min-w-0 flex-1">
@@ -167,7 +167,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
                   type="button"
                   onClick={() => setCropping(true)}
                   disabled={disabled}
-                  className="btn-press flex items-center gap-1.5 rounded-full bg-sage-500 px-3 py-1.5 font-body text-xs font-bold text-cream-50 hover:bg-sage-600"
+                  className="btn-press flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 font-body text-xs font-bold text-cream-50 hover:bg-brand-600"
                 >
                   <IconCrop className="h-3.5 w-3.5" /> {cropped ? t("crop.again") : t("crop.button")}
                 </button>
@@ -175,7 +175,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
               <button
                 type="button"
                 onClick={clear}
-                className="flex items-center gap-1 font-body text-xs font-semibold text-dustyblue-500 hover:text-terracotta-600"
+                className="flex items-center gap-1 font-body text-xs font-semibold text-dustyblue-500 hover:text-brand-600"
               >
                 <IconClose className="h-3.5 w-3.5" /> {t("common.chooseDifferentFile")}
               </button>

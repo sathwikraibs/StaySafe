@@ -30,7 +30,7 @@ export function InstallCard({ place }: { place: "home" | "settings" }) {
   };
 
   return (
-    <div className="relative mb-6 rounded-2xl bg-sage-100 p-5 shadow-warm animate-fade-up">
+    <div className="relative mb-6 rounded-2xl bg-brand-100 p-5 shadow-warm animate-fade-up">
       {place === "home" && !done && (
         <button type="button" onClick={close} aria-label={t("install.later")}
           className="btn-press absolute right-3 top-3 rounded-full p-1.5 text-dustyblue-600 hover:bg-cream-50">
@@ -38,7 +38,7 @@ export function InstallCard({ place }: { place: "home" | "settings" }) {
         </button>
       )}
       <div className="flex items-start gap-3 pr-6">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sage-500 text-cream-50">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-cream-50">
           <IconPhone className="h-6 w-6" />
         </div>
         <div className="min-w-0 flex-1">
@@ -52,12 +52,12 @@ export function InstallCard({ place }: { place: "home" | "settings" }) {
       {canInstall && !done && (
         <div className="mt-4 flex gap-2">
           <button type="button" onClick={async () => { if (await install()) setDone(true); }}
-            className="btn-press flex-1 rounded-xl bg-sage-500 px-4 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-sage-600">
+            className="btn-press flex-1 rounded-xl bg-brand-500 px-4 py-3 font-body text-sm font-bold text-cream-50 shadow-warm-sm hover:bg-brand-600">
             {t("install.button")}
           </button>
           {place === "home" && (
             <button type="button" onClick={close}
-              className="btn-press rounded-xl border-2 border-sage-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-sage-700">
+              className="btn-press rounded-xl border-2 border-brand-300 bg-cream-50 px-4 py-3 font-body text-sm font-bold text-brand-700">
               {t("install.later")}
             </button>
           )}

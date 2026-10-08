@@ -6,7 +6,7 @@ export function ToolHeader({ path, title, subtitle }: { path: string; title: str
   const th = themeFor(path);
   const Icon = ALL_NAV.find((n) => n.path === path)?.icon;
   return (
-    <div className="relative mb-5 overflow-hidden rounded-3xl p-5 shadow-warm animate-fade-up sm:p-6" style={{ background: th.soft }}>
+    <div className="light-pass relative mb-5 overflow-hidden rounded-3xl p-5 shadow-warm animate-fade-up sm:p-6" style={{ background: th.soft }}>
       <span className="header-blob pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full opacity-40" style={{ background: th.from }} />
       <span className="header-blob pointer-events-none absolute -bottom-16 right-24 h-28 w-28 rounded-full opacity-20" style={{ background: th.to, animationDelay: "-3s" }} />
       <div className="relative flex items-center gap-4">
