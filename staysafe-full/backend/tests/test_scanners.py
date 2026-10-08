@@ -1196,6 +1196,19 @@ def test_ai_cannot_flag_real_otp_or_bank_alerts():
         ar.review = real
 
 
+def test_qr_codes_and_numbers_from_the_live_test():
+    from scanners.qr_scanner import analyze_qr_data
+    from scanners.number_check import check_number
+    from scanners.selftest_qr_numbers import QR_CODES, NUMBERS
+    from scanners.selftest import _grade
+    for name, content, expect in QR_CODES:
+        r = analyze_qr_data(content)
+        assert _grade(expect, r["verdict"]), (name, r["verdict"], r["findings"])
+    for value, claim, ask, expect in NUMBERS:
+        r = check_number(value, claim, ask)
+        assert _grade(expect, r["verdict"]), (value, r["verdict"], r["findings"])
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

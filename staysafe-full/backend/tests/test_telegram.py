@@ -64,7 +64,7 @@ def test_scam_message_number_and_upi():
     out = send("+92 300 1234567")
     assert "Foreign number" in out, out
     out = send("sbi.refund@ybl", lang="kn")
-    assert "ಎಚ್ಚರ" in out and "refund" in out, out
+    assert ("ಎಚ್ಚರ" in out or "ವಂಚನೆ" in out) and "refund" in out, out
 
 
 def test_groups_are_ignored():

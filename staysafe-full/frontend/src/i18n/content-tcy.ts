@@ -49,6 +49,8 @@ export const tcyContent: LangContent = {
     "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": "ಪೈಸೆ 'ಪಡೆಯೆರೆ' UPI PIN ಕೇನೊಂದುಲ್ಲೆರ್ (ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ PIN ಬೋಡ್ಚಿ)",
     "Bank / KYC / PAN impersonation": "ಬ್ಯಾಂಕ್ / KYC / PAN ಪುದರ್‌ಡ್ ಮೋಸ",
     "Says your card or account was blocked and asks you to call a number": "ಈರೆನ ಕಾರ್ಡ್ ಅತ್ತಂಡ ಖಾತೆ ಬ್ಲಾಕ್ ಆತ್ಂಡ್ ಪಂಡ್‌ದ್, ಒಂಜಿ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು",
+    "The UPI ID uses the name '{name}'. Banks and companies never collect money through a UPI ID named like this": "UPI ID ಡ್ '{name}' ಪುದರ್ ಉಂಡು. ಬ್ಯಾಂಕ್ ಬೊಕ್ಕ ಕಂಪೆನಿಲು ಇಂಚಿನ ಪುದರ್‌ದ UPI ID ಡ್ ಏಪಲಾ ಪೈಸೆ ದೆತೊನುಜಿ",
+    "The person you would pay is named with '{word}'. Refunds, prizes, offices and customer care never collect money through a QR like this": "ಈರ್ ಪೈಸೆ ಕೊರ್ಪಿನಾಕುಲೆನ ಪುದರ್‌ಡ್ '{word}' ಉಂಡು. ರಿಫಂಡ್, ಬಹುಮಾನ, ಕಚೇರಿ ಬೊಕ್ಕ ಕಸ್ಟಮರ್ ಕೇರ್ ಏಪಲಾ ಇಂಚಿನ QR ಡ್ ಪೈಸೆ ದೆತೊನುಜಿ",
     "Says money was sent to you by mistake and asks you to return it": "ತಪ್ಪಾದ್ ಇರೆಗ್ ಪೈಸೆ ಕಡಪುಡಿಯೆರ್ ಪಂಡ್‌ದ್ ಪನ್ಪುಂಡು, ಅವೆನ್ ಪಿರ ಕೊರ್ಲೆ ಪಂಡ್‌ದ್ ಕೇನುಂಡು",
     "Threatens to cut your water, gas, internet or TV connection": "ಇರೆನ ನೀರ್, ಗ್ಯಾಸ್, ಇಂಟರ್ನೆಟ್ ಅತ್ತಂಡ ಟಿವಿ ಸಂಪರ್ಕ ಕಟ್ ಮಲ್ಪುವ ಪನ್ಪುನ ಬೆದರಿಕೆ",
     "Asks for your SIM card number (used to take over your number)": "ಇರೆನ ಸಿಮ್ ಕಾರ್ಡ್‌ದ ನಂಬರ್ ಕೇನುಂಡು (ಉಂದೆಡ್ದ್ ಇರೆನ ನಂಬರ್‌ನ್ ಕಬಳಿಪುವೆರ್)",

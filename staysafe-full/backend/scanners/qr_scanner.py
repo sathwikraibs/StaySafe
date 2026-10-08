@@ -132,6 +132,18 @@ def analyze_upi_string(upi_data: str) -> dict:
             findings.append("The amount in this QR is not a valid number")
             score += led.note(findings, 15)
 
+    # a payee ID or name that says "refund", "lottery", "customer care"... (refund.helpdesk@ybl, "KBC Lottery")
+    from scanners.number_check import UPI_ROLE_WORDS
+    role_id = UPI_ROLE_WORDS.search((payee or "").split("@")[0])
+    role_name = re.search(r"(refund|cashback|reward|prize|lottery|lucky|winner|kbc|kyc|customer ?care|help ?desk|"
+                          r"helpline|support|government|govt|police|customs|army|military|income tax|electricity)",
+                          payee_name or "", re.I)
+    if role_id or role_name:
+        word = (role_id or role_name).group(0)
+        findings.append(f"The person you would pay is named with '{word}'. Refunds, prizes, offices and customer "
+                        "care never collect money through a QR like this")
+        score += led.note(findings, 30)
+
     if note and SCAM_NOTE_WORDS.search(note):
         findings.append(f"The payment note says “{note}”. Scammers use notes like this to make you think you'll RECEIVE money")
         score += led.note(findings, 40)

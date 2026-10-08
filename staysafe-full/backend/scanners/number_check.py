@@ -84,6 +84,11 @@ UPI_ROLE_WORDS = re.compile(
     r"police|cbi|customs|court|penalty|challan|income\.?tax|incometax|electricity|bescom|"
     r"subsidy|pmkisan|grant)", re.IGNORECASE)
 
+# A bank or big company's name inside a UPI ID together with a role word (sbi.kyc.update@paytm)
+UPI_BRAND_IN_ID = re.compile(
+    r"(sbi|hdfc|icici|axis|kotak|canara|pnb|baroda|yono|paytm|phonepe|gpay|googlepay|amazon|flipkart|airtel|jio|"
+    r"bsnl|irctc|uidai|aadhaa?r|lic|epfo|npci|rbi|kbc|bescom|mescom|indiapost|fedex|dhl|bluedart)", re.IGNORECASE)
+
 # --- What the person tells us -------------------------------------------------------------
 CLAIMS = {"bank", "official", "delivery", "company", "family", "unknown"}
 ASKS = {"pay_to_get", "otp", "app", "video", "nothing"}
@@ -224,7 +229,7 @@ def check_upi(value: str, findings: list, led: Ledger, checks: list) -> dict:
     else:
         findings.append(f"The part after @ ({handle}) is not one we know from common UPI apps or banks. "
                         "Check the spelling, or ask the person to share a QR from their app")
-        score += led.note(findings, 15)
+        score += led.note(findings, 20)
         checks.append({"id": "upi_handle", "status": "warn", "value": handle})
 
     role = UPI_ROLE_WORDS.search(name)
@@ -235,6 +240,12 @@ def check_upi(value: str, findings: list, led: Ledger, checks: list) -> dict:
         checks.append({"id": "upi_words", "status": "fail", "value": role.group(0)})
     else:
         checks.append({"id": "upi_words", "status": "pass", "value": None})
+
+    brand = UPI_BRAND_IN_ID.search(name)
+    if brand and role:
+        findings.append(f"The UPI ID uses the name '{brand.group(0)}'. Banks and companies never collect money "
+                        "through a UPI ID named like this")
+        score += led.note(findings, 25)
 
     if re.fullmatch(r"(\+?91)?[6-9]\d{9}", name):
         findings.append("This UPI ID is made from a mobile number, so it belongs to a person, not a company or office")

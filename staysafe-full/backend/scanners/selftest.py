@@ -296,3 +296,64 @@ def selftest_messages_route():
     return jsonify({"set": pick, "title": title, "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
                     "wrong": [r["message"] for r in graded if not r["right"]],
                     "seconds": round(time.time() - began, 1), "results": results})
+
+
+# ---------------------------------------------------------------------------
+# QR codes and phone numbers: /api/selftest/qr?key=...  and  /api/selftest/numbers?key=...
+# ---------------------------------------------------------------------------
+def _grade(expect, verdict):
+    if expect in (SAFE, DANGEROUS):
+        return verdict == expect
+    return verdict in (CAUTION, DANGEROUS)
+
+
+def _one_qr(name, content, expect):
+    import os
+    from scanners.qr_scanner import decode_qr_image, analyze_qr_data
+    t = time.time()
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "selftest", name)
+    try:
+        data = decode_qr_image(open(path, "rb").read())
+        r = analyze_qr_data(data or "")
+    except Exception as e:
+        return {"qr": name, "expected": expect, "verdict": "ERROR", "right": False, "error": f"{type(e).__name__}: {str(e)[:120]}"}
+    return {"qr": name, "expected": expect, "read_correctly": data == content, "verdict": r.get("verdict"),
+            "score": r.get("risk_score"), "right": data == content and _grade(expect, r.get("verdict")),
+            "seconds": round(time.time() - t, 1), "why": [f[:150] for f in (r.get("findings") or [])[:3]]}
+
+
+@selftest_bp.route("/api/selftest/qr", methods=["GET"])
+def selftest_qr_route():
+    from scanners.security import has_status_key
+    from scanners.selftest_qr_numbers import QR_CODES
+    if not has_status_key():
+        return jsonify({"error": "Not found"}), 404
+    began = time.time()
+    futures = [(n, e, _POOL.submit(_one_qr, n, c, e)) for n, c, e in QR_CODES]
+    results = []
+    for n, e, f in futures:
+        try:
+            results.append(f.result(timeout=max(1, DEADLINE - (time.time() - began))))
+        except Exception:
+            results.append({"qr": n, "expected": e, "verdict": "STILL_RUNNING", "right": None})
+    graded = [r for r in results if r.get("right") is not None]
+    return jsonify({"title": "QR codes: UPI payments, links, text and Wi-Fi", "right": f"{sum(1 for r in graded if r['right'])}/{len(graded)}",
+                    "wrong": [r["qr"] for r in graded if not r["right"]], "seconds": round(time.time() - began, 1), "results": results})
+
+
+@selftest_bp.route("/api/selftest/numbers", methods=["GET"])
+def selftest_numbers_route():
+    from scanners.security import has_status_key
+    from scanners.number_check import check_number
+    from scanners.selftest_qr_numbers import NUMBERS
+    if not has_status_key():
+        return jsonify({"error": "Not found"}), 404
+    began = time.time()
+    results = []
+    for value, claim, ask, expect in NUMBERS:
+        r = check_number(value, claim, ask)
+        results.append({"value": value, "they_said": claim or None, "they_asked": ask or None, "expected": expect,
+                        "verdict": r.get("verdict"), "score": r.get("risk_score"), "right": _grade(expect, r.get("verdict")),
+                        "why": [f[:150] for f in (r.get("findings") or [])[:3]]})
+    return jsonify({"title": "Phone numbers and UPI IDs", "right": f"{sum(1 for r in results if r['right'])}/{len(results)}",
+                    "wrong": [r["value"] for r in results if not r["right"]], "seconds": round(time.time() - began, 1), "results": results})

@@ -42,8 +42,9 @@ def test_what_they_asked_for_decides_when_it_is_a_scam():
 def test_upi_ids():
     r = check_number("ravi.kumar@okaxis")
     assert r["verdict"] == "SAFE" and r["details"]["app"] == "Google Pay" and r["findings"]
-    assert v("sbi.refund@ybl") == "CAUTION"
-    assert v("customercare.amazon@axl") == "CAUTION"
+    assert v("sbi.refund@ybl") == "DANGEROUS"     # a bank name and "refund" together
+    assert v("refund.desk@ybl") == "CAUTION"
+    assert v("customercare.amazon@axl") == "DANGEROUS"
     assert any("not one we know" in f for f in check_number("shop@xyzpay")["findings"])
     assert check_number("not a number")["error"]
 
