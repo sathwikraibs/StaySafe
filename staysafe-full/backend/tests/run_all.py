@@ -17,7 +17,8 @@ def main() -> int:
     bad, total = [], 0
     for path in sorted(glob.glob(os.path.join(HERE, "test_*.py"))):
         name = os.path.basename(path)
-        run = subprocess.run([sys.executable, path], cwd=BACKEND, capture_output=True, text=True, timeout=900)
+        run = subprocess.run([sys.executable, path], cwd=BACKEND, capture_output=True, text=True, timeout=900,
+                             env=dict(os.environ, PYTHONUNBUFFERED="1"))
         out = run.stdout + run.stderr
         fails = [line for line in out.splitlines() if line.startswith("FAIL")]
         m = re.search(r"(\d+)/(\d+) tests passed", out)
