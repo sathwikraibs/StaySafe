@@ -491,7 +491,7 @@ def test_site_language_decides_when_words_could_be_tulu_or_kannada():
 
 
 def test_tulu_answers_lose_kannada_only_words_and_kannada_answers_get_a_careful_proofread():
-    assert assistant.tulu_polish("ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಂಡ್ ಅಥವಾ OTP ಮತ್ತು PIN ಕೊರೊಡ್ಚಿ.") == "ಇರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಂಡ್ ಅತ್ತಂಡ OTP ಬೊಕ್ಕ PIN ಕೊರೊಡ್ಚಿ."
+    assert assistant.tulu_polish("ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಂಡ್ ಅಥವಾ OTP ಮತ್ತು PIN ಕೊರೊಡ್ಚಿ.") == "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಂಡ್ ಅತ್ತಂಡ OTP ಬೊಕ್ಕ PIN ಕೊರೊಡ್ಚಿ."
     assert assistant.tulu_polish("Nimma OTP korodchi") == "Irena OTP korodchi"
     fresh(GEMINI_API_KEY="g")
     original = "ತಕ್ಷಣ 1930 ಗೆ ಕರೆ ಮಾಡಿ ಮತ್ತು cybercrime.gov.in ನಲ್ಲಿ ದೂರು ನೀಡಿ."

@@ -307,7 +307,7 @@ def test_phrases_are_sent_only_for_the_languages_needed():
 
 def test_tulu_asked_but_kannada_answered_is_rewritten_in_tulu():
     kannada = {"reply": "ಗಾಬರಿ ಆಗಬೇಡಿ. ನಿಮ್ಮ ವಾಟ್ಸಾಪ್ ಹ್ಯಾಕ್ ಆಗಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗೆ ಹೋಗಿ ಲಾಗ್ ಔಟ್ ಮಾಡಿ, ನಿಮ್ಮ ಸ್ನೇಹಿತರಿಗೆ ಹೇಳಿ.", "urgent": False, "actions": []}
-    tulu = {"reply": "ಗಾಬರಿ ಆವೊಡ್ಚಿ. ಸೆಟ್ಟಿಂಗ್‌ಗ್ ಪೋದು ಲಾಗ್ ಔಟ್ ಮಲ್ಪುಲೆ, ಇರೆನ ಫ್ರೆಂಡ್‌ಲೆಗ್ ಪನ್ಲೆ.", "urgent": False, "actions": []}
+    tulu = {"reply": "ಗಾಬರಿ ಆವೊಡ್ಚಿ. ಸೆಟ್ಟಿಂಗ್‌ಗ್ ಪೋದು ಲಾಗ್ ಔಟ್ ಮಲ್ಪುಲೆ, ಈರೆನ ಫ್ರೆಂಡ್‌ಲೆಗ್ ಪನ್ಲೆ.", "urgent": False, "actions": []}
     setup(kannada)
     sent = []
 
