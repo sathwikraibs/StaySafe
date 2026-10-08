@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ALL_NAV, MAIN_TOOLS, MORE_TOOLS, HELP_NAV, EXTRA_NAV, navLabel, type NavItem } from "@/nav";
-import { IconShield, IconChevronRight, IconAlert, IconSettings, IconChat, IconClose, IconHome, IconMessage, IconLink } from "@/icons";
+import { BrandMark, IconChevronRight, IconAlert, IconSettings, IconChat, IconClose, IconHome, IconMessage, IconLink } from "@/icons";
 import { openHelper } from "@/chat";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { FloatingHelpButton } from "@/components/ChatWidgets";
@@ -45,9 +45,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
       {/* ---------- Laptop sidebar ---------- */}
       <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-cream-200 bg-cream-100/80 backdrop-blur-md lg:flex">
         <button onClick={() => onNavigate("/")} className="flex items-center gap-3 px-6 py-6 text-left">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sage-400 text-cream-50 shadow-warm-sm">
-            <IconShield className="h-6 w-6" />
-          </div>
+          <BrandMark className="h-11 w-11 shrink-0 shadow-warm-sm rounded-xl" />
           <div>
             <p className="font-heading text-xl font-bold text-ink-900">StaySafe</p>
             <p className="font-body text-xs text-dustyblue-600">{t("common.tagline")}</p>
@@ -97,9 +95,7 @@ export function Layout({ children, currentPath, onNavigate }: LayoutProps) {
         <header className="sticky top-0 z-20 border-b border-cream-200 bg-cream-50/90 backdrop-blur-md">
           <div className="flex items-center gap-2 px-4 py-3 sm:px-5 lg:px-8">
             <button onClick={() => onNavigate("/")} className="flex items-center gap-2 lg:hidden">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sage-400 text-cream-50">
-                <IconShield className="h-5 w-5" />
-              </div>
+              <BrandMark className="h-8 w-8 shrink-0" />
               {/* hide the word on narrow phones so the emergency button always fits */}
               <span className="hidden font-heading text-lg font-bold text-ink-900 min-[420px]:inline">StaySafe</span>
             </button>

@@ -304,3 +304,21 @@ export function IconFolder({ className, strokeWidth }: IconProps) {
     </svg>
   );
 }
+
+/** The StaySafe lighthouse app icon: warns you before danger. Full colour tile. */
+export function BrandMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden>
+      <rect width="100" height="100" rx="22.5" fill="#3730A3" />
+      <g transform="translate(50 50) scale(0.86) translate(-50 -53)">
+        <path d="M57 32 L86 22 V44 Z" fill="#FDE68A" />
+        <path d="M43 32 L14 22 V44 Z" fill="#FDE68A" />
+        <path d="M40 29 L50 19 L60 29 Z" fill="#FFFFFF" />
+        <rect x="43" y="29" width="14" height="10" rx="2" fill="#FBBF24" />
+        <path d="M42 40 H58 L62 82 H38 Z" fill="#FFFFFF" />
+        <path d="M40.6 55 H59.4 L60.2 64 H39.8 Z" fill="#FBBF24" />
+        <rect x="30" y="81" width="40" height="6" rx="3" fill="#FFFFFF" />
+      </g>
+    </svg>
+  );
+}
