@@ -1181,6 +1181,21 @@ def test_links_wrapped_in_screenshots_are_joined():
     assert join_wrapped_links("see https://sbi.co.in\nThanks") == "see https://sbi.co.in\nThanks"
 
 
+def test_ai_cannot_flag_real_otp_or_bank_alerts():
+    import scanners.ai_review as ar
+    real = ar.review
+    try:
+        ar.review = lambda text: {"verdict": "scam", "category": "bank", "confidence": 90, "provider": "test"}
+        for t in ["123456 is your OTP for login to SBI YONO. Do not share it with anyone. SBI never asks for OTP.",
+                  "Rs 500.00 debited from A/c XX1234 on 07-10-26 to VPA swiggy@icici. Not you? Call 1800 1234 (toll free)."]:
+            r = ar.apply_review(analyze_text(t), t)
+            assert r["verdict"] == "LIKELY_SAFE", (t, r)
+        t = "Your account will be blocked today, call 9876543210 now"
+        assert ar.apply_review(analyze_text(t), t)["verdict"] != "LIKELY_SAFE"
+    finally:
+        ar.review = real
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

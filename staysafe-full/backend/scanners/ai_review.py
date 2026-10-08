@@ -55,7 +55,12 @@ PROMPT = (
     "\"category\": one of [" + ", ".join(f'"{k}"' for k in CATEGORIES) + "], "
     "\"confidence\": 0-100}\n"
     "Normal bank alerts, OTP messages that say not to share the OTP, delivery updates, bills with an "
-    "official payment link, and personal chats are safe.\n\n<message>\n{text}\n</message>"
+    "official payment link, and personal chats are safe. For example these are SAFE: "
+    "'[#1] is your OTP for login to SBI YONO. Do not share it with anyone.' and "
+    "'Rs 500 debited from A/c [#2] to VPA swiggy@icici. Not you? Call 1800 1234'. "
+    "A message is a scam only when it asks the reader to do something risky: share an OTP or PIN, "
+    "click a link to update KYC, pay a fee, call an unknown number about a threat, install an app.\n\n"
+    "<message>\n{text}\n</message>"
 )
 
 _lock = threading.Lock()
@@ -144,6 +149,11 @@ def ai_status() -> dict:
     }
 
 
+def review_key(masked: str) -> str:
+    """v2: answers given before the clearer prompt (which called real OTP messages scams) are not reused."""
+    return "v2:" + hashlib.sha256(masked.encode()).hexdigest()
+
+
 def review(text: str):
     """{'verdict', 'category', 'confidence', 'provider'} or None."""
     text = (text or "").strip()[:1500]
@@ -151,7 +161,7 @@ def review(text: str):
         return None
     from scanners.translator import mask_personal
     masked, _ = mask_personal(text)
-    key = hashlib.sha256(masked.encode()).hexdigest()
+    key = review_key(masked)
     known = known_verdict(key)
     if known:
         return known
@@ -198,9 +208,14 @@ def apply_review(result: dict, text: str) -> dict:
     ai = review(text)
     if not ai:
         return result
-    from scanners.message_scanner import verdict_from_score
+    from scanners.message_scanner import verdict_from_score, looks_like_genuine_alert
     reason = CATEGORIES[ai["category"]]
     rules_found = bool(result.get("patterns_detected"))
+    if not rules_found and looks_like_genuine_alert(text, result):
+        # A real OTP message or bank alert ("do not share", "Not you? Call 1800...") with nothing risky
+        # in it: small AI models sometimes call these scams. Our rules found no ask, so it stays safe.
+        result["ai_review"] = {"verdict": "unsure", "category": ai["category"], "provider": ai["provider"]}
+        return result
     shown = "unsure"  # what the page shows: the opinion only when it's confident
     before = result["risk_score"]
     if ai["verdict"] == "scam" and ai["confidence"] >= 75:

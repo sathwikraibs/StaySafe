@@ -42,7 +42,7 @@ def _needs(text: str, ui_lang: str) -> dict:
             and not os.environ.get("GROQ_API_KEY") \
             and not (os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_AI_TOKEN")):
         masked, _ = tr.mask_personal(text.strip()[:1500])
-        want_review = ai_review.known_verdict(hashlib.sha256(masked.encode()).hexdigest()) is None
+        want_review = ai_review.known_verdict(ai_review.review_key(masked)) is None
     return {"en": want_en, "ui": ui_lang if want_ui else None, "review": want_review}
 
 
@@ -62,7 +62,9 @@ def _prompt(masked: str, need: dict) -> str:
         fields.append('"category": one of [' + ", ".join(f'"{k}"' for k in ai_review.CATEGORIES) + "]")
         fields.append('"confidence": 0-100')
         rules.append("Also judge whether it is a scam. Normal bank alerts, OTP messages that say not to share "
-                     "the OTP, delivery updates, bills with an official payment link, and personal chats are safe.")
+                     "the OTP, delivery updates, bills with an official payment link, and personal chats are safe. "
+                     "It is a scam only when it asks the reader to do something risky: share an OTP or PIN, click a "
+                     "link to update KYC, pay a fee, call an unknown number about a threat, install an app.")
     return (
         "You help people in India check SMS, WhatsApp and email messages for scams.\n"
         "Read the message between <message> tags. It may be in English, Hinglish or an Indian language. "
@@ -113,5 +115,5 @@ def prefetch(text: str, ui_lang: str) -> bool:
         verdict = ai_review._parse(json.dumps({k: data.get(k) for k in ("verdict", "category", "confidence")}))
         if verdict:
             rmasked, _ = tr.mask_personal(text[:1500])
-            ai_review.remember_verdict(hashlib.sha256(rmasked.encode()).hexdigest(), dict(verdict, provider="gemini"))
+            ai_review.remember_verdict(ai_review.review_key(rmasked), dict(verdict, provider="gemini"))
     return True

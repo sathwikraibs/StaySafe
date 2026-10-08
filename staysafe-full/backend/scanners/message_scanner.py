@@ -66,6 +66,7 @@ RULES = [
             # WhatsApp takeover: "I sent my code to you by mistake, please send it back"
             r"(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(accidentally|by mistake|mistakenly|wrongly|galti se)\b[^\n]{0,50}\b(code|otp|6[- ]digit)\b",
             r"(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(code|otp)\b[^\n]{0,50}\b(by mistake|accidentally|wrongly|galti se)\b",
+            r"(?=[^\n]*\b(otp|code|pin)\b)[^\n]*\b(share|send|tell|give|forward)\b (it|this|the code|this code|the otp)\b[^.\n]{0,20}\b(with|to) (our|the|me|us|an?|this) (?!one\b)",
         ],
         50,
     ),
@@ -186,6 +187,9 @@ RULES = [
         [
             r"\b(processing|delivery|release|clearance|tax|gst|handling) (fee|charges?)\b",
             r"\bpay\b[^.\n]{0,40}\b(to (receive|claim|release|unlock|withdraw))\b",
+            r"(ಲಾಟರಿ|ಬಹುಮಾನ|ಹಣ|ಪೈಸೆ|ಗೆದ್ದ|ಬತ್ತ್)[^\n]{0,80}(ಶುಲ್ಕ|ಫೀಸ್|ಫೀ|ಚಾರ್ಜ್|ತೆರಿಗೆ)[^\n]{0,30}(ಕಳುಹಿಸಿ|ಕಳಿಸಿ|ಕಟ್ಟಿ|ಪಾವತಿ|ಕಡಪುಡುಲೆ|ಕಡಪುಲೆ|ಕಡಪುಡ್ಲೆ|ಕೊರ್ಲೆ)",
+            r"(लॉटरी|इनाम|पैसे|जीत)[^\n]{0,80}(फीस|शुल्क|चार्ज|टैक्स)[^\n]{0,30}(भेजें|भेजो|भेजिए|जमा|भरें)",
+            r"\b(lottery|prize|lakh|crore|paise|paisa|hana|inaam)\b[^\n]{0,80}\b(fees?|charges?|tax)\b[^\n]{0,20}\b(kalisi|kalsi|kattu|katti|kadapule|kadapu|kadapudu|bhejo|bhejiye|bhej do|pay|send)\b",
         ],
         30,
     ),
@@ -215,6 +219,7 @@ RULES = [
             r"\b(hi|hello)\s+(mum|mom|dad|mummy|papa|beta)\b[^\n]{0,120}\b(new number|lost my phone|phone (is )?broken)\b",
             r"\b(new number|lost my phone|phone (is )?broken)\b[^\n]{0,120}\b(send|transfer|pay|money|paise)\b",
             r"\b(urgent|emergency)\b[^.\n]{0,40}\b(send|transfer)\b[^.\n]{0,20}\b(money|paise|rs|₹)",
+            r"\b(papa|mummy|mom|dad|maa|beta|bhai|didi|appa|amma|anna|akka|maga|magalu)\b[^\n]{0,80}\b(accident|hospital|police|jail|arrest|thaana|thana)\b[^\n]{0,100}\b(bhejo|bhej do|send|kalisu|kalsu|kadapu|transfer|paise|paisa|rupees|\d{4,}|\d{1,3},\d{3})",
         ],
         30,
     ),
@@ -657,6 +662,7 @@ SAFE_SIGNALS = [
     r"\bnever (ask|asks) for (your )?(otp|pin|password|cvv)\b",
     r"\bkisi (ke saath|se bhi|ko bhi)\b[^.\n]{0,30}\b(share na|mat)\b",
     r"\bif (this was )?not (done by )?you\b",
+    r"\bnot (done by )?you\?",
     # Kannada / Tulu: "don't tell/share with anyone"
     r"ಯಾರಿಗೂ[^.\n]{0,15}(ಹೇಳಬೇಡಿ|ಹಂಚಿಕೊಳ್ಳಬೇಡಿ|ಕೊಡಬೇಡಿ|ಶೇರ್ ಮಾಡಬೇಡಿ|ತಿಳಿಸಬೇಡಿ)",
     r"(ಹಂಚಿಕೊಳ್ಳಬೇಡಿ|ಶೇರ್ ಮಾಡಬೇಡಿ|ಕೊರೊಡ್ಚಿ|ಪನೊಡ್ಚಿ)",
@@ -717,6 +723,28 @@ def script_mix(text: str) -> dict:
             counts["other"] += 1
     total = sum(counts.values()) or 1
     return {k: v / total for k, v in counts.items()}
+
+
+_ALERT = re.compile(
+    r"(\b\d{4,8}\b[^.\n]{0,20}\b(is|as) (your|the) (otp|one time password|verification code|code)\b"
+    r"|\b(otp|one time password|verification code)\b[^.\n]{0,30}\b(is|:)\s*\d{4,8}\b"
+    r"|\b(debited|credited|spent|withdrawn|received|paid)\b[^.\n]{0,60}\b(a/?c|acct|account|card)\b[^.\n]{0,10}(x{2,}|\*{2,})\s*\d{3,6}"
+    r"|\b(a/?c|acct|account|card)\b[^.\n]{0,10}(x{2,}|\*{2,})\s*\d{3,6}[^.\n]{0,60}\b(debited|credited|spent|withdrawn))",
+    re.IGNORECASE)
+
+
+def looks_like_genuine_alert(text: str, result: dict = None) -> bool:
+    """An everyday OTP message or bank transaction alert that asks for nothing risky."""
+    t = text or ""
+    if not _ALERT.search(t):
+        return False
+    risky_link = re.search(r"https?://|www\.|bit\.ly|\.(xyz|top|in|com|online|site)/", t, re.I) and \
+        not re.search(r"(sbi\.co\.in|onlinesbi|hdfcbank\.com|icicibank\.com|axisbank\.com|\.bank\.in|\.gov\.in)", t, re.I)
+    asks = re.search(r"\b(share|send|tell|forward|reply with)\b[^.\n]{0,30}\b(otp|code|pin)\b(?![^.\n]{0,15}\b(with anyone|to anyone))", t, re.I) and \
+        not re.search(r"\b(do not|don't|dont|never)\s+(share|send|tell|forward)", t, re.I)
+    asks = asks or re.search(r"\b(share|send|tell|give|forward)\b (it|this|the code|this code|the otp)\b[^.\n]{0,20}\b(with|to) "
+                             r"(our|the|me|us|an?|this)\b", t, re.I)
+    return not risky_link and not asks
 
 
 def verdict_from_score(score: int) -> str:
@@ -1224,7 +1252,8 @@ def fix_ocr_links(text: str) -> str:
                         return cand
         return host
 
-    text = join_wrapped_links(text or "")
+    text = re.sub(r"\b(https?)\s*:\s*/\s*/\s*", r"\1://", text or "", flags=re.I)   # OCR reads "http: //"
+    text = join_wrapped_links(text)
     return re.sub(r"(?<![\w@.-])(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?![\w-])", fix, text)
 
 
