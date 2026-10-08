@@ -82,7 +82,7 @@ export const tcyContent: LangContent = {
     "That picture is too large to read. Please send a normal screenshot or photo.": "ಈ ಪಟ ಓದೆರೆ ಮಸ್ತ್ ಮಲ್ಲ ಉಂಡು. ಸಾಮಾನ್ಯ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅತ್ತಂಡ ಫೋಟೋ ಕಡಪುಡ್ಲೆ.",
     "That password is too long to check. Please use one under 256 characters.": "ಈ ಪಾಸ್‌ವರ್ಡ್ ಪರಿಶೀಲನೆ ಮಲ್ಪೆರೆ ಮಸ್ತ್ ಉದ್ದ ಉಂಡು. 256 ಅಕ್ಷರೊಗು ಕಮ್ಮಿ ಉಪ್ಪುನೆನ್ ಬಳಕೆ ಮಲ್ಪುಲೆ.",
     "Messages can't be sent right now. Please use the live chat instead.": "ಇತ್ತೆ ಮೆಸೇಜ್ ಕಡಪುಡೆರೆ ಆಪುಜಿ. ಬದಲ್ ಆದ್ ಲೈವ್ ಚಾಟ್ ಬಳಕೆ ಮಲ್ಪುಲೆ.",
-    "Please tell us a little about what happened.": "ದಾದ ಆಂಡ್ ಪಂಡ್‌ದ್ ಎಲ್ಯ ತೆರಿಪಾಲೆ.",
+    "Please tell us a little about what happened.": "ದಾದ ಆಂಡ್ ಪಂಡ್‌ದ್ ಒಂಚೂರು ತೆರಿಪಾಲೆ.",
     "That phone number doesn't look right. Please enter a 10-digit mobile number.": "ಈ ಫೋನ್ ನಂಬರ್ ಸರಿ ತೋಜುಜಿ. 10 ಅಂಕೆದ ಮೊಬೈಲ್ ನಂಬರ್ ಪಾಡ್ಲೆ.",
     "Please add your email or WhatsApp number so we can reply to you.": "ಎಂಕುಲು ಉತ್ತರ ಕೊರೆರೆ ಈರೆನ ಇಮೇಲ್ ಅತ್ತಂಡ WhatsApp ನಂಬರ್ ಕೊರ್ಲೆ.",
     "You've sent a few messages already. We'll reply soon. Please wait for our answer.": "ಈರ್ ದುಂಬೇ ಕೆಲವು ಮೆಸೇಜ್ ಕಡಪುಡ್ದರ್. ಬೇಗ ಉತ್ತರ ಕೊರ್ಪ, ಕಾಪುಲೆ.",
@@ -133,7 +133,7 @@ export const tcyContent: LangContent = {
     "the National Consumer Helpline": "ರಾಷ್ಟ್ರೀಯ ಗ್ರಾಹಕ ಸಹಾಯವಾಣಿ",
     "the railway enquiry and help number": "ರೈಲ್ವೆ ವಿಚಾರಣೆ ಬೊಕ್ಕ ಸಹಾಯ ನಂಬರ್",
     "the Aadhaar (UIDAI) helpline": "ಆಧಾರ್ (UIDAI) ಸಹಾಯವಾಣಿ",
-    "Numbers starting with 1600 are given only to banks, insurance and other money companies for service calls. Still, never share an OTP or PIN on a call": "1600 ಡ್ದ್ ಸುರು ಆಪುನ ನಂಬರ್‌ಲೆನ್ ಬ್ಯಾಂಕ್, ವಿಮೆ ಬೊಕ್ಕ ಬೇತೆ ಹಣಕಾಸು ಕಂಪನಿಲೆಗ್ ಸೇವಾ ಕಾಲ್‌ಲೆಗಾದ್ ಮಾತ್ರ ಕೊರ್ಪೆರ್. ಆಂಡಲಾ ಕಾಲ್‌ಡ್ ಏಪಲಾ OTP ಅತ್ತಂಡ PIN ಪನೊಡ್ಚಿ",
+    "Numbers starting with 1600 are given only to banks, insurance and other money companies for service calls. Still, never share an OTP or PIN on a call": "1600 ಡ್ದ್ ಸುರು ಆಪುನ ನಂಬರ್‌ಲೆನ್ ಬ್ಯಾಂಕ್, ವಿಮೆ ಬೊಕ್ಕ ಬೇತೆ ಫೈನಾನ್ಸ್ ಕಂಪನಿಲೆಗ್ ಸೇವಾ ಕಾಲ್‌ಲೆಗಾದ್ ಮಾತ್ರ ಕೊರ್ಪೆರ್. ಆಂಡಲಾ ಕಾಲ್‌ಡ್ ಏಪಲಾ OTP ಅತ್ತಂಡ PIN ಪನೊಡ್ಚಿ",
     "Numbers starting with 140 are used only for adverts and sales calls. A bank or office will not call you about your account from a 140 number": "140 ಡ್ದ್ ಸುರು ಆಪುನ ನಂಬರ್‌ಲು ಜಾಹೀರಾತು ಬೊಕ್ಕ ಮಾರಾಟದ ಕಾಲ್‌ಲೆಗ್ ಮಾತ್ರ. ಬ್ಯಾಂಕ್ ಅತ್ತಂಡ ಕಚೇರಿ ಈರೆನ ಖಾತೆದ ಬಗ್ಗೆ 140 ನಂಬರ್‌ಡ್ದ್ ಕಾಲ್ ಮಲ್ಪುಜಿ",
     "Toll-free number (1800 or 1860). Real companies use these, but scammers also put fake 'customer care' numbers online. Take the number from the official app, website or the back of your card": "ಟೋಲ್-ಫ್ರೀ ನಂಬರ್ (1800 ಅತ್ತಂಡ 1860). ನಿಜವಾಯಿನ ಕಂಪನಿಲು ಇಂಚಿನ ನಂಬರ್ ಉಪಯೋಗ ಮಲ್ಪುವೆರ್, ಆಂಡ ಮೋಸಗಾರೆರ್ಲಾ ಇಂಟರ್ನೆಟ್‌ಡ್ ನಕಲಿ 'ಕಸ್ಟಮರ್ ಕೇರ್' ನಂಬರ್ ಪಾಡುವೆರ್. ನಂಬರ್‌ನ್ ಅಧಿಕೃತ ಆ್ಯಪ್, ವೆಬ್‌ಸೈಟ್ ಅತ್ತಂಡ ಈರೆನ ಕಾರ್ಡ್‌ದ ಪಿರವುಡ್ದ್ ಮಾತ್ರ ದೆತೊನುಲೆ",
     "Says they are from a bank but called from a personal mobile number. Since January 2026 banks must make service calls from numbers starting with 1600": "ಬ್ಯಾಂಕ್‌ಡ್ದ್ ಪಂಡ್‌ದ್ ಪನ್ಪೆರ್, ಆಂಡ ಕಾಲ್ ಸ್ವಂತ ಮೊಬೈಲ್ ನಂಬರ್‌ಡ್ದ್ ಬೈದ್ಂಡ್. ಜನವರಿ 2026 ಡ್ದ್ ಬ್ಯಾಂಕ್‌ಲು ಸೇವಾ ಕಾಲ್‌ಲೆನ್ 1600 ಡ್ದ್ ಸುರು ಆಪುನ ನಂಬರ್‌ಡ್ದ್ ಮಾತ್ರ ಮಲ್ಪೊಡು",
@@ -209,7 +209,7 @@ export const tcyContent: LangContent = {
     // ---- file checker
     "The file name contains a hidden character that reverses the text to disguise its real type": "ಫೈಲ್ ಪುದರ್‌ಡ್ ದೆಂಗ್‌ದಿನ ಒಂಜಿ ಅಕ್ಷರ ಉಂಡು, ಅವು ಪುದರ್‌ನ್ ಉಲ್ಟಾ ತೋಜಾದ್ ನಿಜವಾಯಿನ ವಿಧನ್ ದೆಂಗಾವುಂಡು",
     "File type '{ext}' can run code on your device. Only open it if you fully trust the sender": "'{ext}' ಫೈಲ್ ಈರೆನ {device}ಡ್ ಪ್ರೋಗ್ರಾಂ ನಡಪಾವೊಲಿ. ಕಡಪುಡಿನಾಕುಲೆನ್ ಪೂರ್ತಿ ನಂಬುಂಡ ಮಾತ್ರ ತೆರೆಲೆ",
-    "File type '{ext}' can contain macros, which are often used to install malware": "'{ext}' ಫೈಲ್‌ಡ್ ಮ್ಯಾಕ್ರೋಲು ಉಪ್ಪೊಲಿ, ಅವೆಟ್ ಮಸ್ತ್ ಸರ್ತಿ ವೈರಸ್ ಪಾಡುವೆರ್",
+    "File type '{ext}' can contain macros, which are often used to install malware": "'{ext}' ಫೈಲ್‌ಡ್ ಮ್ಯಾಕ್ರೋಲು ಉಪ್ಪೊಲಿ, ಅವೆನ್ ಮಸ್ತ್ ಸರ್ತಿ ವೈರಸ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪೆರೆ ಬಳಕೆ ಮಲ್ಪುವೆರ್",
     "This file pretends to be a {fake} file but is really a {real} program. A common disguise trick": "ಈ ಫೈಲ್ {fake} ಫೈಲ್‌ದ ಲೆಕ್ಕ ನಟನೆ ಮಲ್ಪುಂಡು, ಆಂಡ ನಿಜವಾದ್ {real} ಪ್ರೋಗ್ರಾಂ. ವೇಷ ಬದಲ್ ಮಲ್ಪುನ ಸಾಮಾನ್ಯ ತಂತ್ರ",
     "This file is named like a '{ext}' file but is actually {reason}. Do NOT open it": "ಈ ಫೈಲ್‌ದ ಪುದರ್ '{ext}' ದ ಲೆಕ್ಕ ಉಂಡು, ಆಂಡ ನಿಜವಾದ್ ಉಂದು {reason}. ಏಪಲಾ ತೆರೆಯೊಡ್ಚಿ",
     "The file's name says '{ext}' but its contents are {reason}": "ಫೈಲ್ ಪುದರ್‌ಡ್ '{ext}' ಉಂಡು, ಆಂಡ ಉಲಾಯಿ {reason} ಉಂಡು",
@@ -413,7 +413,7 @@ export const tcyContent: LangContent = {
     "An AI review also thinks this is a scam: {reason}": "AI ಪರಿಶೀಲನೆಲಾ ಉಂದೆನ್ ಮೋಸ ಪನ್ಪುಂಡು: {reason}",
     "An AI review thinks this message is suspicious: {reason}": "AI ಪರಿಶೀಲನೆ ಈ ಮೆಸೇಜ್‌ನ್ ಸಂಶಯದ ಮೆಸೇಜ್ ಪನ್ಪುಂಡು: {reason}",
     "Pretends to be a bank or payment app to get your details or money": "ಈರೆನ ವಿವರ ಅತ್ತಂಡ ಪೈಸೆ ದೆತೊನೆರೆ ಬ್ಯಾಂಕ್ ಅತ್ತಂಡ ಪೇಮೆಂಟ್ ಆ್ಯಪ್ ಪಂಡ್‌ದ್ ನಟನೆ ಮಲ್ಪುಂಡು",
-    "Pretends to be the government, police or a utility company to scare you": "ಪೆದರಾವೆರೆ ಸರಕಾರ, ಪೊಲೀಸ್ ಅತ್ತಂಡ ವಿದ್ಯುತ್/ಗ್ಯಾಸ್ ಕಂಪನಿ ಪಂಡ್‌ದ್ ನಟನೆ ಮಲ್ಪುಂಡು",
+    "Pretends to be the government, police or a utility company to scare you": "ಈರೆಗ್ ಪೋಡಿಗೆ ಆವೊಡು ಪಂಡ್‌ದ್ ಸರಕಾರ, ಪೊಲೀಸ್ ಅತ್ತಂಡ ವಿದ್ಯುತ್/ಗ್ಯಾಸ್ ಕಂಪನಿ ಪಂಡ್‌ದ್ ನಟನೆ ಮಲ್ಪುಂಡು",
     "Promises a prize, gift, cashback or refund that isn't real": "ನಿಜ ಅತ್ತಂದಿನ ಬಹುಮಾನ, ಉಡುಗೊರೆ, ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್ ಅತ್ತಂಡ ರಿಫಂಡ್ ಕೊರ್ಪೆ ಪನ್ಪುಂಡು",
     "Fake job, task or easy-money offer": "ನಕಲಿ ಬೇಲೆ, ಟಾಸ್ಕ್ ಅತ್ತಂಡ ಸುಲಭ ಸಂಪಾದನೆದ ಆಫರ್",
     "Fake investment or trading offer": "ನಕಲಿ ಹೂಡಿಕೆ ಅತ್ತಂಡ ಟ್ರೇಡಿಂಗ್ ಆಫರ್",
@@ -428,7 +428,7 @@ export const tcyContent: LangContent = {
     "This exact file is a known malware sample on MalwareBazaar ({name}). Delete it": "ಈ ಫೈಲ್ MalwareBazaar ಡ್ ಗೊತ್ತುಪ್ಪುನ ಮಾಲ್‌ವೇರ್ ({name}). ಉಂದೆನ್ ಡಿಲೀಟ್ ಮಲ್ಪುಲೆ",
     "Your internet connection has a service open to the whole internet ({services}). If this is your home Wi-Fi, turn off remote access in the router's settings and change its password": "ಈರೆನ ಇಂಟರ್ನೆಟ್ ಕನೆಕ್ಷನ್‌ಡ್ ಒಂಜಿ ಸೇವೆ ಇಡೀ ಇಂಟರ್ನೆಟ್‌ಗ್ ತೆರೆದ್ ಉಂಡು ({services}). ಉಂದು ಈರೆನ ಇಲ್ಲದ Wi-Fi ಆಂಡ, ರೂಟರ್‌ದ ಸೆಟ್ಟಿಂಗ್‌ಡ್ ರಿಮೋಟ್ ಆಕ್ಸೆಸ್ ಆಫ್ ಮಲ್ಪುಲೆ ಬೊಕ್ಕ ಅಯಿತ ಪಾಸ್‌ವರ್ಡ್ ಬದಲ್ ಮಲ್ಪುಲೆ",
     "Security scanners found {n} known security holes on your internet address. Update your Wi-Fi router's software (firmware), or ask your internet provider to": "ಸುರಕ್ಷತಾ ಸ್ಕ್ಯಾನರ್‌ಲು ಈರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸೊಡು {n} ಗೊತ್ತಿತ್ತಿನ ಸುರಕ್ಷತಾ ದೋಷೊಲೆನ್ ತೂತೆರ್. ಈರೆನ Wi-Fi ರೂಟರ್‌ದ ಸಾಫ್ಟ್‌ವೇರ್ (ಫರ್ಮ್‌ವೇರ್) ಅಪ್‌ಡೇಟ್ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಈರೆನ ಇಂಟರ್ನೆಟ್ ಕೊರ್ಪಿನಾಕುಲೆಡ್ ಪನ್ಲೆ",
-    "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ಈರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮಿತ್ತ್ ದಾಳಿ ಅತ್ತಂಡ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅತ್ತಂಡ ಮೊಬೈಲ್ ಡೇಟಾದ ಲೆಕ್ಕದ ಹಂಚಿಕೆದ ನೆಟ್‌ವರ್ಕ್‌ಡ್, ಅತ್ತಂಡ ಈರೆನ ನೆಟ್‌ವರ್ಕ್‌ದ ಓವಾಂಡಲ ಸಾಧನೊಗು ವೈರಸ್ ಬತ್ತ್‌ಂಡ ಇಂಚ ಆವೊಲಿ",
+    "Your internet address has been reported for attacks or spam ({n}% confidence). This can happen on shared networks like public Wi-Fi or mobile data, or if a device on your network is infected": "ಈರೆನ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸದ ಮಿತ್ತ್ ದಾಳಿ ಅತ್ತಂಡ ಸ್ಪ್ಯಾಮ್ ದೂರು ಬೈದ್ಂಡ್ ({n}% ಖಚಿತತೆ). ಸಾರ್ವಜನಿಕ Wi-Fi ಅತ್ತಂಡ ಮೊಬೈಲ್ ಡೇಟಾದ ಲೆಕ್ಕದ ಹಂಚಿಕೆದ ನೆಟ್‌ವರ್ಕ್‌ಡ್, ಅತ್ತಂಡ ಈರೆನ ನೆಟ್‌ವರ್ಕ್‌ದ ಓವಾಂಡಲ ಮೊಬೈಲ್/ಲ್ಯಾಪ್‌ಟಾಪ್‌ಗ್ ವೈರಸ್ ಬತ್ತ್‌ಂಡ ಇಂಚ ಆವೊಲಿ",
 
     // ---- score breakdown and items inside messages
     "A link inside this file looks dangerous: {url}": "ಈ ಫೈಲ್‌ದುಲಾಯಿದ ಒಂಜಿ ಲಿಂಕ್ ಅಪಾಯದ ಲೆಕ್ಕ ತೋಜುಂಡು: {url}",
@@ -576,7 +576,7 @@ export const tcyContent: LangContent = {
     digital_arrest: {
       category: "ಸರಕಾರದ ಪುದರ್‌ಡ್ ಮೋಸ",
       title: "'ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್' / ನಕಲಿ ಪೊಲೀಸ್ ಸ್ಕ್ಯಾಮ್",
-      how_it_works: "ಕಾಲ್ ಮಲ್ತಿನಾಯೆ ತಾನ್ ಪೊಲೀಸ್/ಕಸ್ಟಮ್ಸ್/CBI ಪಂಡ್‌ದ್ ಪನ್ಪೆ, ಈರ್ ಒಂಜಿ ಅಪರಾಧೊಡು ಸಿಕ್ಕಿಬಿದ್ದರ್ ಪನ್ಪೆ, 'ಪುದರ್ ಕ್ಲಿಯರ್ ಮಲ್ಪೆರೆ' ವೀಡಿಯೊ ಕಾಲ್‌ಡೇ ಉಪ್ಪೊಡು ಬೊಕ್ಕ ಪೈಸೆ ಕಡಪುಡೊಡು ಪನ್ಪೆ.",
+      how_it_works: "ಕಾಲ್ ಮಲ್ತಿನಾಯೆ ತಾನ್ ಪೊಲೀಸ್/ಕಸ್ಟಮ್ಸ್/CBI ಪಂಡ್‌ದ್ ಪನ್ಪೆ, ಒಂಜಿ ಅಪರಾಧೊಡು ಈರೆನ ಪುದರ್ ಉಂಡು ಪನ್ಪೆ, 'ಪುದರ್ ಕ್ಲಿಯರ್ ಮಲ್ಪೆರೆ' ವೀಡಿಯೊ ಕಾಲ್‌ಡೇ ಉಪ್ಪೊಡು ಬೊಕ್ಕ ಪೈಸೆ ಕಡಪುಡೊಡು ಪನ್ಪೆ.",
       red_flags: [
         "ನಿಜವಾಯಿನ ಪೋಲಿಸ್ ವೀಡಿಯೊ ಕಾಲ್‌ಡ್ ಏಪಲಾ 'ಅರೆಸ್ಟ್' ಮಲ್ಪುಜೆರ್",
         "ಅರೆಸ್ಟ್ ತಪ್ಪಾವೆರೆ ಪೈಸೆ ಕಡಪುಡೊಡು ಪನ್ಪುನ ಬೇಡಿಕೆ",
