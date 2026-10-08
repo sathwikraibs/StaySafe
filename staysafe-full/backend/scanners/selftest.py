@@ -390,6 +390,14 @@ def _reply_language(reply: str):
             return f"{leaning}-latn" if leaning else "indic-latn"
     except Exception:
         pass
+    try:   # the AI helper's own word lists ("chinte maadbedi", "malpule", "mat bhejo")
+        from scanners.assistant import latin_language_hint
+        hint = latin_language_hint(reply)
+        code = hint[0] if isinstance(hint, tuple) else hint
+        if code in ("kn", "hi", "tcy"):
+            return f"{code}-latn"
+    except Exception:
+        pass
     return "en"
 
 

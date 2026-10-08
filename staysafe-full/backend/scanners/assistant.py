@@ -105,9 +105,22 @@ def _call_time(cap: float) -> float:
 
 
 def _wait() -> float:
-    """How long the next service may wait for a free slot: never past this question's time budget."""
+    """How long the next service may wait for a free slot: never past this question's time budget.
+    On the first round through the services each one only gets a few seconds, so a busy service
+    doesn't keep the visitor waiting while another one is free."""
     end = getattr(_until, "end", None)
     left = WAIT if end is None else end - time.time() - 35   # keep time for the answer itself
+    if getattr(_until, "quick", False):
+        return max(0.0, min(QUICK_WAIT, left))
+    return max(0.0, min(WAIT, left))
+
+
+QUICK_WAIT = 3.0
+
+
+def _full_wait() -> float:
+    end = getattr(_until, "end", None)
+    left = WAIT if end is None else end - time.time() - 35
     return max(0.0, min(WAIT, left))
 
 
@@ -338,7 +351,8 @@ def _gemini_smart(messages):
     key = tr._gemini_key()
     q = quota("gemini_answers")
     # only about 20 a day: kept for Tulu, and Kannada/Hindi typed in English letters (the hardest)
-    if not key or not getattr(_until, "hard", False) or _wait() < 20 or not q.take(wait=min(8.0, _wait()), priority="normal"):
+    full = _full_wait()     # the better model is worth a short wait even on the first, quick round
+    if not key or not getattr(_until, "hard", False) or full < 20 or not q.take(wait=min(8.0, full), priority="normal"):
         return None
     system = messages[0]["content"]
     contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
@@ -596,10 +610,25 @@ def clearly_off_topic(message: str) -> bool:
 
 # Kannada words that never belong in a Tulu sentence -> their Tulu word (whole words only)
 _TULU_FIX = {"ನಿಮ್ಮ": "ಇರೆನ", "ನಿಮಗೆ": "ಇರೆಗ್", "ಮತ್ತು": "ಬೊಕ್ಕ", "ಅಥವಾ": "ಅತ್ತಂಡ", "ದಯವಿಟ್ಟು": "",
+             "ಇತರ": "ಬೇತೆ", "ನೋಡಿ": "ತೂಲೆ", "ಮಾಡಿ": "ಮಲ್ಪುಲೆ", "ಆದರೆ": "ಆಂಡ", "ಈಗಲೇ": "ಇತ್ತೆನೇ",
              "nimma": "irena", "nimage": "irege", "mattu": "bokka", "athava": "attanda", "athavaa": "attanda",
              "dayavittu": ""}
 _TULU_FIX_RE = re.compile(r"(?<![\w\u0C80-\u0CFF])(" + "|".join(map(re.escape, _TULU_FIX)) + r")(?![\w\u0C80-\u0CFF])",
                           re.IGNORECASE)
+
+
+# Kannada word forms that never appear in Tulu: plurals in -ಗಳ/-ಗಳು (Tulu uses -ಲು/-ಲೆ), ಬಳಸಿ, ಅನುಸರಿಸಿ...
+_KN_SLIPS = re.compile(r"(?<![\u0C80-\u0CFF])([\u0C80-\u0CFF]+(?:ಗಳ|ಗಳು|ಗಳನ್ನು|ಗಳಿಗೆ|ಗಳಲ್ಲಿ|ಗಾಗಿ)|ಬಳಸಿ|ಅನುಸರಿಸ[\u0C80-\u0CFF]*|"
+                       r"ಬೇಡಿ|ಇದೆ|ಆಗಿದೆ|ಮಾಡುವ[\u0C80-\u0CFF]*|ಮಾಡಬೇಡಿ|ಕೊಡಬೇಡಿ|ಮಾಡಿದರೆ|ಆದರೆ)(?![\u0C80-\u0CFF])")
+
+
+def kannada_grammar_slips(reply: str) -> list:
+    """Kannada grammar inside a Tulu answer (ಅಕೌಂಟ್‌ಗಳ, ಬಳಸಿ, ಅನುಸರಿಸಲೆ): reasons to ask for a rewrite."""
+    out = []
+    for m in _KN_SLIPS.finditer(reply.replace("\u200c", "")):
+        if m.group(1) not in out:
+            out.append(m.group(1))
+    return out
 
 
 def tulu_polish(reply: str) -> str:
@@ -693,6 +722,7 @@ def _generate(messages, message: str, lang: str, hint=None):
     finally:
         _until.end = None
         _until.hard = False
+        _until.quick = False
 
 
 def _generate_in_time(messages, message: str, lang: str, hint=None):
@@ -713,14 +743,20 @@ def _generate_in_time(messages, message: str, lang: str, hint=None):
     for attempt in range(2):
         if attempt and _call_time(60) < 40:
             break                           # not enough time left for a fix-up: keep the first answer
-        for provider in order:
-            if not _call_time(30):
-                break                       # out of time: answer with what we have
-            raw = provider(messages)
-            out = _parse(raw) if raw else None
+        out = None
+        for quick in (True, False):         # first: whichever service is free now; then wait for one
+            _until.quick = quick
+            for provider in order:
+                if not _call_time(30):
+                    break                   # out of time: answer with what we have
+                raw = provider(messages)
+                out = _parse(raw) if raw else None
+                if out:
+                    used = provider.__name__.strip("_").replace("_native", "")
+                    break
             if out:
-                used = provider.__name__.strip("_").replace("_native", "")
                 break
+        _until.quick = False
         if not out:
             return (first, first_used) if first else (None, None)   # a fix-up failed: keep the first answer
         if attempt == 0:
@@ -743,8 +779,8 @@ def _generate_in_time(messages, message: str, lang: str, hint=None):
         if tulu and attempt == 0:
             from scanners.tulu_lexicon import kannada_only_words, kannada_only_latin
             polished = tulu_polish(out["reply"])
-            slips = kannada_only_words(polished) if _script_share(out["reply"], "kn") >= 0.4 \
-                else kannada_only_latin(polished)
+            slips = kannada_only_words(polished) + kannada_grammar_slips(polished) \
+                if _script_share(out["reply"], "kn") >= 0.4 else kannada_only_latin(polished)
             if len(slips) >= 3:
                 messages = messages + [{"role": "assistant", "content": json.dumps(out, ensure_ascii=False)},
                                        {"role": "user", "content": "These words in your answer are Kannada, not Tulu: "

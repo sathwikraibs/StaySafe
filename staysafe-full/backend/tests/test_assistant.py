@@ -403,6 +403,27 @@ def test_retired_better_model_hands_over_to_the_one_google_names_and_emails_are_
         QUOTAS["gemini_answers"].reset()
 
 
+def test_first_round_does_not_wait_long_for_a_busy_service():
+    import time as _t
+    import scanners.assistant as a
+    a._until.end = _t.time() + a.BUDGET
+    try:
+        a._until.quick = True
+        assert a._wait() <= a.QUICK_WAIT
+        a._until.quick = False
+        assert a._wait() > 20
+    finally:
+        a._until.end = None
+        a._until.quick = False
+
+
+def test_kannada_grammar_inside_tulu_is_noticed():
+    from scanners.assistant import kannada_grammar_slips
+    slips = kannada_grammar_slips("ಈ ಹಂತೊಲೆನ್ ಅನುಸರಿಸಲೆ. 'Forgot password' ಬಳಸಿ. ಇತರ ಅಕೌಂಟ್‌ಗಳ ಪಾಸ್‌ವರ್ಡ್")
+    assert len(slips) >= 3, slips
+    assert kannada_grammar_slips("ಈರೆನ ಪಾಸ್‌ವರ್ಡ್ ಬದಲ್ ಮಲ್ಪುಲೆ, 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ") == []
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
