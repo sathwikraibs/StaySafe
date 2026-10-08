@@ -771,7 +771,6 @@ def assistant_status_route():
 
 @assistant_bp.route("/api/assistant", methods=["POST"])
 def assistant_route():
-    from scanners.translator import mask_personal
     data = request.get_json(silent=True) or {}
     message = str(data.get("message") or "").strip()[:1500]
     lang = str(data.get("lang") or "en").lower()
@@ -784,9 +783,18 @@ def assistant_route():
     if not _allowed(client_ip()):
         return jsonify({"error": "You've asked a lot of questions in a short time. Please wait a few minutes, or talk to a person."}), 429
 
+    out = ask_assistant(message, lang, chosen, data.get("history") or [])
+    if not out:
+        return jsonify({"error": "unavailable"}), 503
+    return jsonify(out)
+
+
+def ask_assistant(message: str, lang: str = "en", chosen: str = "", history=None):
+    """The whole answer to one visitor question (also used by the owner's graded self-test)."""
+    from scanners.translator import mask_personal
     secrets: list = []
     turns = []
-    for t in (data.get("history") or [])[-6:]:
+    for t in (history or [])[-6:]:
         if isinstance(t, dict) and t.get("role") in ("user", "assistant"):
             text = str(t.get("text") or "")[:800]
             if t["role"] == "user":
@@ -805,8 +813,8 @@ def assistant_route():
                [{"role": "user", "content": f"<visitor>\n{masked}\n</visitor>"}]
 
     if clearly_off_topic(message):
-        return jsonify({"reply": OFF_TOPIC[_reply_lang(message, lang, chosen, hint, None)], "urgent": False,
-                        "actions": [], "ask_language": False, "kind": "other", "language": "", "understood": ""})
+        return {"reply": OFF_TOPIC[_reply_lang(message, lang, chosen, hint, None)], "urgent": False,
+                "actions": [], "ask_language": False, "kind": "other", "language": "", "understood": ""}
 
     cache_key = None
     if not turns:
@@ -814,21 +822,20 @@ def assistant_route():
         with _lock:
             hit = _answers.get(cache_key)
         if hit and time.time() - hit[0] < ANSWER_CACHE_S:
-            return jsonify(dict(hit[1], reply=_clean(hit[1]["reply"], secrets)))
+            return dict(hit[1], reply=_clean(hit[1]["reply"], secrets))
 
     out, _provider = _generate(messages, message, chosen or lang, hint)
     out = finish(out, message, lang, chosen, hint)
     if chosen and out:
         out = dict(out, ask_language=False)   # they already picked a language
     if not out:
-        return jsonify({"error": "unavailable"}), 503
+        return None
     if cache_key:
         with _lock:
             _answers[cache_key] = (time.time(), out)
             while len(_answers) > 300:
                 _answers.pop(next(iter(_answers)))
-    out = dict(out, reply=_clean(out["reply"], secrets))
-    return jsonify(out)
+    return dict(out, reply=_clean(out["reply"], secrets))
 
 
 SELFTEST_CASES = [
