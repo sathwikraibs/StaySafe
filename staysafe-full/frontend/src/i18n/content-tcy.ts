@@ -45,7 +45,7 @@ export const tcyContent: LangContent = {
     "That file is too big. Please upload something under {mb} MB.": "ಈ ಫೈಲ್ ಮಸ್ತ್ ಮಲ್ಲ. {mb} MB ಡ್ದ್ ಎಲ್ಯ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",
 
     // ---- message checker
-    "Asks you to share an OTP, PIN, CVV or password": "ಇರೆಡ್ದ್ OTP, PIN, CVV ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಕೇನೊಂದುಲ್ಲೆರ್",
+    "Asks you to share an OTP, PIN, CVV or password": "ಈರೆಡ್ದ್ OTP, PIN, CVV ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಕೇನೊಂದುಲ್ಲೆರ್",
     "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": "ಪೈಸೆ 'ಪಡೆಯೆರೆ' UPI PIN ಕೇನೊಂದುಲ್ಲೆರ್ (ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ PIN ಬೋಡ್ಚಿ)",
     "Bank / KYC / PAN impersonation": "ಬ್ಯಾಂಕ್ / KYC / PAN ಪುದರ್‌ಡ್ ಮೋಸ",
     "Says your card or account was blocked and asks you to call a number": "ಈರೆನ ಕಾರ್ಡ್ ಅತ್ತಂಡ ಖಾತೆ ಬ್ಲಾಕ್ ಆತ್ಂಡ್ ಪಂಡ್‌ದ್, ಒಂಜಿ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು",
