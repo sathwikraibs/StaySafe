@@ -7,17 +7,7 @@ All notable changes to TrustLight are listed here. Versions follow
 
 ## [Unreleased]
 
-### Added
-- "Checked by others, not just us" on the About & Privacy page: live links to independent
-  security checks of the website.
-- Automatic code security scan (CodeQL) on every change and every week.
-
-### Security
-- Text patterns rewritten so very long or specially built input can no longer slow the server down
-  (found by the new code scan).
-- The visitor's internet address is now accepted only when it is a real IP address before it is
-  used to look up connection details.
-- The link certificate check refuses outdated TLS versions.
+Nothing yet.
 
 ## [1.0.0] - 2026-10-11
 
@@ -44,6 +34,18 @@ The first numbered release of TrustLight (previously called StaySafe).
 - Phone numbers, account numbers, OTPs, email addresses and UPI IDs are masked before any
   text is sent to an outside service.
 - Strict security headers (Content Security Policy, HSTS), rate limits and input checks.
+
+### Independent checks
+- "Checked by others, not just us" on the About & Privacy page: live links to independent
+  security checks of the website.
+- Automatic code security scan (CodeQL) on every change and every week.
+
+### Security fixes
+- Text patterns rewritten so very long or specially built input can no longer slow the server down
+  (found by the new code scan).
+- The visitor's internet address is now accepted only when it is a real IP address before it is
+  used to look up connection details.
+- The link certificate check refuses outdated TLS versions.
 
 [Unreleased]: https://github.com/sathwikraibs/StaySafe/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/sathwikraibs/StaySafe/releases/tag/v1.0.0
