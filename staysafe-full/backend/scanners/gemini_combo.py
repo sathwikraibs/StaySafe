@@ -37,7 +37,8 @@ def _needs(text: str, ui_lang: str) -> dict:
             non_latin, romanized = 1.0, True
     # Google can't read Indian languages typed in English letters, so those always come here
     want_en = non_latin >= 0.2 and not tr.cached_translation(text, "en") and (romanized or not tr._google_key())
-    want_ui = (ui_lang != "en" and (romanized or source != ui_lang) and not tr.cached_translation(text, ui_lang)
+    # Tulu is not asked here: it uses its own request to a stronger model with Tulu examples
+    want_ui = (ui_lang not in ("en", "tcy") and (romanized or source != ui_lang) and not tr.cached_translation(text, ui_lang)
                and (romanized or ui_lang in tr.TARGET_FALLBACK or not tr._google_key()))
     want_review = False
     if len(text.strip()) >= 15 and os.environ.get("AI_REVIEW", "on").lower() != "off" \

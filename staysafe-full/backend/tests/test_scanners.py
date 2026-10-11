@@ -1062,11 +1062,11 @@ def test_tulu_translation_uses_gemini_then_kannada():
     real = translator._gemini, translator._google, translator._mymemory, translator._bhashini
     try:
         translator._cache.clear()
-        translator._gemini = lambda text, target, *a: {"text": "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಪುಂಡು", "from": "en", "to": target, "provider": "gemini"}
+        translator._gemini = lambda text, target, *a, **k: {"text": "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆಪುಂಡು", "from": "en", "to": target, "provider": "gemini"}
         out = translator.translate("Your account will be blocked", "tcy")
         assert out["to"] == "tcy" and out["text"].startswith("ಈರೆನ"), out
         translator._cache.clear()
-        translator._gemini = lambda text, target, *a: None
+        translator._gemini = lambda text, target, *a, **k: None
         translator._bhashini = lambda text, target: None
         translator._mymemory = lambda text, target: {"text": "ನಿಮ್ಮ್ ಖಾತೆ ಇನ್ನು ಒಂದು ದಿನ", "from": "en", "to": target, "provider": "mymemory"}
         translator._google = lambda text, target: None

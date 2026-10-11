@@ -163,6 +163,17 @@ def test_status_page_lists_recent_gemini_answers():
     assert tr.translation_status()["gemini"]["recent"][-1]["outcome"] == "busy (HTTP 503)"
 
 
+def test_tulu_uses_examples_stronger_model_and_rejects_broken_answers():
+    prompt = tr._gemini_prompt("Your account will be blocked today", "tcy")
+    assert "ಈರೆನ SBI YONO ಖಾತೆ ಇನಿ ಬ್ಲಾಕ್ ಆಪುಂಡು" in prompt and "Kannada script only" in prompt
+    assert "Tulu" not in tr._gemini_prompt("hello", "kn").split("<message>")[0].replace("Tulu (", "")
+    assert tr.TULU_MODELS and "lite" not in tr.TULU_MODELS[0]
+    src = "Your SBI account will be blocked today"
+    assert not tr._looks_like_translation(src, "ನಿen்கಳ SBI ಅಕೌಂಟ್ ಬ್ಲಾಕ್ ಆಪುಂಡು", "tcy")   # Tamil + English inside a word
+    assert tr._looks_like_translation(src, "ಈರೆನ SBI ಖಾತೆ ಇನಿ ಬ್ಲಾಕ್ ಆಪುಂಡು", "tcy")
+    assert tr._looks_like_translation(src, "ಈರೆನ OTPನ್ ಏರೆಗ್‌ಲಾ ಪನೊಡ್ಚಿ http://sbi-kyc.topಗ್", "tcy")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in dict(globals()).items() if k.startswith("test_")]
     ok = 0
