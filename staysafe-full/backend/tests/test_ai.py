@@ -1,5 +1,6 @@
 """Tests for how every AI part of the site behaves when services are busy, used up, cut off or off-topic.
 Run: python tests/test_ai.py"""
+from urllib.parse import urlparse
 import json
 import os
 import sys
@@ -166,7 +167,7 @@ def test_cut_off_or_broken_answer_is_never_shown_the_next_service_answers():
     fresh(GROQ_API_KEY="k", CLOUDFLARE_ACCOUNT_ID="a", CLOUDFLARE_AI_TOKEN="t")
 
     def fake(url, json=None, **kw):
-        if "groq.com" in url:
+        if urlparse(url).hostname == "api.groq.com":
             return openai_ok('{"understood": "lost money", "reply": "Please call 1930 and')   # broken JSON
         return openai_ok('{"kind": "safety", "reply": "Please call 1930 now.", "actions": ["incident"]}')
     use(fake)
@@ -344,7 +345,7 @@ def test_self_test_can_check_one_chosen_service_and_never_affects_visitors():
     assert assistant._until.__dict__.get("only") is None
     urls.clear()
     c.post("/api/assistant", json={"message": "is this call a scam", "lang": "en"})
-    assert "groq.com" in urls[0]                     # visitors use the normal order again
+    assert urlparse(urls[0]).hostname == "api.groq.com"                     # visitors use the normal order again
     os.environ.pop("STATUS_KEY")
 
 
@@ -397,7 +398,7 @@ def test_google_share_link_is_judged_by_the_page_it_opens_not_by_lists_of_the_wh
                                 "blocked": False, "error": None}
         u.fetch_page = opens("https://www.thehindu.com/news/national/story/article1.ece")
         r = u.scan_url("https://share.google/k3IgCe77g1Gp4rhsH")
-        assert r["verdict"] == "SAFE" and r["details"]["final_url"].startswith("https://www.thehindu.com"), r
+        assert r["verdict"] == "SAFE" and urlparse(r["details"]["final_url"]).hostname == "www.thehindu.com", r
         u.fetch_page = opens("https://sbi-reward-claim.xyz/login")
         assert u.scan_url("https://share.google/k3IgCe77g1Gp4rhsH")["verdict"] == "DANGEROUS"
     finally:

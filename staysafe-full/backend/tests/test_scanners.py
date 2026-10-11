@@ -5,6 +5,8 @@ Run from the backend folder (no internet or API keys needed):
     python tests/test_scanners.py          # plain Python, prints a report
     python -m pytest tests                 # if you have pytest installed
 """
+from urllib.parse import urlparse
+import re
 import io
 import os
 import sys
@@ -911,8 +913,8 @@ def test_abusech_urlscan_and_bazaar_lookups():
             raise AssertionError(url)
 
         def fake_get(url, params=None, headers=None, timeout=None):
-            if "urlscan.io" in url:
-                hit = "evil-shop-deals.com" in params["q"]
+            if urlparse(url).hostname == "urlscan.io":
+                hit = re.search(r'page\.domain:"([^"]+)"', params["q"]).group(1) == "evil-shop-deals.com"
                 return _FakeResponse(200, {"results": [{"page": {"domain": "evil-shop-deals.com"}}] if hit else []})
             return real_get(url, params=params, headers=headers, timeout=timeout)
         url_scanner.requests.post, url_scanner.requests.get = fake_post, fake_get

@@ -109,7 +109,7 @@ def detect_real_type(data: bytes) -> str:
         return "OneNote file"
     if any(data[o:o + 5] == b"CD001" for o in (0x8001, 0x8801, 0x9001)) or data[:8] == b"conectix" or data[:8] == b"vhdxfile":
         return "disk image"
-    if head.startswith(b"#!") or re.match(rb"\s*(@echo off|powershell|Set\s+\w+\s*=\s*CreateObject)", head, re.IGNORECASE):
+    if head.startswith(b"#!") or re.match(rb"\s{0,40}(@echo off|powershell|Set\s{1,10}\w{1,64}\s{0,10}=\s{0,10}CreateObject)", head, re.IGNORECASE):
         return "script"
     low = head.lstrip(b"\xef\xbb\xbf \t\r\n").lower()
     if low.startswith((b"<!doctype html", b"<html", b"<head", b"<body", b"<script", b"<form", b"<meta", b"<iframe")) \
@@ -345,7 +345,7 @@ def _inspect_web_page(data: bytes, svg: bool):
     out = []
     text = data.decode("utf-8", "ignore")
     low = text.lower()
-    if re.search(r"<input[^>]+type\s*=\s*[\"']?password", low):
+    if re.search(r"<input[^>]{1,1000}type\s{0,10}=\s{0,10}[\"']?password", low):
         brand = re.search(r"(microsoft|outlook|office ?365|onedrive|sharepoint|adobe|docusign|wetransfer|dropbox|"
                           r"gmail|google|yahoo|webmail|sbi|hdfc|icici|axis|kotak|paytm|phonepe|bank|netbanking|"
                           r"aadhaa?r|income ?tax|whatsapp|instagram|facebook)", low)
@@ -355,9 +355,9 @@ def _inspect_web_page(data: bytes, svg: bool):
         else:
             out.append(("This file is a login page with a password box. Login pages sent as files are almost always "
                         "fake and send your password to criminals", 55))
-        if re.search(r"<input[^>]+value\s*=\s*[\"'][^\"'@\s]+@[^\"'\s]+\.[a-z]{2,}", low):
+        if re.search(r"<input[^>]{1,1000}value\s{0,10}=\s{0,10}[\"'][^\"'@\s]{1,64}@[^\"'\s.]{1,63}(?:\.[^\"'\s.]{1,63}){0,6}\.[a-z]{2,24}", low):
             out.append(("Your email address is already filled in, to make the fake page look personal", 10))
-    elif re.search(r"<input[^>]+name\s*=\s*[\"']?(otp|pin|cvv|card|upi|aadhaa?r|pan)\b", low):
+    elif re.search(r"<input[^>]{1,1000}name\s{0,10}=\s{0,10}[\"']?(otp|pin|cvv|card|upi|aadhaa?r|pan)\b", low):
         out.append(("This file is a form asking for OTP, PIN, card or bank details. Never type them into a file", 45))
     if re.search(r"(new\s+blob\s*\(|createobjecturl|mssaveoropenblob|navigator\.mssaveblob)", low) and \
             re.search(r"(atob\s*\(|\.download\s*=|download\s*=)", low):
@@ -366,7 +366,7 @@ def _inspect_web_page(data: bytes, svg: bool):
     elif re.search(r"(eval\s*\(\s*(atob|unescape|decodeuricomponent)|document\.write\s*\(\s*(unescape|atob|decodeuricomponent)|"
                    r"string\.fromcharcode\s*\((\s*\d+\s*,){20,})", low):
         out.append(("This file hides its real content with scrambled code", 30))
-    redirect = re.search(r"http-equiv\s*=\s*[\"']?refresh[^>]+url\s*=\s*['\"]?https?://", low) or \
+    redirect = re.search(r"http-equiv\s{0,10}=\s{0,10}[\"']?refresh[^>]{1,500}url\s{0,10}=\s{0,10}['\"]?https?://", low) or \
         re.search(r"(window|document|top|self)\.location(\.href)?\s*=\s*['\"`]https?://", low) or \
         re.search(r"location\.(replace|assign)\s*\(\s*['\"`]https?://", low)
     if redirect:
@@ -459,7 +459,8 @@ def check_virustotal_hash(sha256: str) -> dict:
         for _attempt in range(2):
             if not quota("virustotal").take(wait=max(0.0, deadline - time.time()), priority="high"):
                 return {"status": "skip", "score": 0, "findings": [], "vt": {"state": "busy"}}
-            resp = requests.get(f"{VT_API}/files/{sha256}", headers=headers, timeout=8)
+            file_id = format(int(sha256, 16), "064x")   # always 64 hex characters, whatever was passed in
+            resp = requests.get(f"{VT_API}/files/{file_id}", headers=headers, timeout=8)
             if resp.status_code != 429:
                 break
             quota("virustotal").cool_down(60)

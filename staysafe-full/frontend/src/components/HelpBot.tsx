@@ -26,7 +26,7 @@ function cleanReply(text: unknown): string | null {
   if (t.startsWith("{")) {
     try { const inner = JSON.parse(t); t = typeof inner?.reply === "string" ? inner.reply.trim() : ""; } catch { t = ""; }
   }
-  if (!t || /```|<script|"\w+"\s*:\s*["{[\d]|\bfunction\s*\w*\s*\(|=>|console\.log/.test(t)) return null;
+  if (!t || /```|<script|"\w+"\s*:\s*["{[\d]|\bfunction\s*\w*\s*\(|=>|console\.log/i.test(t)) return null;
   return t;
 }
 

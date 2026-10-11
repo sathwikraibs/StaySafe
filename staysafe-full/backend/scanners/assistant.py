@@ -594,7 +594,7 @@ def _reply_lang(message: str, site_lang: str, chosen: str, hint, out) -> str:
 
 # Clearly not about safety: answered with the fixed line straight away, no AI needed
 _CLEARLY_OFF = re.compile(
-    r"\b(?:write|make|create|generate|compose)\s+(?:me\s+)?(?:a|an|the|some|one)?\s*(?:\w+\s+){0,2}"
+    r"\b(?:write|make|create|generate|compose)\s+(?:me\s+)?(?:(?:a|an|the|some|one)\s+)?(?:\w+\s+){0,2}"
     r"(?:program|programme|essay|poem|story|song|joke|homework|assignment)s?\b"
     r"|\b(?:write|make|create|generate|give|show)\b.{0,30}\bcode\b(?=.*\b(?:python|java|javascript|c\+\+|html|css|sql|"
     r"coding|program|calculator|function|website|app)\b)"

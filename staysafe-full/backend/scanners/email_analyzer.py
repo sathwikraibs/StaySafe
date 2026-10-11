@@ -37,7 +37,7 @@ def check_auth_results(raw_email: str) -> dict:
     score = 0
 
     auth_header = ""
-    match = re.search(r"Authentication-Results:.*?(?=\n\S|\n\n)", raw_email, re.IGNORECASE | re.DOTALL)
+    match = re.search(r"^Authentication-Results:[^\n]*(?:\n[ \t][^\n]*)*", raw_email, re.IGNORECASE | re.MULTILINE)
     if match:
         auth_header = match.group(0).lower()
 
@@ -131,17 +131,18 @@ COMPANY_WORDS = re.compile(
     r"recruit(ment|er|ing)?|careers?|hiring|placement|talent|infosys|tcs|wipro|accenture|cognizant|hcl|capgemini|"
     r"deloitte|tech ?mahindra|ibm|microsoft|google|amazon|flipkart|reliance|tata)\b", re.IGNORECASE)
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
-FIND_EMAIL = re.compile(r"[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+FIND_EMAIL = re.compile(r"(?<![A-Za-z0-9._%+'-])[A-Za-z0-9._%+'-]{1,64}@(?:[A-Za-z0-9-]{1,63}\.){1,8}[A-Za-z]{2,24}")
 
 
 def unhide_email(raw: str) -> str:
     """'name [at] example [dot] com', 'name (at) x.com', 'name @ x . com' -> 'name@example.com'."""
-    t = (raw or "").strip()
-    t = re.sub(r"\s*[\[\(\{]\s*(?:at|@)\s*[\]\)\}]\s*", "@", t, flags=re.IGNORECASE)
-    t = re.sub(r"\s*[\[\(\{]\s*(?:dot|\.)\s*[\]\)\}]\s*", ".", t, flags=re.IGNORECASE)
-    t = re.sub(r"(?<=\w)\s+at\s+(?=[\w-]+(?:\s+dot\s+|\.)[a-z])", "@", t, flags=re.IGNORECASE)
-    t = re.sub(r"(?<=\w)\s+dot\s+(?=[a-z])", ".", t, flags=re.IGNORECASE)
-    t = re.sub(r"(?<=[\w.-])\s*@\s*(?=[\w-])", "@", t)   # 'name @ example.com'
+    # one space at most between words first, so the patterns below never re-scan long runs of spaces
+    t = " ".join((raw or "").split())[:1000]
+    t = re.sub(r" ?[\[\(\{] ?(?:at|@) ?[\]\)\}] ?", "@", t, flags=re.IGNORECASE)
+    t = re.sub(r" ?[\[\(\{] ?(?:dot|\.) ?[\]\)\}] ?", ".", t, flags=re.IGNORECASE)
+    t = re.sub(r"(?<=\w) at (?=[\w-]{1,63}(?: dot |\.)[a-z])", "@", t, flags=re.IGNORECASE)
+    t = re.sub(r"(?<=\w) dot (?=[a-z])", ".", t, flags=re.IGNORECASE)
+    t = re.sub(r"(?<=[\w.-]) ?@ ?(?=[\w-])", "@", t)   # 'name @ example.com'
     return t
 
 

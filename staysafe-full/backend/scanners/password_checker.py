@@ -62,6 +62,17 @@ SEQUENCES = [
 ]
 
 
+
+def _trim_core(lower: str) -> str:
+    """Drop digits and symbols from both ends ('2024p@ssw0rd!!' -> 'p@ssw0rd'), without a slow pattern."""
+    start = 0
+    while start < len(lower) and not ("a" <= lower[start] <= "z" or lower[start] in "@$"):
+        start += 1
+    end = len(lower)
+    while end > start and not "a" <= lower[end - 1] <= "z":
+        end -= 1
+    return lower[start:end]
+
 def has_sequence(pw: str, length: int = 4) -> bool:
     low = pw.lower()
     for seq in SEQUENCES:
@@ -116,7 +127,7 @@ def analyze_strength(password: str) -> dict:
         score -= led.note(findings, 15)
 
     # strip leading/trailing digits+symbols, then undo leetspeak: "P@ssw0rd2024!" -> "password"
-    core = re.sub(r"^[^a-z@$]+|[^a-z]+$", "", lower)
+    core = _trim_core(lower)
     base = re.sub(r"[^a-z]", "", core.translate(LEET))
     letters_only = re.sub(r"[^a-z]", "", lower)
     if lower in COMMON_PASSWORDS:
@@ -162,7 +173,7 @@ def analyze_strength(password: str) -> dict:
         findings.append("Ends with a year (like a birth year). Easy to guess if someone knows you")
         score -= led.note(findings, 10)
 
-    if re.fullmatch(r"[A-Za-z]+[^A-Za-z0-9]?\d{1,4}[^A-Za-z0-9]?", password) and length < 14:
+    if re.fullmatch(r"[A-Za-z]{1,64}[^A-Za-z0-9]?\d{1,4}[^A-Za-z0-9]?", password) and length < 14:
         findings.append("Follows the very common pattern Word + symbol + numbers")
         score -= led.note(findings, 10)
 
@@ -225,7 +236,8 @@ def check_breach(password: str) -> dict:
     first 5 hex characters to HIBP, and check locally if the rest matches
     any returned suffix. The full password/hash never leaves this server.
     """
-    sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+    # SHA-1 is what the leak-check service uses to look passwords up; it protects nothing here
+    sha1 = hashlib.sha1(password.encode("utf-8"), usedforsecurity=False).hexdigest().upper()
     prefix, suffix = sha1[:5], sha1[5:]
 
     try:
@@ -366,7 +378,7 @@ def check_email_breach_route():
     import time
     data = request.get_json(silent=True) or {}
     email = str(data.get("email", "")).strip().lower()[:254]
-    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[a-z]{2,}", email):
+    if not re.fullmatch(r"[^@\s]{1,64}@[^@\s.]{1,63}(?:\.[^@\s.]{1,63}){0,8}\.[a-z]{2,24}", email):
         return jsonify({"error": "Please enter a full email address, like name@example.com"}), 400
 
     ip = (request.headers.get("X-Forwarded-For", request.remote_addr or "") or "").split(",")[0].strip()

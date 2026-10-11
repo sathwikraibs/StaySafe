@@ -157,7 +157,7 @@ export function UploadZone({ accept, label, hint, onFile, onClear, selectedPrevi
       ) : (
         <div className="flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-cream-100 p-3 animate-fade-up">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-200 text-brand-600">
-            {preview ? <img src={preview} alt="" className="h-full w-full object-cover" /> : selectedPreview ?? <IconUpload className="h-6 w-6" />}
+            {preview && preview.startsWith("blob:") ? <img src={preview} alt="" className="h-full w-full object-cover" /> : selectedPreview ?? <IconUpload className="h-6 w-6" />}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate font-body text-sm font-semibold text-ink-800">{fileName}</p>

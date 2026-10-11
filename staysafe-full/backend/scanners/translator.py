@@ -552,7 +552,7 @@ def _mymemory(text: str, target: str):
 
 
 _PERSONAL = re.compile(
-    r"[\w.+-]+@[\w-]+(?:\.[\w-]+)*"             # email addresses and UPI IDs (name@okaxis)
+    r"(?<![\w.+-])[\w.+-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63}){0,8}"             # email addresses and UPI IDs (name@okaxis)
     r"|(?<![\w/])\+?\d(?:[\d \-]{2,}\d)(?![\w/])"   # phone, account, Aadhaar, card numbers, OTPs
 )
 

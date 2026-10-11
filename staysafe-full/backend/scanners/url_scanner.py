@@ -589,7 +589,7 @@ def unwrap_redirect(url: str) -> str:
     host = (p.hostname or "").lower()
     qs = parse_qs(p.query)
     keys = ()
-    if host.endswith("safelinks.protection.outlook.com"):
+    if host == "safelinks.protection.outlook.com" or host.endswith(".safelinks.protection.outlook.com"):
         keys = ("url",)
     elif host in ("www.google.com", "google.com", "www.google.co.in", "google.co.in"):
         keys = ("q", "url") if p.path == "/url" else ()
@@ -649,7 +649,7 @@ def analyze_structure(url: str) -> dict:
     trusted = reg in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in")) or \
         (host.endswith(tuple("." + t for t in BRAND_TLDS)) and reg not in OFFICIAL_SHORTENERS)
     hosting = next((h for h in FREE_HOSTING if host == h or host.endswith("." + h)), None)
-    if not hosting and re.search(r"\.blogspot\.[a-z.]+$", host):
+    if not hosting and re.search(r"\.blogspot\.[a-z.]{1,20}$", host):
         hosting = "blogspot"
     if not hosting and re.search(r"/ip[fn]s/", path_for_hosting(url)):
         hosting = "IPFS"
@@ -900,7 +900,7 @@ def analyze_structure(url: str) -> dict:
             tricks += 1
 
         # a page hidden inside a website's own system folders (hacked WordPress sites host scam pages there)
-        if re.search(r"/wp-(includes|admin)/(?![^?#]*\.(js|css|png|jpe?g|gif|svg|woff2?)\b)[^?#]*\.(html?|php)\b", path) and \
+        if re.search(r"/wp-(includes|admin)/(?![^?#]{0,500}\.(js|css|png|jpe?g|gif|svg|woff2?)\b)[^?#]{0,500}\.(html?|php)\b", path) and \
                 not re.search(r"/wp-admin/(admin-ajax|admin-post|index|post|edit|options-general|load-(scripts|styles))\.php", path):
             findings.append("The page is hidden inside the website's own system folders, where hacked websites keep scam pages")
             score += led.note(findings, 25)
@@ -943,7 +943,7 @@ def analyze_structure(url: str) -> dict:
 
     if "@" in (parsed.netloc or ""):
         shown_part = parsed.netloc.rsplit("@", 1)[0]
-        if re.search(r"[a-z0-9-]+\.[a-z]{2,}", shown_part, re.I):
+        if re.search(r"(?<![a-z0-9-])[a-z0-9-]{1,63}\.[a-z]{2,}", shown_part, re.I):
             findings.append(f"Link is made to look like it opens '{shown_part[:60]}', but it really opens {host}")
             score += led.note(findings, 45)
         else:
@@ -1176,6 +1176,7 @@ def cert_details(host: str) -> dict:
         if not ips or not all(_public_ip(ip) for ip in ips):
             return {"error": True}
         ctx = ssl.create_default_context()
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_2
         try:
             with socket.create_connection((host, 443), timeout=5) as sock:
                 with ctx.wrap_socket(sock, server_hostname=host) as tls:
@@ -2104,7 +2105,7 @@ def _run(fn, *args, timeout=9, default=None):
 
 _URL_WITH_SCHEME = re.compile(r"(?:https?|hxxps?)://[^\s<>\"'`]+", re.IGNORECASE)
 _BARE_DOMAIN = re.compile(
-    r"(?<![@\w.-])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}(?::\d{2,5})?(?:/[^\s<>\"'`]*)?)",
+    r"(?<![@\w.-])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.){1,8}[a-z]{2,24}(?::\d{2,5})?(?:/[^\s<>\"'`]*)?)",
     re.IGNORECASE)
 
 
@@ -2123,7 +2124,7 @@ def extract_url(raw: str) -> str:
     # defanged addresses used in security reports
     text = re.sub(r"\[\.\]|\(\.\)|\{\.\}|\s\[dot\]\s|\[dot\]", ".", text, flags=re.IGNORECASE)
     text = re.sub(r"\bhxxp", "http", text, flags=re.IGNORECASE)
-    md = re.search(r"\]\((\S+?)\)", text)  # [text](url)
+    md = re.search(r"\]\(([^\s)]{1,2000})\)", text)  # [text](url)
     if md and ("." in md.group(1) or "://" in md.group(1)):
         text = md.group(1)
     m = _URL_WITH_SCHEME.search(text)

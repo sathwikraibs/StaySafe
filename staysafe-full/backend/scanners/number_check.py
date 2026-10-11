@@ -273,7 +273,7 @@ def phone_reputation(e164: str) -> dict:
     if not quota("ipqs").take(wait=3):
         return {"status": "skip"}
     try:
-        r = requests.get(f"https://www.ipqualityscore.com/api/json/phone/{key}/{e164.lstrip('+')}",
+        r = requests.get(f"https://www.ipqualityscore.com/api/json/phone/{key}/{int(e164.lstrip('+'))}",
                          params={"strictness": 1}, timeout=8)
         data = r.json()
     except Exception as e:  # noqa: BLE001

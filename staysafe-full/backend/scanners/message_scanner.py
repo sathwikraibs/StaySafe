@@ -868,10 +868,10 @@ def analyze_text(text: str) -> dict:
 MAX_LINKS_CHECKED = 5
 
 URL_IN_TEXT = re.compile(
-    r"(?<![@\w.])("
+    r"(?<![@\w.-])("
     r"https?://[^\s<>\"'()]+"
     r"|www\.[^\s<>\"'()]+"
-    r"|(?:[a-z0-9-]+\.)+(?:com|in|net|org|info|xyz|top|club|click|live|icu|buzz|site|online|shop|store|"
+    r"|(?:[a-z0-9-]{1,63}\.){1,8}(?:com|in|net|org|info|xyz|top|club|click|live|icu|buzz|site|online|shop|store|"
     r"rest|sbs|cfd|cyou|vip|support|me|ly|co|io|app|link|tk|ml|ga|cf|gq|ru|cn|sbi)(?:/[^\s<>\"'()]*)?"
     r")",
     re.IGNORECASE,

@@ -12,6 +12,13 @@ All notable changes to TrustLight are listed here. Versions follow
   security checks of the website.
 - Automatic code security scan (CodeQL) on every change and every week.
 
+### Security
+- Text patterns rewritten so very long or specially built input can no longer slow the server down
+  (found by the new code scan).
+- The visitor's internet address is now accepted only when it is a real IP address before it is
+  used to look up connection details.
+- The link certificate check refuses outdated TLS versions.
+
 ## [1.0.0] - 2026-10-11
 
 The first numbered release of TrustLight (previously called StaySafe).

@@ -30,9 +30,17 @@ def get_client_ip() -> str:
     Falls back to remote_addr for local testing.
     """
     forwarded = request.headers.get("X-Forwarded-For", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.remote_addr or ""
+    raw = forwarded.split(",")[0].strip() if forwarded else (request.remote_addr or "")
+    return _clean_ip(raw)
+
+
+def _clean_ip(raw: str) -> str:
+    """Only a real IP address is ever used (the header can be faked); anything else becomes ''."""
+    import ipaddress
+    try:
+        return ipaddress.ip_address(raw).compressed
+    except ValueError:
+        return ""
 
 
 def _ip_api(ip: str) -> dict:

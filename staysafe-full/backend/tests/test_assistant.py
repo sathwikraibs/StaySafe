@@ -1,4 +1,5 @@
 """Tests for the automatic assistant. Run: python tests/test_assistant.py"""
+from urllib.parse import urlparse
 import json
 import os
 import sys
@@ -164,7 +165,7 @@ def test_indian_language_answers_go_to_gemini_first_english_to_groq():
         assert "generativelanguage" in urls[0] and "ಕರೆ" in d["reply"], (urls, d)
         urls.clear()
         c.post("/api/assistant", json={"message": "police called me what to do", "lang": "en"})
-        assert "groq.com" in urls[0], urls
+        assert urlparse(urls[0]).hostname == "api.groq.com", urls
     finally:
         os.environ.pop("GEMINI_API_KEY", None)
 
