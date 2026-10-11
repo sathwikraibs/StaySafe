@@ -2,13 +2,7 @@
 // server results (ts), and supply translated recovery plans / scam library.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { en, type Dict } from "./en";
-import { hi } from "./hi";
-import { kn } from "./kn";
-import { tcy } from "./tcy";
 import type { LangContent } from "./content-types";
-import { hiContent } from "./content-hi";
-import { knContent } from "./content-kn";
-import { tcyContent } from "./content-tcy";
 
 export type Lang = "en" | "hi" | "kn" | "tcy";
 
@@ -40,15 +34,35 @@ function withDevice<T>(value: T): T {
   return value;
 }
 
-const DICTS: Record<Lang, DeepPartial<Dict>> = { en, hi, kn, tcy: withDevice(tcy) };
-const CONTENT: Partial<Record<Lang, LangContent>> = { hi: hiContent, kn: knContent, tcy: withDevice(tcyContent) };
+// Only English is built in. Each other language is downloaded when it's needed (the visitor's own
+// language before the first screen, another one when they switch), so the site opens faster.
+type Pack = { dict: DeepPartial<Dict>; content?: LangContent };
+const PACKS: Partial<Record<Lang, Pack>> = { en: { dict: en } };
+const LOADERS: Record<Exclude<Lang, "en">, () => Promise<Pack>> = {
+  hi: () => Promise.all([import("./hi"), import("./content-hi")]).then(([d, c]) => ({ dict: d.hi, content: c.hiContent })),
+  kn: () => Promise.all([import("./kn"), import("./content-kn")]).then(([d, c]) => ({ dict: d.kn, content: c.knContent })),
+  tcy: () => Promise.all([import("./tcy"), import("./content-tcy")])
+    .then(([d, c]) => ({ dict: withDevice(d.tcy), content: withDevice(c.tcyContent) })),
+};
+const CODES: Lang[] = ["en", "hi", "kn", "tcy"];
+
+/** Make sure a language's words are here; resolves at once when they already are. */
+export function loadLanguage(lang: Lang): Promise<void> {
+  if (PACKS[lang] || lang === "en") return Promise.resolve();
+  return LOADERS[lang]().then((pack) => { PACKS[lang] = pack; });
+}
+
+/** The language the site will open in (saved choice, else the browser's). */
+export function startingLanguage(): Lang {
+  return detectLanguage();
+}
 
 const STORAGE_KEY = "staysafe.lang.v1";
 
 function detectLanguage(): Lang {
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
-    if (saved && saved in DICTS) return saved;
+    if (saved && CODES.includes(saved)) return saved;
   } catch { /* ignore */ }
   const prefs = (typeof navigator !== "undefined" && (navigator.languages || [navigator.language])) || [];
   for (const p of prefs) {
@@ -80,7 +94,7 @@ const compiledCache = new Map<Lang, CompiledTemplate[]>();
 function compile(lang: Lang): CompiledTemplate[] {
   const cached = compiledCache.get(lang);
   if (cached) return cached;
-  const table = CONTENT[lang]?.server ?? {};
+  const table = PACKS[lang]?.content?.server ?? {};
   const list = Object.entries(table).map(([source, target]) => {
     const names: string[] = [];
     const pattern = source
@@ -131,19 +145,20 @@ interface I18nValue {
 const I18nContext = createContext<I18nValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(detectLanguage);
+  // main.tsx loads the starting language before the first screen; fall back to English if that failed
+  const [lang, setLangState] = useState<Lang>(() => { const l = detectLanguage(); return PACKS[l] ? l : "en"; });
 
   useEffect(() => {
     document.documentElement.lang = lang === "tcy" ? "tcy" : lang;
   }, [lang]);
 
   const setLang = useCallback((l: Lang) => {
-    setLangState(l);
     try { localStorage.setItem(STORAGE_KEY, l); } catch { /* ignore */ }
+    loadLanguage(l).then(() => setLangState(l)).catch(() => { /* offline: keep the current language */ });
   }, []);
 
   const value = useMemo<I18nValue>(() => {
-    const dict = DICTS[lang];
+    const dict = PACKS[lang]?.dict ?? en;
     const t = (key: string, vars?: Record<string, string | number>) => {
       const v = lookup(dict, key) ?? lookup(en, key);
       return typeof v === "string" ? fill(v, vars) : key;
@@ -152,7 +167,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const v = lookup(dict, key) ?? lookup(en, key);
       return Array.isArray(v) ? (v as string[]) : [];
     };
-    return { lang, setLang, t, tl, ts: (s: string) => translateServerText(s, lang), content: CONTENT[lang] };
+    return { lang, setLang, t, tl, ts: (s: string) => translateServerText(s, lang), content: PACKS[lang]?.content };
   }, [lang, setLang]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
