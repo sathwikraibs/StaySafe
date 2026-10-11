@@ -69,6 +69,7 @@ export const tcyContent: LangContent = {
     "Family member 'new number' / emergency money request": "ಕುಟುಂಬದಾಕುಲೆನ ಲೆಕ್ಕ 'ಪೊಸ ನಂಬರ್' / ತುರ್ತು ಪೈಸೆದ ಬೇಡಿಕೆ",
     "Refund or cashback that needs you to click or fill a form": "ರಿಫಂಡ್ ಅತ್ತಂಡ ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್‌ಗಾದ್ ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪೊಡು ಅತ್ತಂಡ ಫಾರ್ಮ್ ದಿಂಜಾವೊಡು ಪನ್ಪೆರ್",
     "Pressure / urgency language": "ಒತ್ತಡ / ಬೇಗ ಮಲ್ಪುಲೆ ಪನ್ಪುನ ಭಾಷೆ",
+    "Threatens that your account is or will be blocked, to make you act": "ಈರೆನ ಖಾತೆ ಬ್ಲಾಕ್ ಆತ್ಂಡ್ ಅತ್ತಂಡ ಆಪುಂಡು ಪಂಡ್‌ದ್ ಪೋಡಿಪಾದ್ ಈರೆಡ್ದ್ ದಾದಾಂಡಲ ಮಲ್ಪಾವರೆ ತೂಪುಂಡು",
     "Says the payment account has changed and asks you to pay into a new account": "ಪೈಸೆ ಕಟ್ಟುನ ಖಾತೆ ಬದಲಾತ್ಂಡ್ ಪಂಡ್‌ದ್ ಪನ್ಪುಂಡು, ಪೊಸ ಖಾತೆಗ್ ಪೈಸೆ ಕಡಪುಡ್ಲೆ ಪನ್ಪುಂಡು",
     "Contains a shortened or unusual link": "ಎಲ್ಯ ಮಲ್ತಿನ ಅತ್ತಂಡ ಅಸಾಮಾನ್ಯ ಲಿಂಕ್ ಉಂಡು",
     "Asks you to call or message an unknown number": "ಗೊತ್ತಿಜ್ಜಂದಿನ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಅತ್ತಂಡ ಮೆಸೇಜ್ ಮಲ್ಪೊಡು ಪನ್ಪೆರ್",

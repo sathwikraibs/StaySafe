@@ -68,6 +68,7 @@ export const hiContent: LangContent = {
     "Family member 'new number' / emergency money request": "परिवार वाला बनकर 'नया नंबर' / इमरजेंसी में पैसे की माँग",
     "Refund or cashback that needs you to click or fill a form": "रिफ़ंड या कैशबैक के लिए लिंक पर क्लिक करने या फ़ॉर्म भरने को कहा गया",
     "Pressure / urgency language": "जल्दबाज़ी / दबाव वाली भाषा",
+    "Threatens that your account is or will be blocked, to make you act": "डराता है कि आपका खाता बंद हो गया है या हो जाएगा, ताकि आप जल्दी कुछ करें",
     "Says the payment account has changed and asks you to pay into a new account": "कहता है कि भुगतान का खाता बदल गया है और नए खाते में पैसे भेजने को कहता है",
     "Contains a shortened or unusual link": "छोटा किया हुआ या अजीब लिंक है",
     "Asks you to call or message an unknown number": "अनजान नंबर पर कॉल या मैसेज करने को कहा गया",

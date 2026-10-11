@@ -241,6 +241,16 @@ RULES = [
         25,
     ),
     (
+        "Threatens that your account is or will be blocked, to make you act",
+        [
+            # the threat, only when the same message asks you to update, verify or click
+            r"^(?=[\s\S]*\b(update|verify|complete|click|tap|open the link|link|kyc)\b)[\s\S]*?"
+            r"\b(account|a/c|card|wallet|sim|yono|netbanking|kyc)\b[^.\n]{0,30}\b(is|has been|have been|will be|got|gets|was)\s+"
+            r"(blocked|suspended|deactivated|frozen|closed|disabled|locked)\b",
+        ],
+        20,
+    ),
+    (
         "Pressure / urgency language",
         [
             r"\bimmediately\b", r"\burgent(ly)?\b", r"\b(within|in) \d+ (hours?|hrs?|minutes?|mins?)\b",

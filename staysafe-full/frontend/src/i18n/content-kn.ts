@@ -68,6 +68,7 @@ export const knContent: LangContent = {
     "Family member 'new number' / emergency money request": "ಕುಟುಂಬದವರಂತೆ 'ಹೊಸ ಸಂಖ್ಯೆ' / ತುರ್ತು ಹಣದ ಬೇಡಿಕೆ",
     "Refund or cashback that needs you to click or fill a form": "ರಿಫಂಡ್ ಅಥವಾ ಕ್ಯಾಶ್‌ಬ್ಯಾಕ್‌ಗಾಗಿ ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಾಡಲು ಅಥವಾ ಫಾರ್ಮ್ ತುಂಬಲು ಹೇಳುತ್ತಿದೆ",
     "Pressure / urgency language": "ಒತ್ತಡ / ಅವಸರದ ಭಾಷೆ",
+    "Threatens that your account is or will be blocked, to make you act": "ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗಿದೆ ಅಥವಾ ಆಗುತ್ತದೆ ಎಂದು ಹೆದರಿಸಿ ನಿಮ್ಮಿಂದ ಏನಾದರೂ ಮಾಡಿಸಲು ನೋಡುತ್ತದೆ",
     "Says the payment account has changed and asks you to pay into a new account": "ಹಣ ಪಾವತಿಸುವ ಖಾತೆ ಬದಲಾಗಿದೆ ಎಂದು ಹೇಳಿ ಹೊಸ ಖಾತೆಗೆ ಹಣ ಕಳುಹಿಸಲು ಕೇಳುತ್ತದೆ",
     "Contains a shortened or unusual link": "ಚಿಕ್ಕದಾಗಿಸಿದ ಅಥವಾ ವಿಚಿತ್ರ ಲಿಂಕ್ ಇದೆ",
     "Asks you to call or message an unknown number": "ಗೊತ್ತಿಲ್ಲದ ಸಂಖ್ಯೆಗೆ ಕರೆ ಅಥವಾ ಮೆಸೇಜ್ ಮಾಡಲು ಹೇಳುತ್ತಿದೆ",
