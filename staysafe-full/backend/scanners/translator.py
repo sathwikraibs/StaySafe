@@ -642,10 +642,72 @@ def unmask_personal(text: str, secrets) -> str:
     return text
 
 
+# ---------------------------------------------------------------------------
+# Long memory for translations of MASS messages only
+# A translation is kept (30 days, in the long memory) only once the exact same message has been
+# checked KEEP_AFTER times: a scam text sent to thousands of people, not anyone's private message.
+# Personal details (numbers, accounts, OTPs, emails, UPI IDs) are kept as blanks [#1], [#2]...
+# and filled back from each visitor's own message. Counting uses one-way fingerprints only.
+# ---------------------------------------------------------------------------
+KEEP_AFTER = int(os.environ.get("TRANSLATION_KEEP_AFTER", "3"))
+KEEP_DAYS = 30
+_SEEN: dict = {}            # fingerprint -> (time counted, count): one check counts once
+
+
+def _kept(text: str, target: str):
+    """A kept translation of this message (a mass message), or None."""
+    try:
+        from scanners import store
+        if not store.enabled():
+            return None
+        masked, secrets = mask_personal(text)
+        got = store.get("tr", [masked, target])
+        if isinstance(got, dict) and got.get("text"):
+            return {"text": unmask_personal(got["text"], secrets), "from": got.get("from", ""),
+                    "to": got.get("to", target), "provider": "kept"}
+    except Exception:
+        pass
+    return None
+
+
+def _count_and_keep(text: str, target: str, result: dict) -> None:
+    """Count this message once per check; keep its translation when it is a mass message."""
+    def work():
+        try:
+            from scanners import store
+            if not store.enabled() or not result or result.get("provider") in ("none", "kept"):
+                return
+            masked, secrets = mask_personal(text)
+            fp = store.key("seen", masked)
+            now = time.time()
+            last = _SEEN.get(fp)
+            if last and now - last[0] < 120:
+                count = last[1]                     # the same check asking for another language
+            else:
+                ok, n = store.command(["INCR", fp])
+                if not ok:
+                    return
+                store.command(["EXPIRE", fp, KEEP_DAYS * 86400])
+                count = int(n or 0)
+                _SEEN[fp] = (now, count)
+                if len(_SEEN) > 3000:
+                    _SEEN.clear()
+            if count >= KEEP_AFTER:
+                hidden = result["text"]
+                for i, value in enumerate(secrets, 1):
+                    hidden = hidden.replace(value, f"[#{i}]")
+                store.put("tr", [masked, target], {"text": hidden, "from": result.get("from", ""),
+                                                   "to": result.get("to", target)}, KEEP_DAYS * 86400)
+        except Exception:
+            pass
+    threading.Thread(target=work, daemon=True).start()
+
+
 def remember(text: str, target: str, result: dict) -> None:
     """Keep a translation made elsewhere (the combined Gemini call) so it isn't asked for again."""
     text = (text or "").strip()[:MAX_CHARS]
     if text and result and result.get("text"):
+        _count_and_keep(text, target, result)
         with _lock:
             _cache[(text, target)] = result
             while len(_cache) > 500:
@@ -716,6 +778,11 @@ def _translate(text: str, target: str, priority: str = "normal", wait: float = 2
             hit = _cache.get((text, target))
         if hit:
             return hit
+        kept = _kept(text, target)
+        if kept:
+            with _lock:
+                _cache[(text, target)] = kept
+            return kept
         masked, secrets = mask_personal(text)
         out = _gemini(masked, target, wait, priority)
         if not out and _gemini_candidates():
@@ -725,6 +792,7 @@ def _translate(text: str, target: str, priority: str = "normal", wait: float = 2
             out = dict(out, text=unmask_personal(out["text"], secrets))
             with _lock:
                 _cache[(text, target)] = out
+            _count_and_keep(text, target, out)
             return out
         target = TARGET_FALLBACK[target]
 
@@ -733,6 +801,11 @@ def _translate(text: str, target: str, priority: str = "normal", wait: float = 2
         if cache_key in _cache:
             _cache.move_to_end(cache_key)
             return _cache[cache_key]
+    kept = _kept(text, target)
+    if kept:
+        with _lock:
+            _cache[cache_key] = kept
+        return kept
 
     # Personal details never leave our server: phone and account numbers, OTPs, Aadhaar and
     # card numbers, email addresses and UPI IDs are swapped for placeholders like [#1] before
@@ -764,4 +837,5 @@ def _translate(text: str, target: str, priority: str = "normal", wait: float = 2
             _cache[cache_key] = result
             while len(_cache) > 500:
                 _cache.popitem(last=False)
+        _count_and_keep(text, target, result)
     return result

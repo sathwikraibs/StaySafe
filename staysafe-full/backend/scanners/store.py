@@ -6,9 +6,11 @@ server sleeps). Results that cost a limited free allowance (VirusTotal, urlscan,
 opinion...) are also kept here, in a small free online database (Upstash Redis, reached over
 HTTPS), so the same scam link, file or forwarded message is never paid for twice.
 
-What is kept: only answers about LINKS, FILES and WEBSITES, plus the AI's verdict on a
-message. Keys are one-way fingerprints (SHA-256), so the database never holds anyone's
-message, and nothing in it says who checked what.
+What is kept: only answers about LINKS, FILES, WEBSITES and Play Store apps, the AI's verdict
+on a message, and the translation of MASS messages (the exact same text checked 3+ times, i.e. a
+scam sent to many people), with phone numbers and other personal details left as blanks. Keys
+are one-way fingerprints (SHA-256): a message checked once or twice is never kept, and nothing
+in the database says who checked what.
 
 Setup: on Upstash create a free Redis database (no card), then on Render add
     UPSTASH_REDIS_REST_URL   = https://....upstash.io

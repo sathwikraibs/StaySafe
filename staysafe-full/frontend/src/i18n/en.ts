@@ -382,6 +382,7 @@ const enBase = {
     dataItems: [
       "We read what you send only to check it, then forget it. We don't keep your messages, pictures or files.",
       "We remember the answer about a link or file (for example 'listed as phishing') so the next person gets it faster. We never remember who checked it, or the message it came in.",
+      "When the exact same message is checked many times (a scam sent to thousands of people), we remember its translation so the next person gets it faster. Phone numbers and other personal details are left out, and a message checked only once or twice is never kept.",
       "When you report a scam, we keep only a count for that number, UPI ID or link, never who reported it.",
       "If a screenshot is hard to read, it may be sent to a text-reading service only to read its words. We don't keep it.",
       "Only the web address of a link is shared with safety services, never who you are.",

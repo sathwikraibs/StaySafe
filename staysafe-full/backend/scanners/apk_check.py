@@ -113,6 +113,11 @@ def on_play_store(package: str):
         return None
     if package in _play_cache:
         return _play_cache[package]
+    from scanners import store
+    kept = store.get("play", package)          # public app info, kept across restarts
+    if isinstance(kept, dict) and isinstance(kept.get("on_play"), bool):
+        _play_cache[package] = kept["on_play"]
+        return kept["on_play"]
     if not quota("play_store").take(wait=3):
         return None
     try:
@@ -123,6 +128,8 @@ def on_play_store(package: str):
     answer = True if r.status_code == 200 else False if r.status_code == 404 else None
     if answer is not None:
         _play_cache[package] = answer
+        # an app that exists stays known for a month; "not on Play" is re-checked after 3 days
+        store.put("play", package, {"on_play": answer}, (30 if answer else 3) * 86400)
         if len(_play_cache) > 2000:
             _play_cache.clear()
     return answer

@@ -185,6 +185,52 @@ def test_tulu_message_is_called_tulu_and_not_translated_into_tulu():
     assert tr.translate("ನನಗೆ ಒಂದು ಕಾಲ್ ಬಂತು, OTP ಕೇಳಿದರು", "en")["from"] == "kn"  # real Kannada stays Kannada
 
 
+def test_only_mass_messages_have_their_translation_kept():
+    import time as _t
+    from scanners import store
+    mem, counts = {}, {}
+    saved = (store.enabled, store.get, store.put, store.command)
+    store.enabled = lambda: True
+    store.get = lambda ns, k: mem.get(store.key(ns, k))
+    store.put = lambda ns, k, v, ttl: mem.__setitem__(store.key(ns, k), v)
+    def command(cmd, cost=1):
+        if cmd[0] == "INCR":
+            counts[cmd[1]] = counts.get(cmd[1], 0) + 1
+            return True, counts[cmd[1]]
+        return True, 1
+    store.command = command
+    real_thread = tr.threading.Thread
+    class Now:                                   # run the background work at once in the test
+        def __init__(self, target, daemon=None): self.t = target
+        def start(self): self.t()
+    tr.threading.Thread = Now
+    try:
+        asked = []
+        scam = "Your SBI account will be blocked today. Call 9876543210 now"
+        def gem(t, to, *a, **k):
+            asked.append(t)
+            return {"text": t.replace("Your SBI account will be blocked today. Call", "ನಿಮ್ಮ SBI ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. ಕರೆ ಮಾಡಿ")
+                                .replace("now", "ಈಗ"), "from": "en", "to": to, "provider": "gemini"}
+        for _ in range(3):                       # three different people check the same scam
+            Fake(gemini=gem).install(); tr._SEEN.clear()
+            out = tr.translate(scam, "kn")
+        assert len(asked) == 3 and "9876543210" not in asked[0]          # personal details never sent
+        kept = [v for k, v in mem.items() if ":tr:" in k]
+        assert kept and "9876543210" not in kept[0]["text"] and "[#1]" in kept[0]["text"]   # kept with a blank
+        # the 4th person, with a different number in the same scam text: no Gemini, their own number back
+        Fake(gemini=gem).install(); tr._SEEN.clear()
+        other = scam.replace("9876543210", "9123456780")
+        out = tr.translate(other, "kn")
+        assert out["provider"] == "kept" and "9123456780" in out["text"] and len(asked) == 3
+        # a private message checked once is never kept
+        mem.clear(); counts.clear(); Fake(gemini=gem).install(); tr._SEEN.clear()
+        tr.translate("Hi Priya, call me at 9876543210 about the rent", "kn")
+        assert not [k for k in mem if ":tr:" in k]
+    finally:
+        store.enabled, store.get, store.put, store.command = saved
+        tr.threading.Thread = real_thread
+
+
 if __name__ == "__main__":
     tests = [v for k, v in dict(globals()).items() if k.startswith("test_")]
     ok = 0
