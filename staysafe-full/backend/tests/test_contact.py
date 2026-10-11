@@ -1,5 +1,6 @@
 """Tests for the "Talk to a person" form. Run: python tests/test_contact.py"""
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -79,6 +80,54 @@ def test_feedback_reaches_telegram_anonymously():
     assert c.post("/api/feedback", json={"stars": 9}).status_code == 400
     r = c.post("/api/feedback", json={"stars": 2})                       # stars alone are fine
     assert r.status_code == 200 and "☆☆☆" in sent[-1][1]["text"]
+
+
+class FakeRedis:
+    def __init__(self): self.h, self.l, self.s = {}, {}, {}
+    def __call__(self, cmd, cost=1):
+        op, key = cmd[0], cmd[1]
+        if op == "HINCRBY":
+            d = self.h.setdefault(key, {}); d[cmd[2]] = d.get(cmd[2], 0) + int(cmd[3]); return True, d[cmd[2]]
+        if op == "HGETALL":
+            d = self.h.get(key, {}); return True, [x for kv in d.items() for x in (kv[0], str(kv[1]))]
+        if op == "LPUSH":
+            self.l.setdefault(key, []).insert(0, cmd[2]); return True, len(self.l[key])
+        if op == "LTRIM":
+            self.l[key] = self.l.get(key, [])[cmd[2]:cmd[3] + 1]; return True, "OK"
+        if op == "LRANGE":
+            return True, self.l.get(key, [])[cmd[2]:cmd[3] + 1]
+        if op == "SADD":
+            self.s.setdefault(key, set()).add(cmd[2]); return True, 1
+        if op == "SMEMBERS":
+            return True, list(self.s.get(key, set()))
+        return True, None
+
+
+def test_ratings_are_kept_counted_and_only_shared_words_shown():
+    from scanners import store, ratings
+    setup(); contact._fb_per_ip.clear()
+    fake = FakeRedis()
+    saved = (store.enabled, store.command)
+    store.enabled, store.command = (lambda: True), fake
+    try:
+        ratings._summary["at"] = 0
+        c.post("/api/feedback", json={"stars": 5, "message": "Saved my mother from a KYC scam! Call me 9876543210", "share": True})
+        c.post("/api/feedback", json={"stars": 4, "message": "Good but the bc translation is slow", "share": True})
+        c.post("/api/feedback", json={"stars": 2, "message": "private: my bank details are wrong", "share": False})
+        c.post("/api/feedback", json={"stars": 5})
+        s = c.get("/api/feedback/summary").get_json()
+        assert s["count"] == 4 and s["average"] == 4.0 and s["stars"]["5"] == 2, s
+        words = [r["text"] for r in s["reviews"]]
+        assert len(words) == 1 and "Saved my mother" in words[0] and "9876543210" not in words[0], words   # rude + private kept off
+        tg = [m[1]["text"] for m in sent if "Hide this review" in m[1].get("text", "")]
+        link = re.search(r'href="([^"]+)"', tg[0]).group(1).replace("&amp;", "&")
+        rid, token = re.search(r"id=(\w+)&token=([\w-]+)", link).groups()
+        assert c.get(f"/api/feedback/hide?id={rid}&token=wrong").status_code == 404
+        assert c.get(f"/api/feedback/hide?id={rid}&token={token}").status_code == 200
+        assert c.get("/api/feedback/summary").get_json()["reviews"] == []          # hidden from the page
+        assert c.get("/api/feedback/summary").get_json()["count"] == 4             # still counted
+    finally:
+        store.enabled, store.command = saved
 
 
 if __name__ == "__main__":

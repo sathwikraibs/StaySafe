@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useI18n } from "@/i18n";
 import { apiPostJSON, errorMessage } from "@/api";
 import { API_BASE } from "@/config";
+import { useRatingSummary, forgetRatingSummary, MIN_TO_SHOW } from "@/ratings";
 
 /** Rating + feedback, sent anonymously to the team (Telegram). Used in Settings and inside the AI chat. */
 
@@ -37,6 +38,8 @@ export function FeedbackCard({ from = "settings", intent, compact = false }: {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [pop, setPop] = useState(0);
+  const [allowShow, setAllowShow] = useState(false);     // only with a clear "yes" (never ticked for them)
+  const summary = useRatingSummary();
 
   const levels = tl("feedback.levels");
   const shown = hover || stars;
@@ -55,7 +58,8 @@ export function FeedbackCard({ from = "settings", intent, compact = false }: {
     if (!stars || state === "sending") return;
     setState("sending"); setError(null);
     try {
-      await apiPostJSON(`${API_BASE}/api/feedback`, { stars, topics, message: message.trim(), lang, from });
+      await apiPostJSON(`${API_BASE}/api/feedback`, { stars, topics, message: message.trim(), lang, from, share: allowShow && !!message.trim() });
+      forgetRatingSummary();
       setState("done");
     } catch (e) {
       setError(errorMessage(e)); setState("idle");
@@ -110,6 +114,11 @@ export function FeedbackCard({ from = "settings", intent, compact = false }: {
           <div className="min-w-0">
             <h2 className="font-heading text-lg font-bold leading-tight">{t("feedback.title")}</h2>
             <p className="mt-0.5 font-body text-xs leading-relaxed text-brand-100">{t("feedback.subtitle")}</p>
+            {summary && summary.count >= MIN_TO_SHOW && (
+              <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 font-body text-xs font-bold text-beam-200">
+                {t("feedback.socialProof", { avg: summary.average.toFixed(1), n: summary.count })}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -161,6 +170,17 @@ export function FeedbackCard({ from = "settings", intent, compact = false }: {
                 placeholder={high ? t("feedback.placeholderHigh") : t("feedback.placeholderLow")}
                 className="w-full rounded-2xl border-2 border-cream-200 bg-cream-50 p-3 font-body text-sm text-ink-900 placeholder:text-dustyblue-400 focus:border-brand-400 focus:outline-none" />
             </label>
+
+            {message.trim().length > 0 && (
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-brand-100/60 p-3">
+                <input type="checkbox" checked={allowShow} onChange={(e) => setAllowShow(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-brand-600" />
+                <span className="font-body text-sm">
+                  <span className="block font-semibold text-ink-900">{t("feedback.shareLabel")}</span>
+                  <span className="block text-xs text-dustyblue-600">{t("feedback.shareHint")}</span>
+                </span>
+              </label>
+            )}
 
             {error && <p className="font-body text-sm font-semibold text-rust-600">{ts(error)}</p>}
 

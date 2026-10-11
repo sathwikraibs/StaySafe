@@ -201,10 +201,13 @@ def feedback_route():
     message = str(data.get("message") or "").strip()[:1500]
     lang = str(data.get("lang") or "en").lower()
     source = str(data.get("from") or "settings")
-    if not (_telegram_ready() or _email_ready()):
+    share = bool(data.get("share"))
+    from scanners import ratings, store
+    if not (_telegram_ready() or _email_ready() or store.enabled()):
         return jsonify({"error": "Feedback can't be sent right now. Please try again a little later."}), 503
     if not _feedback_allowed(client_ip()):
         return jsonify({"error": "Thank you, we already have your feedback. You can send more in an hour."}), 429
+    rid, token = ratings.save(stars, topics, _hide_sensitive(message), lang, source, share)
 
     e = html.escape
     lines = [
@@ -214,9 +217,30 @@ def feedback_route():
     if topics:
         lines.append("About: " + ", ".join(FEEDBACK_TOPICS[t] for t in topics))
     lines += ["", e(_hide_sensitive(message)) if message else "(no message, stars only)"]
+    if rid and share and message:
+        hide_url = f"{request.host_url.rstrip('/')}/api/feedback/hide?id={rid}&token={token}"
+        lines += ["", f'🌐 Allowed to be shown on the website · <a href="{e(hide_url)}">Hide this review</a>']
     text = "\n".join(lines)
     sent = (_send_telegram(text) if _telegram_ready() else False) or \
         (_send_email(f"[TrustLight feedback] {stars}/5", text, "") if _email_ready() else False)
+    if not sent and rid:
+        sent = True                    # kept in the ratings database even if the message couldn't go out
     if not sent:
         return jsonify({"error": "Feedback can't be sent right now. Please try again a little later."}), 502
     return jsonify({"ok": True})
+
+
+@contact_bp.route("/api/feedback/summary", methods=["GET"])
+def feedback_summary_route():
+    """Average stars, how many of each, and the latest reviews people allowed to be shown."""
+    from scanners import ratings
+    return jsonify(ratings.summary())
+
+
+@contact_bp.route("/api/feedback/hide", methods=["GET"])
+def feedback_hide_route():
+    """The private 'Hide this review' link from the Telegram message."""
+    from scanners import ratings
+    ok = ratings.hide(str(request.args.get("id") or "")[:16], str(request.args.get("token") or "")[:40])
+    return ("Hidden. This review no longer shows on TrustLight." if ok else "Link not valid (or already removed)."), \
+        (200 if ok else 404), {"Content-Type": "text/plain; charset=utf-8"}
