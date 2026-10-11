@@ -5,7 +5,7 @@ import { IconShield, IconCheck, IconLock, IconWarning, IconChat, IconSearch } fr
 import { Section } from "@/components/Section";
 
 /** Fill in the project number from bestpractices.dev once the badge is earned; the row appears then. */
-const OPENSSF_PROJECT = "";
+const OPENSSF_PROJECT = "15382";
 const CODE_URL = "https://github.com/sathwikraibs/StaySafe";
 
 /** Independent checks anyone can open to see the live result for this website. */
