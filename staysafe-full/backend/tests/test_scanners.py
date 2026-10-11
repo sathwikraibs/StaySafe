@@ -1067,8 +1067,14 @@ def test_tulu_translation_uses_gemini_then_kannada():
         assert out["to"] == "tcy" and out["text"].startswith("ಈರೆನ"), out
         translator._cache.clear()
         translator._gemini = lambda text, target, *a: None
-        translator._google = translator._bhashini = lambda text, target: None
-        translator._mymemory = lambda text, target: {"text": "ನಿಮ್ಮ ಖಾತೆ ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ", "from": "en", "to": target, "provider": "mymemory"}
+        translator._bhashini = lambda text, target: None
+        translator._mymemory = lambda text, target: {"text": "ನಿಮ್ಮ್ ಖಾತೆ ಇನ್ನು ಒಂದು ದಿನ", "from": "en", "to": target, "provider": "mymemory"}
+        translator._google = lambda text, target: None
+        # Gemini down and only the backup left: no Kannada at all (its Kannada changes meanings)
+        assert translator.translate("Your account will be blocked today", "tcy") is None
+        # a good service for Kannada available: Tulu readers get Kannada
+        translator._cache.clear()
+        translator._google = lambda text, target: {"text": "ನಿಮ್ಮ ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ", "from": "en", "to": target, "provider": "google"}
         out = translator.translate("Your account will be blocked today", "tcy")
         assert out["to"] == "kn", out
         assert "tcy" in translator.LANGUAGE_NAMES and not translator._looks_like_translation("abc", "hello there", "tcy")
