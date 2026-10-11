@@ -36,4 +36,4 @@ Please do not include real people's personal details, and do not test against ot
 
 ## Supported versions
 
-Only the current live version is supported. Fixes are released straight to the live site.
+Only the current live version is supported. Fixes are released straight to the live site and listed in [CHANGELOG.md](CHANGELOG.md).

@@ -1,6 +1,8 @@
 # TrustLight
 
 [![Tests](https://github.com/sathwikraibs/StaySafe/actions/workflows/tests.yml/badge.svg)](https://github.com/sathwikraibs/StaySafe/actions/workflows/tests.yml)
+[![Code security scan](https://github.com/sathwikraibs/StaySafe/actions/workflows/codeql.yml/badge.svg)](https://github.com/sathwikraibs/StaySafe/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **A light you can trust. A free scam checker for everyday people in India.**
 
@@ -9,6 +11,7 @@ TrustLight helps everyday people, especially those new to the internet, check wh
 🔗 **Use it:** [staysafe-tool.vercel.app](https://staysafe-tool.vercel.app)
 
 - Found a security problem? Please read [SECURITY.md](SECURITY.md) and report it privately.
+- What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 - Found a bug, a wrong result or a bad translation? [Open an issue](https://github.com/sathwikraibs/StaySafe/issues). See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What it does

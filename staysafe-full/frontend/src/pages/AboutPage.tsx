@@ -4,6 +4,23 @@ import { useI18n } from "@/i18n";
 import { IconShield, IconCheck, IconLock, IconWarning, IconChat, IconSearch } from "@/icons";
 import { Section } from "@/components/Section";
 
+/** Fill in the project number from bestpractices.dev once the badge is earned; the row appears then. */
+const OPENSSF_PROJECT = "";
+const CODE_URL = "https://github.com/sathwikraibs/StaySafe";
+
+/** Independent checks anyone can open to see the live result for this website. */
+function independentChecks(host: string) {
+  const h = encodeURIComponent(host);
+  const rows: { key: string; url: string }[] = [
+    { key: "security", url: `https://developer.mozilla.org/en-US/observatory/analyze?host=${h}` },
+    { key: "connection", url: `https://www.ssllabs.com/ssltest/analyze.html?d=${h}&hideResults=on` },
+    { key: "safe", url: `https://transparencyreport.google.com/safe-browsing/search?url=${h}` },
+    { key: "code", url: CODE_URL },
+  ];
+  if (OPENSSF_PROJECT) rows.push({ key: "openssf", url: `https://www.bestpractices.dev/projects/${OPENSSF_PROJECT}` });
+  return rows;
+}
+
 export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const { t, tl } = useI18n();
 
@@ -61,6 +78,30 @@ export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }
             <li key={item} className="flex items-start gap-2.5 font-body text-sm text-ink-700">
               <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
               <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card className="p-5 sm:p-6">
+        <div className="mb-1 flex items-center gap-2">
+          <IconCheck className="h-5 w-5 text-sage-600" />
+          <h2 className="font-heading text-lg font-semibold text-ink-900">{t("about.verifiedTitle")}</h2>
+        </div>
+        <p className="mb-3 font-body text-sm text-ink-700">{t("about.verifiedIntro")}</p>
+        <ul className="divide-y divide-cream-200">
+          {independentChecks(typeof window !== "undefined" ? window.location.hostname : "").map(({ key, url }) => (
+            <li key={key}>
+              <a href={url} target="_blank" rel="noopener noreferrer"
+                className="group flex items-center gap-3 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded-lg">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-body text-sm font-semibold text-ink-900 group-hover:text-brand-700">{t(`about.verified.${key}.name`)}</span>
+                  <span className="block font-body text-xs text-dustyblue-600">{t(`about.verified.${key}.desc`)}</span>
+                </span>
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-dustyblue-500 group-hover:text-brand-600" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+                </svg>
+              </a>
             </li>
           ))}
         </ul>
