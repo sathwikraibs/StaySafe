@@ -130,6 +130,39 @@ def test_message_result_shows_translation_on_other_language_site():
     assert "translation" not in res and all(c[1] != "kn" for c in f.calls)
 
 
+def test_kannada_never_comes_from_the_backup_translator():
+    calls = []
+    tr._cache.clear()
+    tr._google = lambda t, to: None
+    tr._gemini = lambda t, to, *a, **k: None
+    tr._bhashini = lambda t, to: None
+    tr._mymemory = lambda t, to: calls.append(to) or {"text": "ನಿಮ್ಮ್ ಖಾತೆ ಇನ್ನು ಒಂದು ದಿನ", "from": "en", "to": to, "provider": "mymemory"}
+    assert tr.translate("Your account will be blocked today", "kn") is None and calls == []
+    out = tr.translate("Your account will be blocked today", "hi")     # Hindi may still use it
+    assert out and out["provider"] == "mymemory" and calls == ["hi"]
+
+
+def test_tulu_asks_gemini_again_before_giving_kannada():
+    tries = []
+    tr._cache.clear()
+    real_sleep = tr.time.sleep
+    tr.time.sleep = lambda s: None
+    try:
+        def gem(t, to, *a, **k):
+            tries.append(to)
+            return None if len(tries) == 1 else {"text": "ಈರೆನ ಖಾತೆ ಇನಿ ಬ್ಲಾಕ್ ಆಪುಂಡು", "from": "en", "to": to, "provider": "gemini"}
+        tr._gemini = gem
+        out = tr.translate("Your account will be blocked today", "tcy")
+        assert out["to"] == "tcy" and tries == ["tcy", "tcy"]
+    finally:
+        tr.time.sleep = real_sleep
+
+
+def test_status_page_lists_recent_gemini_answers():
+    tr._gemini_note("gemini-flash-lite-latest", "busy (HTTP 503)")
+    assert tr.translation_status()["gemini"]["recent"][-1]["outcome"] == "busy (HTTP 503)"
+
+
 if __name__ == "__main__":
     tests = [v for k, v in dict(globals()).items() if k.startswith("test_")]
     ok = 0

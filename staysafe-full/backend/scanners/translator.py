@@ -48,6 +48,9 @@ DAILY_LIMIT = int(os.environ.get("TRANSLATE_DAILY_CHAR_LIMIT", "15000"))
 
 # Neither Google's API nor MyMemory offers Tulu; Tulu readers read Kannada script.
 TARGET_FALLBACK = {"tcy": "kn"}
+# MyMemory's Kannada often changes the meaning ("today" became "in one more day"): for a safety
+# check a wrong translation is worse than none, so Kannada waits for Gemini/Google/Bhashini instead
+NO_BACKUP = {"kn"}
 
 _lock = threading.Lock()
 _cache: "OrderedDict[tuple, dict]" = OrderedDict()
@@ -55,6 +58,14 @@ _usage = {"day": date.today(), "chars": 0}
 PROVIDERS = ("google", "gemini", "bhashini", "mymemory")
 _paused_until = {p: 0.0 for p in PROVIDERS}   # provider -> unix time it may be tried again
 _problem = {p: None for p in PROVIDERS}
+# The last few Gemini answers (ok / busy / limit / timeout / unusable), shown on the status page,
+# so a translation that fell back to the backup service can be explained afterwards
+from collections import deque as _deque
+_GEMINI_LOG: "_deque" = _deque(maxlen=12)
+
+
+def _gemini_note(model: str, outcome: str) -> None:
+    _GEMINI_LOG.append({"at": time.strftime("%H:%M:%S", time.gmtime()), "model": model, "outcome": outcome[:120]})
 
 
 def _google_key() -> str:
@@ -85,7 +96,7 @@ def translation_status() -> dict:
         "gemini": {"configured": bool(_gemini_key()), "active": bool(_gemini_key()) and _available("gemini"),
                    "problem": _problem["gemini"], "model": _GEMINI["model"], "requests_today": _GEMINI["day_count"],
                    "models_not_offered": sorted(_GEMINI_GONE), "models_done_today": sorted(m for m, d in _GEMINI_DAY_DONE.items() if d == _gemini_day_key()),
-                   "daily_limit": GEMINI_DAILY_LIMIT},
+                   "daily_limit": GEMINI_DAILY_LIMIT, "recent": list(_GEMINI_LOG)},
         "bhashini": {"configured": _bhashini_ready(), "active": _bhashini_ready() and _available("bhashini"),
                      "problem": _problem["bhashini"]},
         "mymemory": {"active": _available("mymemory"), "problem": _problem["mymemory"],
@@ -305,6 +316,7 @@ def gemini_generate(body: dict, wait: float = 0.0, priority: str = "normal", tim
                 continue
             break
         if resp is None:
+            _gemini_note(model, "no answer in time")
             continue                     # timed out or no connection: try the next model
         if resp.status_code == 200:
             try:
@@ -314,7 +326,9 @@ def gemini_generate(body: dict, wait: float = 0.0, priority: str = "normal", tim
             except Exception:
                 return None
             if cand.get("finishReason") == "MAX_TOKENS":
+                _gemini_note(model, "answer cut off")
                 return None              # cut off: never show half an answer
+            _gemini_note(model, "ok" if text else "empty answer")
             _GEMINI["model"] = model
             _problem["gemini"] = None
             return text or None
@@ -337,11 +351,14 @@ def gemini_generate(body: dict, wait: float = 0.0, priority: str = "normal", tim
                 names = [n for n in _gemini_candidates() if n not in tried]
             continue
         if resp.status_code == 429 or "quota" in low or "exhausted" in low:
+            _gemini_note(model, f"limit: {msg[:90]}")
             gemini_limit_hit(resp.status_code, full or msg, model)
             names = [n for n in _gemini_candidates() if n not in tried]
             continue                     # the next model has its own allowance
         if resp.status_code in (500, 502, 503, 504):
+            _gemini_note(model, f"busy (HTTP {resp.status_code})")
             continue                     # still busy: try the next model
+        _gemini_note(model, f"refused: {msg[:90]}")
         _problem["gemini"] = msg[:200]   # e.g. a request Google didn't like: just this one fails
         return None
     if not _gemini_candidates():
@@ -377,8 +394,10 @@ def _gemini(text: str, target: str, wait: float = 0.0, priority: str = "normal")
         translated = str(out.get("translation", "")).strip()
         source = str(out.get("source_language", "")).strip().lower()[:5] or guess_language(text)
     except Exception:
+        _gemini_note(_GEMINI.get("model") or "?", "answer was not readable")
         return None
     if not _looks_like_translation(text, translated, target):
+        _gemini_note(_GEMINI.get("model") or "?", f"answer rejected (not a {target} translation)")
         return None
     return {"text": translated, "from": source, "to": target, "provider": "gemini"}
 
@@ -631,6 +650,9 @@ def translate(text: str, target: str, priority: str = "normal", wait: float = 20
             return hit
         masked, secrets = mask_personal(text)
         out = _gemini(masked, target, wait, priority)
+        if not out and _gemini_candidates():
+            time.sleep(3)                # Gemini's free "busy" moments usually pass in seconds
+            out = _gemini(masked, target, min(wait, 10), priority)
         if out:
             out = dict(out, text=unmask_personal(out["text"], secrets))
             with _lock:
@@ -666,7 +688,7 @@ def translate(text: str, target: str, priority: str = "normal", wait: float = 20
             result = dict(result, **{"from": _romanized_language(text) or ""})
     else:
         result = (_google(masked, target) or _gemini(masked, target, wait, priority)
-                  or _bhashini(masked, target) or _mymemory(masked, target))
+                  or _bhashini(masked, target) or (None if target in NO_BACKUP else _mymemory(masked, target)))
     if result:
         result = dict(result, text=unmask_personal(result["text"], secrets))
     if result:
