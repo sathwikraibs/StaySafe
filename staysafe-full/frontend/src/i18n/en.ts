@@ -443,6 +443,7 @@ const enBase = {
   },
 
   wrongTool: { open: "Open {tool}", qrInPicture: "This picture also has a QR code. You can check where it leads." },
+  update: { title: "TrustLight has been updated", body: "A new version with the latest fixes is ready. Please update to keep using TrustLight. It takes a second, and nothing you saved is lost.", button: "Update now" },
   upload: { choose: "Choose a different file", camera: "Take a photo", gallery: "Choose a photo", files: "Choose a file", drag: "or drag and drop it here", photo: "Photo" },
 };
 

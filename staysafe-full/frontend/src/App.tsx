@@ -3,23 +3,25 @@ import { Layout } from "@/components/Layout";
 import { HomePage } from "@/pages/HomePage";
 import { API_BASE } from "@/config";
 import { receiveShare } from "@/share";
+import { orUpdate } from "@/updates";
+import { UpdateGate } from "@/components/UpdateGate";
 
 // Each tool's page is downloaded only when needed, so the home page opens faster.
 // Shortly after the home page shows, the rest are fetched quietly so moving around stays instant.
-const loadScanUrlPage = () => import("@/pages/ScanUrlPage").then((m) => ({ default: m.ScanUrlPage }));
-const loadScanMessagePage = () => import("@/pages/ScanMessagePage").then((m) => ({ default: m.ScanMessagePage }));
-const loadScanQrPage = () => import("@/pages/ScanQrPage").then((m) => ({ default: m.ScanQrPage }));
-const loadScanFilePage = () => import("@/pages/ScanFilePage").then((m) => ({ default: m.ScanFilePage }));
-const loadCheckPasswordPage = () => import("@/pages/CheckPasswordPage").then((m) => ({ default: m.CheckPasswordPage }));
-const loadCheckNetworkPage = () => import("@/pages/CheckNetworkPage").then((m) => ({ default: m.CheckNetworkPage }));
-const loadScanEmailPage = () => import("@/pages/ScanEmailPage").then((m) => ({ default: m.ScanEmailPage }));
-const loadDashboardPage = () => import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage }));
-const loadIncidentPage = () => import("@/pages/IncidentPage").then((m) => ({ default: m.IncidentPage }));
-const loadScamLibraryPage = () => import("@/pages/ScamLibraryPage").then((m) => ({ default: m.ScamLibraryPage }));
-const loadHelpPage = () => import("@/pages/HelpPage").then((m) => ({ default: m.HelpPage }));
-const loadSettingsPage = () => import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage }));
-const loadAboutPage = () => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage }));
-const loadCheckNumberPage = () => import("@/pages/CheckNumberPage").then((m) => ({ default: m.CheckNumberPage }));
+const loadScanUrlPage = orUpdate(() => import("@/pages/ScanUrlPage").then((m) => ({ default: m.ScanUrlPage })));
+const loadScanMessagePage = orUpdate(() => import("@/pages/ScanMessagePage").then((m) => ({ default: m.ScanMessagePage })));
+const loadScanQrPage = orUpdate(() => import("@/pages/ScanQrPage").then((m) => ({ default: m.ScanQrPage })));
+const loadScanFilePage = orUpdate(() => import("@/pages/ScanFilePage").then((m) => ({ default: m.ScanFilePage })));
+const loadCheckPasswordPage = orUpdate(() => import("@/pages/CheckPasswordPage").then((m) => ({ default: m.CheckPasswordPage })));
+const loadCheckNetworkPage = orUpdate(() => import("@/pages/CheckNetworkPage").then((m) => ({ default: m.CheckNetworkPage })));
+const loadScanEmailPage = orUpdate(() => import("@/pages/ScanEmailPage").then((m) => ({ default: m.ScanEmailPage })));
+const loadDashboardPage = orUpdate(() => import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const loadIncidentPage = orUpdate(() => import("@/pages/IncidentPage").then((m) => ({ default: m.IncidentPage })));
+const loadScamLibraryPage = orUpdate(() => import("@/pages/ScamLibraryPage").then((m) => ({ default: m.ScamLibraryPage })));
+const loadHelpPage = orUpdate(() => import("@/pages/HelpPage").then((m) => ({ default: m.HelpPage })));
+const loadSettingsPage = orUpdate(() => import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
+const loadAboutPage = orUpdate(() => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage })));
+const loadCheckNumberPage = orUpdate(() => import("@/pages/CheckNumberPage").then((m) => ({ default: m.CheckNumberPage })));
 const ScanUrlPage = lazy(loadScanUrlPage);
 const ScanMessagePage = lazy(loadScanMessagePage);
 const ScanQrPage = lazy(loadScanQrPage);
@@ -83,9 +85,12 @@ export default function App() {
   }, []);
 
   return (
-    <Layout currentPath={path} onNavigate={navigate}>
-      <Suspense fallback={<PageLoading />}>{renderPage(path, navigate)}</Suspense>
-    </Layout>
+    <>
+      <Layout currentPath={path} onNavigate={navigate}>
+        <Suspense fallback={<PageLoading />}>{renderPage(path, navigate)}</Suspense>
+      </Layout>
+      <UpdateGate />
+    </>
   );
 }
 
