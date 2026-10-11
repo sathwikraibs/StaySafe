@@ -40,8 +40,11 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
   const { t, lang } = useI18n();
   const uiTarget = lang;
   const source = (initial?.from || sourceLang || "").split("-")[0];
-  const [slots, setSlots] = useState<Record<string, Slot>>(initial ? { [initial.to]: initial } : {});
-  const [picked, setPicked] = useState<string | null>(initial ? initial.to : null);
+  // On the Tulu site a Kannada translation means Tulu wasn't available just then: keep it under Tulu,
+  // so the page says so and tapping ತುಳು tries Tulu again
+  const initialKey = initial ? (uiTarget === "tcy" && initial.to !== "tcy" ? "tcy" : initial.to) : null;
+  const [slots, setSlots] = useState<Record<string, Slot>>(initial && initialKey ? { [initialKey]: initial } : {});
+  const [picked, setPicked] = useState<string | null>(initialKey);
 
   const options = TARGETS.filter(([code]) => code !== source);
   const differs = !!initial || (!!source && source !== uiTarget);
@@ -49,7 +52,8 @@ export function TranslationPanel({ original, sourceLang, initial, fromScreenshot
   async function show(code: string) {
     setPicked(code);
     const have = slots[code];
-    if (have && have !== "busy" && !("error" in have)) return;
+    if (have === "busy") return;
+    if (have && !("error" in have) && have.to === code) return;   // already shown in that language
     setSlots((s) => ({ ...s, [code]: "busy" }));
     try {
       const out = await apiPostJSON<Done>(`${API_BASE}/api/translate`, { text: original, to: code });
