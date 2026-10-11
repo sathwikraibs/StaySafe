@@ -64,9 +64,9 @@ RULES = [
             r"\b(otp|verification code|cvv|mpin)\b[^.\n]{0,30}\b(share|send|tell|batao|bhejo|bhej do|forward)\b(?! (it )?with anyone)",
             r"\b(code|otp)\b[^.\n]{0,25}\b(you (just )?received|we (have )?sent|aaya hai|aya hai)\b",
             # WhatsApp takeover: "I sent my code to you by mistake, please send it back"
-            r"(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(accidentally|by mistake|mistakenly|wrongly|galti se)\b[^\n]{0,50}\b(code|otp|6[- ]digit)\b",
-            r"(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(code|otp)\b[^\n]{0,50}\b(by mistake|accidentally|wrongly|galti se)\b",
-            r"(?=[^\n]*\b(otp|code|pin)\b)[^\n]*\b(share|send|tell|give|forward)\b (it|this|the code|this code|the otp)\b[^.\n]{0,20}\b(with|to) (our|the|me|us|an?|this) (?!one\b)",
+            r"(?m)^(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(accidentally|by mistake|mistakenly|wrongly|galti se)\b[^\n]{0,50}\b(code|otp|6[- ]digit)\b",
+            r"(?m)^(?=[^\n]*\b(send|share|forward|give|bhej|bhejo|bata)\b)[^\n]*\b(code|otp)\b[^\n]{0,50}\b(by mistake|accidentally|wrongly|galti se)\b",
+            r"(?m)^(?=[^\n]*\b(otp|code|pin)\b)[^\n]*\b(share|send|tell|give|forward)\b (it|this|the code|this code|the otp)\b[^.\n]{0,20}\b(with|to) (our|the|me|us|an?|this) (?!one\b)",
         ],
         50,
     ),
@@ -145,9 +145,19 @@ RULES = [
         15,
     ),
     (
+        "Says the payment account has changed and asks you to pay into a new account",
+        [
+            r"\b(our|my|company'?s?) bank (account )?(details?|number|information)?\s?(has|have) (been )?(changed|updated)\b",
+            r"\b(bank|payment|remittance) (account )?(details?|information)\b[^.\n]{0,30}\b(has|have) (been )?(changed|updated)\b",
+            r"\b(pay|transfer|remit|send)\b[^.\n]{0,80}\bto (the|our|this|my) new (bank )?account\b",
+            r"\bnew (bank )?account (details|number)\b[^\n]{0,80}\b(pay|transfer|payment|invoice)\b",
+        ],
+        40,
+    ),
+    (
         "Task-based or fake job offer",
         [
-            r"(?=[^\n]*\b(earn|task|commission|paid|payment|salary|income|rs\.?|₹|inr|per (like|video|review|task))\b)[^\n]*\b(lik(e|ing)|rat(e|ing)|review(ing)?|subscrib(e|ing))\b[^.\n]{0,40}\b(videos?|youtube|hotels?|products?|google maps)\b",
+            r"(?m)^(?=[^\n]*\b(earn|task|commission|paid|payment|salary|income|rs\.?|₹|inr|per (like|video|review|task))\b)[^\n]*\b(lik(e|ing)|rat(e|ing)|review(ing)?|subscrib(e|ing))\b[^.\n]{0,40}\b(videos?|youtube|hotels?|products?|google maps)\b",
             r"\b(hiring|job offer|vacancy)\b[^\n]{0,120}\b(telegram|whatsapp)\b",
             r"\b(part[- ]time|work from home|ghar baithe)\b[^\n]{0,80}\b(earn|daily|salary|income|kamao|kamaye|kamaiye|roz|dina|galisi|sampadisi)\b",
             # typed in English letters: "YouTube video like karne hain ... Telegram", "video like maadi dina 4000"

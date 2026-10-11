@@ -66,45 +66,67 @@ def check_sender_mismatch(msg) -> dict:
     findings = []
     score = 0
 
-    from_addr = parseaddr(msg.get("From", ""))[1].lower()
-    reply_to = parseaddr(msg.get("Reply-To", ""))[1].lower()
+    from_addr = parseaddr(header_text(msg, "From"))[1].lower()
+    reply_to = parseaddr(header_text(msg, "Reply-To"))[1].lower()
 
     if reply_to and from_addr and reply_to != from_addr:
         from_domain = from_addr.split("@")[-1] if "@" in from_addr else ""
         reply_domain = reply_to.split("@")[-1] if "@" in reply_to else ""
         if from_domain != reply_domain:
-            findings.append(f"Reply-To address ({reply_to}) doesn't match the From address ({from_addr}). Replies go somewhere different from where they appear to go")
-            score += 25
+            if reply_domain in FREE_MAIL and from_domain not in FREE_MAIL:
+                findings.append(f"Replies go to a free {reply_domain} address ({reply_to}), not to the company address the email comes from ({from_addr})")
+                score += 35
+            else:
+                findings.append(f"Reply-To address ({reply_to}) doesn't match the From address ({from_addr}). Replies go somewhere different from where they appear to go")
+                score += 25
 
     return {"score": score, "findings": findings, "from": from_addr, "reply_to": reply_to}
 
 
+def part_text(part) -> str:
+    """
+    The readable text of one part of the email, in any language. Encoded parts (base64,
+    quoted-printable) are decoded with their own character set; plain parts are used as they
+    are, so Kannada and Hindi letters stay letters (decoding them again garbles them).
+    """
+    raw = part.get_payload(decode=False)
+    if isinstance(raw, list):
+        return ""
+    cte = (part.get("Content-Transfer-Encoding") or "").strip().lower()
+    if cte in ("base64", "quoted-printable"):
+        data = part.get_payload(decode=True) or b""
+        charset = part.get_content_charset() or "utf-8"
+        try:
+            return data.decode(charset, errors="replace")
+        except LookupError:
+            return data.decode("utf-8", errors="replace")
+    return raw if isinstance(raw, str) else str(raw or "")
+
+
 def extract_body(msg) -> str:
+    """The plain-text part(s). An email that is only HTML returns '' (its text is read from the HTML)."""
     if msg.is_multipart():
+        parts = [part_text(p) for p in msg.walk() if p.get_content_type() == "text/plain"]
+    elif msg.get_content_type() == "text/html":
         parts = []
-        for part in msg.walk():
-            if part.get_content_type() == "text/plain":
-                try:
-                    parts.append(part.get_payload(decode=True).decode(errors="ignore"))
-                except Exception:
-                    pass
-        return "\n".join(parts)
-    try:
-        return msg.get_payload(decode=True).decode(errors="ignore")
-    except Exception:
-        return str(msg.get_payload())
+    else:
+        parts = [part_text(msg)]
+    return "\n".join(p for p in parts if p)
 
 
 def extract_html(msg) -> str:
     """The formatted (HTML) part. Where links hidden behind 'Click here' buttons live."""
-    parts = []
-    for part in msg.walk():
-        if part.get_content_type() == "text/html":
-            try:
-                parts.append(part.get_payload(decode=True).decode(errors="ignore"))
-            except Exception:
-                pass
-    return "\n".join(parts)
+    return "\n".join(part_text(p) for p in msg.walk() if p.get_content_type() == "text/html")
+
+
+def header_text(msg, name: str) -> str:
+    """A header with '=?UTF-8?B?...?=' encoded words turned back into normal text."""
+    value = msg.get(name, "") or ""
+    try:
+        from email.header import decode_header, make_header
+        return str(make_header(decode_header(str(value))))
+    except Exception:
+        return str(value)
 
 
 def html_to_text(html: str) -> str:
@@ -322,8 +344,16 @@ def scan_email(data: dict) -> dict:
         auth_result = {"score": 0, "findings": [], "status": "info"}
     sender_result = check_sender_mismatch(msg)
     from email.utils import parseaddr as _parse
-    from_name, from_addr = _parse(msg.get("From", ""))
+    from_name, from_addr = _parse(header_text(msg, "From"))
     body_result = analyze_text(body)
+    # Kannada, Hindi or other-language emails (or typed in English letters) are also checked in English,
+    # exactly like the message check does
+    from scanners.message_scanner import add_translation
+    try:
+        body_result = add_translation(body_result, "en")
+        body_result.pop("translation", None)
+    except Exception:
+        pass
     # phone numbers, email addresses and UPI IDs written inside the email also get checked
     from scanners.message_scanner import add_entity_checks
     from scanners.sender_check import foreign_numbers_in_text
@@ -437,7 +467,7 @@ def scan_email(data: dict) -> dict:
         "from_name": from_name,
         "mode": "form" if form_mode else "source",
         "reply_to": sender_result["reply_to"],
-        "subject": (msg.get("Subject") or "")[:200],
+        "subject": header_text(msg, "Subject")[:200],
         "links_found": urls,
         "links_found_count": len(urls),
         "links_checked": link_results,

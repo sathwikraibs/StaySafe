@@ -139,7 +139,7 @@ BRANDS = {
     "bluedart": {"bluedart.com"},
     "delhivery": {"delhivery.com"},
     "myntra": {"myntra.com"},
-    "swiggy": {"swiggy.com"},
+    "swiggy": {"swiggy.com", "swiggy.in"},
     "zomato": {"zomato.com"},
     "bescom": {"bescom.co.in", "bescom.karnataka.gov.in"},
     "mescom": {"mescom.karnataka.gov.in", "mescom.co.in"},
