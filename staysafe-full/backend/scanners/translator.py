@@ -674,7 +674,32 @@ def _romanized_language(text: str) -> str:
         return ""
 
 
+def _tulu_text(text: str) -> bool:
+    """Kannada-script text that is clearly Tulu (same letters as Kannada, different words)."""
+    if guess_language(text) != "kn":
+        return False
+    try:
+        from scanners.assistant import kannada_script_hint
+        return kannada_script_hint(text) == "tcy"
+    except Exception:
+        return False
+
+
 def translate(text: str, target: str, priority: str = "normal", wait: float = 20.0):
+    """
+    Translate `text` into `target`. A message that is already Tulu is labelled Tulu (not Kannada),
+    and is never "translated" into Tulu again.
+    """
+    tulu = _tulu_text((text or "").strip()[:MAX_CHARS])
+    if tulu and target == "tcy":
+        return {"text": (text or "").strip()[:MAX_CHARS], "from": "tcy", "to": "tcy", "provider": "none"}
+    out = _translate(text, target, priority, wait)
+    if out and tulu and out.get("from", "").split("-")[0] in ("kn", ""):
+        out = dict(out, **{"from": "tcy"})
+    return out
+
+
+def _translate(text: str, target: str, priority: str = "normal", wait: float = 20.0):
     """
     Translate `text` into `target` ("en", "kn", ...). Returns
     {"text", "from", "to", "provider"} or None when no free translation is available.

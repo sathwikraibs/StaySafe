@@ -174,6 +174,17 @@ def test_tulu_uses_examples_stronger_model_and_rejects_broken_answers():
     assert tr._looks_like_translation(src, "ಈರೆನ OTPನ್ ಏರೆಗ್‌ಲಾ ಪನೊಡ್ಚಿ http://sbi-kyc.topಗ್", "tcy")
 
 
+def test_tulu_message_is_called_tulu_and_not_translated_into_tulu():
+    calls = []
+    Fake(gemini=lambda t, to: calls.append(to) or {"text": "I got a call, they asked for the OTP", "from": "kn", "to": to,
+                                                   "provider": "gemini"}).install()
+    tulu = "ಎಂಕ್ ಒಂಜಿ ಕಾಲ್ ಬತ್ತ್ಂಡ್, OTP ಕೇನ್ಯೆರ್"
+    same = tr.translate(tulu, "tcy")
+    assert same["text"] == tulu and same["from"] == "tcy" and calls == []          # nothing to translate
+    assert tr.translate(tulu, "en")["from"] == "tcy"                               # labelled Tulu, not Kannada
+    assert tr.translate("ನನಗೆ ಒಂದು ಕಾಲ್ ಬಂತು, OTP ಕೇಳಿದರು", "en")["from"] == "kn"  # real Kannada stays Kannada
+
+
 if __name__ == "__main__":
     tests = [v for k, v in dict(globals()).items() if k.startswith("test_")]
     ok = 0
