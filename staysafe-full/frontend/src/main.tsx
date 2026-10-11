@@ -6,6 +6,12 @@ import './index.css';
 import { API_BASE } from './config';
 import { registerServiceWorker, listenForInstall } from './share';
 
+// The fonts load alongside the page instead of holding it back (the page shows at once in a system font)
+const fonts = document.createElement('link');
+fonts.rel = 'stylesheet';
+fonts.href = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Baloo+Tamma+2:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
+document.head.appendChild(fonts);
+
 registerServiceWorker();
 listenForInstall();
 

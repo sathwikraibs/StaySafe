@@ -1,22 +1,40 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { Layout } from "@/components/Layout";
 import { HomePage } from "@/pages/HomePage";
-import { ScanUrlPage } from "@/pages/ScanUrlPage";
-import { ScanMessagePage } from "@/pages/ScanMessagePage";
-import { ScanQrPage } from "@/pages/ScanQrPage";
-import { ScanFilePage } from "@/pages/ScanFilePage";
-import { CheckPasswordPage } from "@/pages/CheckPasswordPage";
-import { CheckNetworkPage } from "@/pages/CheckNetworkPage";
-import { ScanEmailPage } from "@/pages/ScanEmailPage";
-import { DashboardPage } from "@/pages/DashboardPage";
-import { IncidentPage } from "@/pages/IncidentPage";
-import { ScamLibraryPage } from "@/pages/ScamLibraryPage";
-import { HelpPage } from "@/pages/HelpPage";
-import { SettingsPage } from "@/pages/SettingsPage";
-import { AboutPage } from "@/pages/AboutPage";
-import { CheckNumberPage } from "@/pages/CheckNumberPage";
 import { API_BASE } from "@/config";
 import { receiveShare } from "@/share";
+
+// Each tool's page is downloaded only when needed, so the home page opens faster.
+// Shortly after the home page shows, the rest are fetched quietly so moving around stays instant.
+const loadScanUrlPage = () => import("@/pages/ScanUrlPage").then((m) => ({ default: m.ScanUrlPage }));
+const loadScanMessagePage = () => import("@/pages/ScanMessagePage").then((m) => ({ default: m.ScanMessagePage }));
+const loadScanQrPage = () => import("@/pages/ScanQrPage").then((m) => ({ default: m.ScanQrPage }));
+const loadScanFilePage = () => import("@/pages/ScanFilePage").then((m) => ({ default: m.ScanFilePage }));
+const loadCheckPasswordPage = () => import("@/pages/CheckPasswordPage").then((m) => ({ default: m.CheckPasswordPage }));
+const loadCheckNetworkPage = () => import("@/pages/CheckNetworkPage").then((m) => ({ default: m.CheckNetworkPage }));
+const loadScanEmailPage = () => import("@/pages/ScanEmailPage").then((m) => ({ default: m.ScanEmailPage }));
+const loadDashboardPage = () => import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage }));
+const loadIncidentPage = () => import("@/pages/IncidentPage").then((m) => ({ default: m.IncidentPage }));
+const loadScamLibraryPage = () => import("@/pages/ScamLibraryPage").then((m) => ({ default: m.ScamLibraryPage }));
+const loadHelpPage = () => import("@/pages/HelpPage").then((m) => ({ default: m.HelpPage }));
+const loadSettingsPage = () => import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage }));
+const loadAboutPage = () => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage }));
+const loadCheckNumberPage = () => import("@/pages/CheckNumberPage").then((m) => ({ default: m.CheckNumberPage }));
+const ScanUrlPage = lazy(loadScanUrlPage);
+const ScanMessagePage = lazy(loadScanMessagePage);
+const ScanQrPage = lazy(loadScanQrPage);
+const ScanFilePage = lazy(loadScanFilePage);
+const CheckPasswordPage = lazy(loadCheckPasswordPage);
+const CheckNetworkPage = lazy(loadCheckNetworkPage);
+const ScanEmailPage = lazy(loadScanEmailPage);
+const DashboardPage = lazy(loadDashboardPage);
+const IncidentPage = lazy(loadIncidentPage);
+const ScamLibraryPage = lazy(loadScamLibraryPage);
+const HelpPage = lazy(loadHelpPage);
+const SettingsPage = lazy(loadSettingsPage);
+const AboutPage = lazy(loadAboutPage);
+const CheckNumberPage = lazy(loadCheckNumberPage);
+const ALL_PAGES = [loadScanUrlPage, loadScanMessagePage, loadScanQrPage, loadScanFilePage, loadCheckPasswordPage, loadCheckNetworkPage, loadScanEmailPage, loadDashboardPage, loadIncidentPage, loadScamLibraryPage, loadHelpPage, loadSettingsPage, loadAboutPage, loadCheckNumberPage];
 
 const ROUTES = [
   "/", "/scan-url", "/scan-message", "/scan-qr", "/scan-file",
@@ -45,6 +63,11 @@ export default function App() {
     fetch(`${API_BASE}/`).catch(() => { /* it's only a wake-up call */ });
   }, []);
 
+  useEffect(() => {
+    const t = window.setTimeout(() => { ALL_PAGES.forEach((load) => { load().catch(() => undefined); }); }, 2500);
+    return () => window.clearTimeout(t);
+  }, []);
+
   // Opened by sharing a message, link, screenshot or file to TrustLight: go to the right check
   useEffect(() => {
     receiveShare().then((p) => { if (p) navigate(p); }).catch(() => undefined);
@@ -61,7 +84,7 @@ export default function App() {
 
   return (
     <Layout currentPath={path} onNavigate={navigate}>
-      {renderPage(path, navigate)}
+      <Suspense fallback={<PageLoading />}>{renderPage(path, navigate)}</Suspense>
     </Layout>
   );
 }
@@ -85,4 +108,12 @@ function renderPage(path: string, navigate: (p: string) => void) {
     case "/scam-library": return <ScamLibraryPage onNavigate={navigate} />;
     default: return <HomePage onNavigate={navigate} />;
   }
+}
+
+function PageLoading() {
+  return (
+    <div className="flex justify-center py-16" role="status" aria-label="Loading">
+      <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand-300 border-t-transparent" />
+    </div>
+  );
 }
