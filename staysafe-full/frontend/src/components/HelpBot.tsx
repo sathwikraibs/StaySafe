@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
 import { BrandMark, IconChat, IconClose, IconLock, IconShield } from "@/icons";
-import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
+import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, appFeedback, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
+import { FeedbackCard } from "@/components/FeedbackCard";
 import { apiGet, apiPostJSON, errorMessage, ApiError } from "@/api";
 import { API_BASE } from "@/config";
 
@@ -16,6 +17,7 @@ interface Bubble {
   langPick?: boolean;    // show language buttons (the AI wasn't sure which language to answer in)
   aiAnyway?: string;     // a question we answered with a tool button: it can still go to the AI
   note?: string;         // a small tip under the answer
+  feedback?: "praise" | "improve";   // they praised or criticised TrustLight: show the rating card
 }
 type Turn = { role: "user" | "assistant"; text: string };
 interface AiAnswer { reply: string; urgent: boolean; actions: string[]; ask_language?: boolean; kind?: string; language?: string }
@@ -176,6 +178,12 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       // A pasted SMS/WhatsApp: the full check is one tap away, and the AI explains it meanwhile
       const check: Bubble = { from: "bot", lines: [tx.messageSeen], buttons: [{ kind: "check", what: "message", value: r.text, label: tx.checkThisMessage }] };
       if (aiReady) { say(check); void askAssistant(text, () => undefined); } else say({ ...check, team: true });
+      return;
+    }
+    // "you did good", "this app is slow", "please add Telugu": thank them and offer the rating card
+    const fb = topic ? null : appFeedback(text);
+    if (fb) {
+      say({ from: "bot", lines: [t(fb === "praise" ? "feedback.aiPraise" : "feedback.aiComplaint")], feedback: fb });
       return;
     }
     if (r.kind === "tool" && !topic) {
@@ -346,6 +354,9 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                 </div>
               )}
             </div>
+            {b.feedback && (
+              <div className="mt-2 w-full max-w-[96%]"><FeedbackCard compact from="ai" intent={b.feedback} /></div>
+            )}
             {b.aiAnyway && i === bubbles.length - 1 && !thinking && (
               <button type="button" onClick={() => { const q = b.aiAnyway!; setBubbles((all) => all.map((x) => x === b ? { ...x, aiAnyway: undefined } : x)); void askAssistant(q, () => say({ from: "bot", lines: [tx.noMatch], topics: true, team: true })); }}
                 className="mt-1.5 flex items-center gap-1.5 px-1 font-body text-xs font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-600">

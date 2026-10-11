@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/PageBits";
 import { Card } from "@/components/Card";
 import { InstallCard } from "@/components/InstallCard";
+import { FeedbackCard } from "@/components/FeedbackCard";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { clearHistory, loadHistory } from "@/history";
 import { IconCheck, IconLanguage, IconHistory, IconInfo, IconArrowRight, IconGlobe } from "@/icons";
@@ -62,6 +63,9 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
           </div>
         </div>
       </Card>
+
+      {/* Rating and feedback */}
+      <FeedbackCard from="settings" />
 
       <InstallCard place="settings" />
 

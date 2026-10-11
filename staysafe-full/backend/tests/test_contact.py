@@ -66,6 +66,21 @@ def test_html_in_message_is_escaped():
     assert "<script>" not in sent[0][1]["text"] and "&lt;script&gt;" in sent[0][1]["text"]
 
 
+def test_feedback_reaches_telegram_anonymously():
+    setup()
+    contact._fb_per_ip.clear()
+    r = c.post("/api/feedback", json={"stars": 5, "topics": ["love", "idea", "nonsense"], "lang": "tcy", "from": "ai",
+                                      "message": "Super app! Add WhatsApp sharing. My OTP 482913"})
+    assert r.status_code == 200, r.get_json()
+    text = sent[0][1]["text"]
+    assert "⭐⭐⭐⭐⭐" in text and "5/5" in text and "Tulu" in text and "AI helper" in text
+    assert "New idea" in text and "nonsense" not in text and "482913" not in text
+    assert c.post("/api/feedback", json={"stars": 0}).status_code == 400
+    assert c.post("/api/feedback", json={"stars": 9}).status_code == 400
+    r = c.post("/api/feedback", json={"stars": 2})                       # stars alone are fine
+    assert r.status_code == 200 and "☆☆☆" in sent[-1][1]["text"]
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

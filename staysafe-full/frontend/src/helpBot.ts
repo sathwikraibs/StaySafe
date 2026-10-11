@@ -840,3 +840,46 @@ export function useStartTab(page: string, pick: (tab: string) => void): void {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 }
+
+// ---------------------------------------------------------------------------
+// Praise or complaints about TrustLight itself, typed into the helper: answered with a thank-you and
+// the rating card (no AI needed). Someone's OWN trouble ("my bank app is not working") is not this.
+// ---------------------------------------------------------------------------
+const APP = String.raw`(?:(?:this|your|ur|the|trustlight'?s?)\s+(?:app|application|site|website|tool|ai|chat|bot|translation|trustlight|page)|\btrustlight\b)`;
+const PRAISE = new RegExp([
+  String.raw`\b(?:good|great|nice|super|excellent|awesome|amazing|fantastic) (?:job|work)\b`, String.raw`\bwell done\b`,
+  String.raw`\byou did (?:good|great|well|a good job)\b`, String.raw`\b(?:thanks?|thank (?:you|u)|thanku|thnx|thx|tysm|ty)\b`,
+  String.raw`\b(?:i )?love (?:it|this|your|you|the app|trustlight)\b`,
+  APP + String.raw`\s+(?:is\s+)?(?:very |so |really |too )?(?:good|great|nice|useful|helpful|best|super|awesome|amazing|wonderful|cool|excellent|fantastic|brilliant)\b`,
+  String.raw`\b(?:very|so|really) (?:useful|helpful|nice|good)\b`,
+  String.raw`\b(?:best|good|nice|great|useful|helpful|super|awesome|wonderful|amazing) (?:app|site|website|tool)\b`,
+  String.raw`\byou(?:'re| are) (?:good|great|the best|amazing|awesome|helpful|wonderful)\b`,
+  String.raw`^\s*(?:super|awesome|amazing|wonderful|excellent|fantastic|brilliant|nice|great|cool)\s*[!.👍🙏😊❤️]*\s*$`,
+  "बहुत (?:अच्छा|बढ़िया|बढिया)", "बढ़िया", "शानदार", "धन्यवाद", "शुक्रिया", "कमाल", "ज़बरदस्त|जबरदस्त",
+  String.raw`\b(?:bahut (?:accha|acha|badhiya|badiya)|badhiya|badiya|shandar|shaandaar|dhanyavad|dhanyawad|shukriya|zabardast|jabardast|kamaal)\b`,
+  "ಚೆನ್ನಾಗಿದೆ", "ಧನ್ಯವಾದ", "ಅದ್ಭುತ", "ಉಪಯುಕ್ತ", "ಒಳ್ಳೆಯ ಕೆಲಸ", "ಒಳ್ಳೆ ಕೆಲಸ", "ಸೂಪರ್",
+  String.raw`\b(?:chennagide|chennag ide|tumba chennagide|super agide|dhanyavada|dhanyavadagalu|olle kelsa)\b`,
+  "ಎಡ್ಡೆ ಉಂಡು", "ಮಸ್ತ್ ಎಡ್ಡೆ", "ಎಡ್ಡೆ ಆತ್ಂಡ್", "ಪೊರ್ಲು", String.raw`\b(?:edde undu|mast edde|porlu)\b`,
+].join("|"), "i");
+const IMPROVE = new RegExp([
+  APP + String.raw`\b.{0,40}\b(?:bad|worst|useless|slow|wrong|not (?:good|working|work|useful|accurate|correct)|doesn'?t work|didn'?t work|isn'?t working|broken|buggy|confusing|poor|hate|sucks|crash(?:es|ed)?|errors?|problems?|issues?)\b`,
+  String.raw`\b(?:trustlight|this app|your app|the app|this site|this website|you)\b.{0,30}\b(?:should|must|needs? to|could|can) (?:add|have|improve|support|fix|show|be|include|update)\b`,
+  String.raw`\b(?:please|pls|plz|kindly|can you|could you)\s+(?:add|improve|fix|update|include|support|make)\b.{0,60}\b(?:app|feature|option|language|button|site|translation|trustlight|telugu|tamil|malayalam|marathi|bengali|gujarati)\b`,
+  String.raw`\b(?:suggestion|feature request|improvement|complaint)s?\b`,
+  // a wrong result: "your app said my bank SMS is a scam but it was real"
+  APP + String.raw`\b.{0,50}\b(?:said|says|showed|shows|marked|called)\b.{0,50}\b(?:but|though|while)\b.{0,40}\b(?:real|genuine|original|fake|scam|safe|risky)\b`,
+  String.raw`\b(?:bad|worst|useless|poor|rubbish|waste|bekar|bakwas|kharab)\s+(?:app|site|website|tool|ai|bot)\b`,
+  "(?:ऐप|एप|app|साइट|यह|ये)[^।?]{0,25}(?:बेकार|खराब|बकवास|काम नहीं|गलत)", "सुझाव", "शिकायत",
+  "(?:ಆ್ಯಪ್|ಆಪ್|ಅಪ್ಲಿಕೇಶನ್|app|ಇದು)[^.?]{0,25}(?:ಕೆಟ್ಟ|ಸರಿ ಇಲ್ಲ|ಸರಿಯಿಲ್ಲ|ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ|ಉಪಯೋಗ ಇಲ್ಲ|ತಪ್ಪು)", "ಸಲಹೆ", "ದೂರು",
+  "(?:ಆ್ಯಪ್|ಆಪ್|app|ಉಂದು)[^.?]{0,25}(?:ಎಡ್ಡೆ ಇಜ್ಜಿ|ಸರಿ ಇಜ್ಜಿ|ಕೆಲಸ ಮಲ್ತ್‌ಜಿ|ಕೆಲಸ ಮಲ್ತಿಜಿ|ತಪ್ಪು)",
+].join("|"), "i");
+/** Words that mean the person is asking about a scam or their own trouble, not about TrustLight. */
+const OWN_TROUBLE = /\b(?:otp|pin|cvv|scam|fraud|money|paid|lost|hack|hacked|police|arrest|kyc|upi|loan|refund|blocked)\b|ಓಟಿಪಿ|ಮೋಸ|ಹಣ|ಪೈಸೆ|धोखा|पैसे|ठगी/i;
+
+export function appFeedback(text: string): "praise" | "improve" | null {
+  const v = (text || "").trim();
+  if (!v || v.length > 200 || /\?\s*$/.test(v) || /https?:\/\/|www\./i.test(v)) return null;
+  if (IMPROVE.test(v)) return OWN_TROUBLE.test(v) && !/\b(?:trustlight|this app|your app|the app)\b/i.test(v) ? null : "improve";
+  if (PRAISE.test(v) && !OWN_TROUBLE.test(v)) return "praise";
+  return null;
+}

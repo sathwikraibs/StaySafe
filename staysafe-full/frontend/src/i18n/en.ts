@@ -445,6 +445,27 @@ const enBase = {
 
   wrongTool: { open: "Open {tool}", qrInPicture: "This picture also has a QR code. You can check where it leads." },
   update: { title: "TrustLight has been updated", body: "A new version with the latest fixes is ready. Please update to keep using TrustLight. It takes a second, and nothing you saved is lost.", button: "Update now" },
+  feedback: {
+    title: "Rate TrustLight",
+    subtitle: "Your stars help more families find TrustLight and stay safe from scams. It takes just 10 seconds.",
+    levels: ["Not good", "Could be better", "It's okay", "Really good", "I love it!"],
+    pickStars: "Tap a star",
+    topicsTitle: "What is it about? Pick any that fit",
+    topics: { love: "I love it", improve: "Something to improve", better_elsewhere: "I saw it done better elsewhere", bug: "Something didn't work", idea: "I have an idea", language: "Language or translation", other: "Something else" },
+    placeholderHigh: "What do you like most? A few kind words help other people trust TrustLight too.",
+    placeholderLow: "What should we fix or add? Tell us what you saw. We read every message and act on it.",
+    optional: "Optional",
+    send: "Send my rating",
+    sending: "Sending...",
+    privacy: "No name or number needed. OTPs and account numbers are hidden automatically.",
+    thanksTitle: "Thank you! 🎉",
+    thanksHigh: "You just helped more people stay safe from scams. Share TrustLight with your family so they're protected too.",
+    thanksLow: "Thank you for being honest. Your message has reached our team, and we'll use it to make TrustLight better.",
+    share: "Share with family",
+    shareText: "I check suspicious messages, links and QR codes with TrustLight before I trust them. It's free:",
+    aiPraise: "Thank you so much! 😊 That really means a lot to us. Would you take 10 seconds to rate TrustLight? Your stars help more families find it and stay safe.",
+    aiComplaint: "Thank you for telling us, and sorry it wasn't good enough. 🙏 Please tell us below what to fix or add. Every message reaches our team, and we use it to make TrustLight better.",
+  },
   upload: { choose: "Choose a different file", camera: "Take a photo", gallery: "Choose a photo", files: "Choose a file", drag: "or drag and drop it here", photo: "Photo" },
 };
 

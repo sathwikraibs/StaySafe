@@ -155,3 +155,68 @@ def contact_route():
     if not (sent_tg or sent_mail):
         return jsonify({"error": "We couldn't send your message right now. Please try the live chat, or try again in a minute."}), 502
     return jsonify({"ok": True, "ref": ref})
+
+
+# ---------------------------------------------------------------------------
+# Rating and feedback (from Settings, or offered by the AI helper). Anonymous: no name, no contact.
+# ---------------------------------------------------------------------------
+FEEDBACK_TOPICS = {
+    "love": "💚 Loves it",
+    "improve": "🛠️ Something to improve",
+    "better_elsewhere": "🔍 Saw it done better elsewhere",
+    "bug": "🐞 Something didn't work",
+    "idea": "💡 New idea",
+    "language": "🌐 Language / translation",
+    "other": "✉️ Other",
+}
+FEEDBACK_FROM = {"settings": "Settings", "ai": "AI helper", "result": "After a check"}
+_fb_per_ip: "defaultdict[str, deque]" = defaultdict(deque)
+FEEDBACK_PER_IP_HOUR = 6
+
+
+def _feedback_allowed(ip: str) -> bool:
+    now = time.time()
+    with _lock:
+        q = _fb_per_ip[ip]
+        while q and now - q[0] > 3600:
+            q.popleft()
+        if len(q) >= FEEDBACK_PER_IP_HOUR:
+            return False
+        q.append(now)
+        return True
+
+
+@contact_bp.route("/api/feedback", methods=["POST"])
+def feedback_route():
+    data = request.get_json(silent=True) or {}
+    if str(data.get("website") or "").strip():          # hidden field only bots fill in
+        return jsonify({"ok": True})
+    try:
+        stars = int(data.get("stars") or 0)
+    except (TypeError, ValueError):
+        stars = 0
+    if not 1 <= stars <= 5:
+        return jsonify({"error": "Please choose how many stars you give TrustLight."}), 400
+    topics = [t for t in (data.get("topics") or []) if isinstance(t, str) and t in FEEDBACK_TOPICS][:7]
+    message = str(data.get("message") or "").strip()[:1500]
+    lang = str(data.get("lang") or "en").lower()
+    source = str(data.get("from") or "settings")
+    if not (_telegram_ready() or _email_ready()):
+        return jsonify({"error": "Feedback can't be sent right now. Please try again a little later."}), 503
+    if not _feedback_allowed(client_ip()):
+        return jsonify({"error": "Thank you, we already have your feedback. You can send more in an hour."}), 429
+
+    e = html.escape
+    lines = [
+        f"{'⭐' * stars}{'☆' * (5 - stars)}  <b>{stars}/5</b> · new feedback",
+        f"From: {FEEDBACK_FROM.get(source, 'Settings')} · Language: {LANGS.get(lang, e(lang))}",
+    ]
+    if topics:
+        lines.append("About: " + ", ".join(FEEDBACK_TOPICS[t] for t in topics))
+    lines += ["", e(_hide_sensitive(message)) if message else "(no message, stars only)"]
+    text = "\n".join(lines)
+    sent = (_send_telegram(text) if _telegram_ready() else False) or \
+        (_send_email(f"[TrustLight feedback] {stars}/5", text, "") if _email_ready() else False)
+    if not sent:
+        return jsonify({"error": "Feedback can't be sent right now. Please try again a little later."}), 502
+    return jsonify({"ok": True})
