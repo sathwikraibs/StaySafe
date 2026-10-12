@@ -35,7 +35,24 @@ function cleanReply(text: unknown): string | null {
     try { const inner = JSON.parse(t); t = typeof inner?.reply === "string" ? inner.reply.trim() : ""; } catch { t = ""; }
   }
   if (!t || /```|<script|"\w+"\s*:\s*["{[\d]|\bfunction\s*\w*\s*\(|=>|console\.log/i.test(t)) return null;
-  return t;
+  return stepLines(t);
+}
+
+/** "... 1. Call 1930. 2. Call the bank." -> every numbered step on its own line (only a real 1, 2, 3 run). */
+const DIGIT: Record<string, string> = Object.fromEntries([..."೦೧೨೩೪೫೬೭೮೯"].map((d, i) => [d, String(i)]).concat([..."०१२३४५६७८९"].map((d, i) => [d, String(i)])));
+export function stepLines(text: string): string {
+  const starts: number[] = [];
+  let want = 1;
+  for (const m of text.matchAll(/(?:(?<=\s)|^)([0-9೦-೯०-९]{1,2})[.)](?=\s)/g)) {
+    const n = Number([...m[1]].map((c) => DIGIT[c] ?? c).join(""));
+    if (n === want) { starts.push(m.index ?? 0); want += 1; }
+  }
+  if (starts.length < 2) return text;
+  const parts: string[] = [];
+  let last = 0;
+  for (const p of starts) { parts.push(text.slice(last, p)); last = p; }
+  parts.push(text.slice(last));
+  return parts.map((x) => x.trim()).filter(Boolean).join("\n");
 }
 
 /** Languages someone can pick when the AI isn't sure (Tulu and Kannada look alike). */
@@ -319,7 +336,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
                   {b.lines[0]}
                 </p>
               ) : b.lines.map((l, j) => (
-                <p key={j} className={`whitespace-pre-wrap break-words font-body text-sm leading-relaxed ${j ? "mt-1.5" : ""}`}>{l}</p>
+                <p key={j} className={`whitespace-pre-wrap break-words font-body text-sm leading-relaxed ${j ? "mt-1.5" : ""} ${/^[0-9೦-೯०-९]{1,2}[.)]\s/.test(l) ? "pl-5 -indent-5" : ""}`}>{l}</p>
               ))}
               {b.note && (
                 <p className="mt-2 rounded-lg bg-brand-100 px-2.5 py-1.5 font-body text-xs leading-snug text-brand-700">{b.note}</p>

@@ -433,6 +433,15 @@ def test_mistaken_money_advice_and_official_endings_kept():
     assert "evil-site.xyz" not in _clean("Do not open evil-site.xyz", [])
 
 
+def test_numbered_steps_each_on_its_own_line():
+    from scanners.assistant import step_lines
+    assert step_lines("Don't worry. 1. Call 1930 now. 2. Call your bank. 3. Report it.") == \
+        "Don't worry.\n1. Call 1930 now.\n2. Call your bank.\n3. Report it."
+    assert step_lines("Pay Rs. 5. Then call 1930.") == "Pay Rs. 5. Then call 1930."          # not a list
+    assert step_lines("ಗಾಬರಿ ಆವೊಡ್ಚಿ. 1. 1930 ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ. 2. ಬ್ಯಾಂಕ್‌ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ.").count("\n") == 2
+    assert step_lines("Steps:\n1. Call 1930\n2. Call bank") == "Steps:\n1. Call 1930\n2. Call bank"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

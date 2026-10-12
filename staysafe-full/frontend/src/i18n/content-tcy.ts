@@ -35,7 +35,7 @@ export const tcyContent: LangContent = {
   server: withFileTypes(FILE_TYPES, {
     // ---- connection / general errors
     "We couldn't reach the TrustLight server. Please check your internet and try again. (If the site has been idle, the server can take up to a minute to wake up.)":
-      "TrustLight ಸರ್ವರ್‌ಗ್ ಸಂಪರ್ಕ ತಿಕ್ಕಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ. (ಸೈಟ್ ಮಸ್ತ್ ಪೊರ್ತು ಬಳಕೆ ಆಯಿಜಿಂಡ, ಸರ್ವರ್ ಸುರು ಆಯೆರೆ ಒಂಜಿ ನಿಮಿಷ ಮುಟ್ಟ ಬೋಡಾವು.)",
+      "TrustLight ಸರ್ವರ್‌ಗ್ ಸಂಪರ್ಕ ತಿಕ್ಕಿಜಿ. ಈರೆನ ಇಂಟರ್ನೆಟ್ ತೂದು ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ. (ಸೈಟ್ ಮಸ್ತ್ ಪೊರ್ತು ಬಳಕೆ ಆಯಿಜ್ಜಾಂಡ, ಸರ್ವರ್ ಸುರು ಆಯೆರೆ ಒಂಜಿ ನಿಮಿಷ ಮುಟ್ಟ ಬೋಡಾವು.)",
     "The server took too long to respond. Please try again in a moment.": "ಸರ್ವರ್ ಉತ್ತರ ಕೊರೆರೆ ಮಸ್ತ್ ಪೊರ್ತು ದೆತೊಂಡ್. ಒಂಚೂರು ಪೊರ್ತು ಬೊಕ್ಕ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
     "That file is too big to upload.": "ಈ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪೆರೆ ಮಸ್ತ್ ಮಲ್ಲ ಉಂಡು.",
     "Something went wrong on the server. Please try again.": "ಸರ್ವರ್‌ಡ್ ದಾದಾಂಡಲ ತೊಂದರೆ ಆಂಡ್. ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
@@ -46,7 +46,7 @@ export const tcyContent: LangContent = {
 
     // ---- message checker
     "Asks you to share an OTP, PIN, CVV or password": "ಈರೆಡ್ದ್ OTP, PIN, CVV ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಕೇನೊಂದುಲ್ಲೆರ್",
-    "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": "ಪೈಸೆ 'ಪಡೆಯೆರೆ' UPI PIN ಕೇನೊಂದುಲ್ಲೆರ್ (ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ PIN ಬೋಡ್ಚಿ)",
+    "Asks for your UPI PIN to 'receive' money (you never need a PIN to receive)": "ಪೈಸೆ 'ದೆತೊನೆರೆ' UPI PIN ಕೇನೊಂದುಲ್ಲೆರ್ (ಪೈಸೆ ದೆತೊನೆರೆ ಏಪಲಾ PIN ಬೋಡ್ಚಿ)",
     "Bank / KYC / PAN impersonation": "ಬ್ಯಾಂಕ್ / KYC / PAN ಪುದರ್‌ಡ್ ಮೋಸ",
     "Says your card or account was blocked and asks you to call a number": "ಈರೆನ ಕಾರ್ಡ್ ಅತ್ತಂಡ ಖಾತೆ ಬ್ಲಾಕ್ ಆತ್ಂಡ್ ಪಂಡ್‌ದ್, ಒಂಜಿ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಮಲ್ಪೆರೆ ಪನ್ಪುಂಡು",
     "The UPI ID uses the name '{name}'. Banks and companies never collect money through a UPI ID named like this": "UPI ID ಡ್ '{name}' ಪುದರ್ ಉಂಡು. ಬ್ಯಾಂಕ್ ಬೊಕ್ಕ ಕಂಪೆನಿಲು ಇಂಚಿನ ಪುದರ್‌ದ UPI ID ಡ್ ಏಪಲಾ ಪೈಸೆ ದೆತೊನುಜಿ",
@@ -63,7 +63,7 @@ export const tcyContent: LangContent = {
     "Promises easy fixed daily/hourly earnings": "ದಿನೊಗು/ಗಂಟೆಗ್ ಸುಲಭದ ಖಚಿತ ಸಂಪಾದನೆದ ಭರವಸೆ",
     "Task-based or fake job offer": "ಟಾಸ್ಕ್ ಆಧಾರಿತ ಅತ್ತಂಡ ನಕಲಿ ಬೇಲೆದ ಆಫರ್",
     "Prize, lottery or 'you have won' offer": "ಬಹುಮಾನ, ಲಾಟರಿ ಅತ್ತಂಡ 'ಈರ್ ಗೆಂದಿರ್' ಆಫರ್",
-    "Asks you to pay a fee to receive money": "ಪೈಸೆ ಪಡೆಯೆರೆ ಶುಲ್ಕ ಕಟ್ಟೊಡು ಪನ್ಪೆರ್",
+    "Asks you to pay a fee to receive money": "ಪೈಸೆ ದೆತೊನೆರೆ ಶುಲ್ಕ ಕಟ್ಟೊಡು ಪನ್ಪೆರ್",
     "Investment or trading scheme with unrealistic returns": "ನಂಬೆರೆ ಆವಂದಿನಾತ್ ಲಾಭದ ಹೂಡಿಕೆ ಅತ್ತಂಡ ಟ್ರೇಡಿಂಗ್ ಯೋಜನೆ",
     "Asks you to install a remote access / screen sharing app": "ರಿಮೋಟ್ ಆ್ಯಕ್ಸೆಸ್ / ಸ್ಕ್ರೀನ್ ಶೇರಿಂಗ್ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪೊಡು ಪನ್ಪೆರ್",
     "Family member 'new number' / emergency money request": "ಕುಟುಂಬದಾಕುಲೆನ ಲೆಕ್ಕ 'ಪೊಸ ನಂಬರ್' / ತುರ್ತು ಪೈಸೆದ ಬೇಡಿಕೆ",
@@ -152,7 +152,7 @@ export const tcyContent: LangContent = {
     "The part after @ ({handle}) is not one we know from common UPI apps or banks. Check the spelling, or ask the person to share a QR from their app": "@ ದ ಬುಕ್ಕದ ಭಾಗ ({handle}) ಸಾಮಾನ್ಯ UPI ಆ್ಯಪ್ ಅತ್ತಂಡ ಬ್ಯಾಂಕ್‌ದವು ಪಂಡ್‌ದ್ ಎಂಕ್ಲೆಗ್ ಗೊತ್ತಿಜ್ಜಿ. ಸ್ಪೆಲ್ಲಿಂಗ್ ಪರಿಶೀಲನೆ ಮಲ್ಪುಲೆ, ಅತ್ತಂಡ ಅಕುಲೆನ ಆ್ಯಪ್‌ದ QR ಕಡಪುಡ್ಲೆ ಪನ್ಲೆ",
     "The UPI ID contains '{word}'. Real refunds, rewards and offices never ask you to pay a UPI ID like this": "ಈ UPI ID ಡ್ '{word}' ಉಂಡು. ನಿಜವಾಯಿನ ರಿಫಂಡ್, ಬಹುಮಾನ ಅತ್ತಂಡ ಕಚೇರಿಲು ಇಂಚಿನ UPI ID ಗ್ ಪೈಸೆ ಕಡಪುಡ್ಲೆ ಏಪಲಾ ಪನ್ಪುಜಿ",
     "This UPI ID is made from a mobile number, so it belongs to a person, not a company or office": "ಈ UPI ID ಮೊಬೈಲ್ ನಂಬರ್‌ಡ್ದ್ ಮಲ್ತಿನವು, ಅಂಚಾದ್ ಉಂದು ಒರಿ ವ್ಯಕ್ತಿನವು, ಕಂಪನಿದ ಅತ್ತಂಡ ಕಚೇರಿದ ಅತ್ತ್",
-    "They asked you to pay first to get money, a job, a prize, a loan or a refund. That is always a scam: you never pay to receive money": "ಪೈಸೆ, ಬೇಲೆ, ಬಹುಮಾನ, ಸಾಲ ಅತ್ತಂಡ ರಿಫಂಡ್ ಪಡೆಯೆರೆ ದುಂಬು ಪೈಸೆ ಕಟ್ಟೊಡು ಪಂಡೆರ್. ಉಂದು ಏಪಲಾ ಮೋಸ: ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ ಪೈಸೆ ಕೊರೊಡಾಪುಜಿ",
+    "They asked you to pay first to get money, a job, a prize, a loan or a refund. That is always a scam: you never pay to receive money": "ಪೈಸೆ, ಬೇಲೆ, ಬಹುಮಾನ, ಸಾಲ ಅತ್ತಂಡ ರಿಫಂಡ್ ದೆತೊನೆರೆ ದುಂಬು ಪೈಸೆ ಕಟ್ಟೊಡು ಪಂಡೆರ್. ಉಂದು ಏಪಲಾ ಮೋಸ: ಪೈಸೆ ದೆತೊನೆರೆ ಏಪಲಾ ಪೈಸೆ ಕೊರೊಡಾಪುಜಿ",
     "They asked for an OTP, PIN, CVV or password. No real bank, company or office ever asks for these": "OTP, PIN, CVV ಅತ್ತಂಡ ಪಾಸ್‌ವರ್ಡ್ ಕೇಂಡೆರ್. ಓವುಲಾ ನಿಜವಾಯಿನ ಬ್ಯಾಂಕ್, ಕಂಪನಿ ಅತ್ತಂಡ ಕಚೇರಿ ಉಂದೆನ್ ಏಪಲಾ ಕೇನುಜಿ",
     "They asked you to install an app or share your screen. That lets them see your OTPs and control your phone": "ಒಂಜಿ ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪುಲೆ ಅತ್ತಂಡ ಸ್ಕ್ರೀನ್ ಶೇರ್ ಮಲ್ಪುಲೆ ಪಂಡೆರ್. ಉಂದರ್ದ್ ಅಕುಲು ಈರೆನ OTP ತೂವೊಲಿ ಬೊಕ್ಕ ಈರೆನ ಫೋನ್‌ನ್ ನಡಪಾವೊಲಿ",
     "They want you to stay on a video call or move money to a 'safe account' to avoid arrest. This is the 'digital arrest' scam: police never do this": "ಈರ್ ವೀಡಿಯೊ ಕಾಲ್‌ಡೇ ಉಪ್ಪೊಡು ಅತ್ತಂಡ ಅರೆಸ್ಟ್ ತಪ್ಪಾವೆರೆ ಪೈಸೆನ್ 'ಸುರಕ್ಷಿತ ಖಾತೆ'ಗ್ ಕಡಪುಡೊಡು ಪನ್ಪೆರ್. ಉಂದು 'ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್' ಮೋಸ: ಪೊಲೀಸೆರ್ ಏಪಲಾ ಇಂಚ ಮಲ್ಪುಜೆರ್",
@@ -289,7 +289,7 @@ export const tcyContent: LangContent = {
     "That is a large amount for a QR payment. Double-check before paying": "QR ಪೇಮೆಂಟ್‌ಗ್ ಉಂದು ಮಲ್ಲ ಮೊತ್ತ. ಪೈಸೆ ಕೊರ್ಪುನೆಡ್ದ್ ದುಂಬು ಪಿರ ಒರ ತೂಲೆ",
     "The amount in this QR is not a valid number": "ಈ QR ಡ್ ಉಪ್ಪುನ ಮೊತ್ತ ಸರಿಯಾಯಿನ ಸಂಖ್ಯೆ ಅತ್ತ್",
     "The payment note says “{note}”. Scammers use notes like this to make you think you'll RECEIVE money": "ಪೇಮೆಂಟ್ ನೋಟ್‌ಡ್ “{note}” ಪಂಡ್‌ದ್ ಉಂಡು. ಈರೆಗ್ ಪೈಸೆ ಬರ್ಪುಂಡು ಪಂಡ್‌ದ್ ನಂಬಾವೆರೆ ಸ್ಕ್ಯಾಮರ್‌ಲು ಇಂಚಿನ ನೋಟ್ ಬಳಕೆ ಮಲ್ಪುವೆರ್",
-    "Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.": "ನೆನಪುಡು ದೀಲೆ: QR ಸ್ಕ್ಯಾನ್ ಮಲ್ತ್ UPI PIN ಪಾಡುಂಡ ಏಪಲಾ ಪೈಸೆ ಪೋಪುಂಡು. ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ QR ಸ್ಕ್ಯಾನ್ ಮಲ್ಪೊಡಾಪುಜಿ, PIN ಪಾಡೊಡಾಪುಜಿ.",
+    "Remember: scanning a QR and entering your UPI PIN always SENDS money. You never scan a QR or enter a PIN to receive money.": "ನೆನಪುಡು ದೀಲೆ: QR ಸ್ಕ್ಯಾನ್ ಮಲ್ತ್ UPI PIN ಪಾಡುಂಡ ಏಪಲಾ ಪೈಸೆ ಪೋಪುಂಡು. ಪೈಸೆ ದೆತೊನೆರೆ ಏಪಲಾ QR ಸ್ಕ್ಯಾನ್ ಮಲ್ಪೊಡಾಪುಜಿ, PIN ಪಾಡೊಡಾಪುಜಿ.",
     "QR reading from a picture isn't available right now. Try the camera button instead.": "ಪಟೊಡ್ದ್ QR ಓದುನ ಸೌಲಭ್ಯ ಇತ್ತೆ ಇಜ್ಜಿ. ಬದಲ್ ಆದ್ ಕ್ಯಾಮೆರಾ ಬಟನ್ ಬಳಕೆ ಮಲ್ಪುಲೆ.",
     "Please choose a photo of the QR code to upload.": "ಅಪ್‌ಲೋಡ್ ಮಲ್ಪೆರೆ QR ಕೋಡ್‌ದ ಫೋಟೋ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ.",
     "We couldn't open this image. Please upload a PNG or JPG photo.": "ಈ ಪಟ ತೆರೆಯೆರೆ ಆಯಿಜಿ. PNG ಅತ್ತಂಡ JPG ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಲ್ಪುಲೆ.",
@@ -409,13 +409,13 @@ export const tcyContent: LangContent = {
     "Sent from a foreign phone number ({country})": "ವಿದೇಶಿ ಫೋನ್ ನಂಬರ್‌ಡ್ದ್ ಕಡಪುಡ್ದ್ಂಡ್ ({country})",
     "Sent from a registered business sender. Still check any link before opening it": "ನೋಂದಾಯಿತ ವ್ಯವಹಾರದ ಪುದರ್‌ಡ್ದ್ ಕಡಪುಡ್ದ್ಂಡ್. ಆಂಡಲಾ ಓವುಲಾ ಲಿಂಕ್ ತೆರೆಪುನ ದುಂಬು ಅವೆನ್ ಪರಿಶೀಲನೆ ಮಲ್ಪುಲೆ",
     "The data-leak check isn't available right now. Please try again later.": "ಡೇಟಾ ಸೋರಿಕೆ ಪರಿಶೀಲನೆ ಇತ್ತೆ ಇಜ್ಜಿ. ದಯಮಲ್ತ್ ಬೊಕ್ಕ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
-    "The sender uses a throwaway (temporary) email address that anyone can create in seconds": "ಕಡಪುಡಿನಾಕುಲು ತಾತ್ಕಾಲಿಕ ಇಮೇಲ್ ವಿಳಾಸ ಗಳಸ್ದೆರ್, ಅವೆನ್ ಏರಾಂಡಲಾ ಕೆಲವು ಸೆಕೆಂಡ್‌ಡ್ ಮಲ್ಪುವೊಲಿ",
-    "The sender's email domain can't receive email. Real companies can always receive replies": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ಡೊಮೇನ್‌ಗ್ ಇಮೇಲ್ ಪಡೆಯೆರೆ ಆಪುಜಿ. ನಿಜವಾಯಿನ ಕಂಪನಿಲೆಗ್ ಉತ್ತರ ಕಡಪುಡುವೊಲಿ",
+    "The sender uses a throwaway (temporary) email address that anyone can create in seconds": "ಕಡಪುಡಿನಾಕುಲು ತಾತ್ಕಾಲಿಕ ಇಮೇಲ್ ವಿಳಾಸ ಉಪಯೋಗ ಮಲ್ತೆರ್, ಅವೆನ್ ಏರಾಂಡಲಾ ಕೆಲವು ಸೆಕೆಂಡ್‌ಡ್ ಮಲ್ಪುವೊಲಿ",
+    "The sender's email domain can't receive email. Real companies can always receive replies": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ಡೊಮೇನ್‌ಗ್ ಇಮೇಲ್ ದೆತೊನೆರೆ ಆಪುಜಿ. ನಿಜವಾಯಿನ ಕಂಪನಿಲೆಗ್ ಉತ್ತರ ಕಡಪುಡುವೊಲಿ",
     "The sender's email domain doesn't exist. Nobody can reply to this address": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ಡೊಮೇನ್ ಇಜ್ಜಿ. ಈ ವಿಳಾಸೊಗು ಏರ್‌ಲಾ ಉತ್ತರ ಕಡಪುಡೆರೆ ಆಪುಜಿ",
     "The sender's email domain is fairly new ({n} days old)": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ಡೊಮೇನ್ ಎಲ್ಯ ಪೊಸತ್ ({n} ದಿನ ಪರತ್)",
-    "The sender's email domain was registered only {n} days ago. Scammers use brand-new domains": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ಡೊಮೇನ್ {n} ದಿನ ದುಂಬು ಮಾತ್ರ ನೋಂದಣಿ ಆತ್ಂಡ್. ಮೋಸಗಾರೆರ್ ಪೊಸ ಡೊಮೇನ್ ಗಳಸುವೆರ್",
+    "The sender's email domain was registered only {n} days ago. Scammers use brand-new domains": "ಕಡಪುಡಿನಾಕುಲೆನ ಇಮೇಲ್ ಡೊಮೇನ್ {n} ದಿನ ದುಂಬು ಮಾತ್ರ ನೋಂದಣಿ ಆತ್ಂಡ್. ಮೋಸಗಾರೆರ್ ಪೊಸ ಡೊಮೇನ್ ಉಪಯೋಗ ಮಲ್ಪುವೆರ್",
     "This app asks to become a device administrator, which makes it hard to remove": "ಈ ಆ್ಯಪ್ ಡಿವೈಸ್ ಅಡ್ಮಿನ್ ಆವೊಡು ಪನ್ಪುಂಡು, ಅಪಗ ಅವೆನ್ ದೆಪ್ಪುನೆ ಕಷ್ಟ",
-    "This app can draw over other apps, used to show fake login screens": "ಈ ಆ್ಯಪ್ ಬೇತೆ ಆ್ಯಪ್‌ಲೆನ ಮಿತ್ತ್ ತೋಜುವೊಲಿ, ನಕಲಿ ಲಾಗಿನ್ ಪರದೆ ತೋಜಾವೆರೆ ಗಳಸುವೆರ್",
+    "This app can draw over other apps, used to show fake login screens": "ಈ ಆ್ಯಪ್ ಬೇತೆ ಆ್ಯಪ್‌ಲೆನ ಮಿತ್ತ್ ತೋಜುವೊಲಿ, ನಕಲಿ ಲಾಗಿನ್ ಪರದೆ ತೋಜಾವೆರೆ ಉಪಯೋಗ ಮಲ್ಪುವೆರ್",
     "This app can install other apps": "ಈ ಆ್ಯಪ್ ಬೇತೆ ಆ್ಯಪ್‌ಲೆನ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಲ್ಪುವೊಲಿ",
     "This app can make phone calls (used to forward your calls)": "ಈ ಆ್ಯಪ್ ಫೋನ್ ಕಾಲ್ ಮಲ್ಪುವೊಲಿ (ಈರೆನ ಕಾಲ್‌ಲೆನ್ ಬೇತೆ ಕಡೆ ಕಡಪುಡೆರೆ)",
     "This app can read all your notifications, including OTPs": "ಈ ಆ್ಯಪ್ ಈರೆನ ಮಾತಾ ನೋಟಿಫಿಕೇಶನ್‌ಲೆನ್ ಓದುವೊಲಿ, OTP ಸೇರ್ದ್",
@@ -427,7 +427,7 @@ export const tcyContent: LangContent = {
     "This exact file is on a public list of known genuine software ({source})": "ಈ ಫೈಲ್ ಗೊತ್ತುಪ್ಪುನ ನಿಜವಾಯಿನ ಸಾಫ್ಟ್‌ವೇರ್‌ಲೆನ ಸಾರ್ವಜನಿಕ ಪಟ್ಟಿಡ್ ಉಂಡು ({source})",
     "This website first appeared online {n} days ago (fairly new)": "ಈ ವೆಬ್‌ಸೈಟ್ {n} ದಿನ ದುಂಬು ಆನ್‌ಲೈನ್‌ಗ್ ಬೈದ್ಂಡ್ (ಎಲ್ಯ ಪೊಸತ್)",
     "This website first appeared online only {n} days ago. Very new sites are a big warning sign": "ಈ ವೆಬ್‌ಸೈಟ್ {n} ದಿನ ದುಂಬು ಮಾತ್ರ ಆನ್‌ಲೈನ್‌ಗ್ ಬೈದ್ಂಡ್. ಮಸ್ತ್ ಪೊಸ ವೆಬ್‌ಸೈಟ್‌ಲು ಮಲ್ಲ ಎಚ್ಚರಿಕೆದ ಸೂಚನೆ",
-    "You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks": "ಈರ್ Tor ನೆಟ್‌ವರ್ಕ್ ಗಳಸೊಂದುಲ್ಲರ್. ಮಸ್ತ್ ಬ್ಯಾಂಕ್ ಬೊಕ್ಕ ಪೇಮೆಂಟ್ ಸೈಟ್‌ಲು Tor ನ್ ತಡೆಪುಂಡು ಅತ್ತಂಡ ಜಾಸ್ತಿ ಪರಿಶೀಲನೆ ಕೇನುಂಡು",
+    "You are using the Tor network. Many banking and payment sites block Tor or ask for extra checks": "ಈರ್ Tor ನೆಟ್‌ವರ್ಕ್ ಉಪಯೋಗ ಮಲ್ತೊಂದುಲ್ಲರ್. ಮಸ್ತ್ ಬ್ಯಾಂಕ್ ಬೊಕ್ಕ ಪೇಮೆಂಟ್ ಸೈಟ್‌ಲು Tor ನ್ ಬ್ಲಾಕ್ ಮಲ್ಪುಂಡು ಅತ್ತಂಡ ಜಾಸ್ತಿ ಪರಿಶೀಲನೆ ಕೇನುಂಡು",
     "You've checked a lot of addresses. Please try again in an hour.": "ಈರ್ ಮಸ್ತ್ ವಿಳಾಸೊಲೆನ್ ತೂಯರ್. ದಯಮಲ್ತ್ ಒಂಜಿ ಗಂಟೆ ಕರಿದ್ ಪಿರ ಪ್ರಯತ್ನ ಮಲ್ಪುಲೆ.",
 
     // ---- AI second opinion, urlscan, AbuseIPDB, MalwareBazaar
@@ -479,7 +479,7 @@ export const tcyContent: LangContent = {
       label: "ಯಾನ್ ಸಂಶಯದ ಸೈಟ್‌ಡ್ ಪಾಸ್‌ವರ್ಡ್ ಪಾಡಿಯೆ",
       steps: [
         "ಆ್ಯಪ್‌ಡ್ದ್ ಅತ್ತಂಡ ಸೈಟ್‌ದ ನಿಜವಾಯಿನ ವಿಳಾಸನ್ ಈರೇ ಟೈಪ್ ಮಲ್ತ್ (ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಲ್ಪಂದೆ) ಆ ಪಾಸ್‌ವರ್ಡ್‌ನ್ ಬೇಗನೇ ಬದಲ್ ಮಲ್ಪುಲೆ.",
-        "ಅವ್ವೇ ಪಾಸ್‌ವರ್ಡ್ ಬೇತೆ ಕಡೆ (ಮುಖ್ಯವಾದ್ ಇಮೇಲ್‌ಡ್) ಉಂಡಂಡ, ಅಲ್ಪಲಾ ಬದಲ್ ಮಲ್ಪುಲೆ.",
+        "ಅವ್ವೇ ಪಾಸ್‌ವರ್ಡ್ ಬೇತೆ ಕಡೆ (ಮುಖ್ಯವಾದ್ ಇಮೇಲ್‌ಡ್) ಉಂಡಾಂಡ, ಅಲ್ಪಲಾ ಬದಲ್ ಮಲ್ಪುಲೆ.",
         "ಆ ಖಾತೆಗ್ ರಡ್ಡ್ ಹಂತದ ಸುರಕ್ಷತೆ (2FA/MFA) ಆನ್ ಮಲ್ಪುಲೆ.",
         "ಆ ಖಾತೆದ (Google/Gmail, Facebook, Instagram ಇಂಚಿನ) ಇಂಚಿಪ್ಪದ ಲಾಗಿನ್‌ಲೆನ್ ತೂದು, ಗೊತ್ತಿಜ್ಜಂದಿನ ಮೊಬೈಲ್/ಲ್ಯಾಪ್‌ಟಾಪ್‌ಲೆಡ್ದ್ ಲಾಗ್ ಔಟ್ ಮಲ್ಪುಲೆ.",
         "ಕೆಲವು ದಿನ ಖಾತೆದ ಮಿತ್ತ್ ಕಣ್ಣ್ ದೀಲೆ.",
@@ -489,7 +489,7 @@ export const tcyContent: LangContent = {
       label: "ಯಾನ್ ಕಾರ್ಡ್/ಬ್ಯಾಂಕ್ ವಿವರ ಪಾಡಿಯೆ",
       steps: [
         "ಬೇಗನೇ ಬ್ಯಾಂಕ್‌ದ ಅಧಿಕೃತ ನಂಬರ್‌ಗ್ ಕಾಲ್ ಮಲ್ಪುಲೆ (ಕಾರ್ಡ್‌ದ ಪಿರವುದ ನಂಬರ್, ಮೆಸೇಜ್‌ಡ್ ಉಪ್ಪುನವು ಅತ್ತ್).",
-        "ದುರುಪಯೋಗದ ಸಂಶಯ ಉಂಡಂಡ ಕಾರ್ಡ್ ಬ್ಲಾಕ್/ಫ್ರೀಜ್ ಮಲ್ಪಾಲೆ.",
+        "ದುರುಪಯೋಗದ ಸಂಶಯ ಉಂಡಾಂಡ ಕಾರ್ಡ್ ಬ್ಲಾಕ್/ಫ್ರೀಜ್ ಮಲ್ಪಾಲೆ.",
         "ಇಂಚಿಪ್ಪದ ವಹಿವಾಟುಲೆನ್ ತೂದು, ಈರ್ ಮಲ್ಪಂದಿನವು ಇತ್ತ್ಂಡಾ ದೂರು ಕೊರ್ಲೆ.",
         "ಉಂದೆತ ಬೊಕ್ಕ ಬರ್ಪುನ ಒವ್ವೇ OTP ನ್ ಏರೆಗ್‌ಲಾ ಪನೊಡ್ಚಿ, ಬ್ಯಾಂಕ್‌ದಾಕುಲು ಪಂಡ್‌ದ್ ಕಾಲ್ ಮಲ್ತ್ಂಡಲಾ.",
         "ವಹಿವಾಟುದ ಅಲರ್ಟ್‌ಲು ಆನ್ ಇಜ್ಜಾಂಡ ಆನ್ ಮಲ್ಪುಲೆ.",
@@ -567,11 +567,11 @@ export const tcyContent: LangContent = {
       title: "ನಕಲಿ ರಿಫಂಡ್ / ಡೆಲಿವರಿ ಸ್ಕ್ಯಾಮ್",
       how_it_works: "ರಿಫಂಡ್, ಡೆಲಿವರಿ ಶುಲ್ಕ ಅತ್ತಂಡ ಕಸ್ಟಮ್ಸ್ ಶುಲ್ಕ ಬಾಕಿ ಉಂಡು, ಅವೆನ್ 'ಸ್ವೀಕಾರ' ಮಲ್ಪೆರೆ QR ಸ್ಕ್ಯಾನ್ ಮಲ್ಪುಲೆ ಅತ್ತಂಡ UPI PIN ಪಾಡ್ಲೆ ಪಂಡ್‌ದ್ ಮೆಸೇಜ್ ಬರ್ಪುಂಡು.",
       red_flags: [
-        "ಪೈಸೆ 'ಪಡೆಯೆರೆ' UPI PIN ಕೇನುವೆರ್. ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ PIN ಬೋಡ್ಚಿ",
+        "ಪೈಸೆ 'ದೆತೊನೆರೆ' UPI PIN ಕೇನುವೆರ್. ಪೈಸೆ ದೆತೊನೆರೆ ಏಪಲಾ PIN ಬೋಡ್ಚಿ",
         "ಈರ್ ಕೇನಂದಿನ ರಿಫಂಡ್",
         "ಬೇಗ ಮಲ್ತಿಜಿಂಡ ರಿಫಂಡ್ ಪೋಪುಂಡು ಪನ್ಪುನ ಒತ್ತಡ",
       ],
-      what_to_do: "ಪೈಸೆ ಪಡೆಯೆರೆ ಏಪಲಾ PIN ಪಾಡೊಡ್ಚಿ. ಆರ್ಡರ್‌ದ ಸ್ಥಿತಿನ್ ನೇರ ಶಾಪಿಂಗ್ ಆ್ಯಪ್‌ಡ್ ತೂಲೆ.",
+      what_to_do: "ಪೈಸೆ ದೆತೊನೆರೆ ಏಪಲಾ PIN ಪಾಡೊಡ್ಚಿ. ಆರ್ಡರ್‌ದ ಸ್ಥಿತಿನ್ ನೇರ ಶಾಪಿಂಗ್ ಆ್ಯಪ್‌ಡ್ ತೂಲೆ.",
     },
     job_scam: {
       category: "ಬೇಲೆ",
@@ -580,9 +580,9 @@ export const tcyContent: LangContent = {
       red_flags: [
         "ಒರಿ 'ಕೆಲ್ಸ ಕೊರ್ಪಿನಾಯೆ' ಕೆಲ್ಸಗ್ ಸೇರೆರೆ ಪೈಸೆ ಕೇಣುವೆ, ಆಂಡ ನಿಜವಾಯಿನ ಕೆಲ್ಸ ಕೊರ್ಪಿನಕುಲು ಯೆಪಾಗ್ಲ ಪೈಸೆ ಕೇಣುಜೆರ್.",
         "WhatsApp/Telegram ಡ್ ಮಾತ್ರ ಸಂಪರ್ಕ, ಅಧಿಕೃತ ಇಮೇಲ್ ಇಜ್ಜಿ",
-        "ಬೇಲೆಗ್ ಹೋಲಿಸುಂಡ ಸಂಬಳ ನಂಬೆರೆ ಆವಂದಿನಾತ್ ಜಾಸ್ತಿ",
+        "ಬೇಲೆಗ್ ಹೋಲಿಕೆ ಮಲ್ತ್ಂಡ ಸಂಬಳ ನಂಬೆರೆ ಆವಂದಿನಾತ್ ಜಾಸ್ತಿ",
       ],
-      what_to_do: "ಬೇಲೆ ಪಡೆಯೆರೆ ಏಪಲಾ ಪೈಸೆ ಕೊರೊಡ್ಚಿ. ಓವುಲಾ ಡಾಕ್ಯುಮೆಂಟ್ ಕೊರ್ಪುನೆಡ್ದ್ ದುಂಬು ಕಂಪನಿನ್ ಈರೇ ಪರಿಶೀಲನೆ ಮಲ್ಪುಲೆ.",
+      what_to_do: "ಬೇಲೆ ದೆತೊನೆರೆ ಏಪಲಾ ಪೈಸೆ ಕೊರೊಡ್ಚಿ. ಓವುಲಾ ಡಾಕ್ಯುಮೆಂಟ್ ಕೊರ್ಪುನೆಡ್ದ್ ದುಂಬು ಕಂಪನಿನ್ ಈರೇ ಪರಿಶೀಲನೆ ಮಲ್ಪುಲೆ.",
     },
     investment_scam: {
       category: "ಹೂಡಿಕೆ",
@@ -631,7 +631,7 @@ export const tcyContent: LangContent = {
     sim_swap: {
       category: "ಖಾತೆದ ಸುರಕ್ಷತೆ",
       title: "SIM ಸ್ವ್ಯಾಪ್ ವಂಚನೆ",
-      how_it_works: "ಸ್ಕ್ಯಾಮರ್ ಈರೆನ ಟೆಲಿಕಾಂ ಕಂಪನಿನ್ ಮೋಸ ಮಲ್ತ್ ಈರೆನ ನಂಬರ್‌ದ ನಕಲಿ SIM ಪಡೆಪೆ, ಅಯಿಡ್ದ್ ಈರೆನ OTP ಲು ಆಯೆಗ್ ತಿಕ್ಕ್‌ದ್ ಈರೆನ ಖಾತೆಲು ಆಯೆನ ಕೈಗ್ ಪೋಪುಂಡು.",
+      how_it_works: "ಸ್ಕ್ಯಾಮರ್ ಈರೆನ ಟೆಲಿಕಾಂ ಕಂಪನಿನ್ ಮೋಸ ಮಲ್ತ್ ಈರೆನ ನಂಬರ್‌ದ ನಕಲಿ SIM ದೆತೊನುವೆ, ಅಯಿಡ್ದ್ ಈರೆನ OTP ಲು ಆಯೆಗ್ ತಿಕ್ಕ್‌ದ್ ಈರೆನ ಖಾತೆಲು ಆಯೆನ ಕೈಗ್ ಪೋಪುಂಡು.",
       red_flags: [
         "ಒವ್ವೆ ಕಾರಣ ಇಜ್ಜಂದೆ ಫೋನ್ ನೆಟ್‌ವರ್ಕ್ ದಿಡೀರ್‌ದ್ ಪೋಪುಂಡು",
         "ಈರ್ ಕೇನಂದಿನ SIM ಬದಲಾವಣೆ/ಪೋರ್ಟ್‌ದ ಬಗ್ಗೆ SMS ಬರ್ಪುಂಡು",

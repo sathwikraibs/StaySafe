@@ -548,7 +548,7 @@ export const reportEn = {
 
   waiting: {
     title: "Checking it carefully for you",
-    wake: "Our free server takes a nap when nobody is using it. We're waking it up now, which can take up to a minute. Please keep this page open.",
+    wake: "Getting everything ready for your first check. This can take up to a minute. Please keep this page open.",
     still: [
       "Still working on it. Thanks for waiting.",
       "Almost there.",

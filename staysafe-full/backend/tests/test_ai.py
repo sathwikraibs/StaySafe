@@ -528,21 +528,25 @@ def test_blurry_screenshot_gets_a_second_reading_from_the_backup_reader():
     import io
     from PIL import Image
     import scanners.message_scanner as ms
-    saved = (ms._tesseract_conf, ms._tesseract, ms._ocr_space, ms.ocr_languages, ms._detect_script)
+    saved = (ms._tesseract_lines, ms._tesseract, ms._ocr_space, ms.ocr_languages, ms._detect_script)
+
+    def reading(text, conf):
+        return lambda img, lang, cfg, t: ([{"text": text, "words": [(w, conf, 0.0, 0.1) for w in text.split()],
+                                            "top": 0.1, "bottom": 0.15}], conf)
     try:
         ms.ocr_languages = lambda: "eng"
         ms._detect_script = lambda img: ""
-        ms._tesseract_conf = lambda img, lang, cfg, t: ("Y0ur S8l acc0unt w1ll b3 bl0ck", 40)
+        ms._tesseract_lines = reading("Y0ur S8l acc0unt w1ll b3 bl0ck", 40)
         ms._tesseract = lambda img, lang, cfg, t: ""
         ms._ocr_space = lambda b: "Your SBI account will be blocked today. Update KYC now"
         buf = io.BytesIO(); Image.new("RGB", (400, 200), "white").save(buf, "PNG")
         assert ms.extract_text_from_image(buf.getvalue()).startswith("Your SBI account")
         # a clear reading is kept, and the backup isn't asked
-        ms._tesseract_conf = lambda img, lang, cfg, t: ("Your parcel is out for delivery today", 88)
+        ms._tesseract_lines = reading("Your parcel is out for delivery today", 88)
         ms._ocr_space = lambda b: (_ for _ in ()).throw(AssertionError("backup should not be used"))
         assert ms.extract_text_from_image(buf.getvalue()).startswith("Your parcel")
     finally:
-        ms._tesseract_conf, ms._tesseract, ms._ocr_space, ms.ocr_languages, ms._detect_script = saved
+        ms._tesseract_lines, ms._tesseract, ms._ocr_space, ms.ocr_languages, ms._detect_script = saved
 
 
 def test_tulu_and_kannada_word_lists_help_when_built_in_words_are_not_enough():

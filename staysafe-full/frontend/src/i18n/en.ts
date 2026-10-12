@@ -392,7 +392,7 @@ const enBase = {
       "The email leak check only returns the names of leaks, never your leaked data.",
       "Your check history is saved in your own browser.",
       "When you write to us, only what you type is shared with our team.",
-      "Ratings are anonymous: we count the stars from everyone, but show your words to others only if you tick \"Let others read my words\", with phone numbers and other personal details removed.",
+      "Ratings are anonymous: we count the stars from everyone, but show your comment to others only if you tick \"Show my comment on the TrustLight website\", with phone numbers and other personal details removed.",
     ],
     neverTitle: "We will never",
     never: "Ask for your OTP, UPI PIN, passwords, card or bank details. Sell or share your data. Show ads.",

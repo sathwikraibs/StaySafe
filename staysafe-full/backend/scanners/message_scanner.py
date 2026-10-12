@@ -1207,31 +1207,131 @@ def _ocr_space(image_bytes_jpeg: bytes) -> str:
         return ""
 
 
-def _tesseract_conf(img, lang: str, config: str, timeout: int):
-    """Text plus Tesseract's average confidence (0-100) for the words it read."""
+def _tesseract_lines(img, lang: str, config: str, timeout: int):
+    """Lines read by Tesseract, each with its height on the picture (0..1) and its words' confidence."""
     try:
         d = pytesseract.image_to_data(img, lang=lang, config=config, timeout=max(5, timeout),
                                       output_type=pytesseract.Output.DICT)
     except RuntimeError as e:
         OCR_PROBLEM["last"] = f"{lang} {config}: {str(e)[:160] or 'timed out'}"
-        return "", 0.0
+        return [], 0.0
     except Exception as e:
         OCR_PROBLEM["last"] = f"{lang}: {type(e).__name__}: {str(e)[:120]}"
-        return "", 0.0
+        return [], 0.0
+    h, w_img = float(img.size[1] or 1), float(img.size[0] or 1)
     lines, confs = {}, []
     for k, word in enumerate(d.get("text", [])):
         if not str(word).strip():
             continue
         key = (d["block_num"][k], d["par_num"][k], d["line_num"][k])
-        lines.setdefault(key, []).append(str(word))
+        top, bottom = d["top"][k] / h, (d["top"][k] + d["height"][k]) / h
+        ln = lines.setdefault(key, {"words": [], "top": top, "bottom": bottom, "left": d["left"][k]})
+        ln["top"], ln["bottom"] = min(ln["top"], top), max(ln["bottom"], bottom)
         try:
             c = float(d["conf"][k])
-            if c >= 0:
-                confs.append(c)
         except (TypeError, ValueError):
-            pass
-    text = "\n".join(" ".join(ws) for _, ws in sorted(lines.items()))
-    return text.strip(), (sum(confs) / len(confs) if confs else 0.0)
+            c = -1.0
+        if c >= 0:
+            confs.append(c)
+        ln["words"].append((str(word), c, d["left"][k] / w_img, (d["left"][k] + d["width"][k]) / w_img))
+    out = [{"text": " ".join(w[0] for w in v["words"]), "words": v["words"], "top": v["top"], "bottom": v["bottom"]}
+           for _, v in sorted(lines.items())]
+    return out, (sum(confs) / len(confs) if confs else 0.0)
+
+
+def _lines_text(lines: list) -> str:
+    return "\n".join(l["text"] for l in lines).strip()
+
+
+_INDIC_WORD = re.compile(r"[ऀ-ॿಀ-೿]*[अ-हक़-ॡಅ-ಹೞ-ೡ][ऀ-ॿಀ-೿]+")
+
+
+def _english_line(line: str) -> bool:
+    """A line that reads as real English, numbers, links or IDs."""
+    words = re.findall(r"[A-Za-z0-9@₹.:/'&-]+", line)
+    if not words:
+        return False
+    good = [w for w in words if re.fullmatch(r"[A-Za-z][A-Za-z'&.-]*", w) and len(w) >= 2 and re.search(r"[aeiouyAEIOUY]", w)
+            or re.fullmatch(r"[A-Z]{2,5}", w) or re.search(r"\d{2,}", w) or "http" in w.lower() or "@" in w]
+    return len(good) >= 1 and len(good) / len(words) >= 0.5
+
+
+def _native_line(line: dict) -> bool:
+    """
+    A line that really is Kannada or Hindi, not a few stray letters made from emojis, logos or English.
+    Stray letters come with low confidence and broken shapes, so count only well-read native words.
+    """
+    good = [(w[0], w[1]) for w in line.get("words", []) if w[1] >= 60 and _INDIC_WORD.fullmatch(w[0].strip(".,!?:;()\"'"))]
+    tokens = len(line.get("words", [])) or 1
+    if len(good) >= 2 and len(good) / tokens >= 0.3:
+        return True
+    return len(good) == 1 and tokens <= 2 and good[0][1] >= 80 and len(good[0][0]) >= 3
+
+
+def _letters(text: str):
+    """(Kannada/Hindi letters, English letters) in a line."""
+    return len(re.findall(r"[\u0900-\u097F\u0C80-\u0CFF]", text)), len(re.findall(r"[A-Za-z]", text))
+
+
+def _fix_english_words(native: dict, english: dict) -> str:
+    """
+    In a Kannada/Hindi line, English words and numbers (SBI, OTP, KYC) are read better by the English
+    reading: 'SBI' can come out as '581' and 'OTP' as '೦7?'. Swap those words for the English reading of
+    the same spot on the line.
+    """
+    out = []
+    for w, c, left, right in native.get("words", []):
+        if _INDIC_WORD.search(w):
+            out.append(w)
+            continue
+        best, best_overlap = None, 0.0
+        for ew, ec, el, er in english.get("words", []):
+            overlap = min(right, er) - max(left, el)
+            size = max(1e-6, min(right - left, er - el))
+            if overlap / size > best_overlap:
+                best, best_overlap = (ew, ec), overlap / size
+        if best and best_overlap >= 0.6 and re.fullmatch(r"[\x21-\x7E₹]+", best[0]) \
+                and (best[1] > c or re.search(r"[\u0966-\u096F\u0CE6-\u0CEF]", w)
+                     # 'SBI' vs '581': letters against digits is a misread; English reads letters best
+                     or (best[1] >= 80 and re.fullmatch(r"[\d.,:/-]+", w) and re.search(r"[A-Za-z]", best[0]))):
+            out.append(best[0])
+        else:
+            out.append(w)
+    return " ".join(out)
+
+
+def _merge_readings(english: list, mixed: list) -> str:
+    """
+    One picture read twice: in English, and in Kannada/Hindi + English. Reading English text with
+    Kannada and Hindi turned on garbles it ('HERO MOTOCORP' becomes Kannada digits), and reading Kannada
+    with English only garbles that. So, line by line, keep the reading that makes sense.
+    """
+    used, rows = set(), []
+    for m in mixed:
+        best, best_overlap = None, 0.0
+        for i, e in enumerate(english):
+            if i in used:
+                continue
+            overlap = min(m["bottom"], e["bottom"]) - max(m["top"], e["top"])
+            size = max(1e-6, min(m["bottom"] - m["top"], e["bottom"] - e["top"]))
+            if overlap / size > best_overlap:
+                best, best_overlap = i, overlap / size
+        e = english[best] if best is not None and best_overlap >= 0.4 else None
+        if e is not None:
+            used.add(best)
+        # a real Kannada/Hindi line wins, unless the English reading is clean English and the other
+        # reading only added one stray "word" (an emoji or a logo read as a letter)
+        english_ok = e is not None and _english_line(e["text"])
+        native, latin = _letters(m["text"])
+        if _native_line(m) and not (english_ok and native < latin):
+            rows.append((m["top"], _fix_english_words(m, e) if e is not None else m["text"]))
+        elif e is not None:
+            rows.append((e["top"], e["text"]))
+        elif _english_line(m["text"]) and not _INDIC_WORD.search(m["text"]):
+            rows.append((m["top"], m["text"]))
+    rows += [(e["top"], e["text"]) for i, e in enumerate(english) if i not in used]
+    text = "\n".join(t for _, t in sorted(rows, key=lambda r: r[0])).strip()
+    return re.sub(r"(?<=[\u0900-\u097F])\|", "।", text)          # the Hindi full stop read as '|'
 
 
 def _latin_items(text: str) -> list:
@@ -1349,18 +1449,23 @@ def extract_text_from_image(image_bytes: bytes) -> str:
         if native and native in installed:
             # Indian scripts have small joined letters: a bigger picture reads them much better
             big = _prepare_for_ocr(img, 1600)
-            text, conf = _tesseract_conf(big, f"{native}+eng", "--oem 1 --psm 6", min(45, left()))
+            nlines, conf = _tesseract_lines(big, f"{native}+eng", "--oem 1 --psm 6", min(45, left()))
+            text = _lines_text(nlines)
             if text and (conf >= 45 or native_share(text) >= 0.2):
-                # ...but the bigger picture can garble underlined links. Take links, numbers and
-                # email addresses from a normal-size English reading too, so they get checked.
+                # English lines (names, numbers, links) read better in English: keep the right
+                # reading line by line, and add links or numbers the bigger picture garbled.
                 if left() > 8:
-                    english = _tesseract(prepared, "eng", "--oem 1 --psm 6", min(25, left()))
+                    elines, _ = _tesseract_lines(prepared, "eng", "--oem 1 --psm 6", min(25, left()))
+                    english = _lines_text(elines)
+                    if elines:
+                        text = _merge_readings(elines, nlines) or text
                     extras = [x for x in _latin_items(english) if x.lower() not in text.lower()]
                     if extras:
                         text = text.rstrip() + "\n" + " ".join(extras)
                 return text
 
-        english, eng_conf = _tesseract_conf(prepared, "eng", "--oem 1 --psm 6", min(40, left()))
+        elines, eng_conf = _tesseract_lines(prepared, "eng", "--oem 1 --psm 6", min(40, left()))
+        english = _lines_text(elines)
         if english and (langs == "eng" or (eng_conf >= 72 and _looks_like_real_english(english))):
             if eng_conf >= 60:
                 return english
@@ -1370,10 +1475,12 @@ def extract_text_from_image(image_bytes: bytes) -> str:
 
         best, best_conf = english, eng_conf
         if langs != "eng" and left() > 10:
-            mixed, mixed_conf = _tesseract_conf(prepared, langs, "--oem 1 --psm 6", left())
-            # prefer the Indian-language reading when it is at least as sure, or clearly found that script
+            mlines, mixed_conf = _tesseract_lines(prepared, langs, "--oem 1 --psm 6", left())
+            mixed = _lines_text(mlines)
+            # prefer the Indian-language reading when it is at least as sure, or clearly found that script,
+            # but keep English lines from the English reading (line by line)
             if mixed and (mixed_conf >= best_conf - 5 or native_share(mixed) >= 0.25):
-                best, best_conf = mixed, mixed_conf
+                best, best_conf = (_merge_readings(elines, mlines) if elines else mixed), max(mixed_conf, best_conf)
         if best and best_conf >= 55:
             return best
         if best and (not unsure or best_conf > unsure_conf):

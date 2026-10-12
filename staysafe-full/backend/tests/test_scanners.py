@@ -1217,6 +1217,27 @@ def test_qr_codes_and_numbers_from_the_live_test():
         assert _grade(expect, r["verdict"]), (value, r["verdict"], r["findings"])
 
 
+def test_screenshot_lines_keep_the_right_reading():
+    """English lines must not turn into Kannada letters; Kannada lines keep Kannada; SBI is not 581."""
+    from scanners.message_scanner import _merge_readings
+    def line(top, words):
+        x, ws = 0.05, []
+        for w, c in words:
+            ws.append((w, c, x, x + 0.01 * len(w))); x += 0.01 * len(w) + 0.01
+        return {"text": " ".join(w for w, _ in words), "words": ws, "top": top, "bottom": top + 0.03}
+    english = [line(0.10, [("Manufacturer:", 90), ("HERO", 92), ("MOTOCORP", 91)]),
+               line(0.20, [("3,ecab", 10), ("Ved,", 40), ("SBI", 94), ("a3", 30)]),
+               line(0.30, [("FINANCE", 93), ("&", 90), ("INSURANCE", 92)])]
+    mixed = [line(0.10, [("ಸ್ಟ", 40), ("Manufacturer:", 80), ("1೯೧೦", 30), ("11017000೧೧", 20)]),
+             line(0.20, [("ಆತ್ಮೀಯ", 96), ("ನಿಮ್ಮ", 96), ("581", 95), ("ಖಾತೆ", 97)]),
+             line(0.30, [("है)", 69), ("FINANCE", 85), ("&", 80), ("INSURANCE", 85), ("ಕ್ರಿ", 44)])]
+    english[1]["words"][2] = ("SBI", 94, mixed[1]["words"][2][2], mixed[1]["words"][2][3])
+    out = _merge_readings(english, mixed).splitlines()
+    assert out[0] == "Manufacturer: HERO MOTOCORP", out
+    assert out[1] == "ಆತ್ಮೀಯ ನಿಮ್ಮ SBI ಖಾತೆ", out
+    assert out[2] == "FINANCE & INSURANCE", out
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
