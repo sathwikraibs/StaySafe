@@ -400,7 +400,6 @@ const knBase: BaseDict = {
       security: { name: "Mozilla Observatory", desc: "ಈ ವೆಬ್‌ಸೈಟ್ ಬಳಕೆದಾರರನ್ನು ಎಷ್ಟು ಚೆನ್ನಾಗಿ ರಕ್ಷಿಸುತ್ತದೆ ಎಂದು ಗ್ರೇಡ್ ನೀಡುತ್ತದೆ." },
       connection: { name: "Qualys SSL Labs", desc: "ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಸುರಕ್ಷಿತ (HTTPS) ಸಂಪರ್ಕವನ್ನು ಪರೀಕ್ಷಿಸುತ್ತದೆ." },
       safe: { name: "Google Safe Browsing", desc: "Google ಈ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ಅಸುರಕ್ಷಿತ ಎಂದು ಗುರುತಿಸಿದೆಯೇ ಎಂದು ತೋರಿಸುತ್ತದೆ." },
-      code: { name: "GitHub", desc: "TrustLight ನ ಸಂಪೂರ್ಣ ಕೋಡ್ ಸಾರ್ವಜನಿಕವಾಗಿದೆ, ಅದು ಏನು ಮಾಡುತ್ತದೆ ಎಂದು ಯಾರು ಬೇಕಾದರೂ ಪರಿಶೀಲಿಸಬಹುದು." },
       openssf: { name: "OpenSSF Best Practices Badge", desc: "TrustLight ಅನ್ನು ಎಷ್ಟು ಸುರಕ್ಷಿತವಾಗಿ ನಿರ್ಮಿಸಿ ನಿರ್ವಹಿಸಲಾಗುತ್ತಿದೆ ಎಂದು ಪರಿಶೀಲಿಸುತ್ತದೆ." },
     },
     contactTitle: "ಪ್ರಶ್ನೆಗಳಿವೆಯೇ?",

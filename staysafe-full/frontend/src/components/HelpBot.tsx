@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
-import { BrandMark, IconChat, IconClose, IconLock, IconShield } from "@/icons";
+import { BrandMark, IconArrowLeft, IconChat, IconClose, IconLock, IconShield } from "@/icons";
 import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, appFeedback, type AppFeedback, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { apiGet, apiPostJSON, errorMessage, ApiError } from "@/api";
@@ -232,9 +232,9 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
 
   /** Someone wants a real person: the short form, which reaches the team's phone at once. */
   function person() {
-    const me: Bubble = { from: "me", lines: [tx.writeTeam] };
-    if (formReady) say(me, { from: "bot", lines: [tx.formIntro], buttons: [{ kind: "form", label: tx.writeToUs }] });
-    else say(me, { from: "bot", lines: [tx.personNotReady] });
+    // straight to the message form, which has its own heading (not the AI's)
+    if (formReady) setForm(true);
+    else say({ from: "bot", lines: [tx.personNotReady] });
   }
 
   function pickLanguage(code: string) {
@@ -285,7 +285,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
   return (
     <div
       role="dialog"
-      aria-label={tx.title}
+      aria-label={form ? tx.formTitle : tx.title}
       className="fixed inset-x-2 bottom-[5.25rem] z-50 flex max-h-[min(80vh,660px)] flex-col overflow-hidden rounded-3xl bg-cream-50 shadow-warm-lg ring-1 ring-cream-200 animate-fade-up sm:inset-x-auto sm:right-4 sm:w-[400px] lg:bottom-6 lg:right-6"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -293,8 +293,8 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
       <div className="flex items-center gap-3 bg-gradient-to-br from-brand-800 to-brand-600 px-4 py-3.5 text-cream-50">
         <BrandMark className="h-10 w-10 shrink-0 rounded-2xl ring-2 ring-white/20" />
         <div className="min-w-0 flex-1">
-          <p className="font-heading text-base font-bold leading-tight">{tx.title}</p>
-          <p className="font-body text-xs text-cream-50/85">{tx.subtitle}</p>
+          <p className="font-heading text-base font-bold leading-tight">{form ? tx.formTitle : tx.title}</p>
+          <p className="font-body text-xs text-cream-50/85">{form ? tx.formSubtitle : tx.subtitle}</p>
         </div>
         <button type="button" onClick={onClose} aria-label={tx.close} className="rounded-full p-2 transition-colors hover:bg-cream-50/15">
           <IconClose className="h-5 w-5" />
@@ -480,9 +480,11 @@ function ContactForm({ tx, onBack, onSent, send, errorText, initialMessage = "" 
   return (
     <form onSubmit={go} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 scrollbar-warm">
       <div className="flex items-center justify-between gap-2">
-        <p className="font-heading text-base font-bold text-ink-900">{tx.formTitle}</p>
-        <button type="button" onClick={onBack} className="rounded-full bg-cream-200 px-3 py-1 font-body text-xs font-bold text-ink-700 hover:bg-cream-300">{tx.formBack}</button>
+        <button type="button" onClick={onBack} className="inline-flex items-center gap-1 rounded-full bg-cream-200 px-3 py-1 font-body text-xs font-bold text-ink-700 hover:bg-cream-300">
+          <IconArrowLeft className="h-3.5 w-3.5" />{tx.formBack}
+        </button>
       </div>
+      <p className="rounded-xl bg-brand-100 px-3 py-2 font-body text-xs leading-snug text-brand-700">{tx.formIntro}</p>
       <label className={label}>{tx.formName}
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" className={field} />
       </label>

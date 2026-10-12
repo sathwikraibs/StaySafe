@@ -40,6 +40,7 @@ export interface HelpTexts {
   chatNow: string;
   writeToUs: string;
   formTitle: string;
+  formSubtitle: string;
   formName: string;
   formEmail: string;
   formPhone: string;
@@ -396,6 +397,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     chatNow: "Chat live now",
     writeToUs: "Write to us",
     formTitle: "Write to the TrustLight team",
+    formSubtitle: "A real person from our team will read it",
     formName: "Your name (optional)",
     formEmail: "Email",
     formPhone: "WhatsApp number",
@@ -449,6 +451,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     chatNow: "अभी लाइव चैट करें",
     writeToUs: "हमें लिखें",
     formTitle: "TrustLight टीम को लिखें",
+    formSubtitle: "हमारी टीम का एक असली व्यक्ति इसे पढ़ेगा",
     formName: "आपका नाम (ज़रूरी नहीं)",
     formEmail: "ईमेल",
     formPhone: "WhatsApp नंबर",
@@ -502,6 +505,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     chatNow: "ಈಗ ಲೈವ್ ಚಾಟ್ ಮಾಡಿ",
     writeToUs: "ನಮಗೆ ಬರೆಯಿರಿ",
     formTitle: "TrustLight ತಂಡಕ್ಕೆ ಬರೆಯಿರಿ",
+    formSubtitle: "ನಮ್ಮ ತಂಡದ ನಿಜವಾದ ವ್ಯಕ್ತಿ ಇದನ್ನು ಓದುತ್ತಾರೆ",
     formName: "ನಿಮ್ಮ ಹೆಸರು (ಕಡ್ಡಾಯವಲ್ಲ)",
     formEmail: "ಇಮೇಲ್",
     formPhone: "WhatsApp ಸಂಖ್ಯೆ",
@@ -555,6 +559,7 @@ export const HELP_TEXTS: Record<Lang, HelpTexts> = {
     chatNow: "ಇತ್ತೆ ಲೈವ್ ಚಾಟ್ ಮಲ್ಪುಲೆ",
     writeToUs: "ಎಂಕ್ಲೆಗ್ ಬರೆಲೆ",
     formTitle: "TrustLight ತಂಡೊಗು ಬರೆಲೆ",
+    formSubtitle: "ಒರಿ ನಿಜವಾಯಿನ ನರಮನಿ ಓದುವೆರ್",
     formName: "ಈರೆನ ಪುದರ್ (ಬೋಡಾಂಡ ಮಾತ್ರ)",
     formEmail: "ಇಮೇಲ್",
     formPhone: "WhatsApp ನಂಬರ್",

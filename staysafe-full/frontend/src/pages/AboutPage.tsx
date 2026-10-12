@@ -7,8 +7,6 @@ import { RatingSummary } from "@/components/RatingSummary";
 
 /** Fill in the project number from bestpractices.dev once the badge is earned; the row appears then. */
 const OPENSSF_PROJECT = "15382";
-const CODE_URL = "https://github.com/sathwikraibs/StaySafe";
-
 /** Independent checks anyone can open to see the live result for this website. */
 function independentChecks(host: string) {
   const h = encodeURIComponent(host);
@@ -16,7 +14,6 @@ function independentChecks(host: string) {
     { key: "security", url: `https://developer.mozilla.org/en-US/observatory/analyze?host=${h}` },
     { key: "connection", url: `https://www.ssllabs.com/ssltest/analyze.html?d=${h}&hideResults=on` },
     { key: "safe", url: `https://transparencyreport.google.com/safe-browsing/search?url=${h}` },
-    { key: "code", url: CODE_URL },
   ];
   if (OPENSSF_PROJECT) rows.push({ key: "openssf", url: `https://www.bestpractices.dev/projects/${OPENSSF_PROJECT}` });
   return rows;

@@ -401,7 +401,6 @@ const tcyBase: BaseDict = {
       security: { name: "Mozilla Observatory", desc: "ಈ ವೆಬ್‌ಸೈಟ್ ಬಳಕೆದಾರೆರೆನ್ ಎಂಚ ಎಡ್ಡೆ ಕಾಪುಂಡು ಪಂಡ್‌ದ್ ಗ್ರೇಡ್ ಕೊರ್ಪುಂಡು." },
       connection: { name: "Qualys SSL Labs", desc: "ಈ ವೆಬ್‌ಸೈಟ್‌ದ ಸುರಕ್ಷಿತ (HTTPS) ಕನೆಕ್ಷನ್ ಪರಿಶೀಲನೆ ಮಲ್ಪುಂಡು." },
       safe: { name: "Google Safe Browsing", desc: "Google ಈ ವೆಬ್‌ಸೈಟ್‌ನ್ ಅಪಾಯ ಪಂಡ್‌ದ್ ಗುರುತು ಮಲ್ತ್ಂಡಾ ಇಜ್ಜಾ ಪಂಡ್‌ದ್ ತೋಜಾವುಂಡು." },
-      code: { name: "GitHub", desc: "TrustLight ದ ಇಡೀ ಕೋಡ್ ಮಾತೆರೆಗ್ಲಾ ತೋಜುಂಡು, ಉಂದು ದಾದ ಮಲ್ಪುಂಡು ಪಂಡ್‌ದ್ ಏರ್ಲಾ ತೂವೊಲಿ." },
       openssf: { name: "OpenSSF Best Practices Badge", desc: "TrustLight ನ್ ಎಂಚ ಸುರಕ್ಷಿತವಾದ್ ಕಟ್ಟುದು ನಡಪಾವೊಂದುಲ್ಲ ಪಂಡ್‌ದ್ ಪರಿಶೀಲನೆ ಮಲ್ಪುಂಡು." },
     },
     contactTitle: "ಪ್ರಶ್ನೆ ಉಂಡಾ?",
