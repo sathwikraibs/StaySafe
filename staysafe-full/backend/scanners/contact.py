@@ -71,7 +71,8 @@ def _allowed(ip: str) -> bool:
 
 def _feedback_bot():
     """A separate Telegram bot for ratings (FEEDBACK_BOT_TOKEN / FEEDBACK_CHAT_ID); else the "Write to us" bot."""
-    token, chat = os.environ.get("FEEDBACK_BOT_TOKEN", ""), os.environ.get("FEEDBACK_CHAT_ID", "")
+    token = os.environ.get("FEEDBACK_BOT_TOKEN", "").strip()
+    chat = os.environ.get("FEEDBACK_CHAT_ID", "").strip()   # a pasted space or new line must not break it
     return (token, chat) if token and chat else (None, None)
 
 
