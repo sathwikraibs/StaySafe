@@ -230,7 +230,8 @@ def feedback_route():
         hide_url = f"{request.host_url.rstrip('/')}/api/feedback/hide?id={rid}&token={token}"
         lines += ["", f'🌐 Allowed to be shown on the website · <a href="{e(hide_url)}">Hide this review</a>']
     text = "\n".join(lines)
-    sent = (_send_telegram(text, fb_token, fb_chat) if fb_token else _send_telegram(text) if _telegram_ready() else False) or \
+    # the feedback bot first; if it can't deliver (wrong chat id, bot not started), the "Write to us" bot
+    sent = (fb_token and _send_telegram(text, fb_token, fb_chat)) or (_telegram_ready() and _send_telegram(text)) or \
         (_send_email(f"[TrustLight feedback] {stars}/5", text, "") if _email_ready() else False)
     if not sent and rid:
         sent = True                    # kept in the ratings database even if the message couldn't go out

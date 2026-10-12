@@ -144,6 +144,25 @@ def test_feedback_goes_to_its_own_bot_when_set():
         os.environ.pop("FEEDBACK_BOT_TOKEN", None); os.environ.pop("FEEDBACK_CHAT_ID", None)
 
 
+def test_feedback_falls_back_to_contact_bot_when_its_bot_fails():
+    setup(); contact._fb_per_ip.clear()
+    os.environ.update(FEEDBACK_BOT_TOKEN="broken", FEEDBACK_CHAT_ID="99")
+
+    class Bad:
+        status_code = 400
+
+        def json(self):
+            return {"ok": False}
+    contact.requests.post = lambda url, **kw: (sent.append((url, kw.get("json"))), Bad() if "botbroken" in url else R())[1]
+    try:
+        r = c.post("/api/feedback", json={"stars": 5, "message": "good"})
+        assert r.status_code == 200, r.get_json()
+        urls = [u for u, j in sent if j and "new feedback" in j.get("text", "")]
+        assert "botbroken" in urls[0] and "bott/" in urls[-1]      # tried its own bot, then the "Write to us" bot
+    finally:
+        os.environ.pop("FEEDBACK_BOT_TOKEN", None); os.environ.pop("FEEDBACK_CHAT_ID", None)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
