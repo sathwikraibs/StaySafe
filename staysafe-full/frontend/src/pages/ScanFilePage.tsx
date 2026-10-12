@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSharedFile } from "@/share";
+import { useSharedFile, isPhoneOrTablet } from "@/share";
 import { Button } from "@/components/Button";
 import { LoadingSteps, usePace } from "@/components/LoadingSteps";
 import { ResultReport } from "@/components/ResultReport";
@@ -13,6 +13,15 @@ import { useI18n } from "@/i18n";
 import { IconFile, IconKey } from "@/icons";
 import { Section } from "@/components/Section";
 import { CheckedLinks } from "@/components/WebsiteDetails";
+
+/**
+ * On phones, any open file type makes the picker offer Camera, Camcorder and Sound recorder, which make
+ * no sense here. So phones ask only for documents, apps, archives and web pages (images have their own
+ * checks). Laptops and computers keep every file type.
+ */
+const PHONE_FILE_TYPES = isPhoneOrTablet()
+  ? "application/*,text/*,.apk,.apks,.xapk,.apkm,.pdf,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.ppt,.pptx,.pptm,.zip,.rar,.7z,.html,.htm,.mht,.exe,.msi,.bat,.cmd,.js,.vbs,.jar,.iso,.lnk,.txt,.csv,.rtf"
+  : undefined;
 import { VirusTotalPanel } from "@/components/VirusTotalPanel";
 
 function formatSize(bytes?: number): string {
@@ -67,6 +76,7 @@ export function ScanFilePage({ onNavigate }: { onNavigate?: (path: string) => vo
           onClear={() => setFile(null)}
           disabled={loading}
           camera={false}
+          accept={PHONE_FILE_TYPES}
           incoming={incoming}
         />
         <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-cream-100 p-3">

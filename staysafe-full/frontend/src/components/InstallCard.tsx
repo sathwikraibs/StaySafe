@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useI18n } from "@/i18n";
-import { useInstall, isInstalledApp } from "@/share";
+import { useInstall, isInstalledApp, isPhoneOrTablet } from "@/share";
 import { IconPhone, IconClose } from "@/icons";
 
 const HIDE_KEY = "staysafe.installHidden.v1";
@@ -13,6 +13,7 @@ function hiddenOnHome(): boolean {
  * "Add TrustLight to your phone", so people can share messages, links and screenshots to it.
  * place="home": only when the phone offers it, and it can be closed.
  * place="settings": also shows how to share once TrustLight is on the phone.
+ * Never shown on laptops and desktop computers.
  */
 export function InstallCard({ place }: { place: "home" | "settings" }) {
   const { t } = useI18n();
@@ -20,6 +21,9 @@ export function InstallCard({ place }: { place: "home" | "settings" }) {
   const [hidden, setHidden] = useState(hiddenOnHome);
   const [done, setDone] = useState(false);
   const installed = isInstalledApp();
+  const phone = isPhoneOrTablet();
+
+  if (!phone) return null;                       // "Add to your phone" means nothing on a laptop or PC
 
   if (place === "home" && (hidden || !canInstall) && !done) return null;
   if (place === "settings" && !canInstall && !installed && !done) return null;

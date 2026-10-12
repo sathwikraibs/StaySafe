@@ -160,6 +160,20 @@ export function listenForInstall(): void {
   } catch { /* ignore */ }
 }
 
+/** A phone or tablet (not a laptop or desktop computer). Touch laptops still count as computers. */
+export function isPhoneOrTablet(): boolean {
+  try {
+    const nav = navigator as Navigator & { userAgentData?: { mobile?: boolean } };
+    if (nav.userAgentData && typeof nav.userAgentData.mobile === "boolean" && nav.userAgentData.mobile) return true;
+    const ua = nav.userAgent || "";
+    if (/Android|iPhone|iPad|iPod|Mobile|Silk|Kindle|Opera Mini|IEMobile/i.test(ua)) return true;
+    // iPads ask for the desktop site and say "Macintosh", but have a touch screen
+    return /Macintosh/.test(ua) && (nav.maxTouchPoints || 0) > 1;
+  } catch {
+    return false;
+  }
+}
+
 export function isInstalledApp(): boolean {
   try {
     return window.matchMedia("(display-mode: standalone)").matches ||
