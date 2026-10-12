@@ -607,6 +607,10 @@ def unwrap_redirect(url: str) -> str:
 
 
 _APK_IN_PATH = re.compile(r"\.apk($|[?&/#=])")
+_CRACK_WORDS = re.compile(r"spoofer|keygen|injector|aimbot|wallhack|cheat(?![-_ ]?sheet)|bypass|crack|activator|unlocker|"
+                          r"mod[-_ ]?menu|robux|(?:^|[^a-z])hacks?(?:[^a-z]|$)|(?:^|[^a-z])executor(?:[^a-z]|$)")
+# github.com/<user>/<project>/raw/<branch>/.../icons/tool_1.2.zip : a program file in a picture or code folder
+_GITHUB_ODD_FOLDER = re.compile(r"^/[^/]+/[^/]+/raw/.*/(icons?|images?|img|src|hooks|components|css|fonts|styles?)/[^/]+$")
 
 
 def analyze_structure(url: str) -> dict:
@@ -969,6 +973,24 @@ def analyze_structure(url: str) -> dict:
         score += led.note(findings, 30)
         tricks += 1
 
+    # a program or zip file named like cracked software, game cheats or hacking tools: the usual
+    # wrapping for password-stealing programs shared on GitHub, Google Drive and file-sharing sites
+    file_part = parsed.path.lower()
+    lure_file = False
+    if re.search(r"\.(exe|scr|bat|msi|zip|rar|7z)(?:/|$)", file_part) and not apk:
+        if _CRACK_WORDS.search(file_part):
+            findings.append("The file is named like cracked software, a game cheat or a hacking tool. Files like these very often "
+                            "hide programs that steal passwords and bank details")
+            score += led.note(findings, 40)
+            tricks += 1
+            lure_file = True
+        elif host == "github.com" and _GITHUB_ODD_FOLDER.search(file_part):
+            findings.append("This download is hidden inside a project's picture or code folder, where real projects never keep "
+                            "their programs. Fake project pages hide harmful downloads this way")
+            score += led.note(findings, 40)
+            tricks += 1
+            lure_file = True
+
     if re.search(r"%[0-9a-f]{2}", host):
         findings.append("Website name contains hidden encoded characters")
         score += led.note(findings, 10)
@@ -977,7 +999,8 @@ def analyze_structure(url: str) -> dict:
     _check(checks, "name_tricks", "pass" if tricks == 0 else ("fail" if tricks >= 3 else "warn"), tricks)
 
     return {"score": score, "findings": findings, "checks": checks, "parts": led.parts, "trusted": trusted,
-            "hosting": hosting, "shortener": shortener, "brand": brand_hit, "apk": apk}
+            "hosting": hosting, "shortener": shortener, "brand": brand_hit, "apk": apk,
+            "lure_file": lure_file}
 
 
 # ---------------------------------------------------------------------------
@@ -1289,8 +1312,12 @@ THREAT_NAMES = {
 #     OpenPhish community feed (phishing) and URLhaus (malware links), refreshed every 3 hours.
 # ---------------------------------------------------------------------------
 FEED_SOURCES = {
-    "OpenPhish": "https://raw.githubusercontent.com/openphish/public_feed/main/feed.txt",
-    "URLhaus": "https://urlhaus.abuse.ch/downloads/text_online/",
+    # each list has a second copy to try when the first address doesn't answer (GitHub's raw file
+    # server sometimes refuses shared cloud servers for hours)
+    "OpenPhish": ["https://raw.githubusercontent.com/openphish/public_feed/main/feed.txt",
+                  "https://cdn.jsdelivr.net/gh/openphish/public_feed@main/feed.txt",
+                  "https://openphish.com/feed.txt"],
+    "URLhaus": ["https://urlhaus.abuse.ch/downloads/text_online/"],
 }
 FEED_REFRESH_SECONDS = 3 * 3600
 _FEEDS = {"urls": {}, "hosts": {}, "loaded_at": 0.0, "loading": False, "counts": {}, "problem": None}
@@ -1306,14 +1333,24 @@ def _feed_key(u: str) -> str:
 
 def refresh_feeds() -> None:
     urls, hosts, counts, problems = {}, {}, {}, []
-    for name, src in FEED_SOURCES.items():
+    for name, srcs in FEED_SOURCES.items():
         try:
-            hdrs = {"User-Agent": "TrustLight/2.0"}
-            if "abuse.ch" in src and _abusech_key():
-                hdrs["Auth-Key"] = _abusech_key()
-            resp = requests.get(src, timeout=25, headers=hdrs)
-            if resp.status_code != 200:
-                problems.append(f"{name}: HTTP {resp.status_code}")
+            resp, why = None, []
+            for src in ([srcs] if isinstance(srcs, str) else srcs):
+                hdrs = {"User-Agent": "TrustLight/2.0"}
+                if "abuse.ch" in src and _abusech_key():
+                    hdrs["Auth-Key"] = _abusech_key()
+                try:
+                    r = requests.get(src, timeout=25, headers=hdrs)
+                except Exception as e:
+                    why.append(type(e).__name__)
+                    continue
+                if r.status_code == 200 and "." in r.text[:2000]:
+                    resp = r
+                    break
+                why.append(f"HTTP {r.status_code}")
+            if resp is None:
+                problems.append(f"{name}: {', '.join(why) or 'no answer'}")
                 continue
             n = 0
             for line in resp.text.splitlines():
@@ -1329,6 +1366,17 @@ def refresh_feeds() -> None:
         except Exception as e:
             problems.append(f"{name}: {type(e).__name__}")
     with _FEED_LOCK:
+        # a list that could not be downloaded this time keeps its last good copy
+        for name in FEED_SOURCES:
+            if name in counts or not _FEEDS["counts"].get(name):
+                continue
+            for k, src in _FEEDS["urls"].items():
+                if src == name:
+                    urls.setdefault(k, name)
+            for k, src in _FEEDS["hosts"].items():
+                if src == name:
+                    hosts.setdefault(k, name)
+            counts[name] = _FEEDS["counts"][name]
         if urls:
             _FEEDS.update(urls=urls, hosts=hosts, counts=counts)
         _FEEDS.update(loaded_at=time.time(), loading=False, problem="; ".join(problems) or None)
@@ -1933,6 +1981,22 @@ def check_virustotal(url: str, domain: str, priority: str = "normal") -> dict:
 # 6. Open the page safely (on the server) and look at it
 # ---------------------------------------------------------------------------
 MAX_PAGE_BYTES = 300_000
+# fake "someone shared a file with you" pages (Adobe, DocuSign, OneDrive ...) on hosting or brand-new websites
+_DOC_BRANDS = {"adobe": "Adobe", "acrobat": "Adobe", "docusign": "DocuSign", "onedrive": "OneDrive",
+               "sharepoint": "SharePoint", "dropbox": "Dropbox", "wetransfer": "WeTransfer", "office 365": "Microsoft",
+               "microsoft 365": "Microsoft", "google drive": "Google Drive"}
+_DOC_LURE = re.compile(
+    r"secured? (?:remote )?(?:attachment|document|file|pdf)s?\b|shared (?:a |an |some )?(?:document|file|pdf)s? with you|"
+    r"sent you (?:a |an )?(?:secure |encrypted |new )?(?:document|file|pdf)|view (?:the )?shared (?:document|file|pdf)s?\b|"
+    r"encrypted (?:document|file|pdf)|review and sign (?:the )?document|"
+    r"(?:document|file|pdf) (?:is )?ready (?:to view|for download)|get [a-z ]{0,20}acrobat reader|"
+    r"update (?:your )?(?:adobe|pdf) reader")
+# "ClickFix": a fake robot check that tells the visitor to run a command on their own computer
+_FAKE_CHECK = re.compile(r"not a robot|verify (?:that )?you are (?:a )?human|human verification|captcha|verification steps")
+_RUN_BOX = re.compile(r"\b(?:windows|win)\s*(?:key|button|logo key)?\s*\+\s*r\b|press (?:and hold )?(?:the )?windows (?:key|button)|"
+                      r"\brun (?:dialog|box|window)|powershell|mshta|ctrl\s*\+\s*v[^.]{0,40}enter")
+
+
 LOGIN_BRAND_WORDS = {
     "sbi": "sbi", "state bank": "sbi", "hdfc": "hdfc", "icici": "icici", "axis bank": "axisbank",
     "kotak": "kotak", "paytm": "paytm", "phonepe": "phonepe", "google pay": "gpay", "amazon": "amazon",
@@ -2406,6 +2470,19 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
         if page.get("scrambled") and (page.get("has_password") or pretends or otp_words):
             findings.append("This page hides its real content with scrambled code")
             score += led.note(findings, 15)
+        if _FAKE_CHECK.search(haystack) and _RUN_BOX.search(haystack):
+            findings.append("This page pretends to be an 'I am not a robot' check and tells you to press keys that open your "
+                            "computer's Run box and paste a command. No real check ever does this. The command installs a harmful program")
+            score += led.note(findings, 60)
+            _check(checks, "page", "fail", "fake check")
+        doc_brand = next((n for w, n in _DOC_BRANDS.items() if re.search(rf"\b{re.escape(w)}\b", haystack)), None)
+        young = structure["hosting"] or is_ip(host) or (age_days is not None and age_days < 180) or \
+            (first_cert_days is not None and first_cert_days < 180)
+        if doc_brand and young and _DOC_LURE.search(haystack) and not (page.get("has_password") and pretends):
+            findings.append(f"This page looks like a shared file from {doc_brand} and asks you to open or download it, but it is "
+                            "not on that company's own website. Fake 'shared file' pages steal passwords or install harmful programs")
+            score += led.note(findings, 40)
+            _check(checks, "page", "fail", doc_brand)
         if seed:
             findings.append("This page asks for a crypto wallet's recovery phrase or private key. No genuine service ever asks "
                             "for it. Whoever has it can empty the wallet")
@@ -2429,6 +2506,10 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
         _check(checks, "page", "pass", None)
     else:
         _check(checks, "page", "skip")
+    page_checks = [c for c in checks if c["id"] == "page"]
+    if any(c["status"] == "fail" for c in page_checks) and len(page_checks) > 1:
+        first_fail = next(c for c in page_checks if c["status"] == "fail")
+        checks[:] = [c for c in checks if c["id"] != "page" or c is first_fail]
     if (page.get("telegram_exfil") or (page.get("form_to") and page.get("has_password"))) and not final_official:
         checks[:] = [c for c in checks if c["id"] != "page"]
         _check(checks, "page", "fail", "telegram" if page.get("telegram_exfil") else page.get("form_to"))
@@ -2445,7 +2526,17 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
         _check(checks, "google", "skip")
 
     # --- Public scam-link lists (OpenPhish, URLhaus)
-    feed = feed_lookup([url, final_url], host) if not (trusted or blind or nolists) else {"status": "pass" if trusted else "skip"}
+    if blind or nolists:
+        feed = {"status": "skip"}
+    elif trusted:
+        # a big shared website (github.com, drive.google.com) is fine, but this exact file or page
+        # may be on a list of harmful links: that still counts
+        exact = [u for u in (url, final_url) if u and urlparse(u).path.strip("/") or (u and urlparse(u).query)]
+        feed = feed_lookup(exact, "") if exact else {"status": "pass"}
+        if feed["status"] != "fail":
+            feed = {"status": "pass"}
+    else:
+        feed = feed_lookup([url, final_url], host)
     big = big_feed_lookup([url, final_url], host, reg) if not (blind or nolists) else {"status": "skip"}
     if trusted and big["status"] == "warn":
         big = {"status": "pass"}
@@ -2566,7 +2657,8 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
 
     total = max(0, min(100, score))
     # Known-good sites keep a low score unless a blocklist says otherwise
-    if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail" and not structure.get("apk"):
+    if trusted and not gsb.get("listed") and vt.get("malicious", 0) < 3 and feed["status"] != "fail" and not structure.get("apk") \
+            and not structure.get("lure_file"):
         if total > 15:
             led.add(ADJ_TRUSTED, 15 - total)
         total = min(total, 15)
@@ -2579,7 +2671,7 @@ def scan_url(url: str, _hop: int = 0, blind: bool = False, nolists: bool = False
         else popularity_rank(reg)
     hard = gsb.get("listed") or feed["status"] == "fail" or vt.get("malicious", 0) >= 1 \
         or vt.get("domain_malicious", 0) >= 1 or dns["exists"] is False \
-        or structure.get("apk") \
+        or structure.get("apk") or structure.get("lure_file") \
         or any(c["id"] in ("imitation", "page", "cfscan", "community", "rbi") and c["status"] == "fail" for c in checks)
     if rank and not hard:
         _check(checks, "known", "pass", reg)
