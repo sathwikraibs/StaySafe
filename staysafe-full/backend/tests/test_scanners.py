@@ -1304,11 +1304,16 @@ def test_openphish_list_uses_second_copy_and_keeps_last_good_one():
     real = url_scanner.requests.get
     calls = []
 
+    from urllib.parse import urlparse as _host_of
+
+    def host(src):
+        return (_host_of(src).hostname or "").lower()
+
     def fake_get(src, timeout=0, headers=None, **k):
         calls.append(src)
-        if "raw.githubusercontent.com" in src:
+        if host(src) == "raw.githubusercontent.com":
             return types.SimpleNamespace(status_code=429, text="")
-        if "jsdelivr" in src:
+        if host(src) == "cdn.jsdelivr.net":
             return types.SimpleNamespace(status_code=200, text="https://fake-bank-login.example/x\n")
         return types.SimpleNamespace(status_code=200, text="http://malware.example/a.exe\n")
     try:
@@ -1319,7 +1324,7 @@ def test_openphish_list_uses_second_copy_and_keeps_last_good_one():
         assert url_scanner._FEEDS["counts"].get("OpenPhish") == 1
         # next time no copy answers: the last good OpenPhish list is kept
         url_scanner.requests.get = lambda src, **k: types.SimpleNamespace(
-            status_code=503 if "openphish" in src else 200, text="http://malware.example/a.exe\n")
+            status_code=503 if src in url_scanner.FEED_SOURCES["OpenPhish"] else 200, text="http://malware.example/a.exe\n")
         url_scanner.refresh_feeds()
         assert url_scanner._FEEDS["urls"].get("fake-bank-login.example/x") == "OpenPhish", url_scanner._FEEDS
         assert "OpenPhish" in (url_scanner._FEEDS["problem"] or "")

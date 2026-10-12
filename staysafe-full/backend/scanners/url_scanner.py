@@ -1338,7 +1338,7 @@ def refresh_feeds() -> None:
             resp, why = None, []
             for src in ([srcs] if isinstance(srcs, str) else srcs):
                 hdrs = {"User-Agent": "TrustLight/2.0"}
-                if "abuse.ch" in src and _abusech_key():
+                if (urlparse(src).hostname or "").endswith(".abuse.ch") and _abusech_key():
                     hdrs["Auth-Key"] = _abusech_key()
                 try:
                     r = requests.get(src, timeout=25, headers=hdrs)
