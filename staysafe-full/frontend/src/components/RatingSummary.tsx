@@ -60,7 +60,7 @@ export function RatingSummary() {
       </div>
 
       <div className="border-t border-cream-200 bg-cream-100/60 p-5 sm:p-6">
-        <h2 className="mb-3 font-heading text-lg font-semibold text-ink-900">💬 {t("feedback.peopleTitle")}</h2>
+        <h2 className="mb-3 font-heading text-lg font-semibold text-ink-900">{t("feedback.peopleTitle")}</h2>
         {s.reviews.length === 0 ? (
           <p className="font-body text-sm text-dustyblue-600">{t("feedback.noReviews")}</p>
         ) : (

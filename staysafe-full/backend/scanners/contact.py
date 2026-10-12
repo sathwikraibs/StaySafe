@@ -48,7 +48,7 @@ def _email_ready() -> bool:
 
 
 def contact_status() -> dict:
-    return {"telegram": _telegram_ready(), "email": _email_ready()}
+    return {"telegram": _telegram_ready(), "email": _email_ready(), "feedback_bot": _feedback_bot()[0] is not None}
 
 
 def _hide_sensitive(text: str) -> str:
@@ -69,8 +69,15 @@ def _allowed(ip: str) -> bool:
         return True
 
 
-def _send_telegram(text_html: str) -> bool:
-    token, chat = os.environ.get("TELEGRAM_BOT_TOKEN", ""), os.environ.get("TELEGRAM_CHAT_ID", "")
+def _feedback_bot():
+    """A separate Telegram bot for ratings (FEEDBACK_BOT_TOKEN / FEEDBACK_CHAT_ID); else the "Write to us" bot."""
+    token, chat = os.environ.get("FEEDBACK_BOT_TOKEN", ""), os.environ.get("FEEDBACK_CHAT_ID", "")
+    return (token, chat) if token and chat else (None, None)
+
+
+def _send_telegram(text_html: str, token: str = "", chat: str = "") -> bool:
+    token = token or os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    chat = chat or os.environ.get("TELEGRAM_CHAT_ID", "")
     try:
         r = requests.post(f"https://api.telegram.org/bot{token}/sendMessage", timeout=10, json={
             "chat_id": chat, "text": text_html[:4000], "parse_mode": "HTML", "disable_web_page_preview": True})
@@ -203,7 +210,8 @@ def feedback_route():
     source = str(data.get("from") or "settings")
     share = bool(data.get("share"))
     from scanners import ratings, store
-    if not (_telegram_ready() or _email_ready() or store.enabled()):
+    fb_token, fb_chat = _feedback_bot()
+    if not (fb_token or _telegram_ready() or _email_ready() or store.enabled()):
         return jsonify({"error": "Feedback can't be sent right now. Please try again a little later."}), 503
     if not _feedback_allowed(client_ip()):
         return jsonify({"error": "Thank you, we already have your feedback. You can send more in an hour."}), 429
@@ -221,7 +229,7 @@ def feedback_route():
         hide_url = f"{request.host_url.rstrip('/')}/api/feedback/hide?id={rid}&token={token}"
         lines += ["", f'🌐 Allowed to be shown on the website · <a href="{e(hide_url)}">Hide this review</a>']
     text = "\n".join(lines)
-    sent = (_send_telegram(text) if _telegram_ready() else False) or \
+    sent = (_send_telegram(text, fb_token, fb_chat) if fb_token else _send_telegram(text) if _telegram_ready() else False) or \
         (_send_email(f"[TrustLight feedback] {stars}/5", text, "") if _email_ready() else False)
     if not sent and rid:
         sent = True                    # kept in the ratings database even if the message couldn't go out

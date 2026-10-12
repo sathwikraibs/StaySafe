@@ -2,9 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import type { HelperMode } from "@/chat";
 import { useI18n } from "@/i18n";
 import { BrandMark, IconChat, IconClose, IconLock, IconShield } from "@/icons";
-import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, appFeedback, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
+import { HELP_TEXTS, TOOL_TEXTS, TOOL_PATHS, helpTopics, understand, setPrefill, setStartTab, TOOL_TABS, announcePrefill, looksLikePastedMessage, appFeedback, type AppFeedback, type HelpAction, type HelpTopic, type ToolId } from "@/helpBot";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { apiGet, apiPostJSON, errorMessage, ApiError } from "@/api";
+
+/** A reply that fits what they said about TrustLight, then the rating card. */
+const FEEDBACK_REPLY: Record<AppFeedback, string> = {
+  praise: "feedback.aiPraise", helped: "feedback.aiHelped", thanks: "feedback.aiThanks",
+  negative: "feedback.aiNegative", idea: "feedback.aiIdea", bug: "feedback.aiBug",
+};
 import { API_BASE } from "@/config";
 
 type Button = HelpAction
@@ -17,7 +23,7 @@ interface Bubble {
   langPick?: boolean;    // show language buttons (the AI wasn't sure which language to answer in)
   aiAnyway?: string;     // a question we answered with a tool button: it can still go to the AI
   note?: string;         // a small tip under the answer
-  feedback?: "praise" | "improve";   // they praised or criticised TrustLight: show the rating card
+  feedback?: AppFeedback;   // they praised or criticised TrustLight: show the rating card
 }
 type Turn = { role: "user" | "assistant"; text: string };
 interface AiAnswer { reply: string; urgent: boolean; actions: string[]; ask_language?: boolean; kind?: string; language?: string }
@@ -183,7 +189,7 @@ export function HelpBot({ onClose, onNavigate, currentPath, startWith = "home", 
     // "you did good", "this app is slow", "please add Telugu": thank them and offer the rating card
     const fb = topic ? null : appFeedback(text);
     if (fb) {
-      say({ from: "bot", lines: [t(fb === "praise" ? "feedback.aiPraise" : "feedback.aiComplaint")], feedback: fb });
+      say({ from: "bot", lines: [t(FEEDBACK_REPLY[fb])], feedback: fb });
       return;
     }
     if (r.kind === "tool" && !topic) {

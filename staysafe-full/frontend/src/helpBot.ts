@@ -874,12 +874,53 @@ const IMPROVE = new RegExp([
   "(?:ಆ್ಯಪ್|ಆಪ್|app|ಉಂದು)[^.?]{0,25}(?:ಎಡ್ಡೆ ಇಜ್ಜಿ|ಸರಿ ಇಜ್ಜಿ|ಕೆಲಸ ಮಲ್ತ್‌ಜಿ|ಕೆಲಸ ಮಲ್ತಿಜಿ|ತಪ್ಪು)",
 ].join("|"), "i");
 /** Words that mean the person is asking about a scam or their own trouble, not about TrustLight. */
-const OWN_TROUBLE = /\b(?:otp|pin|cvv|scam|fraud|money|paid|lost|hack|hacked|police|arrest|kyc|upi|loan|refund|blocked)\b|ಓಟಿಪಿ|ಮೋಸ|ಹಣ|ಪೈಸೆ|धोखा|पैसे|ठगी/i;
+const OWN_TROUBLE = /\b(?:otp|pin|cvv|scam\w*|fraud\w*|money|paid|lost|hack\w*|police|arrest\w*|kyc|upi|loan|refund|blocked|caller|called|sms|bank)\b|ಓಟಿಪಿ|ಮೋಸ|ಹಣ|ಪೈಸೆ|धोखा|पैसे|ठगी/i;
+const ABOUT_APP = /\b(?:trustlight|this app|your app|the app|this site|this website|this tool|ur app)\b|ಈ ಆ್ಯಪ್|ಈ ಆಪ್|ಈ ಅಪ್ಲಿಕೇಶನ್|ಉಂದು ಆಪ್|यह ऐप|ये ऐप|यह एप|ये एप/i;
 
-export function appFeedback(text: string): "praise" | "improve" | null {
+/** Rude or angry words about the app: "this app is bullshit", "bakwas app", "faltu". */
+const NEGATIVE = new RegExp([
+  String.raw`\b(?:bull\s?shit|bulshit|bs app|crap|crappy|trash|rubbish|garbage|nonsense|useless|worst|pathetic|stupid|dumb|lame|waste of time|time ?waste|waste|fake app|fraud app|scam app|hate (?:it|this|you|the app|this app)|sucks?|horrible|terrible|disgusting|faltu|bakwas|bekar|bekaar|ghatiya|bakwaas|kachra|bogus)\b`,
+  "बकवास", "बेकार", "घटिया", "फालतू", "फ़ालतू", "कचरा", "बेकार ऐप",
+  "ಕೆಟ್ಟ", "ಉಪಯೋಗ ಇಲ್ಲ", "ಉಪಯೋಗವಿಲ್ಲ", "ಪ್ರಯೋಜನ ಇಲ್ಲ", "ಪ್ರಯೋಜನವಿಲ್ಲ", "ವೇಸ್ಟ್", "ಬೇಕಾರ್", "ಕಸ",
+  "ಎಡ್ಡೆ ಇಜ್ಜಿ", "ಪ್ರಯೋಜನ ಇಜ್ಜಿ", "ಉಪಯೋಗ ಇಜ್ಜಿ",
+  String.raw`\b(?:ketta|upayoga illa|prayojana illa|edde ijji|prayojana ijji)\b`,
+].join("|"), "i");
+/** "it helped me a lot", "you saved me", "मदद मिली", "ಸಹಾಯ ಆಯಿತು". */
+const HELPED = new RegExp([
+  String.raw`\b(?:helped|helps|helping) (?:me|us|my|a lot|alot|so much)\b`, String.raw`\b(?:saved|protected) (?:me|us|my)\b`,
+  String.raw`\bit (?:really )?helped\b`, String.raw`\b(?:very|so|really) helpful\b`, String.raw`\bwas (?:a )?(?:big )?help\b`,
+  "मदद मिली", "मदद हुई", "बहुत मदद", "बचा लिया", "काम आया",
+  "ಸಹಾಯ ಆಯಿತು", "ಸಹಾಯವಾಯಿತು", "ಸಹಾಯ ಆಯ್ತು", "ತುಂಬಾ ಸಹಾಯ", "ಕಾಪಾಡಿತು", "ಉಪಯೋಗ ಆಯಿತು", "ಉಪಯೋಗವಾಯಿತು",
+  "ಸಹಾಯ ಆಂಡ್", "ಮಸ್ತ್ ಸಹಾಯ", "ಉಪಯೋಗ ಆಂಡ್",
+  String.raw`\b(?:madad mili|madad hui|bahut madad|sahaya aytu|sahaya aayitu|tumba sahaya|sahaya aand|mast sahaya)\b`,
+].join("|"), "i");
+/** "thank you for the advice", "धन्यवाद", "ಧನ್ಯವಾದ", "ಸೊಲ್ಮೆಲು". */
+const THANKS = new RegExp([
+  String.raw`\b(?:thanks?|thank (?:you|u)|thanku|thankyou|thnx|thx|tysm|ty)\b`,
+  "धन्यवाद", "शुक्रिया", "ಧನ್ಯವಾದ", "ಥ್ಯಾಂಕ್ಸ್", "ಸೊಲ್ಮೆಲು",
+  String.raw`\b(?:dhanyavad|dhanyawad|shukriya|dhanyavada|dhanyavadagalu|solmelu)\b`,
+].join("|"), "i");
+const BUG = /\b(?:not (?:working|loading|opening)|doesn'?t (?:work|load|open)|didn'?t work|isn'?t working|broken|buggy|bug|crash(?:es|ed|ing)?|stuck|hangs?|freez(?:es|ing)|error|blank (?:page|screen))\b|काम नहीं (?:कर|किया)|नहीं खुल|ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ|ಕೆಲಸ ಮಾಡ್ತಿಲ್ಲ|ಓಪನ್ ಆಗುತ್ತಿಲ್ಲ|ಕೆಲಸ ಮಲ್ಪುಜಿ|ಕೆಲಸ ಮಲ್ತ್‌ಜಿ|ಕೆಲಸ ಮಲ್ತಿಜಿ/i;
+const IDEA = /\b(?:should|must|needs? to|could|can) (?:add|have|support|include|show)\b|\b(?:please|pls|plz|kindly|can you|could you)\s+(?:add|include|support)\b|\b(?:suggestion|feature request|idea)s?\b|सुझाव|ಸಲಹೆ/i;
+
+export type AppFeedback = "praise" | "helped" | "thanks" | "negative" | "idea" | "bug";
+
+export function appFeedback(text: string): AppFeedback | null {
   const v = (text || "").trim();
   if (!v || v.length > 200 || /\?\s*$/.test(v) || /https?:\/\/|www\./i.test(v)) return null;
-  if (IMPROVE.test(v)) return OWN_TROUBLE.test(v) && !/\b(?:trustlight|this app|your app|the app)\b/i.test(v) ? null : "improve";
-  if (PRAISE.test(v) && !OWN_TROUBLE.test(v)) return "praise";
+  const aboutApp = ABOUT_APP.test(v) || new RegExp(APP, "i").test(v);
+  // their own trouble ("my bank app is not working", "I lost money"), unless they clearly mean TrustLight
+  const own = OWN_TROUBLE.test(v) && !aboutApp;
+  if (IMPROVE.test(v) || (NEGATIVE.test(v) && (aboutApp || v.length <= 40))) {
+    if (own) return null;
+    if (NEGATIVE.test(v)) return "negative";
+    if (BUG.test(v)) return "bug";
+    if (IDEA.test(v)) return "idea";
+    return "negative";
+  }
+  if (own) return null;
+  if (HELPED.test(v)) return "helped";
+  if (PRAISE.test(v)) return THANKS.test(v) && !/\b(?:good|great|nice|best|awesome|amazing|wonderful|love|super|excellent)\b|बढ़िया|शानदार|ಚೆನ್ನಾಗಿದೆ|ಅದ್ಭುತ|ಸೂಪರ್|ಎಡ್ಡೆ/i.test(v) ? "thanks" : "praise";
+  if (THANKS.test(v)) return "thanks";
   return null;
 }

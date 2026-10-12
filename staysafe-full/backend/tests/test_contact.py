@@ -130,6 +130,20 @@ def test_ratings_are_kept_counted_and_only_shared_words_shown():
         store.enabled, store.command = saved
 
 
+def test_feedback_goes_to_its_own_bot_when_set():
+    setup(); contact._fb_per_ip.clear()
+    os.environ.update(FEEDBACK_BOT_TOKEN="fbtoken", FEEDBACK_CHAT_ID="99")
+    try:
+        c.post("/api/feedback", json={"stars": 4, "message": "nice"})
+        c.post("/api/contact", json={"message": "help me please", "email": "a@b.co"})
+        fb = [u for u, j in sent if j and "new feedback" in j.get("text", "")]
+        msg = [u for u, j in sent if j and "New message" in j.get("text", "")]
+        assert fb and "botfbtoken" in fb[0] and [j for u, j in sent if "new feedback" in j.get("text", "")][0]["chat_id"] == "99"
+        assert msg and "bott/" in msg[0]                     # "Write to us" keeps its own bot
+    finally:
+        os.environ.pop("FEEDBACK_BOT_TOKEN", None); os.environ.pop("FEEDBACK_CHAT_ID", None)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
