@@ -903,11 +903,20 @@ const THANKS = new RegExp([
 const BUG = /\b(?:not (?:working|loading|opening)|doesn'?t (?:work|load|open)|didn'?t work|isn'?t working|broken|buggy|bug|crash(?:es|ed|ing)?|stuck|hangs?|freez(?:es|ing)|error|blank (?:page|screen))\b|काम नहीं (?:कर|किया)|नहीं खुल|ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ|ಕೆಲಸ ಮಾಡ್ತಿಲ್ಲ|ಓಪನ್ ಆಗುತ್ತಿಲ್ಲ|ಕೆಲಸ ಮಲ್ಪುಜಿ|ಕೆಲಸ ಮಲ್ತ್‌ಜಿ|ಕೆಲಸ ಮಲ್ತಿಜಿ/i;
 const IDEA = /\b(?:should|must|needs? to|could|can) (?:add|have|support|include|show)\b|\b(?:please|pls|plz|kindly|can you|could you)\s+(?:add|include|support)\b|\b(?:suggestion|feature request|idea)s?\b|सुझाव|ಸಲಹೆ/i;
 
-export type AppFeedback = "praise" | "helped" | "thanks" | "negative" | "idea" | "bug";
+/** "how do I rate?", "where can I give feedback", "Ninan yencha yaan rate manpoli", "ರೇಟಿಂಗ್ ಹೇಗೆ ಕೊಡುವುದು". */
+const RATE_WORD = /\b(?:rate|rating|ratings|review|reviews|feedback|stars?)\b|ರೇಟ್|ರೇಟಿಂಗ್|ಫೀಡ್‌?ಬ್ಯಾಕ್|ಸ್ಟಾರ್|ಅಭಿಪ್ರಾಯ|रेट|रेटिंग|फ़ीडबैक|फीडबैक|रिव्यू/i;
+/** "rate" in other meanings: interest rate, "rate this link", a site's reviews. */
+const RATE_OTHER = /\b(?:interest|exchange|loan|emi|tax|gst|price|dollar|gold|link|url|website|site|number|shop|seller|product|hotel|scam|safe)\b|https?:|www\./i;
+const RATE_ME = /\b(?:trustlight|this app|your app|ur app|you|u|ninan|ninna|nimma|nimage|idanna|idakke|isko|iske)\b|ಇದನ್ನ|ಇದಕ್ಕೆ|ಈ ಆ್ಯಪ್|ಈ ಆಪ್|ನಿಮಗೆ|ಈರೆಗ್|ನಿನನ್|इसे|इसको|आपको|इस ऐप/i;
+
+export type AppFeedback = "praise" | "helped" | "thanks" | "negative" | "idea" | "bug" | "rate";
 
 export function appFeedback(text: string): AppFeedback | null {
   const v = (text || "").trim();
-  if (!v || v.length > 200 || /\?\s*$/.test(v) || /https?:\/\/|www\./i.test(v)) return null;
+  if (!v || v.length > 200) return null;
+  // asking how or where to rate TrustLight (often a question, so before the question check)
+  if (v.length <= 120 && RATE_WORD.test(v) && (RATE_ME.test(v) || !RATE_OTHER.test(v)) && !OWN_TROUBLE.test(v)) return "rate";
+  if (/\?\s*$/.test(v) || /https?:\/\/|www\./i.test(v)) return null;
   const aboutApp = ABOUT_APP.test(v) || new RegExp(APP, "i").test(v);
   // their own trouble ("my bank app is not working", "I lost money"), unless they clearly mean TrustLight
   const own = OWN_TROUBLE.test(v) && !aboutApp;

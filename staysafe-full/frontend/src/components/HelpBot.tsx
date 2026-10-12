@@ -9,7 +9,7 @@ import { apiGet, apiPostJSON, errorMessage, ApiError } from "@/api";
 /** A reply that fits what they said about TrustLight, then the rating card. */
 const FEEDBACK_REPLY: Record<AppFeedback, string> = {
   praise: "feedback.aiPraise", helped: "feedback.aiHelped", thanks: "feedback.aiThanks",
-  negative: "feedback.aiNegative", idea: "feedback.aiIdea", bug: "feedback.aiBug",
+  negative: "feedback.aiNegative", idea: "feedback.aiIdea", bug: "feedback.aiBug", rate: "feedback.aiRate",
 };
 import { API_BASE } from "@/config";
 

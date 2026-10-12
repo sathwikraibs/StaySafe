@@ -11,8 +11,8 @@ const TOPICS = ["love", "improve", "better_elsewhere", "bug", "idea", "language"
 type Topic = (typeof TOPICS)[number];
 
 /** What the person said in the chat, so the right topic is already picked. */
-export type FeedbackIntent = "praise" | "helped" | "thanks" | "negative" | "idea" | "bug";
-const INTENT_TOPIC: Record<FeedbackIntent, Topic> = {
+export type FeedbackIntent = "praise" | "helped" | "thanks" | "negative" | "idea" | "bug" | "rate";
+const INTENT_TOPIC: Record<Exclude<FeedbackIntent, "rate">, Topic> = {
   praise: "love", helped: "love", thanks: "love", negative: "improve", idea: "idea", bug: "bug",
 };
 
@@ -44,7 +44,7 @@ export function FeedbackCard({ from = "settings", intent, compact = false }: {
   const { t, tl, lang, ts } = useI18n();
   const [stars, setStars] = useState(0);            // never chosen for them
   const [hover, setHover] = useState(0);            // mouse only: on phones a tap is the choice
-  const [topics, setTopics] = useState<Topic[]>(intent ? [INTENT_TOPIC[intent]] : []);
+  const [topics, setTopics] = useState<Topic[]>(intent && intent !== "rate" ? [INTENT_TOPIC[intent]] : []);
   const [message, setMessage] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);

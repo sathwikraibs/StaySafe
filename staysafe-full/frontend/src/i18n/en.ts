@@ -458,7 +458,7 @@ const enBase = {
     optional: "Optional",
     placeholderHigh: "What did you like?",
     placeholderLow: "What should we improve?",
-    shareLabel: "Show my comment to others without my name",
+    shareLabel: "Show my comment on the TrustLight website for others to read (your name is never shown)",
     send: "Submit",
     sending: "Submitting...",
     privacy: "Anonymous. Personal details are removed automatically.",
@@ -477,6 +477,7 @@ const enBase = {
     aiNegative: "Sorry TrustLight didn't meet your expectations. We want to fix that. Please tell us below what went wrong, and our team will look into it.",
     aiIdea: "Thanks for the suggestion. Please write it below with your rating, and it will go straight to our team.",
     aiBug: "Sorry about that. Please tell us below what happened and on which page, and we'll fix it as soon as we can.",
+    aiRate: "Of course. Tap the stars below to rate TrustLight. You can also add a few words if you like. It takes only a few seconds.",
   },
   upload: { choose: "Choose a different file", camera: "Take a photo", gallery: "Choose a photo", files: "Choose a file", drag: "or drag and drop it here", photo: "Photo" },
 };
