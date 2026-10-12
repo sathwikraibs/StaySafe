@@ -1238,6 +1238,102 @@ def test_screenshot_lines_keep_the_right_reading():
     assert out[2] == "FINANCE & INSURANCE", out
 
 
+# ---- Weekly accuracy fixes 2026-10-12 (patterns from the daily live test)
+def test_listed_file_on_big_shared_website_is_risky():
+    """URLhaus links on github.com / drive.google.com were called safe because the website is trusted."""
+    try:
+        scan = _online()
+        bad = "github.com/someone123/tools/raw/refs/heads/main/setup_v2.zip"
+        url_scanner._FEEDS["urls"] = {bad: "URLhaus", "drive.google.com/uc?export=download&id=1abcdefghijk": "URLhaus"}
+        url_scanner._FEEDS["hosts"] = {"github.com": "URLhaus", "drive.google.com": "URLhaus"}
+        for u in ("https://" + bad, "http://drive.google.com/uc?export=download&id=1abcdefghijk"):
+            r = scan(u)
+            assert r["verdict"] == "DANGEROUS", (u, r["verdict"], r["findings"])
+        # the websites themselves, and other files on them, stay fine
+        for u in ("https://github.com/sathwikraibs/StaySafe", "https://drive.google.com/drive/my-drive"):
+            r = scan(u)
+            assert r["verdict"] == "SAFE", (u, r["verdict"], r["findings"])
+    finally:
+        _restore()
+
+
+def test_cracked_software_and_hidden_project_downloads():
+    risky = ["http://github.com/washington0812/fivem-spoofer/raw/head/cfxbypass.exe",
+             "http://github.com/thadeusunconfirmed462/tiktok-pro-tools/raw/refs/heads/main/icons/tools_pro_tiktok_3.0-alpha.2.zip",
+             "http://github.com/nightmanvr/modernnav/raw/refs/heads/main/src/hooks/modern_nav_1.5.zip",
+             "https://www.mediafire.com/file/abc123/Valorant_Aimbot_2026.rar/file"]
+    for u in risky:
+        assert scan_url(u)["verdict"] != "SAFE", u
+    fine = ["https://github.com/python/cpython/archive/refs/heads/main.zip",
+            "https://github.com/git-for-windows/git/releases/download/v2.45.0.windows.1/Git-2.45.0-64-bit.exe",
+            "https://github.com/someone/notes/raw/main/docs/python-cheatsheet.zip",
+            "https://github.com/microsoft/vscode/raw/main/resources/win32/code.ico",
+            "https://www.mediafire.com/file/abc123/holiday_photos.zip/file"]
+    for u in fine:
+        assert scan_url(u)["verdict"] == "SAFE", (u, scan_url(u)["findings"])
+
+
+def test_fake_shared_file_page_on_hosting_is_risky():
+    """wni16.vercel.app: an 'Adobe' page offering 'Secured Remote Attachment' and 'DOWNLOAD ALL'."""
+    r = _scan_online("https://wni16.vercel.app", page={"title": "Files", "text": "adtobeo artiojre logo files "
+                     "secured remote attachment download all get september adobe acrobat reader"})
+    assert r["verdict"] == "DANGEROUS", r["findings"]
+    # Adobe's own website, and an ordinary page on hosting that only mentions Adobe, are fine
+    r = _scan_online("https://helpx.adobe.com/acrobat.html", page={"title": "Acrobat help", "text": "download all files "
+                     "view the shared document in adobe acrobat"})
+    assert r["verdict"] == "SAFE", r["findings"]
+    r = _scan_online("https://my-portfolio.vercel.app", page={"title": "Riya, designer", "text": "i design posters "
+                     "with adobe illustrator. download all my work samples below"})
+    assert r["verdict"] != "DANGEROUS", r["findings"]
+    r = _scan_online("https://www.example-bakery.in/menu", age=3000, page={"text": "download all our menus as pdf. "
+                     "we use adobe acrobat"})
+    assert r["verdict"] == "SAFE", r["findings"]
+
+
+def test_fake_robot_check_that_runs_a_command_is_risky():
+    r = _scan_online("https://cdn-check-4471.vercel.app", page={"title": "Just a moment", "text": "verify you are human. "
+                     "verification steps: 1. press windows key + r 2. press ctrl + v 3. press enter"})
+    assert r["verdict"] == "DANGEROUS", r["findings"]
+    r = _scan_online("https://www.example-bakery.in/blog", age=3000, page={"text": "how to open powershell on windows 11 "
+                     "for beginners. press windows key + r and type powershell"})
+    assert r["verdict"] == "SAFE", r["findings"]
+
+
+def test_openphish_list_uses_second_copy_and_keeps_last_good_one():
+    import types
+    real = url_scanner.requests.get
+    calls = []
+
+    from urllib.parse import urlparse as _host_of
+
+    def host(src):
+        return (_host_of(src).hostname or "").lower()
+
+    def fake_get(src, timeout=0, headers=None, **k):
+        calls.append(src)
+        if host(src) == "raw.githubusercontent.com":
+            return types.SimpleNamespace(status_code=429, text="")
+        if host(src) == "cdn.jsdelivr.net":
+            return types.SimpleNamespace(status_code=200, text="https://fake-bank-login.example/x\n")
+        return types.SimpleNamespace(status_code=200, text="http://malware.example/a.exe\n")
+    try:
+        url_scanner.requests.get = fake_get
+        url_scanner._FEEDS.update(urls={}, hosts={}, counts={})
+        url_scanner.refresh_feeds()
+        assert url_scanner._FEEDS["urls"].get("fake-bank-login.example/x") == "OpenPhish", url_scanner._FEEDS
+        assert url_scanner._FEEDS["counts"].get("OpenPhish") == 1
+        # next time no copy answers: the last good OpenPhish list is kept
+        url_scanner.requests.get = lambda src, **k: types.SimpleNamespace(
+            status_code=503 if src in url_scanner.FEED_SOURCES["OpenPhish"] else 200, text="http://malware.example/a.exe\n")
+        url_scanner.refresh_feeds()
+        assert url_scanner._FEEDS["urls"].get("fake-bank-login.example/x") == "OpenPhish", url_scanner._FEEDS
+        assert "OpenPhish" in (url_scanner._FEEDS["problem"] or "")
+    finally:
+        url_scanner.requests.get = real
+        url_scanner._FEEDS.update(urls={}, hosts={}, counts={}, problem=None)
+
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

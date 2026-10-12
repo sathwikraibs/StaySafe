@@ -64,6 +64,11 @@ def main():
     day = {"date": today.isoformat(), "results": [], "missed_scam_links": [], "wrong": []}
     for kind, path, params in runs:
         r = call(path, params)
+        for _ in range(3):      # a server that just woke up needs a minute or two to download today's lists
+            if "still loading" not in str(r.get("error") or ""):
+                break
+            time.sleep(60)
+            r = call(path, params)
         label = f"{kind} {params.get('set', '')}".strip()
         entry = {"test": label, "right": r.get("right"), "error": r.get("error")}
         if params.get("set") in ("9", "10") and kind == "links":
@@ -75,7 +80,11 @@ def main():
             day["missed_scam_links"] += [{"test": which, "url": x.get("url"), "verdict": x.get("verdict"),
                                           "why": x.get("why")} for x in online if not x.get("right")]
         elif r.get("wrong"):
-            day["wrong"].append({"test": label, "wrong": r.get("wrong")})
+            # why each one was wrong (verdict and reasons, or the helper's problems), for the weekly review
+            why = [{"item": x.get("url") or x.get("question") or x.get("name") or x.get("text", "")[:80],
+                    "got": x.get("verdict") or x.get("kind"), "why": x.get("why") or x.get("problems") or x.get("findings")}
+                   for x in r.get("results", []) if x.get("right") is False]
+            day["wrong"].append({"test": label, "wrong": r.get("wrong"), "details": why[:10]})
         day["results"].append(entry)
         print(label, entry.get("right") or entry.get("error"))
 

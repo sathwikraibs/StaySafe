@@ -81,6 +81,11 @@ def _fresh_scam_links(n=6, sources=("OpenPhish", "URLhaus")):
     """A few links from today's OpenPhish / URLhaus lists, so the test uses live scams."""
     from scanners import url_scanner as u
     u.ensure_feeds()
+    # a server that just woke up is still downloading the lists: wait for them (up to half a minute)
+    for _ in range(15):
+        if not u._FEEDS.get("loading") or any(src in sources for src in u._FEEDS.get("counts", {})):
+            break
+        time.sleep(2)
     keys = [k for k, src in list(u._FEEDS.get("urls", {}).items()) if src in sources]
     random.shuffle(keys)
     return [("http://" + k, DANGEROUS) for k in keys[:n]]
@@ -118,6 +123,7 @@ def selftest_links_route():
     from scanners.security import has_status_key
     if not has_status_key():
         return jsonify({"error": "Not found"}), 404
+    began = time.time()     # includes any wait for today's lists, so the whole request stays in time
     own = [u.strip() for u in request.args.getlist("url") if u.strip()][:6]
     pick = str(request.args.get("set") or "").strip()
     if own:
@@ -128,11 +134,15 @@ def selftest_links_route():
             cases = [(u, NOT_SAFE) for u, _ in _fresh_scam_links(8 if pick == "9" else 6, ("OpenPhish",))] \
                 if pick in ("9", "10") else _fresh_scam_links()
             if not cases:
+                from scanners import url_scanner as u
+                problem = u._FEEDS.get("problem")
+                if problem and not u._FEEDS.get("loading"):
+                    return jsonify({"set": pick, "error": f"Today's public lists could not be downloaded ({problem}). "
+                                                          "Open again later."})
                 return jsonify({"set": pick, "error": "Today's public lists are still loading. Open again in a minute."})
     else:
         return jsonify({"how": "Add &set=1 (then 2, 3 ... 10) to the address, or &url=<link> to check your own (up to 6).",
                         "sets": {k: v[0] for k, v in LINK_SETS.items()}})
-    began = time.time()
     futures = [(u, e, _POOL.submit(_one, u, e, pick == "9", pick == "10")) for u, e in cases]
     results = []
     for u, e, f in futures:
