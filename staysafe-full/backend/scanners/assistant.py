@@ -473,7 +473,7 @@ def _clean(reply: str, secrets) -> str:
     reply = re.sub(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", "", reply)
     reply = re.sub(r"(?<![\w\[#])[\w.+-]+@(?=\s|$|[,.;:!?)])", "", reply)
     reply = unmask_personal(reply, secrets)
-    reply = reply.replace("—", ", ").replace("–", "-")   # no long dashes on the site
+    reply = re.sub(r"\s*—\s*", ", ", reply).replace("–", "-")   # no long dashes on the site ("a — b" -> "a, b")
     reply = reply.replace("\u202f", " ").replace("\u00a0", " ")
     return re.sub(r"[ \t]{2,}", " ", reply).strip()[:1500]
 
