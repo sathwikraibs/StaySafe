@@ -60,8 +60,9 @@ PROVIDERS = {
         "ready": lambda: bool(os.environ.get("NVIDIA_API_KEY")),
         "url": lambda: "https://integrate.api.nvidia.com/v1/chat/completions",
         "key": lambda: os.environ.get("NVIDIA_API_KEY", ""),
-        "chat": lambda: _models("NVIDIA_CHAT_MODELS", "meta/llama-3.3-70b-instruct,meta/llama-3.1-70b-instruct"),
-        "review": lambda: _models("NVIDIA_REVIEW_MODELS", "meta/llama-3.1-8b-instruct,meta/llama-3.3-70b-instruct"),
+        # NVIDIA retires models often (Llama 3.3 70B ended Aug 2026); a retired one is skipped by itself
+        "chat": lambda: _models("NVIDIA_CHAT_MODELS", "moonshotai/kimi-k2.6,z-ai/glm-5.2,z-ai/glm-5.3-flash"),
+        "review": lambda: _models("NVIDIA_REVIEW_MODELS", "z-ai/glm-5.3-flash,z-ai/glm-5.2"),
         "quota": QUOTAS["nvidia"],
     },
     "openrouter": {
@@ -162,7 +163,7 @@ def chat(name: str, messages, kind: str = "chat", max_tokens: int = 1500, json_m
                 continue                # only this model is busy at its source: try the next model
             q.cool_down(60)
             return None
-        if r.status_code in (400, 404) and re.search(r"model|not found|does not exist|no endpoints", text, re.I):
+        if r.status_code == 410 or (r.status_code in (400, 404) and re.search(r"model|not found|does not exist|no endpoints|end of life", text, re.I)):
             gone.add(model)                 # not offered (any more): try the next model
             continue
         if r.status_code >= 500:

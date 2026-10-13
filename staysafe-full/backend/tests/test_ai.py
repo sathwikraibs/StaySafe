@@ -633,6 +633,41 @@ def test_scam_typed_in_english_letters_is_translated_and_checked():
         tr.translate = saved_tr
 
 
+def test_a_retired_model_is_skipped_and_the_next_one_answers():
+    import os as _os
+    from scanners import llm_pool
+    calls = []
+
+    class R:
+        def __init__(self, code, body, text=""):
+            self.status_code, self._b, self.text = code, body, text
+
+        def json(self):
+            return self._b
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        calls.append(json["model"])
+        if json["model"] == "old/model":
+            return R(410, {}, '{"title":"Gone","detail":"The model has reached its end of life"}')
+        return R(200, {"choices": [{"message": {"content": "{\"ok\": true}"}, "finish_reason": "stop"}]})
+    saved = (llm_pool.requests.post, _os.environ.get("NVIDIA_API_KEY"), _os.environ.get("NVIDIA_CHAT_MODELS"))
+    try:
+        llm_pool.requests.post = fake_post
+        _os.environ.update(NVIDIA_API_KEY="k", NVIDIA_CHAT_MODELS="old/model,new/model")
+        llm_pool._gone.pop("nvidia", None)
+        out = llm_pool.chat("nvidia", [{"role": "user", "content": "hi"}], wait=0)
+        assert out and calls == ["old/model", "new/model"], calls
+        assert "old/model" in llm_pool._gone["nvidia"]          # not asked again
+    finally:
+        llm_pool.requests.post = saved[0]
+        for k, v in (("NVIDIA_API_KEY", saved[1]), ("NVIDIA_CHAT_MODELS", saved[2])):
+            if v is None:
+                _os.environ.pop(k, None)
+            else:
+                _os.environ[k] = v
+        llm_pool._gone.pop("nvidia", None)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
