@@ -163,6 +163,19 @@ def test_feedback_falls_back_to_contact_bot_when_its_bot_fails():
         os.environ.pop("FEEDBACK_BOT_TOKEN", None); os.environ.pop("FEEDBACK_CHAT_ID", None)
 
 
+def test_support_shows_only_safe_settings():
+    for k in ("SUPPORT_LINK", "SUPPORT_UPI"):
+        os.environ.pop(k, None)
+    assert c.get("/api/support").get_json()["available"] is False
+    os.environ.update(SUPPORT_LINK="javascript:alert(1)", SUPPORT_UPI="not a upi")
+    assert c.get("/api/support").get_json()["available"] is False          # unsafe values are ignored
+    os.environ.update(SUPPORT_LINK="https://pages.example.com/trustlight", SUPPORT_UPI="trustlight@okaxis")
+    d = c.get("/api/support").get_json()
+    assert d == {"available": True, "link": "https://pages.example.com/trustlight", "upi": "trustlight@okaxis", "name": "TrustLight"}
+    for k in ("SUPPORT_LINK", "SUPPORT_UPI"):
+        os.environ.pop(k, None)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

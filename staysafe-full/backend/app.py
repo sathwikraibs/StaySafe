@@ -18,6 +18,7 @@ from scanners.network_checker import network_checker_bp
 from scanners.email_analyzer import email_analyzer_bp
 from scanners.knowledge_base import knowledge_base_bp
 from scanners.contact import contact_bp, contact_status
+from scanners.support import support_bp, support_info
 from scanners.number_check import number_check_bp
 from scanners.reports import reports_bp
 from scanners.telegram_bot import telegram_bp, telegram_status
@@ -40,6 +41,7 @@ app.after_request(add_security_headers)
 
 app.register_blueprint(url_scanner_bp)
 app.register_blueprint(contact_bp)
+app.register_blueprint(support_bp)
 app.register_blueprint(assistant_bp)
 app.register_blueprint(message_scanner_bp)
 app.register_blueprint(risk_engine_bp)
@@ -82,6 +84,7 @@ def home():
         "link_checks": link_check_status(),
         "allowances": quota_status(),
         "contact_form": contact_status(),
+        "support": {"link_set": bool(support_info()["link"]), "upi_set": bool(support_info()["upi"])},
         "assistant": assistant_ready(),
         "telegram_bot": telegram_status(),
         "long_memory": _store.status(),

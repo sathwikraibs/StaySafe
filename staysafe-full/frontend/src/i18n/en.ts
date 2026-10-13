@@ -445,6 +445,18 @@ const enBase = {
 
   wrongTool: { open: "Open {tool}", qrInPicture: "This picture also has a QR code. You can check where it leads." },
   update: { title: "TrustLight has been updated", body: "A new version with the latest fixes is ready. Please update to keep using TrustLight. It takes a second, and nothing you saved is lost.", button: "Update now" },
+  support: {
+    title: "Support TrustLight",
+    text: "TrustLight is free for everyone, with no ads and no selling of data. If it has helped you or your family, you can help keep it running for others.",
+    points: ["Keeps every check free for everyone", "Adds new scam checks and more languages", "Stays ad-free, always"],
+    button: "Support TrustLight",
+    upiLabel: "UPI ID",
+    upiPay: "Pay with a UPI app",
+    upiHint: "Open any UPI app and send any amount you like to this ID.",
+    copy: "Copy",
+    copied: "Copied",
+    note: "Completely optional. Every check stays free, whether you contribute or not.",
+  },
   feedback: {
     title: "Rate TrustLight",
     subtitle: "How was your experience? Your rating helps us improve.",

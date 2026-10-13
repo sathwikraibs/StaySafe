@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageBits";
 import { Card } from "@/components/Card";
 import { InstallCard } from "@/components/InstallCard";
 import { FeedbackCard } from "@/components/FeedbackCard";
+import { SupportCard } from "@/components/SupportCard";
 import { useI18n, LANGUAGES } from "@/i18n";
 import { clearHistory, loadHistory } from "@/history";
 import { IconCheck, IconLanguage, IconHistory, IconInfo, IconArrowRight, IconGlobe } from "@/icons";
@@ -66,6 +67,7 @@ export function SettingsPage({ onNavigate }: { onNavigate: (path: string) => voi
 
       {/* Rating and feedback */}
       <FeedbackCard from="settings" />
+      <SupportCard />
 
       <InstallCard place="settings" />
 

@@ -4,6 +4,7 @@ import { useI18n } from "@/i18n";
 import { IconShield, IconCheck, IconLock, IconWarning, IconChat, IconSearch } from "@/icons";
 import { Section } from "@/components/Section";
 import { RatingSummary } from "@/components/RatingSummary";
+import { SupportCard } from "@/components/SupportCard";
 
 /** Fill in the project number from bestpractices.dev once the badge is earned; the row appears then. */
 const OPENSSF_PROJECT = "15382";
@@ -106,6 +107,8 @@ export function AboutPage({ onNavigate }: { onNavigate: (path: string) => void }
       </Card>
 
       <RatingSummary />
+
+      <SupportCard />
 
       <div className="rounded-2xl bg-brand-100 p-5">
         <p className="font-heading text-base font-semibold text-brand-700">{t("about.neverTitle")}</p>
