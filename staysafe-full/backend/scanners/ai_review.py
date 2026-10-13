@@ -17,6 +17,7 @@ free limit, and we also stay under those limits ourselves:
   2. Cloudflare AI   CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_AI_TOKEN    (10,000 "neurons" a day)
   3. Google Gemini   GEMINI_API_KEY (shared with translation)
   4. Mistral         MISTRAL_API_KEY                                (free plan)
+  5. NVIDIA          NVIDIA_API_KEY                                 (free developer access)
 """
 
 import hashlib
@@ -120,6 +121,10 @@ def _mistral(prompt: str):
     return _pool("mistral", prompt)
 
 
+def _nvidia(prompt: str):
+    return _pool("nvidia", prompt)
+
+
 def _gemini(prompt: str):
     from scanners import translator as tr
     if time.time() < _paused["gemini"]:
@@ -167,7 +172,7 @@ def review(text: str):
         return known
     prompt = PROMPT.replace("{text}", masked)
     result = None
-    for name, fn in (("groq", _groq), ("cloudflare", _cloudflare), ("gemini", _gemini), ("mistral", _mistral)):
+    for name, fn in (("groq", _groq), ("cloudflare", _cloudflare), ("gemini", _gemini), ("mistral", _mistral), ("nvidia", _nvidia)):
         out = fn(prompt)
         if out:
             result = dict(out, provider=name)

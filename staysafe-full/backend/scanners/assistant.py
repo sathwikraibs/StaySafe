@@ -446,6 +446,10 @@ def _mistral(messages):
     return _pool("mistral", messages)
 
 
+def _nvidia(messages):
+    return _pool("nvidia", messages)
+
+
 def _openrouter(messages):
     return _pool("openrouter", messages)
 
@@ -764,11 +768,11 @@ def _generate_in_time(messages, message: str, lang: str, hint=None):
     first, first_used = None, None
     # Gemini writes Indian languages more naturally; Groq is best for English. Each falls back to the other.
     native = want is not None or lang in ("kn", "hi", "tcy") or _looks_indic_in_latin(message)
-    order = ((_gemini_native, _mistral, _groq, _cloudflare, _openrouter) if native
-             else (_groq, _cloudflare, _mistral, _gemini, _openrouter))
+    order = ((_gemini_native, _mistral, _groq, _cloudflare, _nvidia, _openrouter) if native
+             else (_groq, _cloudflare, _mistral, _gemini, _nvidia, _openrouter))
     forced = getattr(_until, "only", None)          # self-test: try just this one service
     if forced:
-        order = tuple(p for p in (_groq, _gemini, _gemini_native, _cloudflare, _mistral, _openrouter)
+        order = tuple(p for p in (_groq, _gemini, _gemini_native, _cloudflare, _mistral, _nvidia, _openrouter)
                       if p.__name__.strip("_") == forced)
     _until.hard = tulu or (want is None and _looks_indic_in_latin(message))   # worth the better model
     out, used = None, None
@@ -939,7 +943,7 @@ def assistant_selftest_route():
     if not has_status_key():
         return jsonify({"error": "Not found"}), 404
     only = str(request.args.get("via") or "").lower()   # &via=cloudflare / openrouter / groq / gemini / mistral
-    _until.only = only if only in ("groq", "gemini", "gemini_native", "cloudflare", "mistral", "openrouter") else None
+    _until.only = only if only in ("groq", "gemini", "gemini_native", "cloudflare", "mistral", "nvidia", "openrouter") else None
     try:
         return _selftest(groq_client)
     finally:

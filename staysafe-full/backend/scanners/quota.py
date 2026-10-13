@@ -239,6 +239,8 @@ QUOTAS = {
     "mistral": Quota("mistral", _env_int("MISTRAL_PER_MINUTE", 20), _env_int("MISTRAL_DAILY_LIMIT", 400)),
     # OpenRouter's free models: 50 requests a day and 20 a minute without bought credits
     "openrouter": Quota("openrouter", _env_int("OPENROUTER_PER_MINUTE", 15), _env_int("OPENROUTER_DAILY_LIMIT", 45)),
+    # NVIDIA's free developer access: about 40 requests a minute; we stay well below
+    "nvidia": Quota("nvidia", _env_int("NVIDIA_PER_MINUTE", 25), _env_int("NVIDIA_DAILY_LIMIT", 1000)),
     "bhashini": Quota("bhashini", 30, None),
     "ocrspace": Quota("ocrspace", 10, _env_int("OCRSPACE_DAILY_LIMIT", 800)),
     "crtsh": Quota("crtsh", 30, None),

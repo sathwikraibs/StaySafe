@@ -12,6 +12,7 @@ All of them are free with no card (checked Sep 2026):
                           10,000 "neurons" a day (roughly 100 to 300 answers). Resets 00:00 UTC.
   Mistral                 MISTRAL_API_KEY    free plan (phone number check at sign-up)
   OpenRouter              OPENROUTER_API_KEY only the ":free" models: 50 requests a day, 20 a minute
+  NVIDIA (build.nvidia.com) NVIDIA_API_KEY  free developer access, phone check, about 40 requests a minute
 
 They all speak the same "chat completions" format, so one function talks to all of them.
 Nothing here can cost money: without a card, a used-up allowance just answers "no".
@@ -54,6 +55,14 @@ PROVIDERS = {
         "chat": lambda: _models("MISTRAL_CHAT_MODELS", "mistral-medium-latest,mistral-small-latest"),
         "review": lambda: _models("MISTRAL_REVIEW_MODELS", "mistral-small-latest"),
         "quota": QUOTAS["mistral"],
+    },
+    "nvidia": {
+        "ready": lambda: bool(os.environ.get("NVIDIA_API_KEY")),
+        "url": lambda: "https://integrate.api.nvidia.com/v1/chat/completions",
+        "key": lambda: os.environ.get("NVIDIA_API_KEY", ""),
+        "chat": lambda: _models("NVIDIA_CHAT_MODELS", "meta/llama-3.3-70b-instruct,meta/llama-3.1-70b-instruct"),
+        "review": lambda: _models("NVIDIA_REVIEW_MODELS", "meta/llama-3.1-8b-instruct,meta/llama-3.3-70b-instruct"),
+        "quota": QUOTAS["nvidia"],
     },
     "openrouter": {
         "ready": lambda: bool(os.environ.get("OPENROUTER_API_KEY")),
