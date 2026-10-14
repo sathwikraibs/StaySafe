@@ -224,6 +224,7 @@ REAL_URLS = [
     "https://www.irctc.co.in",
     "https://github.com/sathwikraibs/StaySafe",
     "https://staysafe-tool.vercel.app",
+    "https://trustlight-app.vercel.app",
 ]
 
 
@@ -1332,7 +1333,19 @@ def test_openphish_list_uses_second_copy_and_keeps_last_good_one():
         url_scanner.requests.get = real
         url_scanner._FEEDS.update(urls={}, hosts={}, counts={}, problem=None)
 
-
+def test_trustlight_own_address_is_trusted_but_lookalikes_are_not():
+    """Only TrustLight's exact addresses skip the free-hosting warning; a copy on vercel.app does not."""
+    from scanners.url_scanner import OWN_SITES
+    assert "trustlight-app.vercel.app" in OWN_SITES
+    own = scan_url("https://trustlight-app.vercel.app/#/scan-message")
+    assert own["verdict"] == "SAFE", own
+    assert not any("free hosting" in f for f in own["findings"]), own
+    for fake in ("https://trustlight-app-login.vercel.app", "https://trustlight.vercel.app"):
+        r = scan_url(fake)    # copies on vercel.app keep the free-hosting warning
+        assert any("free hosting" in f for f in r["findings"]), (fake, r)
+    trick = scan_url("https://trustlight-app.vercel.app.evil.com")    # our name in front of someone else's site
+    assert trick["details"]["registered_domain"] == "evil.com", trick
+    assert any("sub-domains" in f for f in trick["findings"]), trick
 
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
@@ -1346,3 +1359,4 @@ if __name__ == "__main__":
             print(f"FAIL  {name}: {e}")
     print(f"\n{len(tests) - failed}/{len(tests)} tests passed")
     sys.exit(1 if failed else 0)
+

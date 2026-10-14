@@ -113,7 +113,7 @@ def chat(name: str, messages, kind: str = "chat", max_tokens: int = 1500, json_m
     gone = _gone.setdefault(name, set())
     headers = {"Authorization": f"Bearer {p['key']()}", "Content-Type": "application/json"}
     if name == "openrouter":
-        headers.update({"HTTP-Referer": "https://staysafe-tool.vercel.app", "X-Title": "TrustLight"})
+        headers.update({"HTTP-Referer": "https://trustlight-app.vercel.app", "X-Title": "TrustLight"})
     for model in [m for m in p[kind]() if m not in gone]:
         body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
         if json_mode:

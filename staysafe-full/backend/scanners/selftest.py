@@ -41,7 +41,7 @@ LINK_SETS = {
         ("https://youtu.be/dQw4w9WgXcQ", SAFE), ("https://wa.me/919876543210", SAFE),
     ]),
     "3": ("Genuine but less known, or our own site", [
-        ("https://staysafe-tool.vercel.app", SAFE), ("https://tcy.wikipedia.org", SAFE),
+        ("https://trustlight-app.vercel.app", SAFE), ("https://tcy.wikipedia.org", SAFE),
         ("https://mescom.karnataka.gov.in", SAFE), ("https://groww.in", SAFE),
         ("https://github.com/sathwikraibs/StaySafe", SAFE), ("https://www.mangaloretoday.com", SAFE),
     ]),

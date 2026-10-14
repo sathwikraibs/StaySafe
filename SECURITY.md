@@ -25,7 +25,7 @@ Please do not include real people's personal details, and do not test against ot
 
 ## In scope
 
-- The website: https://staysafe-tool.vercel.app
+- The website: https://trustlight-app.vercel.app
 - The backend API and the code in this repository
 
 ## Out of scope

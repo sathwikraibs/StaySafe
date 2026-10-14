@@ -30,7 +30,7 @@ from scanners.security import has_status_key
 telegram_bp = Blueprint("telegram", __name__)
 
 API = "https://api.telegram.org"
-SITE = "https://staysafe-tool.vercel.app"
+SITE = "https://trustlight-app.vercel.app"
 MAX_FILE = 20 * 1024 * 1024  # Telegram bots can download files up to 20 MB
 
 _LANG = {}           # chat id -> chosen language (kept in memory)

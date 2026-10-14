@@ -38,7 +38,7 @@ assistant_bp = Blueprint("assistant", __name__)
 
 LANG_NAMES = {"en": "English", "hi": "Hindi", "kn": "Kannada", "tcy": "Tulu (in Kannada script)"}
 ACTIONS = {"incident", "check_message", "check_link", "check_password", "library", "person"}
-ALLOWED_SITES = ("cybercrime.gov.in", "sancharsaathi.gov.in", "staysafe-tool.vercel.app")
+ALLOWED_SITES = ("cybercrime.gov.in", "sancharsaathi.gov.in", "trustlight-app.vercel.app", "staysafe-tool.vercel.app")
 
 SYSTEM = """You are TrustLight's AI assistant. TrustLight is a free website that helps people in India stay safe from online scams and fraud.
 People may be scared or may have just lost money. They may write in any language, in broken grammar, Hinglish/Kanglish or with spelling mistakes: work out what they mean.

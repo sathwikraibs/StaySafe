@@ -53,6 +53,11 @@ def test_security_headers():
 def test_only_staysafe_site_can_call_from_browser():
     ok = client.post("/api/scan-message", json={"text": "hi"}, headers={"Origin": "https://staysafe-tool.vercel.app"})
     assert ok.headers.get("Access-Control-Allow-Origin") == "https://staysafe-tool.vercel.app"
+    new = client.post("/api/scan-message", json={"text": "hi"}, headers={"Origin": "https://trustlight-app.vercel.app"})
+    assert new.headers.get("Access-Control-Allow-Origin") == "https://trustlight-app.vercel.app"
+    for other in ("https://trustlight.vercel.app", "https://trustlight-tool.vercel.app"):   # not ours
+        r = client.post("/api/scan-message", json={"text": "hi"}, headers={"Origin": other})
+        assert r.headers.get("Access-Control-Allow-Origin") is None, other
     bad = client.post("/api/scan-message", json={"text": "hi"}, headers={"Origin": "https://evil.example"})
     assert "Access-Control-Allow-Origin" not in bad.headers
     copy = client.post("/api/scan-message", json={"text": "hi"}, headers={"Origin": "https://staysafe-copy.vercel.app"})

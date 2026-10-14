@@ -9,7 +9,7 @@
 
 TrustLight helps everyday people, especially those new to the internet, check whether a link, message, QR code, file, phone number, UPI ID, password or email is safe, in plain language, in English, Hindi, Kannada and Tulu. It is free to use, needs no sign-up, and keeps your check history only on your own device.
 
-🔗 **Use it:** [staysafe-tool.vercel.app](https://staysafe-tool.vercel.app)
+🔗 **Use it:** [trustlight-app.vercel.app](https://trustlight-app.vercel.app)
 
 - Found a security problem? Please read [SECURITY.md](SECURITY.md) and report it privately.
 - What changed in each version: [CHANGELOG.md](CHANGELOG.md).

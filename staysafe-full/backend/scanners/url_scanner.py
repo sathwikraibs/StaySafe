@@ -288,6 +288,10 @@ TRUSTED_DOMAINS = set().union(*BRANDS.values()) | {
     "quora.com", "medium.com", "vercel.com", "cloudflare.com", "wordpress.org",
 }
 
+# TrustLight's own addresses (exact names only, all owned by this project). Everything else on
+# vercel.app stays "free hosting where anyone can publish".
+OWN_SITES = {"trustlight-app.vercel.app", "staysafe-tool.vercel.app", "staysafe-beryl.vercel.app"}
+
 # Free hosting where ANYONE can publish a page. Never "trusted"
 FREE_HOSTING = {
     "vercel.app", "netlify.app", "github.io", "web.app", "firebaseapp.com", "herokuapp.com",
@@ -653,6 +657,8 @@ def analyze_structure(url: str) -> dict:
     trusted = reg in TRUSTED_DOMAINS or host.endswith((".gov.in", ".nic.in", ".bank.in")) or \
         (host.endswith(tuple("." + t for t in BRAND_TLDS)) and reg not in OFFICIAL_SHORTENERS)
     hosting = next((h for h in FREE_HOSTING if host == h or host.endswith("." + h)), None)
+    if host in OWN_SITES:
+        hosting, trusted = None, True
     if not hosting and re.search(r"\.blogspot\.[a-z.]{1,20}$", host):
         hosting = "blogspot"
     if not hosting and re.search(r"/ip[fn]s/", path_for_hosting(url)):
