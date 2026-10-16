@@ -1,15 +1,15 @@
 {
   "fair": {
-    "online": 88,
-    "caught": 83,
-    "percent": 94.3
+    "online": 105,
+    "caught": 100,
+    "percent": 95.2
   },
   "blind": {
-    "online": 38,
-    "caught": 33,
-    "percent": 86.8
+    "online": 46,
+    "caught": 41,
+    "percent": 89.1
   },
-  "days": 9,
+  "days": 10,
   "finished": false,
-  "last_run": "2026-10-15"
+  "last_run": "2026-10-16"
 }
